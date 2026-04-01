@@ -244,8 +244,139 @@ def propagate_enrichment_diagnostics(summary, stage_name, stage_payload):
                     "type": "enrichment_diagnostic",
                     "reason": reason,
                     "count": count,
+                    "message": f"{stage_name} reported {count} item(s) for enrichment diagnostic '{reason}'.",
                 }
             )
+
+
+def classify_warning_readability(warning):
+    wtype = warning.get("type")
+    reason = warning.get("reason")
+    if wtype == "dry_run_soft_skip":
+        return "informational"
+    if wtype == "enrichment_diagnostic":
+        if reason == "skipped_tba":
+            return "non_fatal_operational"
+        return "action_needed"
+    if "exit_code" in warning:
+        return "action_needed"
+    return "non_fatal_operational"
+
+
+def add_reporting_clarity_blocks(summary):
+    details = summary.setdefault("details", {})
+    stages = details.get("stages", [])
+    warnings = summary.get("warnings", [])
+    errors = summary.get("errors", [])
+
+    analyzed_stages = [s.get("stage") for s in stages if s.get("status") in {"success", "warning", "failed"}]
+    skipped_stages = [s.get("stage") for s in stages if s.get("status") == "soft_skip"]
+
+    warning_type_counts = {}
+    for warning in warnings:
+        wtype = warning.get("type") or "unspecified"
+        warning_type_counts[wtype] = warning_type_counts.get(wtype, 0) + 1
+
+    enrichment_diag = details.get("enrichment_diagnostics", {}) if isinstance(details.get("enrichment_diagnostics"), dict) else {}
+    enrichment_rollup = {}
+    for stage_name, stage_diag in enrichment_diag.items():
+        if not isinstance(stage_diag, dict):
+            continue
+        for reason, count in stage_diag.items():
+            n = int(count or 0)
+            if n > 0:
+                key = f"{stage_name}:{reason}"
+                enrichment_rollup[key] = n
+
+    details["analysis_coverage"] = {
+        "stages_total": len(stages),
+        "stages_analyzed": len(analyzed_stages),
+        "stages_soft_skipped": len(skipped_stages),
+        "analyzed_stage_names": analyzed_stages,
+        "skipped_stage_names": skipped_stages,
+    }
+    details["skipped_items_exclusions"] = {
+        "warning_type_counts": warning_type_counts,
+        "enrichment_reason_rollup": enrichment_rollup,
+    }
+
+    informational = []
+    non_fatal_operational = []
+    action_needed = []
+    for warning in warnings:
+        classification = classify_warning_readability(warning)
+        bucket_entry = {
+            "type": warning.get("type"),
+            "stage": warning.get("stage"),
+            "reason": warning.get("reason"),
+            "count": warning.get("count"),
+            "message": warning.get("message") or warning.get("detail") or "No detail provided.",
+        }
+        if classification == "informational":
+            informational.append(bucket_entry)
+        elif classification == "action_needed":
+            action_needed.append(bucket_entry)
+        else:
+            non_fatal_operational.append(bucket_entry)
+
+    details["warning_readability"] = {
+        "informational_count": len(informational),
+        "non_fatal_operational_count": len(non_fatal_operational),
+        "action_needed_count": len(action_needed),
+        "informational_examples": informational[:5],
+        "non_fatal_operational_examples": non_fatal_operational[:5],
+        "action_needed_examples": action_needed[:5],
+    }
+
+    if errors:
+        interpretation = "Run contains hard failures. Review errors before consuming downstream outputs."
+    elif summary.get("status") == "success" and summary.get("warnings") and summary.get("counts", {}).get("soft_skipped", 0) > 0:
+        interpretation = "Dry-run completed. Warnings are expected soft-skip notices and coverage indicators, not execution failures."
+    elif warnings:
+        interpretation = "Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits."
+    else:
+        interpretation = "Run completed without warnings. Coverage is complete for executed stages."
+    details["operator_interpretation"] = {
+        "note": interpretation,
+        "warning_non_fatal": bool(warnings and not errors),
+    }
+
+    warning_readability = details.get("warning_readability", {}) if isinstance(details.get("warning_readability"), dict) else {}
+    action_needed_count = int(warning_readability.get("action_needed_count", 0) or 0)
+    non_fatal_count = int(warning_readability.get("non_fatal_operational_count", 0) or 0)
+    informational_count = int(warning_readability.get("informational_count", 0) or 0)
+
+    if errors or action_needed_count > 0:
+        recommended_action = "Review stage errors and action-needed warnings first; then re-run bounded validation."
+    elif warnings:
+        recommended_action = "Proceed with outputs while monitoring documented exclusions and non-fatal warning trends."
+    else:
+        recommended_action = "No immediate action required. Continue normal operations."
+
+    lines = [
+        "# Executive Summary",
+        f"- Run Status: {summary.get('status')}",
+        f"- Stages Run: {details['analysis_coverage'].get('stages_analyzed', 0)}/{details['analysis_coverage'].get('stages_total', 0)}",
+        f"- Stages Soft-Skipped: {details['analysis_coverage'].get('stages_soft_skipped', 0)}",
+        "",
+        "# Analysis Coverage Snapshot",
+        f"- Executed Stages: {', '.join(details['analysis_coverage'].get('analyzed_stage_names', [])) or 'None'}",
+        f"- Soft-Skipped Stages: {', '.join(details['analysis_coverage'].get('skipped_stage_names', [])) or 'None'}",
+        "",
+        "# Skipped/Excluded Items Snapshot",
+        f"- Warning Types: {details['skipped_items_exclusions'].get('warning_type_counts', {})}",
+        f"- Enrichment Exclusions: {details['skipped_items_exclusions'].get('enrichment_reason_rollup', {})}",
+        "",
+        "# Warning Interpretation",
+        f"- Informational: {informational_count}",
+        f"- Non-Fatal Operational: {non_fatal_count}",
+        f"- Action-Needed: {action_needed_count}",
+        f"- Interpretation: {details['operator_interpretation'].get('note')}",
+        "",
+        "# Recommended Operator Action",
+        f"- {recommended_action}",
+    ]
+    details["human_readable_summary_markdown"] = "\n".join(lines)
 
 
 def main():
@@ -285,6 +416,7 @@ def main():
                     "stage": stage_name,
                     "type": "dry_run_soft_skip",
                     "detail": stage_result.get("details", {}).get("note", "not executed in dry-run mode"),
+                    "message": f"Stage '{stage_name}' was skipped by dry-run policy; this is informational.",
                 })
 
             if stage_result["status"] == "warning":
@@ -292,6 +424,7 @@ def main():
                     "stage": stage_name,
                     "exit_code": stage_result["exit_code"],
                     "detail": (stage_result["details"].get("stderr") or stage_result["details"].get("stdout") or "").strip(),
+                    "message": f"Stage '{stage_name}' completed with warning (exit_code={stage_result['exit_code']}). Review detail for actionability.",
                 })
             if stage_result["status"] == "failed":
                 summary["errors"].append({
@@ -332,6 +465,7 @@ def main():
                 "queue_excluded_insufficient_enrichment": int(queue_diag.get("excluded_insufficient_enrichment", 0) or 0),
             }
         )
+        add_reporting_clarity_blocks(summary)
         if summary["errors"]:
             summary["status"] = "error"
             exit_code = 1
