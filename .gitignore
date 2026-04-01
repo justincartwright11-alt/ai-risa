@@ -1,0 +1,19 @@
+# AI-RISA runtime byproducts
+__pycache__/
+*.py[cod]
+
+# Ops visibility generated artifacts
+ops/alerts/
+ops/health/
+ops/summary/
+ops/logs/
+ops/_slice1_tests/
+
+# Timestamped run folders are operational outputs
+runs/*
+!runs/run_history_index.json
+
+# Local diagnostics/transient logs
+*_stderr.log
+*_stdout.log
+*.tmp
