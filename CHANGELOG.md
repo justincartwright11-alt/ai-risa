@@ -123,6 +123,11 @@
 - added explicit control-state defaults for pending review, undecided outcome, blocked application readiness, reviewer-role requirements, and validation gating metadata
 - added runtime-generated approval-ledger artifacts in JSON and Markdown without model mutation, auto-approval, or pipeline/scheduler changes
 
+## v2.2-adjustment-validation-manifests-slice-1
+- added a read-only model-adjustment validation-manifest generator derived from controlled model-adjustment proposals and approval-ledger control state
+- added validation-manifest defaults for pending validation, simulation-only scope, required test classes/metrics, pass criteria, rollback requirements, and blocked application readiness
+- added runtime-generated validation-manifest artifacts in JSON and Markdown without model mutation, execution promotion, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
