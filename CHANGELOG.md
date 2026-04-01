@@ -163,6 +163,11 @@
 - added canonical readiness verdicts (`not_ready`, `conditionally_ready`, `governance_ready_but_execution_disabled`) with required remaining conditions, operator role requirements, decision blockers, rollback references, and cross-layer source-path traceability
 - added runtime-generated readiness decision artifacts in JSON and Markdown without model mutation, auto-promotion, execution path creation, or pipeline/scheduler changes
 
+## v3.0-controlled-execution-policy-slice-1
+- added a read-only controlled execution policy generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, dry-run plans, authorization records, execution intents, preflight records, and readiness decisions
+- added policy fields for execution-policy state, governance-only mode, execution permission, policy blockers, required enablement conditions, required operator role, prohibited actions, rollback references, and policy notes
+- added runtime-generated execution policy artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
