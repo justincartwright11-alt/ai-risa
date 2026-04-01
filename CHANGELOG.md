@@ -26,3 +26,8 @@
 - validated BoxingScene adapter as live and bounded (timeout + capped retry + explicit failure diagnostics)
 - hardened JSON-LD location normalization when address fields are partially combined (e.g. region includes country)
 - kept adapter structure intact; no ingestion schema changes
+
+## v1.2-source-hardening-slice-2
+- hardened dependency resolver fighter extraction for canonical and alternate bout shapes (`fighter_1/2`, `fighters[]`, matchup text)
+- added explicit unresolved diagnostics for missing or partial fighter identity resolution
+- preserved existing resolver/queue summary schema and downstream stage contracts

@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -20,6 +21,44 @@ def is_tba(name):
         return True
     n = str(name).strip().lower()
     return n in {"tba", "tbd", "to be announced", "to be determined", "unknown", "opponent tba"}
+
+
+def clean_name(value):
+    if value is None:
+        return None
+    text = " ".join(str(value).strip().split())
+    return text or None
+
+
+def derive_event_id(event, event_file):
+    event_id = clean_name(event.get("event_id"))
+    if event_id:
+        return event_id
+    name = clean_name(event.get("event_name") or event.get("event") or event.get("promotion"))
+    date = clean_name(event.get("date"))
+    if name and date:
+        return f"{slugify(name)}_{date.replace('-', '_')}"
+    return Path(event_file).stem
+
+
+def extract_bout_fighters(bout):
+    f1 = clean_name(bout.get("fighter_1") or bout.get("fighter_a") or bout.get("red_corner"))
+    f2 = clean_name(bout.get("fighter_2") or bout.get("fighter_b") or bout.get("blue_corner"))
+
+    fighters = bout.get("fighters")
+    if isinstance(fighters, list):
+        if not f1 and len(fighters) > 0:
+            f1 = clean_name(fighters[0])
+        if not f2 and len(fighters) > 1:
+            f2 = clean_name(fighters[1])
+
+    if (not f1 or not f2) and isinstance(bout.get("matchup"), str):
+        parts = [p.strip() for p in re.split(r"\s+v(?:s|s\.)?\s+", bout.get("matchup"), flags=re.I) if p.strip()]
+        if len(parts) == 2:
+            f1 = f1 or clean_name(parts[0])
+            f2 = f2 or clean_name(parts[1])
+
+    return f1, f2
 
 
 def write_json(path, payload):
@@ -59,6 +98,10 @@ def main():
 
     event_files = sorted(Path(args.events_dir).glob("*.json"))
     action_counts = {}
+    unresolved_counts = {
+        "unresolved_missing_fighters": 0,
+        "unresolved_partial_fighters": 0,
+    }
     total_bouts = 0
 
     for event_file in event_files:
@@ -70,18 +113,23 @@ def main():
             status = "error"
             continue
 
-        event_id = event.get("event_id", "")
+        event_id = derive_event_id(event, event_file)
         bouts = event.get("bouts", [])
         log("[DEBUG] Processing event_id={}, bouts={}", event_id, len(bouts), verbose=verbose)
 
         for i, bout in enumerate(bouts):
             total_bouts += 1
-            bout_id = bout.get("bout_id", f"idx_{i}")
-            f1 = bout.get("fighter_1")
-            f2 = bout.get("fighter_2")
+            bout_id = bout.get("bout_id", f"{event_id}_b{i + 1:02d}")
+            f1, f2 = extract_bout_fighters(bout)
             actions = []
 
-            if is_tba(f1) or is_tba(f2):
+            if not f1 and not f2:
+                actions.append("unresolved_missing_fighters")
+                unresolved_counts["unresolved_missing_fighters"] += 1
+            elif not f1 or not f2:
+                actions.append("unresolved_partial_fighters")
+                unresolved_counts["unresolved_partial_fighters"] += 1
+            elif is_tba(f1) or is_tba(f2):
                 actions.append("skipped_tba")
             else:
                 for fighter, role in [(f1, "fighter_1"), (f2, "fighter_2")]:
@@ -135,11 +183,16 @@ def main():
             rows.append(row)
 
     counts.update(action_counts)
+    counts.update({k: v for k, v in unresolved_counts.items() if v > 0})
     counts["processed_events"] = len(event_files)
     counts["processed_bouts"] = total_bouts
 
     if action_counts.get("skipped_tba", 0) > 0:
         warnings.append({"type": "skipped_tba", "count": action_counts["skipped_tba"]})
+    if unresolved_counts["unresolved_missing_fighters"] > 0:
+        warnings.append({"type": "unresolved_missing_fighters", "count": unresolved_counts["unresolved_missing_fighters"]})
+    if unresolved_counts["unresolved_partial_fighters"] > 0:
+        warnings.append({"type": "unresolved_partial_fighters", "count": unresolved_counts["unresolved_partial_fighters"]})
 
     summary_payload = {
         "stage": "dependency_resolution",
