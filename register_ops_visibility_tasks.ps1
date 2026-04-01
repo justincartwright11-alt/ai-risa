@@ -11,6 +11,10 @@
     - AI-RISA-Daily-Health-Summary (daily)
     - AI-RISA-Weekly-Health-Rollup (weekly)
 
+    Slice 3 behavior:
+    - alert-check task can emit optional transition-based notifications
+    - daily/weekly tasks can refresh scheduler verification + operator checklists
+
     These tasks are read-only against pipeline outputs and do not modify
     existing production pipeline tasks.
 #>
@@ -35,20 +39,20 @@ $ProgressPreference = 'SilentlyContinue'
 $tasks = @(
     @{
         Name = 'AI-RISA-Latest-Run-Alert-Check'
-        Description = 'Checks latest run index and summaries for alert state.'
+        Description = 'Checks latest run index/summaries for alert state and optional transition notifications.'
         Launcher = Join-Path $RepoRoot 'schedule_latest_run_alert_check.ps1'
         Kind = 'interval'
     },
     @{
         Name = 'AI-RISA-Daily-Health-Summary'
-        Description = 'Generates daily health summary from canonical run history.'
+        Description = 'Generates daily health summary and optional verification/checklist artifacts.'
         Launcher = Join-Path $RepoRoot 'schedule_daily_health_summary.ps1'
         Kind = 'daily'
         Time = $DailySummaryTime
     },
     @{
         Name = 'AI-RISA-Weekly-Health-Rollup'
-        Description = 'Generates weekly health rollup and refreshes operator summary.'
+        Description = 'Generates weekly health rollup and optional verification/checklist artifacts.'
         Launcher = Join-Path $RepoRoot 'schedule_weekly_health_rollup.ps1'
         Kind = 'weekly'
         Day = $WeeklyRollupDay

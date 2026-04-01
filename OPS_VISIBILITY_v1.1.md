@@ -17,6 +17,9 @@ This layer does not change:
 - `generate_daily_health_summary.py`
 - `generate_weekly_health_rollup.py`
 - `generate_operator_summary_artifact.py`
+- `verify_scheduler_tasks.py`
+- `send_ops_notification.py`
+- `generate_operator_checklist.py`
 - `ops_visibility_aggregation.py`
 - `schedule_latest_run_alert_check.ps1`
 - `schedule_daily_health_summary.ps1`
@@ -38,6 +41,19 @@ Health outputs:
 Operator summary outputs:
 - `ops/summary/operator_summary.json`
 - `ops/summary/operator_summary.md`
+
+Scheduler verification outputs:
+- `ops/verification/scheduler_verification.json`
+- `ops/verification/scheduler_verification.md`
+
+Notification outputs (transition-based, optional):
+- `ops/notifications/latest_notification.json`
+- `ops/notifications/latest_notification.md`
+- `ops/state/notification_state.json`
+
+Operator checklist outputs:
+- `ops/checklists/operator_checklist_daily.md`
+- `ops/checklists/operator_checklist_weekly.md`
 
 Log outputs:
 - `ops/logs/latest_run_alert_check.log`
@@ -76,6 +92,53 @@ The daily and weekly wrappers refresh `operator_summary` after their primary
 health artifacts are written so operators get an up-to-date fast-read summary
 without introducing extra task sprawl.
 
+Slice 3 extensions:
+- alert-check wrapper executes `send_ops_notification.py` using alert state transitions
+- daily/weekly wrappers execute `verify_scheduler_tasks.py`
+- daily/weekly wrappers generate period-specific operator checklists
+
+No existing production pipeline task semantics are changed.
+
+## Scheduler Verification
+
+Verification status model:
+- `pass`
+- `warn`
+- `fail`
+
+The script validates required tasks for existence, enablement, acceptable state,
+expected action script path, and principal/logon context.
+
+Required task set:
+- `AI-RISA-Pipeline-Dry-Run`
+- `AI-RISA-Pipeline-Normal-Run`
+- `AI-RISA-Latest-Run-Alert-Check`
+- `AI-RISA-Daily-Health-Summary`
+- `AI-RISA-Weekly-Health-Rollup`
+
+## Notification Hooks
+
+Notification delivery is local-first and optional:
+- stdout sink
+- local json/markdown event artifacts
+- optional webhook sink via `ops/config/notification_config.json` (disabled by default)
+
+Notifications are transition-based:
+- `false -> true` sends alert notification
+- `true -> false` sends recovery notification
+- unchanged state sends nothing unless forced
+
+## Operator Checklists
+
+Generated artifacts provide fast daily/weekly operator review with checks for:
+- latest run success
+- alert review
+- health artifact freshness
+- scheduler verification status
+- failed run review
+- run-history health
+- recommended next action
+
 ## Operator Summary Status Rules
 
 - `healthy`: no active alert and weekly success rate >= 0.90
@@ -94,5 +157,8 @@ python .\check_latest_run_alert.py
 python .\generate_daily_health_summary.py
 python .\generate_weekly_health_rollup.py
 python .\generate_operator_summary_artifact.py
+python .\verify_scheduler_tasks.py
+python .\send_ops_notification.py
+python .\generate_operator_checklist.py --period both
 powershell -ExecutionPolicy Bypass -File .\register_ops_visibility_tasks.ps1
 ```

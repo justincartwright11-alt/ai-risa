@@ -13,3 +13,11 @@
 - added weekly rollup scheduler wrapper and task registration
 - updated daily/weekly wrappers to refresh operator summary artifact
 - no core pipeline behavior changes
+
+## v1.1-ops-visibility-slice-3
+- added scheduler verification script with pass/warn/fail status model and required task coverage
+- added optional transition-based notification hooks with local-first sinks and persisted state
+- added daily/weekly operator checklist artifact generation
+- updated alert/daily/weekly wrappers to refresh notification, verification, and checklist outputs
+- updated ops visibility docs for slice-3 operational assurance workflow
+- no core pipeline behavior changes

@@ -8,6 +8,8 @@ param(
     [string]$RepoRoot = 'C:\ai_risa_data',
     [int]$Days = 7,
     [switch]$RefreshOperatorSummary = $true,
+    [switch]$RunSchedulerVerification = $true,
+    [switch]$GenerateChecklist = $true,
     [string]$LogDir = (Join-Path $RepoRoot 'ops\logs')
 )
 
@@ -97,7 +99,32 @@ try {
         }
     }
 
-    $finalExit = if ($weeklyExit -ne 0) { $weeklyExit } else { $operatorExit }
+    $verifyExit = 0
+    if ($RunSchedulerVerification) {
+        Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\verify_scheduler_tasks.py"
+        $verifyOutput = & $python.Exe @($python.PrefixArgs) .\verify_scheduler_tasks.py 2>&1
+        $verifyExit = $LASTEXITCODE
+
+        foreach ($line in $verifyOutput) {
+            Write-Log -LogFile $logFile -Message "  $line"
+        }
+    }
+
+    $checklistExit = 0
+    if ($GenerateChecklist) {
+        Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\generate_operator_checklist.py --period weekly"
+        $checklistOutput = & $python.Exe @($python.PrefixArgs) .\generate_operator_checklist.py --period weekly 2>&1
+        $checklistExit = $LASTEXITCODE
+
+        foreach ($line in $checklistOutput) {
+            Write-Log -LogFile $logFile -Message "  $line"
+        }
+    }
+
+    $finalExit = $weeklyExit
+    if ($finalExit -eq 0) { $finalExit = $operatorExit }
+    if ($finalExit -eq 0) { $finalExit = $verifyExit }
+    if ($finalExit -eq 0) { $finalExit = $checklistExit }
     Write-Log -LogFile $logFile -Message "Exit code: $finalExit"
     Write-Log -LogFile $logFile -Message '=== Execution complete ==='
 

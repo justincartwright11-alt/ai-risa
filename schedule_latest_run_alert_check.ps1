@@ -78,12 +78,21 @@ try {
     Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\check_latest_run_alert.py"
 
     $output = & $python.Exe @($python.PrefixArgs) .\check_latest_run_alert.py 2>&1
-    $exitCode = $LASTEXITCODE
+    $alertExit = $LASTEXITCODE
 
     foreach ($line in $output) {
         Write-Log -LogFile $logFile -Message "  $line"
     }
 
+    Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\send_ops_notification.py"
+    $notifyOutput = & $python.Exe @($python.PrefixArgs) .\send_ops_notification.py 2>&1
+    $notifyExit = $LASTEXITCODE
+
+    foreach ($line in $notifyOutput) {
+        Write-Log -LogFile $logFile -Message "  $line"
+    }
+
+    $exitCode = if ($alertExit -ne 0) { $alertExit } else { $notifyExit }
     Write-Log -LogFile $logFile -Message "Exit code: $exitCode"
     Write-Log -LogFile $logFile -Message '=== Execution complete ==='
 
