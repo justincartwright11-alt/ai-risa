@@ -108,6 +108,11 @@
 - added prioritized action categories for overconfidence review, sparse-confidence bucket review, recurring miss-pattern investigation, and data-gap cleanup
 - added runtime-generated calibration action queue artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
 
+## v1.9-calibration-interventions-slice-1
+- added a read-only calibration intervention plan generator derived from calibration diagnostics, calibration action queue priorities, and reconciliation signals
+- added proposed intervention types for confidence-threshold review, confidence-bucket coverage review, recurring miss-family investigation, data-gap cleanup prerequisites, and candidate weighting/rule-review targets
+- added runtime-generated calibration intervention plan artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
