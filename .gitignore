@@ -48,6 +48,8 @@ ops/model_adjustments/model_adjustment_execution_intents.json
 ops/model_adjustments/model_adjustment_execution_intents.md
 ops/model_adjustments/model_adjustment_application_preflight_records.json
 ops/model_adjustments/model_adjustment_application_preflight_records.md
+ops/model_adjustments/model_adjustment_readiness_decisions.json
+ops/model_adjustments/model_adjustment_readiness_decisions.md
 
 # Timestamped run folders are operational outputs
 runs/*
