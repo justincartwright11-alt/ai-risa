@@ -31,3 +31,8 @@
 - hardened dependency resolver fighter extraction for canonical and alternate bout shapes (`fighter_1/2`, `fighters[]`, matchup text)
 - added explicit unresolved diagnostics for missing or partial fighter identity resolution
 - preserved existing resolver/queue summary schema and downstream stage contracts
+
+## v1.2-source-hardening-slice-3
+- hardened queue builder handling for unresolved and partial enrichment states from resolver outputs
+- added explicit queue-build diagnostics for unresolved fighter identity, partial identity, and unresolved matchup mapping
+- prevented insufficiently enriched rows from silent queue promotion while preserving queue row compatibility for valid fights
