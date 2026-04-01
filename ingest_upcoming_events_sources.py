@@ -1094,16 +1094,379 @@ def main():
     session = requests.Session()
     all_events = []
     diagnostics = []
+def _boxingscene_clean_text(value):
+    text = re.sub(r'\s+', ' ', (value or '').strip())
+    return text.replace('| BoxingScene', '').replace('- BoxingScene', '').strip(' -|')
+
+
+def _boxingscene_normalize_title(raw_title):
+    title = _boxingscene_clean_text(raw_title)
+    if not title:
+        return None
+    if re.search(r'\b(schedule|boxing schedule|results|news|videos|rankings|tickets|odds)\b', title, re.I):
+        return None
+    title = re.sub(r'\s{2,}', ' ', title).strip()
+    if len(title) < 4 or len(title) > 160:
+        return None
+    return title
+
+
+def _boxingscene_normalize_date(raw_date):
+    candidate = _boxingscene_clean_text(raw_date)
+    if not candidate:
+        return None
+    if re.match(r'^\d{4}-\d{2}-\d{2}$', candidate):
+        return candidate
+    for fmt in ('%B %d, %Y', '%B %d %Y', '%b %d, %Y', '%b %d %Y'):
+        try:
+            return datetime.strptime(candidate, fmt).strftime('%Y-%m-%d')
+        except Exception:
+            continue
+    try:
+        parsed = date_parser.parse(candidate, fuzzy=False)
+        return parsed.strftime('%Y-%m-%d')
+    except Exception:
+        return None
+
+
+def _boxingscene_parse_location(raw_location):
+    text = _boxingscene_clean_text(raw_location)
+    if not text:
+        return None, None, None
+    parts = [p.strip() for p in re.split(r'\s*,\s*', text) if p.strip()]
+    if not parts:
+        return None, None, None
+    city = parts[0] if len(parts) >= 1 else None
+    region = parts[1] if len(parts) >= 2 else None
+    country = parts[2] if len(parts) >= 3 else None
+    if len(parts) == 2 and len(parts[1]) > 3:
+        country = parts[1]
+        region = None
+    return city, region, country
+
+
+def _boxingscene_normalize_jsonld_address(address):
+    city = None
+    region = None
+    country = None
+    if not isinstance(address, dict):
+        return city, region, country
+
+    city = _boxingscene_clean_text(address.get('addressLocality')) or None
+    region = _boxingscene_clean_text(address.get('addressRegion')) or None
+    country = _boxingscene_clean_text(address.get('addressCountry')) or None
+
+    # BoxingScene JSON-LD often places "Region, Country" in addressRegion.
+    if region and not country and ',' in region:
+        parts = [p.strip() for p in region.split(',') if p.strip()]
+        if len(parts) == 2:
+            region = parts[0]
+            country = parts[1]
+        elif len(parts) >= 3 and not city:
+            city = parts[0]
+            region = parts[1]
+            country = parts[-1]
+
+    return city, region, country
+
+
+def _boxingscene_extract_bouts_from_strings(strings):
+    bouts = []
+    seen = set()
+    bout_re = re.compile(r'^([A-Za-z0-9 .\'\-]{2,80})\s+(?:vs\.?|v\.?|versus)\s+([A-Za-z0-9 .\'\-]{2,80})$', re.I)
+    for raw in strings:
+        line = _boxingscene_clean_text(raw)
+        if not line:
+            continue
+        match = bout_re.match(line)
+        if not match:
+            continue
+        red = re.sub(r'\s+', ' ', match.group(1)).strip()
+        blue = re.sub(r'\s+', ' ', match.group(2)).strip()
+        if len(red) < 2 or len(blue) < 2:
+            continue
+        key = f'{red.lower()}__{blue.lower()}'
+        if key in seen:
+            continue
+        seen.add(key)
+        bouts.append(f'{red} vs {blue}')
+        if len(bouts) >= 20:
+            break
+    return bouts
+
+
+def _boxingscene_get_with_retries(session, url, context_label, timeout_seconds=12, max_attempts=3, min_body_length=0):
+    last_error = None
+    max_attempts = max(1, int(max_attempts))
+    for attempt in range(1, max_attempts + 1):
+        try:
+            resp = session.get(url, timeout=timeout_seconds)
+            body = resp.text or ''
+            if resp.status_code == 200 and len(body) >= min_body_length:
+                if attempt > 1:
+                    print(f'[{context_label}] recovered on_attempt={attempt} url={url}')
+                return resp, body, None
+            last_error = f'bad_response status={resp.status_code} body_len={len(body)}'
+            print(f'[{context_label}] attempt={attempt}/{max_attempts} failed {last_error} url={url}')
+        except Exception as exc:
+            last_error = f'exception={exc}'
+            print(f'[{context_label}] attempt={attempt}/{max_attempts} failed {last_error} url={url}')
+
+    return None, None, last_error or 'unknown_fetch_failure'
+
+
+def _boxingscene_fetch_detail_bouts(session, detail_url):
+    resp, body, error = _boxingscene_get_with_retries(
+        session,
+        detail_url,
+        'BOXINGSCENE DETAIL',
+        timeout_seconds=12,
+        max_attempts=2,
+        min_body_length=500,
+    )
+    if not resp:
+        print(f'[BOXINGSCENE DETAIL] failed url={detail_url} reason={error}')
+        return []
+
+    try:
+        soup = BeautifulSoup(body, 'html.parser')
+        strings = [s for s in soup.stripped_strings]
+        return _boxingscene_extract_bouts_from_strings(strings)
+    except Exception as exc:
+        print(f'[BOXINGSCENE DETAIL] parse_exception url={detail_url} error={exc}')
+        return []
+
+
+def _boxingscene_extract_records_from_jsonld(soup, schedule_url):
+    records = []
+    failure_reasons = {
+        'jsonld_invalid': 0,
+        'jsonld_missing_title': 0,
+        'jsonld_invalid_date': 0,
+    }
+    candidates = []
+
+    def append_if_event(item):
+        if isinstance(item, dict) and str(item.get('@type', '')).lower() == 'sportsevent':
+            candidates.append(item)
+
+    for script in soup.find_all('script', {'type': 'application/ld+json'}):
+        raw = (script.string or script.get_text() or '').strip()
+        if not raw:
+            continue
+        try:
+            data = json.loads(raw)
+        except Exception:
+            failure_reasons['jsonld_invalid'] += 1
+            continue
+
+        objects = data if isinstance(data, list) else [data]
+        for obj in objects:
+            if not isinstance(obj, dict):
+                continue
+            append_if_event(obj)
+            main_entity = obj.get('mainEntity')
+            if isinstance(main_entity, dict):
+                append_if_event(main_entity)
+                item_list = main_entity.get('itemListElement')
+                if isinstance(item_list, list):
+                    for entry in item_list:
+                        append_if_event(entry)
+
+    for event in candidates:
+        event_title = _boxingscene_normalize_title(event.get('name'))
+        if not event_title:
+            failure_reasons['jsonld_missing_title'] += 1
+            continue
+
+        date_normalized = _boxingscene_normalize_date(event.get('startDate'))
+        if not date_normalized:
+            failure_reasons['jsonld_invalid_date'] += 1
+            continue
+
+        detail_url = event.get('url') or schedule_url
+        if isinstance(detail_url, str) and detail_url.startswith('/'):
+            detail_url = f'https://www.boxingscene.com{detail_url}'
+        if not isinstance(detail_url, str) or not detail_url:
+            detail_url = schedule_url
+
+        city = None
+        region = None
+        country = None
+        venue = None
+
+        location = event.get('location')
+        if isinstance(location, dict):
+            venue = _boxingscene_clean_text(location.get('name')) or None
+            address = location.get('address')
+            if isinstance(address, dict):
+                city, region, country = _boxingscene_normalize_jsonld_address(address)
+            elif isinstance(address, str):
+                city, region, country = _boxingscene_parse_location(address)
+
+        bouts = []
+        competitors = event.get('competitor')
+        if isinstance(competitors, list):
+            names = []
+            for competitor in competitors:
+                if isinstance(competitor, dict):
+                    name = _boxingscene_normalize_title(competitor.get('name'))
+                    if name:
+                        names.append(name)
+            for idx in range(0, len(names) - 1, 2):
+                bouts.append(f"{names[idx]} vs {names[idx + 1]}")
+
+        records.append({
+            'promotion': 'Boxing',
+            'event_name': event_title,
+            'date': date_normalized,
+            'city': city,
+            'region': region,
+            'country': country,
+            'venue': venue,
+            'bouts': bouts,
+            'source_url': detail_url,
+            'source_type': 'trusted_schedule_aggregator',
+            'source_confidence': 70,
+            'last_seen_at': now_iso(),
+        })
+
+    return records, failure_reasons, len(candidates)
+
+
+def _parse_boxingscene_schedule_html(body, schedule_url):
+    soup = BeautifulSoup(body, 'html.parser')
+    month_re = r'(January|February|March|April|May|June|July|August|September|October|November|December)'
+    date_patterns = [
+        re.compile(rf'\b({month_re}\s+\d{{1,2}},\s+\d{{4}})\b', re.I),
+        re.compile(rf'\b({month_re}\s+\d{{1,2}}\s+\d{{4}})\b', re.I),
+        re.compile(r'\b(\d{4}-\d{2}-\d{2})\b'),
+    ]
+    selectors = ['article', 'li', 'tr', 'div.schedule-item', 'div.event', 'div.card']
+    candidate_nodes = []
+    for selector in selectors:
+        candidate_nodes.extend(soup.select(selector))
+    if not candidate_nodes:
+        candidate_nodes = soup.find_all(['article', 'li', 'tr', 'div'])
+
+    retained_records = []
+    attempted_nodes = 0
+    failure_reasons = {
+        'no_candidate_nodes': 0,
+        'missing_date': 0,
+        'invalid_date': 0,
+        'missing_title': 0,
+    }
+
+    structured_records, structured_failure_reasons, structured_candidates = _boxingscene_extract_records_from_jsonld(soup, schedule_url)
+    retained_records.extend(structured_records)
+
+    if not candidate_nodes:
+        failure_reasons['no_candidate_nodes'] += 1
+
+    for node in candidate_nodes:
+        attempted_nodes += 1
+        node_text = _boxingscene_clean_text(node.get_text(' ', strip=True))
+        if len(node_text) < 20:
+            continue
+
+        date_raw = None
+        for pattern in date_patterns:
+            match = pattern.search(node_text)
+            if match:
+                date_raw = match.group(1)
+                break
+        if not date_raw:
+            failure_reasons['missing_date'] += 1
+            continue
+
+        date_normalized = _boxingscene_normalize_date(date_raw)
+        if not date_normalized:
+            failure_reasons['invalid_date'] += 1
+            continue
+
+        event_title = None
+        for tag_name in ('h1', 'h2', 'h3', 'h4', 'strong'):
+            heading = node.find(tag_name)
+            if not heading:
+                continue
+            event_title = _boxingscene_normalize_title(heading.get_text(' ', strip=True))
+            if event_title:
+                break
+        if not event_title:
+            anchor = node.find('a', href=True)
+            if anchor:
+                event_title = _boxingscene_normalize_title(anchor.get_text(' ', strip=True))
+        if not event_title:
+            left_side = _boxingscene_normalize_title(node_text.split(date_raw)[0])
+            right_side = _boxingscene_normalize_title(node_text.split(date_raw)[-1])
+            event_title = left_side or right_side
+        if not event_title:
+            failure_reasons['missing_title'] += 1
+            continue
+
+        detail_url = schedule_url
+        anchor = node.find('a', href=True)
+        if anchor and anchor.get('href'):
+            href = anchor.get('href').strip()
+            if href.startswith('http'):
+                detail_url = href
+            elif href.startswith('/'):
+                detail_url = f'https://www.boxingscene.com{href}'
+
+        location_text = None
+        location_node = node.select_one('.location, .event-location, .venue')
+        if location_node:
+            location_text = location_node.get_text(' ', strip=True)
+        else:
+            location_match = re.search(r'\b([A-Za-z][A-Za-z .\'\-]+,\s*[A-Za-z][A-Za-z .\'\-]+(?:,\s*[A-Za-z][A-Za-z .\'\-]+)?)\b', node_text)
+            if location_match:
+                location_text = location_match.group(1)
+        city, region, country = _boxingscene_parse_location(location_text)
+
+        bouts = _boxingscene_extract_bouts_from_strings(node.stripped_strings)
+        record = {
+            'promotion': 'Boxing',
+            'event_name': event_title,
+            'date': date_normalized,
+            'city': city,
+            'region': region,
+            'country': country,
+            'venue': None,
+            'bouts': bouts,
+            'source_url': detail_url,
+            'source_type': 'trusted_schedule_aggregator',
+            'source_confidence': 70,
+            'last_seen_at': now_iso(),
+        }
+        if len(retained_records) < 3:
+            print(f"[BOXINGSCENE RETAINED] event_name={event_title!r} date_raw={date_raw!r} date_normalized={date_normalized!r} detail_url={detail_url!r}")
+        retained_records.append(record)
+
+    deduped = {}
+    for rec in retained_records:
+        key = f"{rec.get('promotion', '').strip().lower()}__{(rec.get('event_name') or '').strip().lower()}__{rec.get('date') or ''}"
+        if key and key not in deduped:
+            deduped[key] = rec
+
+    unique_records = list(deduped.values())
+    parse_diag = {
+        'attempted_nodes': attempted_nodes,
+        'attempted': len(retained_records),
+        'records_built': len(unique_records),
+        'failure_reasons': failure_reasons,
+        'structured_candidates': structured_candidates,
+        'structured_records_built': len(structured_records),
+        'structured_failure_reasons': structured_failure_reasons,
+    }
+    return unique_records, parse_diag
+
+
 def fetch_and_parse_boxingscene_events(session, diagnostics):
     """
     BoxingScene schedule extraction: index-first, trusted aggregator, never overwrite official-source records.
     """
     BOXINGSCENE_URL = 'https://www.boxingscene.com/schedule'
-    from bs4 import BeautifulSoup
-    from datetime import datetime, timezone
-    import re
-    def now_iso():
-        return datetime.now(timezone.utc).isoformat()
     adapter_diag = {
         'source': 'boxingscene',
         'adapter_entry': now_iso(),
@@ -1111,72 +1474,51 @@ def fetch_and_parse_boxingscene_events(session, diagnostics):
         'status': None,
         'detail': {},
     }
-    try:
-        resp = session.get(BOXINGSCENE_URL, timeout=15)
-        body = resp.text
-        adapter_diag['fetch_status_code'] = resp.status_code
-        adapter_diag['fetch_length'] = len(body)
-        if resp.status_code != 200 or len(body) < 2000:
-            adapter_diag['status'] = 'fetch_failed'
-            diagnostics.append(adapter_diag)
-            print('[BOXINGSCENE FETCH] Fetch failed or body too small')
-            return [], diagnostics
-    except Exception as e:
+    resp, body, error = _boxingscene_get_with_retries(
+        session,
+        BOXINGSCENE_URL,
+        'BOXINGSCENE FETCH',
+        timeout_seconds=12,
+        max_attempts=3,
+        min_body_length=2000,
+    )
+    if not resp:
         adapter_diag['status'] = 'fetch_failed'
-        adapter_diag['exception'] = str(e)
+        adapter_diag['detail']['explicit_failure_reason'] = f'schedule_fetch_failed reason={error}'
         diagnostics.append(adapter_diag)
-        print(f'[BOXINGSCENE FETCH] Exception: {e}')
+        print(f'[BOXINGSCENE FETCH] failed url={BOXINGSCENE_URL} reason={error}')
         return [], diagnostics
-    soup = BeautifulSoup(body, 'html.parser')
-    retained_records = []
-    # --- PATCH HERE: Extraction logic for event blocks ---
-    # For now, look for plausible event blocks (to be patched with real HTML structure)
-    for div in soup.find_all('div'):
-        txt = div.get_text(separator=' ', strip=True)
-        # Heuristic: look for blocks with a date and a plausible event name
-        m = re.search(r'(\w+ \d{1,2}, \d{4})', txt)
-        if m and len(txt) > 30:
-            date_str = m.group(1)
-            try:
-                dt = datetime.strptime(date_str, '%B %d, %Y')
-                date_normalized = dt.strftime('%Y-%m-%d')
-            except Exception:
-                continue
-            event_name = txt.split(date_str)[-1].strip()[:60]
-            record = {
-                'promotion': 'Boxing',
-                'event_name': event_name,
-                'date': date_normalized,
-                'city': None,
-                'region': None,
-                'country': None,
-                'venue': None,
-                'bouts': [],
-                'source_url': BOXINGSCENE_URL,
-                'source_type': 'trusted_schedule_aggregator',
-                'source_confidence': 70,
-                'last_seen_at': now_iso(),
-            }
-            if len(retained_records) < 3:
-                print(f"[BOXINGSCENE RETAINED] event_name={event_name!r} date={date_normalized!r}")
-            retained_records.append(record)
-    # Deduplicate by event_name+date (never overwrite official sources)
-    deduped = {}
-    for rec in retained_records:
-        key = f"{rec.get('promotion','').strip().lower()}__{(rec.get('event_name') or '').strip().lower()}__{rec.get('date') or ''}"
-        if key and key not in deduped:
-            deduped[key] = rec
-    unique_records = list(deduped.values())
-    adapter_diag['detail']['attempted'] = len(retained_records)
-    adapter_diag['detail']['records_built'] = len(unique_records)
-    adapter_diag['final_records'] = len(unique_records)
-    if unique_records:
+
+    adapter_diag['fetch_status_code'] = resp.status_code
+    adapter_diag['fetch_length'] = len(body)
+
+    records, parse_diag = _parse_boxingscene_schedule_html(body, BOXINGSCENE_URL)
+    adapter_diag['detail'].update(parse_diag)
+
+    detail_enriched = 0
+    for rec in records:
+        if rec.get('bouts'):
+            continue
+        detail_url = rec.get('source_url')
+        if not detail_url or detail_url == BOXINGSCENE_URL:
+            continue
+        detail_bouts = _boxingscene_fetch_detail_bouts(session, detail_url)
+        if detail_bouts:
+            rec['bouts'] = detail_bouts
+            detail_enriched += 1
+    adapter_diag['detail']['detail_pages_enriched'] = detail_enriched
+
+    adapter_diag['final_records'] = len(records)
+    if records:
         adapter_diag['status'] = 'ok'
     else:
         adapter_diag['status'] = 'no_valid_events'
+        adapter_diag['detail']['explicit_failure_reason'] = 'schedule_parsed_but_no_valid_records'
+        print(f"[BOXINGSCENE PARSE] no valid events failure_reasons={adapter_diag['detail'].get('failure_reasons')}")
+
     diagnostics.append(adapter_diag)
     print(f"[BOXINGSCENE ADAPTER] Final diagnostics: {adapter_diag}")
-    return unique_records, diagnostics
+    return records, diagnostics
 
 
 ADAPTERS = {

@@ -21,3 +21,8 @@
 - updated alert/daily/weekly wrappers to refresh notification, verification, and checklist outputs
 - updated ops visibility docs for slice-3 operational assurance workflow
 - no core pipeline behavior changes
+
+## v1.2-source-hardening-slice-1
+- validated BoxingScene adapter as live and bounded (timeout + capped retry + explicit failure diagnostics)
+- hardened JSON-LD location normalization when address fields are partially combined (e.g. region includes country)
+- kept adapter structure intact; no ingestion schema changes
