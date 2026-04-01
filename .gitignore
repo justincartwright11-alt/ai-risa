@@ -14,6 +14,8 @@ ops/logs/
 ops/_slice1_tests/
 ops/dashboard/operator_dashboard.json
 ops/dashboard/operator_dashboard.md
+ops/action_queue/operator_action_queue.json
+ops/action_queue/operator_action_queue.md
 
 # Timestamped run folders are operational outputs
 runs/*
