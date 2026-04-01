@@ -1,12 +1,12 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Run AI-RISA daily health summary aggregation and write ops artifacts.
+    Run AI-RISA weekly health rollup and refresh operator summary.
 #>
 
 param(
     [string]$RepoRoot = 'C:\ai_risa_data',
-    [int]$Hours = 24,
+    [int]$Days = 7,
     [switch]$RefreshOperatorSummary = $true,
     [string]$LogDir = (Join-Path $RepoRoot 'ops\logs')
 )
@@ -69,41 +69,40 @@ if (-not (Test-Path $LogDir)) {
     New-Item -Path $LogDir -ItemType Directory -Force | Out-Null
 }
 
-$logFile = Join-Path $LogDir 'daily_health_summary.log'
+$logFile = Join-Path $LogDir 'weekly_health_rollup.log'
 
 try {
     Push-Location $RepoRoot
 
     $python = Resolve-PythonCommand
 
-    Write-Log -LogFile $logFile -Message '=== AI-RISA Ops: Daily Health Summary ==='
-    Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\generate_daily_health_summary.py --hours $Hours"
+    Write-Log -LogFile $logFile -Message '=== AI-RISA Ops: Weekly Health Rollup ==='
+    Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\generate_weekly_health_rollup.py --days $Days"
 
-    $output = & $python.Exe @($python.PrefixArgs) .\generate_daily_health_summary.py --hours $Hours 2>&1
-    $dailyExit = $LASTEXITCODE
+    $outputWeekly = & $python.Exe @($python.PrefixArgs) .\generate_weekly_health_rollup.py --days $Days 2>&1
+    $weeklyExit = $LASTEXITCODE
 
-    foreach ($line in $output) {
+    foreach ($line in $outputWeekly) {
         Write-Log -LogFile $logFile -Message "  $line"
     }
 
     $operatorExit = 0
     if ($RefreshOperatorSummary) {
         Write-Log -LogFile $logFile -Message "Executing: $($python.Exe) .\generate_operator_summary_artifact.py"
-        $operatorOutput = & $python.Exe @($python.PrefixArgs) .\generate_operator_summary_artifact.py 2>&1
+        $outputOperator = & $python.Exe @($python.PrefixArgs) .\generate_operator_summary_artifact.py 2>&1
         $operatorExit = $LASTEXITCODE
 
-        foreach ($line in $operatorOutput) {
+        foreach ($line in $outputOperator) {
             Write-Log -LogFile $logFile -Message "  $line"
         }
     }
 
-    $exitCode = if ($dailyExit -ne 0) { $dailyExit } else { $operatorExit }
-
-    Write-Log -LogFile $logFile -Message "Exit code: $exitCode"
+    $finalExit = if ($weeklyExit -ne 0) { $weeklyExit } else { $operatorExit }
+    Write-Log -LogFile $logFile -Message "Exit code: $finalExit"
     Write-Log -LogFile $logFile -Message '=== Execution complete ==='
 
     Pop-Location
-    exit $exitCode
+    exit $finalExit
 }
 catch {
     Write-Log -LogFile $logFile -Message "ERROR: $_"

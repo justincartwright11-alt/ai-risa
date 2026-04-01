@@ -9,6 +9,7 @@
     Creates additive monitoring tasks only:
     - AI-RISA-Latest-Run-Alert-Check (repeating interval)
     - AI-RISA-Daily-Health-Summary (daily)
+    - AI-RISA-Weekly-Health-Rollup (weekly)
 
     These tasks are read-only against pipeline outputs and do not modify
     existing production pipeline tasks.
@@ -20,6 +21,8 @@ param(
     [string]$Username = 'SYSTEM',
     [int]$AlertIntervalMinutes = 30,
     [string]$DailySummaryTime = '06:30',
+    [string]$WeeklyRollupDay = 'Sunday',
+    [string]$WeeklyRollupTime = '07:00',
     [switch]$Enable,
     [switch]$Disable,
     [switch]$Remove,
@@ -42,6 +45,14 @@ $tasks = @(
         Launcher = Join-Path $RepoRoot 'schedule_daily_health_summary.ps1'
         Kind = 'daily'
         Time = $DailySummaryTime
+    },
+    @{
+        Name = 'AI-RISA-Weekly-Health-Rollup'
+        Description = 'Generates weekly health rollup and refreshes operator summary.'
+        Launcher = Join-Path $RepoRoot 'schedule_weekly_health_rollup.ps1'
+        Kind = 'weekly'
+        Day = $WeeklyRollupDay
+        Time = $WeeklyRollupTime
     }
 )
 
@@ -92,6 +103,11 @@ function Build-Trigger {
 
     $hour = [int]$timeParts[0]
     $minute = [int]$timeParts[1]
+
+    if ($Task.Kind -eq 'weekly') {
+        return New-ScheduledTaskTrigger -Weekly -WeeksInterval 1 -DaysOfWeek $Task.Day -At "$($hour):$($minute.ToString('00'))"
+    }
+
     return New-ScheduledTaskTrigger -Daily -At "$($hour):$($minute.ToString('00'))"
 }
 
@@ -139,6 +155,9 @@ function Register-VisibilityTask {
         Write-Host "  Launcher: $($Task.Launcher)"
         if ($Task.Kind -eq 'interval') {
             Write-Host "  Schedule: Every $AlertIntervalMinutes minutes"
+        }
+        elseif ($Task.Kind -eq 'weekly') {
+            Write-Host "  Schedule: Weekly on $($Task.Day) at $($Task.Time)"
         }
         else {
             Write-Host "  Schedule: Daily at $($Task.Time)"
