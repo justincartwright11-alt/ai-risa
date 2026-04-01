@@ -179,6 +179,12 @@
 - added blocker fields for blocker state, blocker category, blocker source, blocking condition, required resolution, required operator role, rollback references, and governance-only blocker notes
 - added runtime-generated execution blocker registry artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
 
+## v3.3-controlled-execution-ineligibility-register-slice-1
+- added a read-only controlled execution ineligibility register generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, dry-run plans, authorization records, execution intents, preflight records, readiness decisions, execution policy, execution enablement criteria, and execution blocker registry
+- added a normalized ineligibility classification per proposal consolidating ineligibility class, ineligibility reason, required resolution path, and blocker registry references
+- added ineligibility fields for ineligibility state, ineligibility class, ineligibility reason, required resolution path, required operator role, rollback references, blocker registry refs, and governance-only ineligibility notes
+- added runtime-generated execution ineligibility register artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
