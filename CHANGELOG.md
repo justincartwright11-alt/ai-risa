@@ -21,3 +21,33 @@
 - updated alert/daily/weekly wrappers to refresh notification, verification, and checklist outputs
 - updated ops visibility docs for slice-3 operational assurance workflow
 - no core pipeline behavior changes
+
+## v1.2-source-hardening-slice-1
+- validated BoxingScene adapter as live and bounded (timeout + capped retry + explicit failure diagnostics)
+- hardened JSON-LD location normalization when address fields are partially combined (e.g. region includes country)
+- kept adapter structure intact; no ingestion schema changes
+
+## v1.2-source-hardening-slice-2
+- hardened dependency resolver fighter extraction for canonical and alternate bout shapes (`fighter_1/2`, `fighters[]`, matchup text)
+- added explicit unresolved diagnostics for missing or partial fighter identity resolution
+- preserved existing resolver/queue summary schema and downstream stage contracts
+
+## v1.2-source-hardening-slice-3
+- hardened queue builder handling for unresolved and partial enrichment states from resolver outputs
+- added explicit queue-build diagnostics for unresolved fighter identity, partial identity, and unresolved matchup mapping
+- prevented insufficiently enriched rows from silent queue promotion while preserving queue row compatibility for valid fights
+
+## v1.2-source-hardening-slice-4
+- standardized unresolved/partial reason-code wording across resolver and queue-build warning surfaces
+- added coherent insufficient-enrichment count/reporting in resolver summary
+- added queue-build reason-code tally for operator visibility while preserving existing summary contracts
+
+## v1.2-source-hardening-slice-5
+- hardened full-pipeline summary propagation to surface resolver and queue-build unresolved/partial/insufficient-enrichment diagnostics at top level
+- added additive operator-facing enrichment diagnostic warnings and count rollups in full-pipeline summary output
+- preserved canonical stage contracts and run behavior (no scheduler or execution semantic changes)
+
+## v1.2-source-hardening-stabilization-defects
+- fixed schedule normalization crash path when upstream bout entries are strings rather than dict objects
+- fixed queue-run non-zero failures caused by Windows-invalid prediction output filenames derived from unsanitized IDs
+- kept stabilization scope narrow (no schema or scheduler changes)

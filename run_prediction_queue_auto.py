@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import re
 from datetime import datetime
 
 
@@ -16,11 +17,26 @@ def log(msg, *args, verbose=False, always=False, file=None):
         print(msg.format(*args), flush=True, file=file)
 
 
+def safe_prediction_filename(prediction_id):
+    text = str(prediction_id or '').strip()
+    if not text:
+        return None
+    # Keep output path Windows-safe while preserving prediction_id inside payload/summary rows.
+    text = re.sub(r'[<>:"/\\|?*]+', '_', text)
+    text = re.sub(r'\s+', '_', text)
+    text = re.sub(r'_+', '_', text).strip('._')
+    return text or None
+
+
 def generate_prediction(event_id, bout_id, fighter_1_id, fighter_2_id, matchup_id, prediction_id):
     if not (fighter_1_id and fighter_2_id and matchup_id):
         return None, "prediction_skipped_missing_dependency"
 
-    pred_path = os.path.join(PREDICTIONS_DIR, f"{prediction_id}.json")
+    safe_name = safe_prediction_filename(prediction_id)
+    if not safe_name:
+        return None, "prediction_skipped_missing_dependency"
+
+    pred_path = os.path.join(PREDICTIONS_DIR, f"{safe_name}.json")
     if os.path.exists(pred_path):
         return pred_path, "prediction_already_exists"
 

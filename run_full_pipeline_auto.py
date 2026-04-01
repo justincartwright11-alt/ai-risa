@@ -110,7 +110,7 @@ def run_stage(stage_name, script, summary_paths, args):
             "finished_at": datetime.now().isoformat(),
             "exit_code": 0,
             "command": " ".join(cmd),
-            "summary_paths": [],
+            "summary_paths": summary_paths,
             "details": {
                 "stdout": "",
                 "stderr": "",
@@ -187,6 +187,67 @@ def existing_paths(paths):
     return [p for p in paths if p and os.path.exists(p)]
 
 
+def load_stage_summary_json(summary_paths):
+    for path in summary_paths or []:
+        if str(path).lower().endswith(".json") and os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+                if isinstance(payload, dict):
+                    return payload
+            except Exception:
+                continue
+    return None
+
+
+def propagate_enrichment_diagnostics(summary, stage_name, stage_payload):
+    if not isinstance(stage_payload, dict):
+        return
+    counts = stage_payload.get("counts", {})
+    if not isinstance(counts, dict):
+        return
+
+    details = summary.setdefault("details", {})
+    diag = details.setdefault("enrichment_diagnostics", {})
+
+    if stage_name == "resolver":
+        resolver_counts = {
+            "unresolved_missing_fighters": int(counts.get("unresolved_missing_fighters", 0) or 0),
+            "unresolved_partial_fighters": int(counts.get("unresolved_partial_fighters", 0) or 0),
+            "insufficient_enrichment": int(counts.get("insufficient_enrichment", 0) or 0),
+            "skipped_tba": int(counts.get("skipped_tba", 0) or 0),
+        }
+        diag["resolver"] = resolver_counts
+        summary.setdefault("counts", {})["resolver_unresolved_missing_fighters"] = resolver_counts["unresolved_missing_fighters"]
+        summary.setdefault("counts", {})["resolver_unresolved_partial_fighters"] = resolver_counts["unresolved_partial_fighters"]
+        summary.setdefault("counts", {})["resolver_insufficient_enrichment"] = resolver_counts["insufficient_enrichment"]
+
+    if stage_name == "queue_build":
+        queue_counts = {
+            "excluded_unresolved_fighter_identity": int(counts.get("excluded_unresolved_fighter_identity", 0) or 0),
+            "excluded_partial_fighter_identity": int(counts.get("excluded_partial_fighter_identity", 0) or 0),
+            "excluded_unresolved_matchup_mapping": int(counts.get("excluded_unresolved_matchup_mapping", 0) or 0),
+            "excluded_insufficient_enrichment": int(counts.get("excluded_insufficient_enrichment", 0) or 0),
+        }
+        diag["queue_build"] = queue_counts
+        summary.setdefault("counts", {})["queue_excluded_unresolved_fighter_identity"] = queue_counts["excluded_unresolved_fighter_identity"]
+        summary.setdefault("counts", {})["queue_excluded_partial_fighter_identity"] = queue_counts["excluded_partial_fighter_identity"]
+        summary.setdefault("counts", {})["queue_excluded_unresolved_matchup_mapping"] = queue_counts["excluded_unresolved_matchup_mapping"]
+        summary.setdefault("counts", {})["queue_excluded_insufficient_enrichment"] = queue_counts["excluded_insufficient_enrichment"]
+
+    # Add operator-facing warnings only when non-zero to avoid noisy summaries.
+    for reason, count in (diag.get(stage_name, {}) or {}).items():
+        if count > 0:
+            summary.setdefault("warnings", []).append(
+                {
+                    "stage": stage_name,
+                    "type": "enrichment_diagnostic",
+                    "reason": reason,
+                    "count": count,
+                }
+            )
+
+
 def main():
     args = parse_args()
     verbose = args.verbose
@@ -211,6 +272,11 @@ def main():
         for stage_name, script, summary_paths in STAGES:
             stage_result = run_stage(stage_name, script, summary_paths, args)
             stage_result["summary_paths"] = existing_paths(stage_result.get("summary_paths", []))
+
+            stage_summary_payload = load_stage_summary_json(stage_result["summary_paths"])
+            if stage_summary_payload and stage_name in {"resolver", "queue_build"}:
+                propagate_enrichment_diagnostics(summary, stage_name, stage_summary_payload)
+
             summary["details"]["stages"].append(stage_result)
             summary["artifacts"].extend(stage_result["summary_paths"])
 
@@ -251,6 +317,21 @@ def main():
             "stages_soft_skipped": sum(1 for s in stages if s["status"] == "soft_skip"),
             "stages_failed": sum(1 for s in stages if s["status"] == "failed"),
         }
+
+        enrichment_diag = summary.get("details", {}).get("enrichment_diagnostics", {})
+        resolver_diag = enrichment_diag.get("resolver", {}) if isinstance(enrichment_diag, dict) else {}
+        queue_diag = enrichment_diag.get("queue_build", {}) if isinstance(enrichment_diag, dict) else {}
+        summary["counts"].update(
+            {
+                "resolver_unresolved_missing_fighters": int(resolver_diag.get("unresolved_missing_fighters", 0) or 0),
+                "resolver_unresolved_partial_fighters": int(resolver_diag.get("unresolved_partial_fighters", 0) or 0),
+                "resolver_insufficient_enrichment": int(resolver_diag.get("insufficient_enrichment", 0) or 0),
+                "queue_excluded_unresolved_fighter_identity": int(queue_diag.get("excluded_unresolved_fighter_identity", 0) or 0),
+                "queue_excluded_partial_fighter_identity": int(queue_diag.get("excluded_partial_fighter_identity", 0) or 0),
+                "queue_excluded_unresolved_matchup_mapping": int(queue_diag.get("excluded_unresolved_matchup_mapping", 0) or 0),
+                "queue_excluded_insufficient_enrichment": int(queue_diag.get("excluded_insufficient_enrichment", 0) or 0),
+            }
+        )
         if summary["errors"]:
             summary["status"] = "error"
             exit_code = 1
