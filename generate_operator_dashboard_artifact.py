@@ -299,7 +299,7 @@ def int_or_none(value: Any) -> int | None:
         return None
 
 
-def build_change_snapshot(repo_root: Path, current_full_summary: dict[str, Any] | None) -> dict[str, Any]:
+def build_change_snapshot(repo_root: Path) -> dict[str, Any]:
     runs = get_recent_runs(repo_root)
     if len(runs) < 2:
         return {
@@ -319,16 +319,14 @@ def build_change_snapshot(repo_root: Path, current_full_summary: dict[str, Any] 
             "previous_run_id": previous_run.get("timestamp"),
         }
 
-    latest_summary = current_full_summary
+    latest_summary, latest_err = get_run_summary(repo_root, latest_run)
     if latest_summary is None:
-        latest_summary, latest_err = get_run_summary(repo_root, latest_run)
-        if latest_summary is None:
-            return {
-                "available": False,
-                "reason": f"latest_summary_{latest_err or 'unavailable'}",
-                "latest_run_id": latest_run.get("timestamp"),
-                "previous_run_id": previous_run.get("timestamp"),
-            }
+        return {
+            "available": False,
+            "reason": f"latest_summary_{latest_err or 'unavailable'}",
+            "latest_run_id": latest_run.get("timestamp"),
+            "previous_run_id": previous_run.get("timestamp"),
+        }
 
     latest_counts = latest_summary.get("counts") if isinstance(latest_summary.get("counts"), dict) else {}
     previous_counts = previous_summary.get("counts") if isinstance(previous_summary.get("counts"), dict) else {}
@@ -514,10 +512,7 @@ def build_dashboard_payload(repo_root: Path) -> dict[str, Any]:
             )
 
     source_health = summarize_source_health(source_summaries)
-    change_snapshot = build_change_snapshot(
-        repo_root,
-        full_summary if isinstance(full_summary, dict) else None,
-    )
+    change_snapshot = build_change_snapshot(repo_root)
     prioritized_actions = build_prioritized_actions(
         latest_pipeline_snapshot,
         warning_readability,
