@@ -128,6 +128,11 @@
 - added validation-manifest defaults for pending validation, simulation-only scope, required test classes/metrics, pass criteria, rollback requirements, and blocked application readiness
 - added runtime-generated validation-manifest artifacts in JSON and Markdown without model mutation, execution promotion, or pipeline/scheduler changes
 
+## v2.3-adjustment-application-gates-slice-1
+- added a read-only model-adjustment application-gate generator derived from proposals, approval-ledger state, and validation-manifest state
+- added conservative gate classification output (`blocked`, `conditionally_eligible`, `eligible_for_controlled_application`) with gate decisions, reasons, pre-application checks, and operator-role requirements
+- added runtime-generated application-gate artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state

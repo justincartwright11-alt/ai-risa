@@ -36,6 +36,8 @@ ops/model_adjustments/model_adjustment_approval_ledger.json
 ops/model_adjustments/model_adjustment_approval_ledger.md
 ops/model_adjustments/model_adjustment_validation_manifests.json
 ops/model_adjustments/model_adjustment_validation_manifests.md
+ops/model_adjustments/model_adjustment_application_gates.json
+ops/model_adjustments/model_adjustment_application_gates.md
 
 # Timestamped run folders are operational outputs
 runs/*
