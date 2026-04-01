@@ -28,6 +28,8 @@ ops/calibration/model_calibration_report.json
 ops/calibration/model_calibration_report.md
 ops/calibration_actions/calibration_action_queue.json
 ops/calibration_actions/calibration_action_queue.md
+ops/calibration_interventions/calibration_intervention_plan.json
+ops/calibration_interventions/calibration_intervention_plan.md
 
 # Timestamped run folders are operational outputs
 runs/*
