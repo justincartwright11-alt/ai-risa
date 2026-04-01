@@ -143,6 +143,11 @@
 - added rehearsal-layer fields for ordered dry-run steps, checkpoint sequence, preconditions, abort conditions, expected observations, operator role, and conservative dry-run readiness
 - added runtime-generated controlled application dry-run artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
 
+## v2.6-controlled-application-authorizations-slice-1
+- added a read-only controlled application authorization generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, and dry-run plans
+- added authorization-layer fields for authorization state, signoff requirements, authorization windows/expiry, final pre-execution conditions, and conservative execution authority defaults
+- added runtime-generated controlled application authorization artifacts in JSON and Markdown without model mutation, auto-authorization, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
