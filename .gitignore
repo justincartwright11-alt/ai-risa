@@ -16,6 +16,9 @@ ops/dashboard/operator_dashboard.json
 ops/dashboard/operator_dashboard.md
 ops/action_queue/operator_action_queue.json
 ops/action_queue/operator_action_queue.md
+ops/action_queue/operator_action_state.json
+ops/action_queue/operator_action_worklist.json
+ops/action_queue/operator_action_worklist.md
 
 # Timestamped run folders are operational outputs
 runs/*
