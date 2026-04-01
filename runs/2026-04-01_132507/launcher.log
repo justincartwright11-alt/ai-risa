@@ -1,0 +1,7 @@
+﻿[2026-04-01 13:25:08] === AI-RISA Pipeline: NORMAL RUN ===
+[2026-04-01 13:25:08] Start time: 2026-04-01 13:25:08
+[2026-04-01 13:25:08] Run folder: C:\ai_risa_data\runs\2026-04-01_132507
+[2026-04-01 13:25:08] Formats: md docx pdf
+[2026-04-01 13:25:08] ERROR: Python runtime not found. Install python/py launcher or set AI_RISA_PYTHON.
+[2026-04-01 13:25:09] Stack: at Resolve-PythonCommand, C:\ai_risa_data\schedule_full_pipeline_run.ps1: line 92
+at <ScriptBlock>, C:\ai_risa_data\schedule_full_pipeline_run.ps1: line 107

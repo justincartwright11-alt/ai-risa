@@ -1,0 +1,9 @@
+{
+  "fighters": ["Sam Goodman", "Rodrigo Fabian Ruiz"],
+  "weight_class": "Junior Featherweight",
+  "scheduled_rounds": 10,
+  "title_fight": false,
+  "event_date": "2026-04-05",
+  "venue": "Wollongong, Australia",
+  "notes": "Co-main. Goodman rising, Ruiz experienced."
+}

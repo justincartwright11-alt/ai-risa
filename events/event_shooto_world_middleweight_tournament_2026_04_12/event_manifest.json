@@ -1,0 +1,12 @@
+{
+  "event_id": "event_shooto_world_middleweight_tournament_2026_04_12",
+  "event_name": "Shooto World Middleweight Championship Tournament (Semi-Finals)",
+  "date": "2026-04-12",
+  "location": "Korakuen Hall, Tokyo, Japan",
+  "promotion": "Shooto",
+  "sport": "mma",
+  "ruleset": "Shooto MMA",
+  "status": "pending",
+  "runner_type": "generic",
+  "fights": []
+}

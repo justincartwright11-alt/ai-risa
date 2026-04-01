@@ -1,0 +1,110 @@
+[MARKER] module_top
+[BOOT] __file__=C:\Users\jusin\run_single_fight_premium_report.py
+[BOOT] cwd=C:\Users
+[BOOT] argv=['C:\\Users\\jusin\\run_single_fight_premium_report.py', '--sensitivity', 'amplified', '--output', 'C:\\ai_risa_data\\amplified_run.json']
+[BOOT] runner_version=patched_cli_trace_v1
+
+======================================================================
+AI-RISA v100 CONFIGURATION VALIDATION
+======================================================================
+
+[OK] Device: cpu
+[OK] GPU: N/A
+[OK] FP16/AMP: True
+[OK] Batch Size: 16 (max: 32)
+[OK] VRAM Budget: 4.4 GB usable
+[OK] Decision Latency Target: 50ms
+[OK] Frame Analysis Target: 33ms (30 FPS)
+
+======================================================================
+[OK] Configuration validated. Ready for v100 deployment.
+======================================================================
+
+[MARKER] main_top
+[TRACE] ai_risa_v100_core_file=C:\Users\jusin\ai_risa_v100_core.py
+[TRACE] main:start
+[TRACE] args:about_to_parse
+[TRACE] args:parsed
+[TRACE] runner:before_pipeline_call
+[TRACE] live_run_event_card_pipeline_module=ai_risa_models
+[TRACE] live_run_event_card_pipeline_file=C:\Users\jusin\ai_risa_models.py
+[MARKER] RUN_EVENT_CARD_PIPELINE_LIVE
+[TRACE] pipeline:fight_list_len=1
+[TRACE] pipeline:before_loop
+[TRACE] pipeline:loop_enter matchup_id=pereira_vs_adesanya_2
+[TRACE] pipeline:engine_call:start matchup_id=pereira_vs_adesanya_2
+[TRACE] engine_call_kwargs confidence_scale=1.0 stoppage_sensitivity=1.0 late_fatigue_bias=1.0 judge_decision_bias=1.0
+[TRACE] engine_adapter kwargs confidence_scale=1.0 stoppage_sensitivity=1.0 late_fatigue_bias=1.0 judge_decision_bias=1.0 extra={}
+[TRACE] engine_adapter matchup_type=Matchup matchup_id=None
+[TRACE] profile_lookup fighter_a_key=alex_pereira fighter_b_key=israel_adesanya
+[TRACE] engine:prob_gap=0.8839999999999992
+[TRACE] engine:debug:init id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 0.0, 'adjusted_stoppage_bias': 0.0, 'method_selection_source': None}
+[TRACE] engine:power_edge=7
+[TRACE] engine:conditioning_edge=0.0
+[TRACE] engine:mental_edge=-8.5
+[TRACE] sim_loop:start sim=0
+[TRACE] engine:debug:init sim=0 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 0.0, 'adjusted_stoppage_bias': 0.0, 'method_selection_source': None}
+[MARKER] INFER_METHOD_AND_ROUND_LIVE
+[TRACE] infer_method stoppage_sensitivity=1.0
+[TRACE] infer_method base_stoppage_bias=4.6152
+[TRACE] infer_method adjusted_stoppage_bias=1.0
+[TRACE] infer:debug_written id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path'}
+[TRACE] engine:debug:after_infer sim=0 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path'} method=Stoppage round=mid
+[TRACE] engine:winner sim=0 value=Win_A
+[TRACE] sim_loop:end sim=0
+[TRACE] sim_loop:start sim=1
+[TRACE] engine:debug:init sim=1 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[MARKER] INFER_METHOD_AND_ROUND_LIVE
+[TRACE] infer_method stoppage_sensitivity=1.0
+[TRACE] infer_method base_stoppage_bias=4.6152
+[TRACE] infer_method adjusted_stoppage_bias=1.0
+[TRACE] infer:debug_written id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[TRACE] engine:debug:after_infer sim=1 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'} method=Stoppage round=mid
+[TRACE] engine:winner sim=1 value=Win_A
+[TRACE] sim_loop:end sim=1
+[TRACE] sim_loop:start sim=2
+[TRACE] engine:debug:init sim=2 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[MARKER] INFER_METHOD_AND_ROUND_LIVE
+[TRACE] infer_method stoppage_sensitivity=1.0
+[TRACE] infer_method base_stoppage_bias=4.6152
+[TRACE] infer_method adjusted_stoppage_bias=1.0
+[TRACE] infer:debug_written id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[TRACE] engine:debug:after_infer sim=2 id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'} method=Stoppage round=mid
+[TRACE] engine:winner sim=2 value=Win_A
+[TRACE] sim_loop:end sim=2
+[MARKER] INFER_METHOD_AND_ROUND_LIVE
+[TRACE] infer_method stoppage_sensitivity=1.0
+[TRACE] infer_method base_stoppage_bias=4.6152
+[TRACE] infer_method adjusted_stoppage_bias=1.0
+[TRACE] infer:debug_written id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[MARKER] INFER_METHOD_AND_ROUND_LIVE
+[TRACE] infer_method stoppage_sensitivity=1.0
+[TRACE] infer_method base_stoppage_bias=4.6152
+[TRACE] infer_method adjusted_stoppage_bias=1.0
+[TRACE] infer:debug_written id=1424802616704 value={'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}
+[TRACE] sim_loop:complete total=5
+[TRACE] aggregation decision_structure_edge=neutral decision_edge_count_size=0
+[MARKER] DICT_ONLY_PIPELINE_PATH
+[TRACE] generate_prediction_from_engine_payload {'id': 'pred_pereira_vs_adesanya_2', 'matchup_id': 'pereira_vs_adesanya_2', 'fighter_a_id': 'alex_pereira', 'fighter_b_id': 'israel_adesanya', 'predicted_winner_id': 'Alex Pereira', 'confidence': 0.0, 'method': None, 'round': None, 'model_version': 'ai_risa_model_v1.0', 'debug_metrics': {'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}}
+[TRACE] write_prediction_record:called matchup_id=pereira_vs_adesanya_2
+[TRACE] write_prediction_record:path=C:/Users/jusin/ai_risa_data\predictions\pred_pereira_vs_adesanya_2.json
+[TRACE] write_prediction_record:created_at=2026-03-24 00:33:21.309313 updated_at=2026-03-26T09:29:05.308416
+[TRACE] write_prediction_record:debug_metrics_keys=['stoppage_sensitivity_applied', 'base_stoppage_bias', 'adjusted_stoppage_bias', 'method_selection_source', 'selected_method', 'selected_round']
+[TRACE] write_prediction_record:about_to_write
+[TRACE] write_prediction_record:called
+[TRACE] write_prediction_record:path=C:/Users/jusin/ai_risa_data\predictions\pred_pereira_vs_adesanya_2.json
+[TRACE] write_prediction_record:debug_metrics_keys=['stoppage_sensitivity_applied', 'base_stoppage_bias', 'adjusted_stoppage_bias', 'method_selection_source', 'selected_method', 'selected_round']
+[TRACE] write_prediction_record:about_to_write
+[TRACE] write_prediction_record:write_done
+[TRACE] write_prediction_record:write_done
+[TRACE] generator_return_full={'id': 'pred_pereira_vs_adesanya_2', 'source_type': 'single_fight', 'event_id': 'event_single_pereira_adesanya_2', 'matchup_id': 'pereira_vs_adesanya_2', 'fighter_a_id': 'alex_pereira', 'fighter_b_id': 'israel_adesanya', 'fighter_a_name': None, 'fighter_b_name': None, 'model_version': 'ai_risa_model_v1.0', 'template_version': None, 'predicted_winner_id': 'Alex Pereira', 'confidence': 0.0, 'win_probabilities': None, 'method': None, 'round': None, 'created_at': '2026-03-24 00:33:21.309313', 'updated_at': '2026-03-26T09:29:05.308416', 'generated_at': '2026-03-26T09:29:05.308416', 'details': {}, 'calibration_status': 'pending', 'artifact_paths': {}, 'debug_metrics': {'stoppage_sensitivity_applied': 1.0, 'base_stoppage_bias': 4.6152, 'adjusted_stoppage_bias': 1.0, 'method_selection_source': 'finish_path', 'selected_method': 'Stoppage', 'selected_round': 'mid'}}
+[TRACE] pre_validation_predicted_winner_id=Alex Pereira
+[TRACE] written_record_full=None
+[TRACE] runner:final_prediction_record keys=['prediction_id', 'matchup_id', 'predicted_winner_id', 'confidence', 'method', 'round', 'model_version', 'debug_metrics', 'artifact_paths'] source=direct+ledger_fallback
+[TRACE] run_single_fight_return_type=<class 'dict'>
+[TRACE] run_single_fight_return_keys=['prediction_id', 'matchup_id', 'predicted_winner_id', 'confidence', 'method', 'round', 'model_version', 'debug_metrics', 'artifact_paths']
+[TRACE] output_payload_built keys=['prediction_id', 'matchup_id', 'predicted_winner_id', 'confidence', 'method', 'round', 'model_version', 'debug_metrics', 'artifact_paths']
+[TRACE] output_payload_debug_metrics={}
+[TRACE] output_target=C:\ai_risa_data\amplified_run.json
+[TRACE] output_write_done keys=['prediction_id', 'matchup_id', 'predicted_winner_id', 'confidence', 'method', 'round', 'model_version', 'debug_metrics', 'artifact_paths']
+[TRACE] output:stdout:done

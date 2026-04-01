@@ -1,0 +1,299 @@
+{
+  "stage": "dependency_resolution",
+  "status": "success",
+  "started_at": "2026-04-01T11:21:30.074217",
+  "finished_at": "2026-04-01T11:21:30.075894",
+  "counts": {
+    "skipped_tba": 26,
+    "prediction_missing": 2,
+    "already_complete": 1,
+    "processed_events": 11,
+    "processed_bouts": 29
+  },
+  "warnings": [
+    {
+      "type": "skipped_tba",
+      "count": 26
+    }
+  ],
+  "errors": [],
+  "artifacts": [
+    "fighters\\alpha_fighter.json",
+    "fighters\\bravo_fighter.json",
+    "fighters\\charlie_fighter.json",
+    "fighters\\delta_fighter.json",
+    "fighters\\foxtrot_fighter.json",
+    "fighters\\golf_fighter.json",
+    "matchups\\alpha_fighter_vs_bravo_fighter.json",
+    "matchups\\charlie_fighter_vs_delta_fighter.json",
+    "matchups\\foxtrot_fighter_vs_golf_fighter.json",
+    "output/dependency_resolution_summary.csv",
+    "output/dependency_resolution_summary.json",
+    "predictions\\foxtrot_fighter_vs_golf_fighter_prediction.json"
+  ],
+  "details": {
+    "rows": [
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_1",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_2",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_3",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_4",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_5",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_6",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_1",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_2",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_3",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_1",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_2",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_3",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_1",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_2",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_3",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_4",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_5",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b01",
+        "fighter_1": "Alpha Fighter",
+        "fighter_2": "Bravo Fighter",
+        "actions": [
+          "prediction_missing"
+        ]
+      },
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b02",
+        "fighter_1": "Charlie Fighter",
+        "fighter_2": "Delta Fighter",
+        "actions": [
+          "prediction_missing"
+        ]
+      },
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b03",
+        "fighter_1": "TBA",
+        "fighter_2": "Echo Fighter",
+        "actions": [
+          "skipped_tba"
+        ]
+      },
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b04",
+        "fighter_1": "Foxtrot Fighter",
+        "fighter_2": "Golf Fighter",
+        "actions": [
+          "already_complete"
+        ]
+      },
+      {
+        "event_id": "",
+        "bout_id": "idx_0",
+        "fighter_1": null,
+        "fighter_2": null,
+        "actions": [
+          "skipped_tba"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../calibration"
+		},
+		{
+			"path": "../engine"
+		},
+		{
+			"path": "../events"
+		},
+		{
+			"path": "../export_logic"
+		},
+		{
+			"path": "../inetpub"
+		},
+		{
+			"path": "../manifests"
+		},
+		{
+			"path": "../models"
+		},
+		{
+			"path": "../Program Files"
+		},
+		{
+			"path": "../Program Files (x86)"
+		},
+		{
+			"path": "../prompts"
+		},
+		{
+			"path": "../templates"
+		},
+		{
+			"path": "../Users"
+		},
+		{
+			"path": "../Windows"
+		}
+	]
+}

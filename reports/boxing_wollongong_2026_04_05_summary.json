@@ -1,0 +1,19 @@
+{
+  "event": "Boxing: Tszyu vs Nurja",
+  "date": "2026-04-05",
+  "venue": "Wollongong, Australia",
+  "results": {
+    "tszyu_vs_nurja.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/tszyu_vs_nurja_prediction.json"
+    },
+    "goodman_vs_ruiz.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/goodman_vs_ruiz_prediction.json"
+    },
+    "aokuso_vs_hao_ho.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/aokuso_vs_hao_ho_prediction.json"
+    }
+  }
+}

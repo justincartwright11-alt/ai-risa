@@ -1,0 +1,74 @@
+{
+  "event_id": "event_pfl_pittsburgh_eblen_battle",
+  "event_name": "PFL Pittsburgh: Eblen vs. Battle",
+  "date": "2026-03-28",
+  "location": "UPMC Events Center, Moon Township, PA, USA",
+  "promotion": "PFL",
+  "broadcast": [
+    "ESPN+ (USA)",
+    "DAZN (International)"
+  ],
+  "matchups": [
+    {
+      "matchup_id": "johnny_eblen_vs_chris_battle",
+      "fighters": ["Johnny Eblen", "Chris Battle"],
+      "fighter_a": "Johnny Eblen",
+      "fighter_b": "Chris Battle",
+      "fighter_a_id": "fighter_johnny_eblen",
+      "fighter_b_id": "fighter_chris_battle",
+      "weight_class": "Middleweight",
+      "rules": "MMA",
+      "main_event": true
+    },
+    {
+      "matchup_id": "bubba_jenkins_vs_gabriel_braga",
+      "fighters": ["Bubba Jenkins", "Gabriel Braga"],
+      "fighter_a": "Bubba Jenkins",
+      "fighter_b": "Gabriel Braga",
+      "fighter_a_id": "fighter_bubba_jenkins",
+      "fighter_b_id": "fighter_gabriel_braga",
+      "weight_class": "Featherweight",
+      "rules": "MMA"
+    },
+    {
+      "matchup_id": "josh_silveira_vs_dovletdzhan_yagshimuradov",
+      "fighters": ["Josh Silveira", "Dovletdzhan Yagshimuradov"],
+      "fighter_a": "Josh Silveira",
+      "fighter_b": "Dovletdzhan Yagshimuradov",
+      "fighter_a_id": "fighter_josh_silveira",
+      "fighter_b_id": "fighter_dovletdzhan_yagshimuradov",
+      "weight_class": "Light Heavyweight",
+      "rules": "MMA"
+    }
+  ]
+  ,
+  "fights": [
+    {
+      "fighter_a": "Johnny Eblen",
+      "fighter_b": "Chris Battle",
+      "fighter_a_id": "fighter_johnny_eblen",
+      "fighter_b_id": "fighter_chris_battle",
+      "sport": "mma",
+      "ruleset": "Unified",
+      "division": "Middleweight"
+    },
+    {
+      "fighter_a": "Bubba Jenkins",
+      "fighter_b": "Gabriel Braga",
+      "fighter_a_id": "fighter_bubba_jenkins",
+      "fighter_b_id": "fighter_gabriel_braga",
+      "sport": "mma",
+      "ruleset": "Unified",
+      "division": "Featherweight"
+    },
+    {
+      "fighter_a": "Josh Silveira",
+      "fighter_b": "Dovletdzhan Yagshimuradov",
+      "fighter_a_id": "fighter_josh_silveira",
+      "fighter_b_id": "fighter_dovletdzhan_yagshimuradov",
+      "sport": "mma",
+      "ruleset": "Unified",
+      "division": "Light Heavyweight"
+    }
+  ]
+}

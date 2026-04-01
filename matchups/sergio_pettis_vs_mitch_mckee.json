@@ -1,0 +1,6 @@
+{
+  "fighters": ["Sergio Pettis", "Mitch McKee"],
+  "weight_class": "Bantamweight",
+  "main_event": true,
+  "sport": "MMA"
+}

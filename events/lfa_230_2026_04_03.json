@@ -1,0 +1,14 @@
+{
+  "event": "LFA 230: Franklin vs. Ureña",
+  "date": "2026-04-03",
+  "venue": "United States",
+  "watch": "",
+  "description": "Regional MMA main event.",
+  "bouts": [
+    {
+      "fighters": ["Alfonso Franklin", "Jhonoven Ureña"],
+      "weight_class": "Welterweight",
+      "main_event": true
+    }
+  ]
+}

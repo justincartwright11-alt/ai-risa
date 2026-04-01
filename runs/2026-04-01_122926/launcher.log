@@ -1,0 +1,22 @@
+﻿[2026-04-01 12:29:26] === AI-RISA Pipeline: DRY RUN ===
+[2026-04-01 12:29:26] Start time: 2026-04-01 12:29:26
+[2026-04-01 12:29:26] Run folder: C:\ai_risa_data\runs\2026-04-01_122926
+[2026-04-01 12:29:26] Formats: md docx pdf
+[2026-04-01 12:29:26] Mode: dry-run (schedule+batch with --dry-run, others soft-skipped)
+[2026-04-01 12:29:26] Executing: python .\run_full_pipeline_auto.py --dry-run --formats md --formats docx --formats pdf
+[2026-04-01 12:29:26] Pipeline output:
+[2026-04-01 12:29:26]   [DONE] Full pipeline run summary written: output\full_pipeline_run_summary.json, output\full_pipeline_run_summary.csv
+[2026-04-01 12:29:26] Exit code: 0
+[2026-04-01 12:29:26] Collecting artifacts...
+[2026-04-01 12:29:26] Copied: full_pipeline_run_summary.json
+[2026-04-01 12:29:26] Copied: upcoming_auto_summary.json
+[2026-04-01 12:29:26] Copied: dependency_resolution_summary.json
+[2026-04-01 12:29:26] Copied: prediction_queue_build_summary.json
+[2026-04-01 12:29:26] Copied: prediction_queue_run_summary.json
+[2026-04-01 12:29:26] Copied: event_batch_run_summary.json
+[2026-04-01 12:29:26] Copied: upcoming_events_ingest_summary.json
+[2026-04-01 12:29:26] Updating run index...
+[2026-04-01 12:29:27] Run index updated: C:\ai_risa_data\runs\run_history_index.json (2 runs recorded)
+[2026-04-01 12:29:27] === Execution complete ===
+[2026-04-01 12:29:27] End time: 2026-04-01 12:29:27
+[2026-04-01 12:29:27] Status: success

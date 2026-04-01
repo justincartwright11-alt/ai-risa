@@ -1,0 +1,10 @@
+{
+  "event_id": "resolver_test_event_2026_04_01",
+  "bout_id": "resolver_test_event_2026_04_01_b02",
+  "fighter_1_id": "charlie_fighter",
+  "fighter_2_id": "delta_fighter",
+  "matchup_id": "charlie_fighter_vs_delta_fighter",
+  "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b02",
+  "prediction": "TBD",
+  "generated": true
+}

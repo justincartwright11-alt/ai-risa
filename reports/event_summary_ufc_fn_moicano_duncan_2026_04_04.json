@@ -1,0 +1,60 @@
+{
+  "event_id": "ufc_fn_moicano_duncan_2026_04_04",
+  "event_name": "UFC Fight Night \u00e2\u20ac\u201d Moicano vs. Duncan",
+  "date": "2026-04-04",
+  "results": [
+    {
+      "matchup_id": "renato_moicano_vs_chris_duncan",
+      "predicted_winner": "fighter_renato_moicano",
+      "method": "Decision",
+      "confidence": 0.6,
+      "decision_structure": "Standard AI-RISA logic",
+      "energy_use": "Normal",
+      "fatigue_failure_points": "Late rounds",
+      "mental_condition": "Stable",
+      "collapse_triggers": "High pressure",
+      "main_tactical_edge": "Technical advantage",
+      "round_flow_projection": "Likely to go full rounds"
+    },
+    {
+      "matchup_id": "virna_jandiroba_vs_tabatha_ricci",
+      "predicted_winner": "fighter_virna_jandiroba",
+      "method": "Decision",
+      "confidence": 0.6,
+      "decision_structure": "Standard AI-RISA logic",
+      "energy_use": "Normal",
+      "fatigue_failure_points": "Late rounds",
+      "mental_condition": "Stable",
+      "collapse_triggers": "High pressure",
+      "main_tactical_edge": "Technical advantage",
+      "round_flow_projection": "Likely to go full rounds"
+    },
+    {
+      "matchup_id": "abdul_rakhman_yakhyaev_vs_brendson_ribeiro",
+      "predicted_winner": "fighter_abdul_rakhman_yakhyaev",
+      "method": "Decision",
+      "confidence": 0.6,
+      "decision_structure": "Standard AI-RISA logic",
+      "energy_use": "Normal",
+      "fatigue_failure_points": "Late rounds",
+      "mental_condition": "Stable",
+      "collapse_triggers": "High pressure",
+      "main_tactical_edge": "Technical advantage",
+      "round_flow_projection": "Likely to go full rounds"
+    },
+    {
+      "matchup_id": "ethyn_ewing_vs_rafael_estevam",
+      "predicted_winner": "fighter_ethyn_ewing",
+      "method": "Decision",
+      "confidence": 0.6,
+      "decision_structure": "Standard AI-RISA logic",
+      "energy_use": "Normal",
+      "fatigue_failure_points": "Late rounds",
+      "mental_condition": "Stable",
+      "collapse_triggers": "High pressure",
+      "main_tactical_edge": "Technical advantage",
+      "round_flow_projection": "Likely to go full rounds"
+    }
+  ],
+  "generated": "2026-03-30T18:48:39.326733"
+}

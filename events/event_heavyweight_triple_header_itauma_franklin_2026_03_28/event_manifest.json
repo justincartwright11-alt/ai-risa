@@ -1,0 +1,35 @@
+{
+  "event_id": "event_heavyweight_triple_header_itauma_franklin_2026_03_28",
+  "event_name": "Heavyweight Triple Header: Itauma vs. Franklin",
+  "event_date": "2026-03-28",
+  "location": "AO Arena, Manchester, UK",
+  "promotion": "Queensberry Promotions",
+  "broadcast": "DAZN",
+  "fights": [
+    {
+      "fight_order": 1,
+      "bout_type": "Main Event",
+      "sport": "boxing",
+      "division": "Heavyweight",
+      "fighter_a": "Moses Itauma",
+      "fighter_b": "Jermaine Franklin"
+    },
+    {
+      "fight_order": 2,
+      "bout_type": "Co-Main Event",
+      "sport": "boxing",
+      "division": "Light Heavyweight",
+      "fighter_a": "Willy Hutchinson",
+      "fighter_b": "Ezra Taylor"
+    },
+    {
+      "fight_order": 3,
+      "bout_type": "Feature Bout",
+      "sport": "boxing",
+      "division": "Featherweight",
+      "fighter_a": "Liam Davies",
+      "fighter_b": "Francesco Grandelli"
+    }
+  ],
+  "notes": "Queensberry Promotions triple-header, broadcast on DAZN."
+}

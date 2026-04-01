@@ -1,0 +1,37 @@
+[
+  {
+    "promotion": "UFC",
+    "event_name": "UFC 327",
+    "date": "2026-04-11",
+    "city": "Las Vegas",
+    "region": "Nevada",
+    "country": "USA",
+    "venue": "T-Mobile Arena",
+    "bouts": [
+      { "fighter_1": "Fighter A", "fighter_2": "Fighter B", "is_main_event": true }
+    ]
+  },
+  {
+    "promotion": "PFL",
+    "event_name": "PFL Chicago",
+    "date": "2026-04-11",
+    "city": "Chicago",
+    "region": "Illinois",
+    "country": "USA",
+    "venue": "Wintrust Arena",
+    "bouts": [
+      { "fighter_1": "Fighter C", "fighter_2": "Fighter D", "is_main_event": true }
+    ]
+  },
+  {
+    "promotion": "ARES FC",
+    "event_name": "ARES FC 39",
+    "date": "2026-04-03",
+    "city": "Paris",
+    "country": "France",
+    "venue": null,
+    "bouts": [
+      { "fighter_1": "TBA", "fighter_2": "Fighter E", "is_main_event": true }
+    ]
+  }
+]

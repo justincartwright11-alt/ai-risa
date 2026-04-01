@@ -1,0 +1,9 @@
+{
+  "fighters": ["Viddal Riley", "Mateusz Masternak"],
+  "weight_class": "Cruiserweight",
+  "scheduled_rounds": 12,
+  "title_fight": true,
+  "event_date": "2026-04-04",
+  "venue": "The O2 Arena, London",
+  "notes": "European Cruiserweight Title. Riley's speed vs Masternak's experience."
+}

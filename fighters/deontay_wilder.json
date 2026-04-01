@@ -1,0 +1,13 @@
+{
+  "name": "Deontay Wilder",
+  "nickname": "The Bronze Bomber",
+  "weight_class": "Heavyweight",
+  "country": "USA",
+  "record": "43-3-1 (42 KOs)",
+  "style": "Orthodox",
+  "age": 40,
+  "reach": 83,
+  "height": 79,
+  "last_5": ["L", "W", "L", "L", "W"],
+  "notes": "Former WBC heavyweight champion. Devastating right hand. Vulnerable when pressured."
+}

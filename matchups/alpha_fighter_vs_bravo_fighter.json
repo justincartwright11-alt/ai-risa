@@ -1,0 +1,8 @@
+{
+  "fighters": [
+    "Alpha Fighter",
+    "Bravo Fighter"
+  ],
+  "weight_class": "Unknown",
+  "sport": "MMA"
+}

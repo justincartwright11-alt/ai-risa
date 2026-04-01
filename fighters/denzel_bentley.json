@@ -1,0 +1,13 @@
+{
+  "name": "Denzel Bentley",
+  "nickname": "2Sharp",
+  "weight_class": "Middleweight",
+  "country": "UK",
+  "record": "19-3-1 (16 KOs)",
+  "style": "Orthodox",
+  "age": 31,
+  "reach": 73,
+  "height": 72,
+  "last_5": ["W", "L", "W", "W", "L"],
+  "notes": "Powerful, aggressive, sometimes defensively open."
+}

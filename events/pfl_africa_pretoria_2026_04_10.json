@@ -1,0 +1,14 @@
+{
+  "event": "PFL Africa: Pretoria",
+  "date": "2026-04-10",
+  "venue": "SunBet Arena, Pretoria, South Africa",
+  "watch": "SuperSport",
+  "description": "PFL Africa debut event.",
+  "bouts": [
+    {
+      "fighters": ["Don Madge", "TBA"],
+      "weight_class": "Lightweight",
+      "main_event": true
+    }
+  ]
+}

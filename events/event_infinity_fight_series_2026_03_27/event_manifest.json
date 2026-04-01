@@ -1,0 +1,19 @@
+{
+  "event_id": "event_infinity_fight_series_2026_03_27",
+  "event_name": "Infinity Fight Series",
+  "event_date": "2026-03-27",
+  "location": "The Grand on Princes, Melbourne, Australia",
+  "promotion": "Infinity Fight Series",
+  "broadcast": "Local Victorian Event",
+  "fights": [
+    {
+      "fight_order": 1,
+      "bout_type": "Main Event",
+      "sport": "muay_thai",
+      "rules": "Muay Thai / Kickboxing",
+      "fighter_a": "TBA",
+      "fighter_b": "TBA"
+    }
+  ],
+  "notes": "Sanctioned Victorian combat sports event focusing on professional Muay Thai and Kickboxing talent."
+}

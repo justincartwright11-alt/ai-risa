@@ -1,0 +1,18 @@
+{
+  "prediction_id": null,
+  "matchup_id": "pereira_vs_adesanya_2",
+  "predicted_winner_id": "Alex Pereira",
+  "confidence": 0.0,
+  "method": null,
+  "round": null,
+  "model_version": "ai_risa_model_v1.0",
+  "debug_metrics": {
+    "stoppage_sensitivity_applied": 1.0,
+    "base_stoppage_bias": 4.6152,
+    "adjusted_stoppage_bias": 1.0,
+    "method_selection_source": "finish_path",
+    "selected_method": "Stoppage",
+    "selected_round": "mid"
+  },
+  "artifact_paths": {}
+}

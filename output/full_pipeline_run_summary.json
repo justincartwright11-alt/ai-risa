@@ -1,0 +1,128 @@
+{
+  "stage": "full_pipeline",
+  "status": "success",
+  "started_at": "2026-04-01T13:37:57.305496",
+  "finished_at": "2026-04-01T13:41:40.386905",
+  "counts": {
+    "stage_total": 6,
+    "completed": 6,
+    "warnings": 0,
+    "failed": 0,
+    "soft_skipped": 0,
+    "stages_run": 6,
+    "stages_soft_skipped": 0,
+    "stages_failed": 0
+  },
+  "warnings": [],
+  "errors": [],
+  "artifacts": [
+    "C:/ai_risa_data/output/upcoming_auto_summary.csv",
+    "C:/ai_risa_data/output/upcoming_auto_summary.json",
+    "C:/ai_risa_data/schedules/upcoming_auto.json",
+    "incoming/upcoming_events_ingest_summary.json",
+    "output/dependency_resolution_summary.json",
+    "output/event_batch_run_summary.json",
+    "output/prediction_queue.json",
+    "output/prediction_queue_build_summary.json",
+    "output/prediction_queue_run_summary.json",
+    "output\\full_pipeline_run_summary.csv",
+    "output\\full_pipeline_run_summary.json"
+  ],
+  "details": {
+    "stages": [
+      {
+        "stage": "ingest",
+        "status": "success",
+        "started_at": "2026-04-01T13:37:57.305563",
+        "finished_at": "2026-04-01T13:41:39.886523",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe ingest_upcoming_events_sources.py",
+        "summary_paths": [
+          "incoming/upcoming_events_ingest_summary.json"
+        ],
+        "details": {
+          "stdout": "[START] ingest_upcoming_events_sources.py\n[PATHS] Script directory: C:\\ai_risa_data\n[PATHS] Upcoming events: C:\\ai_risa_data\\incoming\\upcoming_events.json\n[PATHS] Conflicts: C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n[PATHS] Summary: C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[UFC ADAPTER] Starting UFC adapter at 2026-04-01T02:37:57.769079+00:00 for https://www.ufc.com/events\n[UFC FETCH] status_code=200 url=https://www.ufc.com/events content-type=text/html; charset=UTF-8 length=309434\n[UFC FETCH] First 1000 chars:\n\n\n\n\n\n\n<!DOCTYPE html>\n<html lang=\"en-aus\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<meta name=\"description\" content=\"Find the latest UFC event schedule, watch information, fight cards, start times, and broadcast details.\" />\n<meta name=\"keywords\" content=\"ufc, events, schedule\" />\n<link rel=\"canonical\" href=\"https://www.ufc.com/events\" />\n<meta name=\"referrer\" content=\"origin\" />\n<meta name=\"title\" content=\"UFC Fight Cards, Watch Times, Live Stats | UFC.com\" />\n<meta name=\"Generator\" content=\"Drupal 10 (https://www.drupal.org)\" />\n<meta name=\"MobileOptimized\" content=\"width\" />\n<meta name=\"HandheldFriendly\" content=\"true\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n<!-- PLACE THIS SECTION INSIDE OF YOUR HEAD TAGS -->\n\n<!-- Below is a recommended list of pre-connections, which allow the network to establish each connection quicker, speeding up response times and improving ad performance. -->\n\n<link rel=\"preconnect\" \n[UFC INDEX] Found 16 candidate event URLs.\n[UFC RETAINED] event_name='UFC Fight Night: Moicano vs Duncan' date='2026-04-04' url='https://www.ufc.com/event/ufc-fight-night-april-04-2026'\n[UFC RETAINED] event_name='UFC 327: Procházka vs Ulberg' date='2026-04-11' url='https://www.ufc.com/event/ufc-327'\n[UFC RETAINED] event_name='UFC Fight Night: Burns vs Malott | UFC Winnipeg' date='2026-04-18' url='https://www.ufc.com/event/ufc-fight-night-april-18-2026'\n[UFC DETAIL] attempted=12 records_built=12\n[UFC DEBUG] function return: len(records)=12\n[UFC DEBUG] function return: first3_records=[{'promotion': 'UFC', 'event_name': 'UFC Fight Night: Moicano vs Duncan', 'date': '2026-04-04', 'city': 'Las Vegas', 'region': 'Nevada', 'country': 'United States', 'venue': 'Meta APEX', 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-fight-night-april-04-2026', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-01T13:38:03.020607'}, {'promotion': 'UFC', 'event_name': 'UFC 327: Procházka vs Ulberg', 'date': '2026-04-11', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-327', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-01T13:38:05.405434'}, {'promotion': 'UFC', 'event_name': 'UFC Fight Night: Burns vs Malott | UFC Winnipeg', 'date': '2026-04-18', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-fight-night-april-18-2026', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-01T13:38:10.300619'}]\n[UFC DEBUG] function return: diag_records_built=12 final_events=12\n[UFC ADAPTER] Final diagnostics: {'source': 'ufc', 'adapter_entry': '2026-04-01T02:37:57.769079+00:00', 'source_url': 'https://www.ufc.com/events', 'status': 'ok', 'fetch': {}, 'parse': {'candidate_links': 12}, 'detail': {'records_built': 12}, 'final_records': 12}\n[PFL ADAPTER] Starting PFL adapter at 2026-04-01T02:38:36.464710+00:00 for https://pflmma.com/events\n[PFL FETCH] status_code=200 url=https://pflmma.com/events content-type=text/html; charset=utf-8 length=578014\n[PFL FETCH] First 1000 chars:\n<!DOCTYPE html>\n<html>\n\n<head>\n    <!-- Required meta tags -->\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">\n\n            <title>Events</title>\n        <meta name=\"description\" content=\"Professional Fighters League (PFL) is a global powerhouse in MMA, and is the fastest-growing sports league worldwide. PFL hosts premium MMA events across the U.S., Europe, MENA, and Africa, with plann...\" />\n        <meta name=\"keywords\" content=\"PFL\" />\n    \n    \n    <!-- Favicon and touch icons -->\n    <link href=\"https://pflmma.com/favicons/apple-touch-icon.png\" rel=\"apple-touch-icon\" sizes=\"180x180\">\n    <link type=\"image/png\" href=\"https://pflmma.com/favicons/favicon-32x32.png\" rel=\"icon\" sizes=\"32x32\">\n    <link type=\"image/png\" href=\"https://pflmma.com/favicons/favicon-16x16.png\" rel=\"icon\" sizes=\"16x16\">\n    <link href=\"https://pflmma.com/favicons/site.webmanifest\" rel=\"manifest\">\n    <!-- Fonts -->\n    <link href=\"https://f\n[PFL ADAPTER] Fetch status: {'status_code': 200, 'url': 'https://pflmma.com/events', 'content_type': 'text/html; charset=utf-8', 'length': 578014, 'has_event_marker': True, 'body_head': '<!DOCTYPE html> <html>  <head>     <!-- Required meta tags -->     <meta charset=\"utf-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">              <title>Events</title>         <meta name=\"description\" content=\"Professional Fighters League (PFL) is a gl'}\n[PFL ADAPTER] Found 83 candidate event cards on index page.\n[PFL RETAINED] event_name='PFL Africa Buy Tickets' date_raw='Fri, Apr 10' date_normalized='2026-04-10' detail_url='https://pflmma.com/event/pfl-africa-pretoria'\n[PFL RETAINED] event_name='PFL Africa Buy Tickets' date_raw='Fri, Apr 10' date_normalized='2026-04-10' detail_url='https://pflmma.com/event/pfl-africa-pretoria'\n[PFL RETAINED] event_name='PFL Africa Buy Tickets' date_raw='Fri, Apr 10' date_normalized='2026-04-10' detail_url='https://pflmma.com/event/pfl-africa-pretoria'\n[PFL RETAINED] event_name='PFL Africa Buy Tickets' date_raw='Fri, Apr 10' date_normalized='2026-04-10' detail_url='https://pflmma.com/event/pfl-africa-pretoria'\n[PFL RETAINED] event_name='PFL Africa Buy Tickets' date_raw='Fri, Apr 10' date_normalized='2026-04-10' detail_url='https://pflmma.com/event/pfl-africa-pretoria'\n[PFL ADAPTER] Final diagnostics: {'source': 'pfl', 'adapter_entry': '2026-04-01T02:38:36.464710+00:00', 'source_url': 'https://pflmma.com/events', 'status': 'ok', 'fetch': {'status_code': 200, 'url': 'https://pflmma.com/events', 'content_type': 'text/html; charset=utf-8', 'length': 578014, 'has_event_marker': True, 'body_head': '<!DOCTYPE html> <html>  <head>     <!-- Required meta tags -->     <meta charset=\"utf-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">              <title>Events</title>         <meta name=\"description\" content=\"Professional Fighters League (PFL) is a gl'}, 'parse': {}, 'detail': {'attempted': 59, 'debug': [{'promotion': 'PFL', 'event_name': 'PFL Africa Buy Tickets', 'event_name_source': 'index_h3', 'date': '2026-04-10', 'date_source': 'index_h6_shortdate', 'date_raw': 'Fri, Apr 10', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-africa-pretoria', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-01T02:38:39.855513+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Africa Buy Tickets', 'event_name_source': 'index_h3', 'date': '2026-04-10', 'date_source': 'index_h6_shortdate', 'date_raw': 'Fri, Apr 10', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-africa-pretoria', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-01T02:38:42.806837+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Africa Buy Tickets', 'event_name_source': 'index_h3', 'date': '2026-04-10', 'date_source': 'index_h6_shortdate', 'date_raw': 'Fri, Apr 10', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-africa-pretoria', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-01T02:38:45.359464+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Africa Buy Tickets', 'event_name_source': 'index_h3', 'date': '2026-04-10', 'date_source': 'index_h6_shortdate', 'date_raw': 'Fri, Apr 10', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-africa-pretoria', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-01T02:38:47.489250+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Africa Buy Tickets', 'event_name_source': 'index_h3', 'date': '2026-04-10', 'date_source': 'index_h6_shortdate', 'date_raw': 'Fri, Apr 10', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-africa-pretoria', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-01T02:38:49.627991+00:00'}], 'records_built': 14}, 'final_records': 14}\n[INGEST] fail pfl: TypeError: cannot unpack non-iterable NoneType object\n[LFA RETAINED] event_name='LFA 230 – BARTLING vs. CLEVELAND' date_raw='April 3' date_normalized='2026-04-03' detail_url='https://www.lfa.com/event/lfa-230-franklin-vs-urena' venue='LFA 230 – BARTLING vs. CLEVELAND'\n[LFA RETAINED] event_name='LFA 231 – Trembley vs. Johns' date_raw='April 17' date_normalized='2026-04-17' detail_url='https://www.lfa.com/event/lfa-231-trembley-vs-johns' venue='LFA 231 – Trembley vs. Johns'\n[LFA RETAINED] event_name='LFA 232 – Visconde vs. Pintos' date_raw='May 15' date_normalized='2026-05-15' detail_url='https://www.lfa.com/event/lfa-232-visconde-vs-pintos' venue='LFA 232 – Visconde vs. Pintos'\n[LFA ADAPTER] Final diagnostics: {'source': 'lfa', 'adapter_entry': '2026-04-01T02:41:24.928174+00:00', 'source_url': 'https://www.lfa.com/events/', 'status': 'ok', 'detail': {'attempted': 3, 'records_built': 3}, 'fetch_status_code': 200, 'fetch_length': 171093, 'final_records': 3}\n[ARES AUDIT] anchors=6 dates=6 collapsed_titles=6\n[ARES AUDIT] anchors=[<a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3303\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3293\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3297\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3364\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3278\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3368\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>]\n[ARES AUDIT] dates=['03/04/2026', '10/04/2026', '06/06/2026', '25/09/2026', '31/10/2026', '07/11/2026']\n[ARES AUDIT] titles_raw=['ARES 39', 'ARES 39', 'ARES 40', 'ARES Paris Juin', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']\n[ARES AUDIT] titles=['ARES 39', 'ARES 40', 'ARES Paris Juin', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']\n[ARES AUDIT] Using strict zipped correlation: 6 events\n[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3303'\n[ARES RETAINED] event_name='ARES 40' date_raw='10/04/2026' date_normalized='2026-04-10' detail_url='https://www.aresfighting.com/events/?competition=3293'\n[ARES RETAINED] event_name='ARES Paris Juin' date_raw='06/06/2026' date_normalized='2026-06-06' detail_url='https://www.aresfighting.com/events/?competition=3297'\n[BOXINGSCENE ADAPTER] Final diagnostics: {'source': 'boxingscene', 'adapter_entry': '2026-04-01T02:41:35.965989+00:00', 'source_url': 'https://www.boxingscene.com/schedule', 'status': 'no_valid_events', 'detail': {'attempted': 0, 'records_built': 0}, 'fetch_status_code': 200, 'fetch_length': 322171, 'final_records': 0}\n[WRITE] summary -> C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[WRITE] events -> C:\\ai_risa_data\\incoming\\upcoming_events.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events.json\n[WRITE] conflicts -> C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n",
+          "stderr": "C:\\ai_risa_data\\ingest_upcoming_events_sources.py:168: DeprecationWarning: The 'text' argument to find()-type methods is deprecated. Use 'string' instead.\n  for el in soup.find_all(text=True):\nC:\\ai_risa_data\\ingest_upcoming_events_sources.py:174: DeprecationWarning: The 'text' argument to find()-type methods is deprecated. Use 'string' instead.\n  for el in soup.find_all(text=True):\n"
+        }
+      },
+      {
+        "stage": "schedule",
+        "status": "success",
+        "started_at": "2026-04-01T13:41:39.888207",
+        "finished_at": "2026-04-01T13:41:39.998530",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe build_upcoming_schedule_auto.py --source C:/ai_risa_data/incoming/upcoming_events.json --schedule-out C:/ai_risa_data/schedules/upcoming_auto.json --events-dir C:/ai_risa_data/events --summary-json C:/ai_risa_data/output/upcoming_auto_summary.json --summary-csv C:/ai_risa_data/output/upcoming_auto_summary.csv --formats md docx pdf",
+        "summary_paths": [
+          "C:/ai_risa_data/output/upcoming_auto_summary.json",
+          "C:/ai_risa_data/output/upcoming_auto_summary.csv",
+          "C:/ai_risa_data/schedules/upcoming_auto.json"
+        ],
+        "details": {
+          "stdout": "[WRITE] C:/ai_risa_data/output/upcoming_auto_summary.json\n[WRITE] C:/ai_risa_data/output/upcoming_auto_summary.csv\n",
+          "stderr": "[WARNING] Event 'UFC Fight Night: Moicano vs Duncan' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC 327: Procházka vs Ulberg' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Burns vs Malott | UFC Winnipeg' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Sterling vs Zalal' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night | Della Maddalena vs Prates' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC 328: Chimaev vs Strickland' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Allen vs Costa' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Song vs Figueiredo' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Adesanya vs Pyfer' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Evloev vs Murphy | UFC London' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC Fight Night: Emmett vs Vallejos' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'UFC 326: Holloway vs Oliveira 2' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'LFA 230 – BARTLING vs. CLEVELAND' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'LFA 231 – Trembley vs. Johns' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'LFA 232 – Visconde vs. Pintos' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES 39' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES 40' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES Paris Juin' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES Paris Septembre' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES Strasbourg' has an empty bouts list. main_event_bout_id set to None.\n[WARNING] Event 'ARES Paris Novembre' has an empty bouts list. main_event_bout_id set to None.\n"
+        }
+      },
+      {
+        "stage": "resolver",
+        "status": "success",
+        "started_at": "2026-04-01T13:41:40.000941",
+        "finished_at": "2026-04-01T13:41:40.096634",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe resolve_missing_dependencies_auto.py",
+        "summary_paths": [
+          "output/dependency_resolution_summary.json"
+        ],
+        "details": {
+          "stdout": "[DONE] Dependency resolution complete. Summary written to output/dependency_resolution_summary.json and output/dependency_resolution_summary.csv\n",
+          "stderr": ""
+        }
+      },
+      {
+        "stage": "queue_build",
+        "status": "success",
+        "started_at": "2026-04-01T13:41:40.098802",
+        "finished_at": "2026-04-01T13:41:40.186941",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe build_prediction_queue_auto.py",
+        "summary_paths": [
+          "output/prediction_queue.json",
+          "output/prediction_queue_build_summary.json"
+        ],
+        "details": {
+          "stdout": "[DONE] Prediction queue written: output\\prediction_queue.json, output\\prediction_queue.csv\n",
+          "stderr": ""
+        }
+      },
+      {
+        "stage": "queue_run",
+        "status": "success",
+        "started_at": "2026-04-01T13:41:40.189084",
+        "finished_at": "2026-04-01T13:41:40.277001",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe run_prediction_queue_auto.py",
+        "summary_paths": [
+          "output/prediction_queue_run_summary.json"
+        ],
+        "details": {
+          "stdout": "[DONE] Prediction queue run summary written: output\\prediction_queue_run_summary.json, output\\prediction_queue_run_summary.csv\n",
+          "stderr": ""
+        }
+      },
+      {
+        "stage": "batch",
+        "status": "success",
+        "started_at": "2026-04-01T13:41:40.278578",
+        "finished_at": "2026-04-01T13:41:40.384683",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe run_event_batch_auto.py --schedule C:/ai_risa_data/schedules/upcoming_auto.json --formats md docx pdf",
+        "summary_paths": [
+          "output/event_batch_run_summary.json"
+        ],
+        "details": {
+          "stdout": "[BATCH SUMMARY]\nTotal events: 21\nSucceeded: 0\nFailed: 0\nWarnings: 0\nSkipped existing: 0\nSkipped metadata-only: 21\n",
+          "stderr": "C:\\ai_risa_data\\run_event_batch_auto.py:190: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  'generated_at': datetime.utcnow().isoformat() + 'Z',\n"
+        }
+      }
+    ]
+  }
+}

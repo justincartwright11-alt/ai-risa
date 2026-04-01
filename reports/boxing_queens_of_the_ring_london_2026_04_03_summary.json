@@ -1,0 +1,35 @@
+{
+  "event_name": "Queens of the Ring",
+  "date": "2026-04-03",
+  "location": "London, UK",
+  "bouts": [
+    {
+      "fighters": [
+        "Caroline Dubois",
+        "Terri Harper"
+      ],
+      "title": "WBC Interim Lightweight Title"
+    },
+    {
+      "fighters": [
+        "Ellie Scotney",
+        "Mayelli Flores Rosquero"
+      ],
+      "title": "IBF & WBO Super Bantamweight Titles"
+    },
+    {
+      "fighters": [
+        "Chantelle Cameron",
+        "Michaela Kotaskova"
+      ],
+      "title": "Welterweight"
+    },
+    {
+      "fighters": [
+        "Irma Garcia",
+        "Emma Dolan"
+      ],
+      "title": "Super Flyweight"
+    }
+  ]
+}

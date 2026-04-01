@@ -1,0 +1,11 @@
+prediction_family_id,actual_winner_id,winner_correct,predicted_method,actual_method,method_correct,predicted_round,actual_round,round_error,confidence,simulation_count,model_version,calibration_version,reconciled_timestamp,norm_fighter_key_recon,prediction_id_recon,predicted_winner_id_recon,event_fighter_key,source_file,schema_version,prediction_id_hist,matchup_id,event,event_date,fighter_a_id,fighter_b_id,predicted_winner_id_hist,method,round,norm_fighter_key_hist,_merge
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T14:43:36.268745Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,israel_adesanya,False,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T14:43:36.268762Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:26:53.471585Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,israel_adesanya,False,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:26:53.471601Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:26:53.471608Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:35:48.113216Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,israel_adesanya,False,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:35:48.113231Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T15:35:48.113239Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,5,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T16:03:48.127172Z,nan::nan,,,::::,,,,,,,,,,,,,left_only
+,fighter_ricky_simon,True,Decision,Decision,True,full,full,0.0,,1,ai_risa_model_v1.0,calibration_v1.0.0,2026-03-29T16:03:48.127177Z,nan::nan,,,::::,,,,,,,,,,,,,left_only

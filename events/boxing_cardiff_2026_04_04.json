@@ -1,0 +1,26 @@
+{
+  "event": "Unified World Welterweight Championship: Lauren Price vs. Stephanie Pineiro Aquino",
+  "date": "2026-04-04",
+  "venue": "Utilita Arena, Cardiff, Wales",
+  "watch": "BBC Two / BBC iPlayer (UK) / Sky Sports",
+  "bouts": [
+    {
+      "fighters": ["Lauren Price", "Stephanie Pineiro Aquino"],
+      "weight_class": "Welterweight",
+      "titles": ["WBA", "WBC", "IBF", "Ring Magazine"],
+      "main_event": true
+    },
+    {
+      "fighters": ["Rhys Edwards", "TBA"],
+      "weight_class": "Featherweight"
+    },
+    {
+      "fighters": ["Kyran Jones", "TBA"],
+      "weight_class": "Middleweight"
+    },
+    {
+      "fighters": ["Kane Shepherd", "TBA"],
+      "weight_class": "Super Featherweight"
+    }
+  ]
+}

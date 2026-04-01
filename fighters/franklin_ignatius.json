@@ -1,0 +1,13 @@
+{
+  "name": "Franklin Ignatius",
+  "nickname": "The Tank",
+  "weight_class": "Heavyweight",
+  "country": "UK",
+  "record": "7-1-0 (5 KOs)",
+  "style": "Orthodox",
+  "age": 27,
+  "reach": 77,
+  "height": 76,
+  "last_5": ["W", "W", "L", "W", "W"],
+  "notes": "Physical, pressure fighter, still learning."
+}

@@ -1,0 +1,52 @@
+[
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-01_114200",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-01_114200\\launcher.log",
+        "started_at":  "2026-04-01T11:42:01.4543092+11:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_114200",
+        "completed_at":  "2026-04-01T11:42:01.4543092+11:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-01_122926",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-01_122926\\launcher.log",
+        "started_at":  "2026-04-01T12:29:27.0003047+11:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_122926",
+        "completed_at":  "2026-04-01T12:29:27.0003047+11:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-01_130310",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-01_130310\\launcher.log",
+        "started_at":  "2026-04-01T13:03:10.6103641+11:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_130310",
+        "completed_at":  "2026-04-01T13:03:10.6103641+11:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-01_130832",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-01_130832\\launcher.log",
+        "started_at":  "2026-04-01T13:08:32.5311067+11:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_130832",
+        "completed_at":  "2026-04-01T13:08:32.5311067+11:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-01_133755",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-01_133755\\launcher.log",
+        "started_at":  "2026-04-01T13:41:40.4622388+11:00",
+        "status":  "success",
+        "mode":  "normal",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_133755",
+        "completed_at":  "2026-04-01T13:41:40.4622388+11:00"
+    }
+]

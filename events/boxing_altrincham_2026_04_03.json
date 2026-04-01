@@ -1,0 +1,37 @@
+{
+  "event": "Cruiserweight Boxing: Pat Brown vs. Vasil Ducar",
+  "date": "2026-04-03",
+  "venue": "Planet Ice, Altrincham, UK",
+  "watch": "DAZN",
+  "bouts": [
+    {
+      "fighters": ["Pat Brown", "Vasil Ducar"],
+      "weight_class": "Cruiserweight",
+      "main_event": true
+    },
+    {
+      "fighters": ["Jordan Thompson", "David Spilmont"],
+      "weight_class": "Heavyweight"
+    },
+    {
+      "fighters": ["William Crolla", "Glenn Byrne"],
+      "weight_class": "Super Welterweight"
+    },
+    {
+      "fighters": ["Garan Croft", "Marco Simmonds"],
+      "weight_class": "Light Middleweight"
+    },
+    {
+      "fighters": ["Ioan Croft", "Novak Radulovic"],
+      "weight_class": "Welterweight"
+    },
+    {
+      "fighters": ["Alexey Shendrik", "Reda Kham"],
+      "weight_class": "Lightweight"
+    },
+    {
+      "fighters": ["Josh Blenkiron", "Robbie Colman"],
+      "weight_class": "Super Middleweight"
+    }
+  ]
+}

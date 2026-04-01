@@ -1,0 +1,39 @@
+<Task>
+  <Name>ai_risa_model_feedback_analytics_task</Name>
+  <Description>Run AI-RISA model feedback analytics and emit diagnostic-only review artifacts. No recommendations, no model/ledger mutation, no runner mutation outside bug fixes.</Description>
+  <Triggers>
+    <TimeTrigger>
+      <StartBoundary>2026-03-31T00:05:00</StartBoundary>
+      <Enabled>true</Enabled>
+      <Repetition>
+        <Interval>PT24H</Interval>
+        <StopAtDurationEnd>false</StopAtDurationEnd>
+      </Repetition>
+    </TimeTrigger>
+  </Triggers>
+  <Actions>
+    <Exec>
+      <Command>python</Command>
+      <Arguments>C:\ai_risa_data\run_model_feedback_analytics.py</Arguments>
+      <WorkingDirectory>C:\ai_risa_data</WorkingDirectory>
+    </Exec>
+  </Actions>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>false</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+</Task>

@@ -1,0 +1,13 @@
+{'fight': 'Alex Pereira vs Israel Adesanya', 'fighter_a': 'Alex Pereira', 'fighter_b': 'Israel Adesanya', 'decision_score_a': 0.5, 'decision_score_b': 0.5, 'energy_score_a': 0.5, 'energy_score_b': 0.5, 'mental_score_a': 72.456, 'mental_score_b': 81.036, 'fatigue_pressure_on_a': 27.04, 'fatigue_pressure_on_b': 25.44, 'style_mod_a': {'offense': 1.0, 'defense': 1.0, 'control': 0.0, 'tempo': 0.0, 'counter_window': 0.0, 'attrition_risk': 0.0}, 'style_mod_b': {'offense': 1.0, 'defense': 1.0, 'control': 0.0, 'tempo': 0.0, 'counter_window': 0.0, 'attrition_risk': 0.0}}
+{'fight': 'Alex Pereira vs Israel Adesanya', 'control_score_a': 0.0, 'control_score_b': 0.0, 'damage_threat_a': 95, 'damage_threat_b': 88, 'win_signal_a': 23.278959999999998, 'win_signal_b': 23.798959999999997}
+{
+  "prediction_id": null,
+  "matchup_id": "pereira_vs_adesanya_2",
+  "predicted_winner_id": null,
+  "confidence": null,
+  "method": null,
+  "round": null,
+  "model_version": null,
+  "debug_metrics": {},
+  "artifact_paths": []
+}

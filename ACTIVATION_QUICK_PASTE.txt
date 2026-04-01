@@ -1,0 +1,11 @@
+cd C:\ai_risa_data
+
+.\register_pipeline_tasks.ps1 -Enable
+.\register_pipeline_tasks.ps1 -List
+
+Get-ScheduledTask -TaskPath '\AI-RISA' | Format-Table TaskName, State, Enabled -AutoSize
+
+.\schedule_full_pipeline_dry_run.ps1
+Write-Host "DRY_RUN_EXIT=$LASTEXITCODE"
+
+Get-Content .\runs\run_history_index.json -Raw | ConvertFrom-Json | Format-Table timestamp, mode, status, exit_code -AutoSize

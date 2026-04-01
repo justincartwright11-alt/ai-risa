@@ -1,0 +1,14 @@
+{
+  "event": "Ares FC 39: Jbalia vs. Diatta",
+  "date": "2026-04-03",
+  "venue": "Paris, France",
+  "watch": "",
+  "description": "International MMA main event.",
+  "bouts": [
+    {
+      "fighters": ["Aboubakar Jbalia", "Cherif Diatta"],
+      "weight_class": "Featherweight",
+      "main_event": true
+    }
+  ]
+}

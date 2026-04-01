@@ -1,0 +1,48 @@
+{
+  "event_id": "resolver_test_event_2026_04_01",
+  "promotion": "TEST",
+  "event_name": "Resolver Test Event",
+  "date": "2026-04-01",
+  "bouts": [
+    {
+      "bout_id": "resolver_test_event_2026_04_01_b01",
+      "fighter_1": "Alpha Fighter",
+      "fighter_2": "Bravo Fighter",
+      "fighter_1_id": "alpha_fighter",
+      "fighter_2_id": "bravo_fighter",
+      "matchup_id": "alpha_fighter_vs_bravo_fighter",
+      "prediction_id": "alpha_fighter_vs_bravo_fighter_prediction",
+      "is_main_event": true
+    },
+    {
+      "bout_id": "resolver_test_event_2026_04_01_b02",
+      "fighter_1": "Charlie Fighter",
+      "fighter_2": "Delta Fighter",
+      "fighter_1_id": "charlie_fighter",
+      "fighter_2_id": "delta_fighter",
+      "matchup_id": "charlie_fighter_vs_delta_fighter",
+      "prediction_id": "charlie_fighter_vs_delta_fighter_prediction",
+      "is_main_event": false
+    },
+    {
+      "bout_id": "resolver_test_event_2026_04_01_b03",
+      "fighter_1": "TBA",
+      "fighter_2": "Echo Fighter",
+      "fighter_1_id": null,
+      "fighter_2_id": "echo_fighter",
+      "matchup_id": null,
+      "prediction_id": null,
+      "is_main_event": false
+    },
+    {
+      "bout_id": "resolver_test_event_2026_04_01_b04",
+      "fighter_1": "Foxtrot Fighter",
+      "fighter_2": "Golf Fighter",
+      "fighter_1_id": "foxtrot_fighter",
+      "fighter_2_id": "golf_fighter",
+      "matchup_id": "foxtrot_fighter_vs_golf_fighter",
+      "prediction_id": "foxtrot_fighter_vs_golf_fighter_prediction",
+      "is_main_event": false
+    }
+  ]
+}

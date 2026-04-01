@@ -1,0 +1,16 @@
+{
+  "event_name": "Boxing: Tszyu vs Nurja",
+  "date": "2026-04-05",
+  "venue": "Wollongong, Australia",
+  "main_event": "Tszyu vs Nurja",
+  "co_main": "Goodman vs Ruiz",
+  "undercard": [
+    "Aokuso vs Hao Ho"
+  ],
+  "matchups": [
+    "tszyu_vs_nurja.json",
+    "goodman_vs_ruiz.json",
+    "aokuso_vs_hao_ho.json"
+  ],
+  "notes": "Main Event / Kayo broadcast. Tszyu homecoming."
+}

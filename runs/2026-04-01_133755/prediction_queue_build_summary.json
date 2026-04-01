@@ -1,0 +1,44 @@
+{
+  "stage": "prediction_queue_build",
+  "status": "success",
+  "started_at": "2026-04-01T13:41:40.176018",
+  "finished_at": "2026-04-01T13:41:40.178337",
+  "counts": {
+    "total_candidates_scanned": 29,
+    "queued_bouts": 2,
+    "excluded_tba": 26
+  },
+  "warnings": [],
+  "errors": [],
+  "artifacts": [
+    "output\\prediction_queue.json",
+    "output\\prediction_queue.csv",
+    "output\\prediction_queue_build_summary.json"
+  ],
+  "details": {
+    "rows": [
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b01",
+        "fighter_1": "Alpha Fighter",
+        "fighter_2": "Bravo Fighter",
+        "fighter_1_id": "alpha_fighter",
+        "fighter_2_id": "bravo_fighter",
+        "matchup_id": "alpha_fighter_vs_bravo_fighter",
+        "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b01",
+        "reason": "prediction_missing"
+      },
+      {
+        "event_id": "resolver_test_event_2026_04_01",
+        "bout_id": "resolver_test_event_2026_04_01_b02",
+        "fighter_1": "Charlie Fighter",
+        "fighter_2": "Delta Fighter",
+        "fighter_1_id": "charlie_fighter",
+        "fighter_2_id": "delta_fighter",
+        "matchup_id": "charlie_fighter_vs_delta_fighter",
+        "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b02",
+        "reason": "prediction_missing"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "event": "Boxing: Wilder vs Chisora",
+  "date": "2026-04-04",
+  "venue": "The O2 Arena, London",
+  "results": {
+    "wilder_vs_chisora.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/wilder_vs_chisora_prediction.json"
+    },
+    "riley_vs_masternak.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/riley_vs_masternak_prediction.json"
+    },
+    "bentley_vs_saavedra.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/bentley_vs_saavedra_prediction.json"
+    },
+    "harris_vs_ignatius.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/harris_vs_ignatius_prediction.json"
+    }
+  }
+}

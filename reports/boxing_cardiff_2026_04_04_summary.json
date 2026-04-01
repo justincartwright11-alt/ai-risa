@@ -1,0 +1,23 @@
+{
+  "event": "Unified World Welterweight Championship: Lauren Price vs. Stephanie Pineiro Aquino",
+  "date": "2026-04-04",
+  "venue": "Utilita Arena, Cardiff, Wales",
+  "results": {
+    "lauren_price_vs_stephanie_pineiro_aquino.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/lauren_price_vs_stephanie_pineiro_aquino_prediction.json"
+    },
+    "rhys_edwards_vs_tba.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/rhys_edwards_vs_tba_prediction.json"
+    },
+    "kyran_jones_vs_tba.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/kyran_jones_vs_tba_prediction.json"
+    },
+    "kane_shepherd_vs_tba.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/kane_shepherd_vs_tba_prediction.json"
+    }
+  }
+}

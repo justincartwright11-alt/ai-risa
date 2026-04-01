@@ -1,0 +1,93 @@
+[
+  {
+    "source_file": "C:/ai_risa_data/predictions/fighter_alexa_grasso_vs_fighter_maycee_barber_premium.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_fighter_alexa_grasso_vs_fighter_maycee_barber_46f6bb97d61c",
+    "matchup_id": "fighter_alexa_grasso_vs_fighter_maycee_barber",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_alexa_grasso",
+    "fighter_b_id": "fighter_maycee_barber",
+    "predicted_winner_id": "fighter_alexa_grasso",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/ai_risa_data/predictions/fighter_ricky_simón_vs_fighter_adrian_yañez_premium.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_fighter_ricky_simón_vs_fighter_adrian_yañez_46f6bb97d61c",
+    "matchup_id": "fighter_ricky_simón_vs_fighter_adrian_yañez",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_ricky_simón",
+    "fighter_b_id": "fighter_adrian_yañez",
+    "predicted_winner_id": "fighter_ricky_simón",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/ai_risa_data/predictions/fighter_terrance_mckinney_vs_fighter_kyle_nelson_premium.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_fighter_terrance_mckinney_vs_fighter_kyle_nelson_46f6bb97d61c",
+    "matchup_id": "fighter_terrance_mckinney_vs_fighter_kyle_nelson",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_terrance_mckinney",
+    "fighter_b_id": "fighter_kyle_nelson",
+    "predicted_winner_id": "fighter_kyle_nelson",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/ai_risa_data/predictions/fighter_israel_adesanya_vs_fighter_joe_pyfer_premium.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_fighter_israel_adesanya_vs_fighter_joe_pyfer_46f6bb97d61c",
+    "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_israel_adesanya",
+    "fighter_b_id": "fighter_joe_pyfer",
+    "predicted_winner_id": "fighter_joe_pyfer",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/Users/jusin/pred_fighter_israel_adesanya_vs_fighter_joe_pyfer.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_fighter_israel_adesanya_vs_fighter_joe_pyfer",
+    "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_israel_adesanya",
+    "fighter_b_id": "fighter_joe_pyfer",
+    "predicted_winner_id": "fighter_joe_pyfer",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/Users/jusin/pred_jenkins_braga_amplified.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_jenkins_braga_amplified",
+    "matchup_id": "jenkins_braga_amplified",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_bubba_jenkins",
+    "fighter_b_id": "fighter_gabriel_braga",
+    "predicted_winner_id": "fighter_bubba_jenkins",
+    "method": "Decision",
+    "round": "full"
+  },
+  {
+    "source_file": "C:/Users/jusin/pred_mckinney_nelson_amplified.json",
+    "schema_version": "prediction_record_v1",
+    "prediction_id": "pred_mckinney_nelson_amplified",
+    "matchup_id": "mckinney_nelson_amplified",
+    "event": null,
+    "event_date": null,
+    "fighter_a_id": "fighter_terrance_mckinney",
+    "fighter_b_id": "fighter_kyle_nelson",
+    "predicted_winner_id": "fighter_kyle_nelson",
+    "method": "Decision",
+    "round": "full"
+  }
+]

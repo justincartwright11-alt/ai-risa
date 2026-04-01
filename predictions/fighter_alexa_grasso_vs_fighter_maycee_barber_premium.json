@@ -1,0 +1,76 @@
+{
+  "schema_version": "prediction_record_v1",
+  "prediction_id": "pred_fighter_alexa_grasso_vs_fighter_maycee_barber_46f6bb97d61c",
+  "prediction_family_id": "pred_fighter_alexa_grasso_vs_fighter_maycee_barber",
+  "matchup_id": "fighter_alexa_grasso_vs_fighter_maycee_barber",
+  "workflow_type": "single_fight",
+  "prediction_timestamp": "2026-03-30T05:44:40.785075Z",
+  "fighter_a_id": "fighter_alexa_grasso",
+  "fighter_b_id": "fighter_maycee_barber",
+  "predicted_winner_id": "fighter_alexa_grasso",
+  "confidence": null,
+  "method": "Decision",
+  "round": "full",
+  "model_version": "ai_risa_model_v1.0",
+  "calibration_version": "calibration_v1.0.0",
+  "fighter_prior_version": "fighter_priors_v1.0.0",
+  "input_config": {
+    "stoppage_sensitivity": 1.0,
+    "simulation_count": 1000,
+    "source_matchup_file": "fighter_alexa_grasso_vs_fighter_maycee_barber",
+    "extras": {
+      "requested_total_sims": null,
+      "executed_sims": null,
+      "counted_total": null
+    }
+  },
+  "profile_sources": {
+    "fighter_a_profile_path": "None",
+    "fighter_b_profile_path": "None"
+  },
+  "profile_hashes": {
+    "fighter_a_hash": null,
+    "fighter_b_hash": null
+  },
+  "debug_metrics": {
+    "simulation_trace": {
+      "requested_total_sims": null,
+      "executed_sims": null,
+      "counted_total": null
+    },
+    "collapse_risk_confidence": 0.0,
+    "adapter_version": "adapter_gate_fix_v2",
+    "adapter_key_audit": {
+      "legacy_prediction_keys": [
+        "confidence",
+        "input_config",
+        "method",
+        "predicted_winner_id",
+        "round"
+      ],
+      "candidate_keys_present": [],
+      "raw_A": null,
+      "raw_B": null,
+      "raw_fighter_a_win_pct": null,
+      "raw_fighter_b_win_pct": null,
+      "predicted_winner_id": "fighter_alexa_grasso",
+      "fighter_a_id": "fighter_alexa_grasso",
+      "fighter_b_id": "fighter_maycee_barber",
+      "win_share_a": null,
+      "win_share_b": null,
+      "winner_prob_source": null,
+      "preclamp_winner_prob": null,
+      "final_confidence": null
+    },
+    "winner_probability_trace": {
+      "selected_confidence_value": null,
+      "selected_confidence_type": "NoneType",
+      "winner_probability_source": null,
+      "raw_a_value": null,
+      "raw_b_value": null,
+      "selected_side": null
+    }
+  },
+  "artifact_paths": [],
+  "status": "predicted"
+}

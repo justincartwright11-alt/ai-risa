@@ -1,0 +1,13 @@
+[ARES AUDIT] Total anchors with 'Fight Card': 6
+[ARES AUDIT] Anchor 1: text='Fight Card ' href='?competition=3303'
+[ARES AUDIT] Anchor 2: text='Fight Card ' href='?competition=3293'
+[ARES AUDIT] Anchor 3: text='Fight Card ' href='?competition=3297'
+[ARES AUDIT] Anchor 4: text='Fight Card ' href='?competition=3364'
+[ARES AUDIT] Anchor 5: text='Fight Card ' href='?competition=3278'
+[ARES AUDIT] Anchor 6: text='Fight Card ' href='?competition=3368'
+[ARES AUDIT] All DD/MM/YYYY matches: ['03/04/2026', '10/04/2026', '06/06/2026', '25/09/2026', '31/10/2026', '07/11/2026']
+[ARES AUDIT] All event titles: ['ARES 39', 'ARES 39', 'ARES 40', 'ARES Paris Juin', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']
+[ARES AUDIT] Using nearest-preceding fallback for 6 anchors
+[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3303'
+[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3293'
+[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3297'

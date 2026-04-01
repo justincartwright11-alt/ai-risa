@@ -1,0 +1,7 @@
+schedule_name,event_id,title,format,status,output_path,exit_code,elapsed_seconds,bouts_total,resolved_bouts,tba_bouts,stubs_created_count,event_status
+Batch Run,lfa_230_2026_04_03,LFA 230: Franklin vs. Ureña,md,success,C:/ai_risa_data/reports/lfa_230_2026_04_03_full_prim_report.md,0,0.28,1,1,0,0,success
+Batch Run,lfa_230_2026_04_03,LFA 230: Franklin vs. Ureña,docx,success,C:/ai_risa_data/reports/lfa_230_2026_04_03_full_prim_report.docx,0,0.2,1,1,0,0,success
+Batch Run,lfa_230_2026_04_03,LFA 230: Franklin vs. Ureña,pdf,success,C:/ai_risa_data/reports/lfa_230_2026_04_03_full_prim_report.pdf,0,0.82,1,1,0,0,success
+Batch Run,ares_fc_39_2026_04_03,Ares FC 39: Jbalia vs. Diatta,md,success,C:/ai_risa_data/reports/ares_fc_39_2026_04_03_full_prim_report.md,0,0.2,1,1,0,0,success
+Batch Run,ares_fc_39_2026_04_03,Ares FC 39: Jbalia vs. Diatta,docx,success,C:/ai_risa_data/reports/ares_fc_39_2026_04_03_full_prim_report.docx,0,0.19,1,1,0,0,success
+Batch Run,ares_fc_39_2026_04_03,Ares FC 39: Jbalia vs. Diatta,pdf,success,C:/ai_risa_data/reports/ares_fc_39_2026_04_03_full_prim_report.pdf,0,0.61,1,1,0,0,success

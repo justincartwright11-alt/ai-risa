@@ -1,0 +1,10 @@
+schedule_name,event_id,title,format,status,output_path,exit_code,elapsed_seconds,bouts_total,resolved_bouts,tba_bouts,stubs_created_count,event_status
+Gemini Weekend Mixed Validation,ufc_327_2026_04_11,,md,failed,,1,0,0,0,0,0,failed
+Gemini Weekend Mixed Validation,ufc_327_2026_04_11,,docx,failed,,1,0,0,0,0,0,failed
+Gemini Weekend Mixed Validation,ufc_327_2026_04_11,,pdf,failed,,1,0,0,0,0,0,failed
+Gemini Weekend Mixed Validation,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,md,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.md,0,0.19,6,6,0,0,success
+Gemini Weekend Mixed Validation,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,docx,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.docx,0,0.18,6,6,0,0,success
+Gemini Weekend Mixed Validation,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,pdf,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.pdf,0,0.56,6,6,0,0,success
+Gemini Weekend Mixed Validation,pfl_africa_pretoria_2026_04_10,,md,failed,,1,0,0,0,0,0,failed
+Gemini Weekend Mixed Validation,pfl_africa_pretoria_2026_04_10,,docx,failed,,1,0,0,0,0,0,failed
+Gemini Weekend Mixed Validation,pfl_africa_pretoria_2026_04_10,,pdf,failed,,1,0,0,0,0,0,failed

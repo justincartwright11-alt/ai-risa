@@ -1,0 +1,2 @@
+flag_type,severity,scope_type,scope_value,measured_value,threshold_value,sample_count,details
+version_level_confirm_rate_drop,low,model_version,ai_risa_model_v1.0,1.0,0.5,13,Version-level confirm rate deterioration exceeded threshold.

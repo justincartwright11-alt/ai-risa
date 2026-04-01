@@ -1,0 +1,52 @@
+{
+  "event": "PFL Chicago: Sergio Pettis vs. Mitch McKee",
+  "date": "2026-04-11",
+  "venue": "Wintrust Arena, Chicago, IL",
+  "watch": "ESPN2 / ESPN+ (US) / Stan Sport (AU)",
+  "description": "A significant card for bantamweight data, featuring the former Bellator champion against a surging undefeated prospect.",
+  "bouts": [
+    {
+      "fighters": [
+        "Sergio Pettis",
+        "Mitch McKee"
+      ],
+      "weight_class": "Bantamweight (Main Event)",
+      "main_event": true
+    },
+    {
+      "fighters": [
+        "Jordan Newman",
+        "Josh Silveira"
+      ],
+      "weight_class": "Middleweight"
+    },
+    {
+      "fighters": [
+        "Raufeon Stots",
+        "Renat Khavalov"
+      ],
+      "weight_class": "Bantamweight"
+    },
+    {
+      "fighters": [
+        "Gabriel Braga",
+        "Cheyden Leialoha"
+      ],
+      "weight_class": "Featherweight"
+    },
+    {
+      "fighters": [
+        "Viviane Araujo",
+        "Shanna Young"
+      ],
+      "weight_class": "Women's Flyweight"
+    },
+    {
+      "fighters": [
+        "Slim Trabelsi",
+        "Rodrigo Nascimento"
+      ],
+      "weight_class": "Heavyweight"
+    }
+  ]
+}

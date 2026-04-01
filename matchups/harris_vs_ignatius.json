@@ -1,0 +1,9 @@
+{
+  "fighters": ["Matty Harris", "Franklin Ignatius"],
+  "weight_class": "Heavyweight",
+  "scheduled_rounds": 8,
+  "title_fight": false,
+  "event_date": "2026-04-04",
+  "venue": "The O2 Arena, London",
+  "notes": "Young heavyweights, both with power."
+}

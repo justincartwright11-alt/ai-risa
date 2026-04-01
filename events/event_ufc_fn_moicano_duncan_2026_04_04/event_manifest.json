@@ -1,0 +1,12 @@
+{
+  "event_id": "ufc_fn_moicano_duncan_2026_04_04",
+  "event_name": "UFC Fight Night — Moicano vs. Duncan",
+  "event_date": "2026-04-04",
+  "venue": "Meta APEX, Las Vegas",
+  "matchups": [
+    "renato_moicano_vs_chris_duncan",
+    "virna_jandiroba_vs_tabatha_ricci",
+    "abdul_rakhman_yakhyaev_vs_brendson_ribeiro",
+    "ethyn_ewing_vs_rafael_estevam"
+  ]
+}

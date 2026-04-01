@@ -1,0 +1,7 @@
+﻿[2026-04-01 13:13:48] === AI-RISA Pipeline: NORMAL RUN ===
+[2026-04-01 13:13:48] Start time: 2026-04-01 13:13:48
+[2026-04-01 13:13:48] Run folder: C:\ai_risa_data\runs\2026-04-01_131348
+[2026-04-01 13:13:48] Formats: md docx pdf
+[2026-04-01 13:13:48] Executing: python .\run_full_pipeline_auto.py --formats md --formats docx --formats pdf
+[2026-04-01 13:13:50] ERROR: The term 'python' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2026-04-01 13:13:50] Stack: at <ScriptBlock>, C:\ai_risa_data\schedule_full_pipeline_run.ps1: line 98

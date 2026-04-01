@@ -1,0 +1,29 @@
+{
+  "event": "ONE Friday Fights 149",
+  "date": "2026-04-03",
+  "venue": "Lumpinee Stadium, Bangkok, Thailand",
+  "watch": "ONE Championship App / YouTube / 7HD (Thailand)",
+  "bouts": [
+    {
+      "fighters": ["Tomyamkoong Bhumjaithai", "Bejenuta Maximus"],
+      "discipline": "Muay Thai",
+      "weight_class": "Flyweight",
+      "main_event": true
+    },
+    {
+      "fighters": ["Isannuea Sor Sasiwat", "Khunpon Aekmuangnon"],
+      "discipline": "Muay Thai",
+      "weight_class": "Flyweight"
+    },
+    {
+      "fighters": ["Payakrut Suajantokmuaythai", "Ikko Ota"],
+      "discipline": "Muay Thai",
+      "weight_class": "Strawweight"
+    },
+    {
+      "fighters": ["Isaiah Badato", "Retsu Sashida"],
+      "discipline": "Kickboxing",
+      "weight_class": "Flyweight"
+    }
+  ]
+}

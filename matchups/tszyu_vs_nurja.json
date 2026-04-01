@@ -1,0 +1,9 @@
+{
+  "fighters": ["Tim Tszyu", "Denis Nurja"],
+  "weight_class": "Middleweight",
+  "scheduled_rounds": 12,
+  "title_fight": false,
+  "event_date": "2026-04-05",
+  "venue": "Wollongong, Australia",
+  "notes": "Main event. Tszyu returns home for a world title push."
+}

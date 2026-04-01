@@ -1,0 +1,19 @@
+{
+  "event_id": "event_melbourne_fight_series_2026_03_28",
+  "event_name": "Melbourne Fight Series",
+  "event_date": "2026-03-28",
+  "location": "Club Italia Sporting Club, Melbourne, Australia",
+  "promotion": "Melbourne Fight Series",
+  "broadcast": "Daniel Kelly / Melbourne Fight Series",
+  "fights": [
+    {
+      "fight_order": 1,
+      "bout_type": "Main Event",
+      "sport": "mma",
+      "rules": "MMA",
+      "fighter_a": "TBA",
+      "fighter_b": "TBA"
+    }
+  ],
+  "notes": "Promoted by UFC veteran Daniel Kelly, typically featuring top-tier amateur and professional MMA talent from the region."
+}

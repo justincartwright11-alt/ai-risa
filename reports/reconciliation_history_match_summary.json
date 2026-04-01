@@ -1,0 +1,7 @@
+{
+  "total_reconciliation_rows": 13,
+  "matched_rows": 4,
+  "unmatched_rows": 10,
+  "conflict_rows": 2,
+  "match_rate": 0.3076923076923077
+}

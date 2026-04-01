@@ -1,0 +1,254 @@
+════════════════════════════════════════════════════════════════════════════════
+ AI-RISA PIPELINE v1.0 — SCHEDULER ACTIVATION READY
+════════════════════════════════════════════════════════════════════════════════
+
+STATUS:     ✅ All preparation complete. Ready for production deployment.
+DATE:       2026-04-01
+LOCATION:   C:\ai_risa_data\
+
+════════════════════════════════════════════════════════════════════════════════
+ WHAT'S READY
+════════════════════════════════════════════════════════════════════════════════
+
+✓ 6-Stage Pipeline Orchestrator (normalized schema, validated)
+✓ Windows Task Scheduler Integration (2 daily tasks)
+✓ Timestamped Run History (immutable, audit-trail enabled)
+✓ Retention Policy (configurable age/count cleanup)
+✓ Operator Documentation (setup, troubleshooting, rollback)
+✓ Activation Tools (batch + PowerShell scripts)
+✓ Complete Smoke Test Suite (12/12 passing)
+
+════════════════════════════════════════════════════════════════════════════════
+ ACTIVATION STEPS (≈10 minutes total)
+════════════════════════════════════════════════════════════════════════════════
+
+📌 STEP 1: Register Scheduler Tasks (≈1 minute)
+─────────────────────────────────────────────────────────────────────────────
+
+OPTION A (Recommended - Batch File):
+  1. Open File Explorer
+  2. Navigate to: C:\ai_risa_data\
+  3. Right-click on: activate_scheduler.bat
+  4. Select: "Run as administrator"
+  5. Wait for completion
+
+OPTION B (Alternative - PowerShell):
+  1. Open PowerShell as Administrator
+  2. Run these commands:
+     
+     cd C:\ai_risa_data
+     .\register_pipeline_tasks.ps1 -Enable
+
+Expected Output:
+  ✓ Registered: AI-RISA Pipeline Normal Run (Daily 14:00)
+  ✓ Registered: AI-RISA Pipeline Dry-Run (Daily 13:00)
+  ✓ All tasks registered successfully.
+
+
+📌 STEP 2: Verify Task Registration (≈1 minute)
+─────────────────────────────────────────────────────────────────────────────
+
+Run this command:
+  
+  .\register_pipeline_tasks.ps1 -List
+
+Should show:
+  ✓ Enabled  AI-RISA-Pipeline-Normal-Run    (Ready)
+  ✓ Enabled  AI-RISA-Pipeline-Dry-Run       (Ready)
+
+
+📌 STEP 3: Test Manual Dry-Run (≈2-3 minutes)
+─────────────────────────────────────────────────────────────────────────────
+
+Run this command:
+  
+  .\schedule_full_pipeline_dry_run.ps1
+
+Should complete with:
+  ✓ Exit code: 0
+  ✓ Status: success
+  ✓ New timestamped run folder created
+  ✓ launcher.log written with execution trace
+
+Check exit code:
+  
+  echo $LASTEXITCODE   (should be 0)
+
+
+📌 STEP 4: Confirm Run History (≈1 minute)
+─────────────────────────────────────────────────────────────────────────────
+
+Run this command:
+  
+  $idx = Get-Content .\runs\run_history_index.json -Raw | ConvertFrom-Json
+  $idx | Format-Table timestamp, mode, status, exit_code -AutoSize
+
+Should show at least one entry with:
+  ✓ mode: dry-run
+  ✓ status: success
+  ✓ exit_code: 0
+
+════════════════════════════════════════════════════════════════════════════════
+ AFTER ACTIVATION (What Happens Automatically)
+════════════════════════════════════════════════════════════════════════════════
+
+DAILY SCHEDULE:
+
+  13:00 (1:00 PM)  →  Dry-Run Task Executes
+                      • Runs in safe verification mode
+                      • Creates: runs\2026-MM-DD_13XXXX\
+                      • Entry appended to run_history_index.json
+                      
+  14:00 (2:00 PM)  →  Normal Task Executes
+                      • Full pipeline execution with reports
+                      • Creates: runs\2026-MM-DD_14XXXX\
+                      • Entry appended to run_history_index.json
+
+Run Folder Contents (8 files per execution):
+  ✓ launcher.log                         (execution trace)
+  ✓ full_pipeline_run_summary.json      (master summary)
+  ✓ upcoming_events_ingest_summary.json (stage 1)
+  ✓ upcoming_auto_summary.json           (stage 2)
+  ✓ dependency_resolution_summary.json  (stage 3)
+  ✓ prediction_queue_build_summary.json (stage 4)
+  ✓ prediction_queue_run_summary.json   (stage 5)
+  ✓ event_batch_run_summary.json        (stage 6)
+
+════════════════════════════════════════════════════════════════════════════════
+ KEY FILES
+════════════════════════════════════════════════════════════════════════════════
+
+Activation Tools:
+  • activate_scheduler.bat              (→ Use this: Right-click "Run as admin")
+  • activate_scheduler.ps1              (Alternative: PowerShell wrapper)
+
+Launchers:
+  • schedule_full_pipeline_run.ps1      (Normal execution)
+  • schedule_full_pipeline_dry_run.ps1  (Dry-run mode)
+
+Management:
+  • register_pipeline_tasks.ps1         (Task enable/disable/list)
+  • prune_run_history.py                (Retention policy)
+
+Documentation:
+  • ACTIVATION_READY.md                 (Quick reference)
+  • SCHEDULER_ACTIVATION.md             (Comprehensive guide)
+  • RUN_OPERATIONS.md                   (Full operator manual)
+  • BASELINE_v1.0_FROZEN.md             (Baseline record)
+
+Run History:
+  • runs/run_history_index.json         (Master index)
+  • runs/YYYY-MM-DD_HHMMSS/             (Timestamped run folders)
+
+════════════════════════════════════════════════════════════════════════════════
+ OPTIONAL: SET RETENTION POLICY DEFAULTS
+════════════════════════════════════════════════════════════════════════════════
+
+After activation, you can configure automatic cleanup:
+
+Preview (Dry-Run - no changes):
+  cd C:\ai_risa_data
+  python .\prune_run_history.py --dry-run --max-age 30 --max-runs 100
+
+Apply (Actually delete old runs):
+  python .\prune_run_history.py --max-age 30 --max-runs 100
+
+This keeps runs from last 30 days, max 100 total. Never deletes newest successful run.
+
+════════════════════════════════════════════════════════════════════════════════
+ SUCCESS METRICS
+════════════════════════════════════════════════════════════════════════════════
+
+Activation is successful when:
+
+✓ Both tasks appear in Task Scheduler (taskschd.msc → \AI-RISA\)
+✓ Both tasks show "Enabled" and "Ready" state
+✓ Manual dry-run completes with exit code 0
+✓ New entry appears in run_history_index.json
+✓ New timestamped folder created with 8 files
+✓ First scheduled dry-run executes at 13:00
+✓ First scheduled normal run executes at 14:00
+
+════════════════════════════════════════════════════════════════════════════════
+ QUICK COMMANDS REFERENCE
+════════════════════════════════════════════════════════════════════════════════
+
+cd C:\ai_risa_data                    # Navigate to repo
+
+List current tasks:
+  .\register_pipeline_tasks.ps1 -List
+
+Run dry-run now:
+  .\schedule_full_pipeline_dry_run.ps1
+
+Run normal now:
+  .\schedule_full_pipeline_run.ps1
+
+View run history:
+  Get-Content .\runs\run_history_index.json -Raw | ConvertFrom-Json
+
+Check latest run log:
+  $latest = Get-ChildItem .\runs -Dir | Sort Name -Descending | Select -First 1
+  Get-Content (Join-Path $latest.FullName launcher.log) | Select -Last 10
+
+Save as job (SYSTEM account):
+  Get-ScheduledTask -TaskPath '\AI-RISA\' | Format-List TaskName, State, Principal
+
+Disable tasks temporarily:
+  .\register_pipeline_tasks.ps1 -Disable
+
+Re-enable tasks:
+  .\register_pipeline_tasks.ps1 -Enable
+
+════════════════════════════════════════════════════════════════════════════════
+ WHAT TO DO NEXT
+════════════════════════════════════════════════════════════════════════════════
+
+DO THIS NOW:
+  1. Open File Explorer → C:\ai_risa_data\
+  2. Right-click activate_scheduler.bat → Run as administrator
+  3. Wait ≈1 minute for completion
+  4. Follow Steps 2-4 above to verify
+
+AFTER VERIFICATION:
+  → Baseline v1.0 is frozen and production-ready
+  → Scheduler is live and executing daily
+  → This completes the core AI-RISA automation stack
+
+ONGOING (Optional):
+  → Monitor first scheduled executions (13:00 and 14:00)
+  → Set retention policy defaults (30 days / 100 max runs recommended)
+  → Review run_history_index.json weekly
+  → Consult RUN_OPERATIONS.md for troubleshooting
+
+════════════════════════════════════════════════════════════════════════════════
+ DOCUMENTATION LOCATIONS
+════════════════════════════════════════════════════════════════════════════════
+
+For Quick Start:
+  → ACTIVATION_READY.md (this file has essentials)
+
+For Full Details:
+  → SCHEDULER_ACTIVATION.md (comprehensive guide, post-activation verification)
+
+For Operations:
+  → RUN_OPERATIONS.md (setup, troubleshooting, rollback procedures)
+
+For Baseline:
+  → BASELINE_v1.0_FROZEN.md (version record, component inventory)
+
+════════════════════════════════════════════════════════════════════════════════
+ STATUS: READY FOR PRODUCTION ACTIVATION ✅
+════════════════════════════════════════════════════════════════════════════════
+
+All preparation complete. The AI-RISA scheduler is ready to activate.
+
+Expected outcome after completing Steps 1-4:
+  • Baseline v1.0 frozen as production-ready
+  • Scheduler live with daily task execution
+  • Run history growing with each execution
+  • Core automation stack complete
+
+This is a valid completion point for the AI-RISA project milestone.
+
+════════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,18 @@
+{
+  "event_name": "Boxing: Wilder vs Chisora",
+  "date": "2026-04-04",
+  "venue": "The O2 Arena, London",
+  "main_event": "Wilder vs Chisora",
+  "co_main": "Riley vs Masternak",
+  "undercard": [
+    "Bentley vs Saavedra",
+    "Harris vs Ignatius"
+  ],
+  "matchups": [
+    "wilder_vs_chisora.json",
+    "riley_vs_masternak.json",
+    "bentley_vs_saavedra.json",
+    "harris_vs_ignatius.json"
+  ],
+  "notes": "DAZN broadcast. Major UK boxing event."
+}

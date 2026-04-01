@@ -1,0 +1,27 @@
+# PFL Chicago 2026 Event Metadata
+
+event_id: pfl_chicago_2026_04_11
+date: Saturday, April 11, 2026
+location: Wintrust Arena, Chicago, IL
+watch: ESPN2 / ESPN+ (US) / Stan Sport (AU)
+description: A significant card for bantamweight data, featuring the former Bellator champion against a surging undefeated prospect.
+
+bouts:
+  - weight_class: Bantamweight (Main Event)
+    red: Sergio Pettis (25-7)
+    blue: Mitch McKee (10-0)
+  - weight_class: Middleweight
+    red: Jordan Newman (8-0)
+    blue: Josh Silveira (15-5)
+  - weight_class: Bantamweight
+    red: Raufeon Stots (21-3)
+    blue: Renat Khavalov (11-0)
+  - weight_class: Featherweight
+    red: Gabriel Braga (16-3)
+    blue: Cheyden Leialoha (11-2)
+  - weight_class: Women's Flyweight
+    red: Viviane Araujo (13-7)
+    blue: Shanna Young (11-8)
+  - weight_class: Heavyweight
+    red: Slim Trabelsi (8-1)
+    blue: Rodrigo Nascimento (12-4)

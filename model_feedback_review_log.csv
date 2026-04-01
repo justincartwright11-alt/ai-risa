@@ -1,0 +1,11 @@
+reviewed_at,composite_score,review_label,issue_type,model_version,priority_band
+2026-03-23T10:00:00,0.15,accept,scoring_error,v1,Critical
+2026-03-23T11:00:00,0.18,confirm,scoring_error,v1,Critical
+2026-03-24T09:00:00,0.35,accept,coverage_gap,v1,High
+2026-03-24T12:00:00,0.85,reject,coverage_gap,v1,Low
+2026-03-25T14:00:00,0.45,accept,scoring_error,v1,Medium
+2026-03-26T15:00:00,0.12,confirm,coverage_gap,v1,Critical
+2026-03-27T16:00:00,0.78,accept,scoring_error,v1,Low
+2026-03-28T17:00:00,0.33,accept,coverage_gap,v1,High
+2026-03-29T18:00:00,0.19,accept,scoring_error,v1,Critical
+2026-03-30T19:00:00,0.41,accept,coverage_gap,v1,Medium

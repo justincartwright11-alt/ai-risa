@@ -1,0 +1,23 @@
+{
+  "event": "ONE Friday Fights 149",
+  "date": "2026-04-03",
+  "venue": "Lumpinee Stadium, Bangkok, Thailand",
+  "results": {
+    "tomyamkoong_bhumjaithai_vs_bejenuta_maximus.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/tomyamkoong_bhumjaithai_vs_bejenuta_maximus_prediction.json"
+    },
+    "isannuea_sor_sasiwat_vs_khunpon_aekmuangnon.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/isannuea_sor_sasiwat_vs_khunpon_aekmuangnon_prediction.json"
+    },
+    "payakrut_suajantokmuaythai_vs_ikko_ota.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/payakrut_suajantokmuaythai_vs_ikko_ota_prediction.json"
+    },
+    "isaiah_badato_vs_retsu_sashida.json": {
+      "status": "passed",
+      "prediction_file": "C:/ai_risa_data/predictions/isaiah_badato_vs_retsu_sashida_prediction.json"
+    }
+  }
+}

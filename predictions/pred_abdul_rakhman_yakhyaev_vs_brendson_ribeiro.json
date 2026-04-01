@@ -1,0 +1,13 @@
+{
+  "matchup_id": "abdul_rakhman_yakhyaev_vs_brendson_ribeiro",
+  "predicted_winner": "fighter_abdul_rakhman_yakhyaev",
+  "method": "Decision",
+  "confidence": 0.6,
+  "decision_structure": "Standard AI-RISA logic",
+  "energy_use": "Normal",
+  "fatigue_failure_points": "Late rounds",
+  "mental_condition": "Stable",
+  "collapse_triggers": "High pressure",
+  "main_tactical_edge": "Technical advantage",
+  "round_flow_projection": "Likely to go full rounds"
+}

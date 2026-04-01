@@ -1,0 +1,5 @@
+band_value,band_label,review_count,accept_count,accept_rate,confirm_count,confirm_rate,action_taken_count,action_taken_rate,false_positive_count,false_positive_rate,avg_severity_component,avg_recurrence_component,avg_affected_count_component,avg_metric_gap_component,avg_composite_score
+high,High,6,1,0.1667,0,0.0,0,0.0,0,0.0,,,,,0.965
+review_next,Review Next,0,0,0.0,0,0.0,0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0
+monitor,Monitor,1,0,0.0,0,0.0,0,0.0,0,0.0,,,,,0.53
+backlog,Backlog,6,5,0.8333,0,0.0,0,0.0,0,0.0,,,,,0.125

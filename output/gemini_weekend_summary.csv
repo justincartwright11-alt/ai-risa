@@ -1,0 +1,4 @@
+schedule_name,event_id,title,format,status,output_path,exit_code,elapsed_seconds,bouts_total,resolved_bouts,tba_bouts,stubs_created_count,event_status
+Gemini Weekend Apr 10-11 2026,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,md,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.md,0,0.2,6,6,0,0,success
+Gemini Weekend Apr 10-11 2026,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,docx,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.docx,0,0.2,6,6,0,0,success
+Gemini Weekend Apr 10-11 2026,pfl_chicago_2026_04_11,PFL Chicago: Sergio Pettis vs. Mitch McKee,pdf,success,C:/ai_risa_data/reports/pfl_chicago_2026_04_11_full_prim_report.pdf,0,0.61,6,6,0,0,success

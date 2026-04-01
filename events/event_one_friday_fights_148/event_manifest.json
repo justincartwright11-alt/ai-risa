@@ -1,0 +1,61 @@
+{
+  "event_id": "event_one_friday_fights_148",
+  "event_name": "ONE Friday Fights 148",
+  "date": "2026-03-27",
+  "location": "Lumpinee Stadium, Bangkok, Thailand",
+  "promotion": "ONE Championship",
+  "broadcast": [
+    "YouTube (Global)",
+    "Watch.ONEFC.com"
+  ],
+  "matchups": [
+    {
+      "matchup_id": "kongchai_chanaidonmueang_vs_mehrdad_khanzadeh",
+      "fighters": ["Kongchai Chanaidonmueang", "Mehrdad Khanzadeh"],
+      "fighter_a": "Kongchai Chanaidonmueang",
+      "fighter_b": "Mehrdad Khanzadeh",
+      "fighter_a_id": "fighter_kongchai_chanaidonmueang",
+      "fighter_b_id": "fighter_mehrdad_khanzadeh",
+      "weight_class": "Strawweight",
+      "rules": "Muay Thai",
+      "sport": "muay thai",
+      "main_event": true
+    },
+    {
+      "matchup_id": "denkriangkrai_mavinn_vs_valerii_strungari",
+      "fighters": ["Denkriangkrai Mavinn", "Valerii Strungari"],
+      "fighter_a": "Denkriangkrai Mavinn",
+      "fighter_b": "Valerii Strungari",
+      "fighter_a_id": "fighter_denkriangkrai_mavinn",
+      "fighter_b_id": "fighter_valerii_strungari",
+      "weight_class": "Flyweight",
+      "rules": "Muay Thai",
+      "sport": "muay thai",
+      "main_event": false
+    },
+    {
+      "matchup_id": "velihan_palit_vs_ranma",
+      "fighters": ["Velihan Palit", "Ranma"],
+      "fighter_a": "Velihan Palit",
+      "fighter_b": "Ranma",
+      "fighter_a_id": "fighter_velihan_palit",
+      "fighter_b_id": "fighter_ranma",
+      "weight_class": "Bantamweight",
+      "rules": "Kickboxing",
+      "sport": "kickboxing",
+      "main_event": false
+    },
+    {
+      "matchup_id": "sattor_rizoev_vs_felipe_silva",
+      "fighters": ["Sattor Rizoev", "Felipe Silva"],
+      "fighter_a": "Sattor Rizoev",
+      "fighter_b": "Felipe Silva",
+      "fighter_a_id": "fighter_sattor_rizoev",
+      "fighter_b_id": "fighter_felipe_silva",
+      "weight_class": "Flyweight",
+      "rules": "MMA",
+      "sport": "mma",
+      "main_event": false
+    }
+  ]
+}

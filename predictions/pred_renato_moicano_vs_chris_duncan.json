@@ -1,0 +1,13 @@
+{
+  "matchup_id": "renato_moicano_vs_chris_duncan",
+  "predicted_winner": "fighter_renato_moicano",
+  "method": "Decision",
+  "confidence": 0.6,
+  "decision_structure": "Standard AI-RISA logic",
+  "energy_use": "Normal",
+  "fatigue_failure_points": "Late rounds",
+  "mental_condition": "Stable",
+  "collapse_triggers": "High pressure",
+  "main_tactical_edge": "Technical advantage",
+  "round_flow_projection": "Likely to go full rounds"
+}

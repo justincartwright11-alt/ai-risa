@@ -1,0 +1,83 @@
+{
+  "review_log_path": "C:\\ai_risa_data\\reports\\model_feedback_review_log.csv",
+  "raw_review_rows": 40,
+  "normalized_review_rows": 13,
+  "columns_found": [
+    "reviewed_at",
+    "composite_score",
+    "review_label",
+    "issue_type",
+    "model_version"
+  ],
+  "parsed_date_rows": 13,
+  "banded_rows": 13,
+  "current_week_rows": 7,
+  "dropped_row_reason_counts": {
+    "invalid_reviewed_at": 24,
+    "invalid_composite_score": 0,
+    "invalid_review_decision": 9
+  },
+  "priority_band_summary_rows": 4,
+  "issue_type_trend_rows": 2,
+  "alert_count": 1,
+  "flags": [
+    "version_level_confirm_rate_drop"
+  ],
+  "weekly_accept_rate": 0.7143,
+  "weekly_confirm_rate": 0.0,
+  "weekly_action_taken_rate": 0.0,
+  "alert_debug": {
+    "threshold_drift_detected": {
+      "band": "high",
+      "measured_false_positive_rate": 0.0,
+      "threshold": 0.6,
+      "sample_count": 6,
+      "min_required": 5,
+      "eligible": true,
+      "would_fire_without_guard": false,
+      "fired": false
+    },
+    "recurrence_underweight_risk": {
+      "band": "backlog",
+      "measured_confirm_rate": 0.0,
+      "threshold": 0.6,
+      "sample_count": 6,
+      "min_required": 5,
+      "eligible": true,
+      "would_fire_without_guard": false,
+      "fired": false
+    },
+    "issue_type_quality_drop": [
+      {
+        "issue_type": "quality",
+        "prev_period": "2026-03-10",
+        "curr_period": "2026-03-17",
+        "prev_confirm_rate": 0.0,
+        "curr_confirm_rate": 0.0,
+        "drop_value": 0.0,
+        "prev_count": 6,
+        "curr_count": 7,
+        "eligible": true,
+        "threshold": 0.5,
+        "would_fire_without_guard": false,
+        "fired": false
+      }
+    ],
+    "family_level_repeat_failure": {
+      "top_family": "unknown_family",
+      "repeat_failure_count": 0,
+      "threshold": 3,
+      "fired": false
+    },
+    "version_level_confirm_rate_drop": {
+      "model_version": "ai_risa_model_v1.0",
+      "confirm_rate_inverse": 1.0,
+      "threshold": 0.5,
+      "sample_count": 13,
+      "min_required": 5,
+      "eligible": true,
+      "would_fire_without_guard": true,
+      "fired": true
+    }
+  }
+}
