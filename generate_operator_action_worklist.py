@@ -170,7 +170,15 @@ def summarize_statuses(items: list[dict[str, Any]]) -> dict[str, Any]:
 
 def build_handoff(items: list[dict[str, Any]]) -> dict[str, Any]:
     open_items = [row for row in items if isinstance(row, dict) and row.get("is_open")]
-    top_open = open_items[:5]
+    top_open = sorted(
+        open_items,
+        key=lambda row: (
+            int(row.get("priority") or 99),
+            str(row.get("severity") or "info"),
+            STATUS_ORDER.get(str(row.get("workflow_status") or "new"), 99),
+            str(row.get("title") or ""),
+        ),
+    )[:5]
     return {
         "top_open_actions": [
             {
@@ -187,11 +195,11 @@ def build_handoff(items: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def build_worklist_payload(repo_root: Path) -> dict[str, Any]:
+def build_worklist_payload(repo_root: Path, output_dir_rel: Path) -> dict[str, Any]:
     queue_payload = build_action_queue_payload(repo_root)
     queue_items = queue_payload.get("items") if isinstance(queue_payload.get("items"), list) else []
 
-    output_dir = repo_root / OUTPUT_DIR
+    output_dir = repo_root / output_dir_rel
     state_path = output_dir / STATE_JSON
     state_payload = ensure_state_store(state_path, queue_items)
     state_items = state_payload.get("items") if isinstance(state_payload.get("items"), dict) else {}
@@ -205,7 +213,7 @@ def build_worklist_payload(repo_root: Path) -> dict[str, Any]:
         "worklist_version": "v1.5-slice-2",
         "source_action_queue_version": queue_payload.get("action_queue_version"),
         "state_store": {
-            "path": normalize_path(OUTPUT_DIR / STATE_JSON),
+            "path": normalize_path(output_dir_rel / STATE_JSON),
             "state_version": state_payload.get("state_version"),
         },
         "queue_summary": queue_payload.get("queue_summary"),
@@ -273,9 +281,10 @@ def main() -> int:
         print(f"ERROR: repo root not found: {repo_root}", file=sys.stderr)
         return 1
 
-    payload = build_worklist_payload(repo_root)
+    output_dir_rel = Path(args.output_dir)
+    payload = build_worklist_payload(repo_root, output_dir_rel)
 
-    out_dir = repo_root / args.output_dir
+    out_dir = repo_root / output_dir_rel
     out_dir.mkdir(parents=True, exist_ok=True)
 
     out_json = out_dir / WORKLIST_JSON
