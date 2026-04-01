@@ -118,6 +118,11 @@
 - added approval-gated proposal packages for confidence-threshold review, confidence-bucket coverage review, miss-family weighting review, rule-review targets, and data-gap prerequisite gates
 - added runtime-generated controlled model-adjustment proposal artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
 
+## v2.1-adjustment-approval-ledger-slice-1
+- added a read-only model-adjustment approval ledger generator derived from controlled model-adjustment proposal artifacts
+- added explicit control-state defaults for pending review, undecided outcome, blocked application readiness, reviewer-role requirements, and validation gating metadata
+- added runtime-generated approval-ledger artifacts in JSON and Markdown without model mutation, auto-approval, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
