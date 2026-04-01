@@ -82,3 +82,13 @@
 - added prioritized recommended actions so the most important operator action appears first
 - added compact source-summary health and run-to-run change snapshot blocks derived read-only from existing summaries and run history
 - preserved pipeline behavior and canonical schemas (dashboard usability/read-layer only)
+
+## v1.5-operator-workflows-slice-1
+- added a read-only operator action queue generator derived from existing dashboard and reporting signals
+- prioritized queue items by severity and freshness with suggested handling states for operator follow-up
+- added runtime-generated JSON and Markdown action-queue artifacts without changing pipeline logic or scheduler behavior
+
+## v1.5-operator-workflows-slice-2
+- added a separate operator workflow state overlay with local statuses such as new, acknowledged, deferred, and resolved
+- added a merged operator worklist artifact that overlays local operator state on the read-only derived action queue
+- preserved queue and dashboard sources as read-only inputs with no pipeline, scheduler, or canonical schema changes
