@@ -45,6 +45,10 @@ def append_skip_warning(warnings, event_id, bout_id, warning_type, detail=None):
     warnings.append(warning)
 
 
+def bump_reason(reason_code_counts, code):
+    reason_code_counts[code] = reason_code_counts.get(code, 0) + 1
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI-RISA Prediction Queue Builder")
     parser.add_argument("--summary-path", default=SUMMARY_PATH)
@@ -77,6 +81,7 @@ def main():
         "excluded_unresolved_matchup_mapping": 0,
         "excluded_insufficient_enrichment": 0,
     }
+    reason_code_counts = {}
 
     for row in resolver_rows:
         actions = row.get("actions", [])
@@ -87,29 +92,34 @@ def main():
             if "unresolved_missing_fighters" in actions:
                 exclusion_counts["excluded_unresolved_fighter_identity"] += 1
                 exclusion_counts["excluded_insufficient_enrichment"] += 1
+                bump_reason(reason_code_counts, "unresolved_missing_fighters")
+                bump_reason(reason_code_counts, "insufficient_enrichment")
                 append_skip_warning(
                     warnings,
                     event_id,
                     bout_id,
-                    "unresolved_fighter_identity",
+                    "unresolved_missing_fighters",
                     "resolver reported unresolved_missing_fighters",
                 )
-                skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_fighter_identity"})
+                skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_missing_fighters"})
             elif "unresolved_partial_fighters" in actions:
                 exclusion_counts["excluded_partial_fighter_identity"] += 1
                 exclusion_counts["excluded_insufficient_enrichment"] += 1
+                bump_reason(reason_code_counts, "unresolved_partial_fighters")
+                bump_reason(reason_code_counts, "insufficient_enrichment")
                 append_skip_warning(
                     warnings,
                     event_id,
                     bout_id,
-                    "partial_fighter_identity",
+                    "unresolved_partial_fighters",
                     "resolver reported unresolved_partial_fighters",
                 )
-                skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "partial_fighter_identity"})
+                skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_partial_fighters"})
             continue
 
         if "skipped_tba" in actions:
             exclusion_counts["excluded_tba"] += 1
+            bump_reason(reason_code_counts, "skipped_tba")
             append_skip_warning(warnings, event_id, bout_id, "skipped_tba")
             skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "skipped_tba"})
             continue
@@ -123,32 +133,38 @@ def main():
         if not fighter_1_id and not fighter_2_id:
             exclusion_counts["excluded_unresolved_fighter_identity"] += 1
             exclusion_counts["excluded_insufficient_enrichment"] += 1
+            bump_reason(reason_code_counts, "unresolved_missing_fighters")
+            bump_reason(reason_code_counts, "insufficient_enrichment")
             append_skip_warning(
                 warnings,
                 event_id,
                 bout_id,
-                "unresolved_fighter_identity",
+                "unresolved_missing_fighters",
                 "both fighter ids unresolved during queue build",
             )
-            skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_fighter_identity"})
+            skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_missing_fighters"})
             continue
 
         if not fighter_1_id or not fighter_2_id:
             exclusion_counts["excluded_partial_fighter_identity"] += 1
             exclusion_counts["excluded_insufficient_enrichment"] += 1
+            bump_reason(reason_code_counts, "unresolved_partial_fighters")
+            bump_reason(reason_code_counts, "insufficient_enrichment")
             append_skip_warning(
                 warnings,
                 event_id,
                 bout_id,
-                "partial_fighter_identity",
+                "unresolved_partial_fighters",
                 "one fighter id unresolved during queue build",
             )
-            skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "partial_fighter_identity"})
+            skipped_rows.append({"event_id": event_id, "bout_id": bout_id, "reason": "unresolved_partial_fighters"})
             continue
 
         if not matchup_id:
             exclusion_counts["excluded_unresolved_matchup_mapping"] += 1
             exclusion_counts["excluded_insufficient_enrichment"] += 1
+            bump_reason(reason_code_counts, "unresolved_matchup_mapping")
+            bump_reason(reason_code_counts, "insufficient_enrichment")
             append_skip_warning(
                 warnings,
                 event_id,
@@ -220,6 +236,7 @@ def main():
         "details": {
             "rows": rows,
             "skipped_rows": skipped_rows,
+            "reason_code_counts": reason_code_counts,
         },
     }
 

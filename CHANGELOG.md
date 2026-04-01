@@ -36,3 +36,8 @@
 - hardened queue builder handling for unresolved and partial enrichment states from resolver outputs
 - added explicit queue-build diagnostics for unresolved fighter identity, partial identity, and unresolved matchup mapping
 - prevented insufficiently enriched rows from silent queue promotion while preserving queue row compatibility for valid fights
+
+## v1.2-source-hardening-slice-4
+- standardized unresolved/partial reason-code wording across resolver and queue-build warning surfaces
+- added coherent insufficient-enrichment count/reporting in resolver summary
+- added queue-build reason-code tally for operator visibility while preserving existing summary contracts

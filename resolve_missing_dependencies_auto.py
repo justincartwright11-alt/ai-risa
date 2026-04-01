@@ -184,6 +184,9 @@ def main():
 
     counts.update(action_counts)
     counts.update({k: v for k, v in unresolved_counts.items() if v > 0})
+    counts["insufficient_enrichment"] = (
+        unresolved_counts["unresolved_missing_fighters"] + unresolved_counts["unresolved_partial_fighters"]
+    )
     counts["processed_events"] = len(event_files)
     counts["processed_bouts"] = total_bouts
 
@@ -193,6 +196,8 @@ def main():
         warnings.append({"type": "unresolved_missing_fighters", "count": unresolved_counts["unresolved_missing_fighters"]})
     if unresolved_counts["unresolved_partial_fighters"] > 0:
         warnings.append({"type": "unresolved_partial_fighters", "count": unresolved_counts["unresolved_partial_fighters"]})
+    if counts["insufficient_enrichment"] > 0:
+        warnings.append({"type": "insufficient_enrichment", "count": counts["insufficient_enrichment"]})
 
     summary_payload = {
         "stage": "dependency_resolution",
