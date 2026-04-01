@@ -168,6 +168,11 @@
 - added policy fields for execution-policy state, governance-only mode, execution permission, policy blockers, required enablement conditions, required operator role, prohibited actions, rollback references, and policy notes
 - added runtime-generated execution policy artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
 
+## v3.1-controlled-execution-enablement-criteria-slice-1
+- added a read-only controlled execution-enablement criteria generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, dry-run plans, authorization records, execution intents, preflight records, readiness decisions, and execution policy
+- added criteria fields for enablement state/status, required criteria list, currently unmet criteria, required operator role, enablement blockers, rollback references, and governance-only criteria notes
+- added runtime-generated execution-enablement criteria artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
