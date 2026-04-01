@@ -97,3 +97,13 @@
 - added a read-only automation and escalation queue derived from the operator worklist
 - flagged escalation, reminder, priority-boost, and handoff recommendations without mutating workflow state automatically
 - added runtime-generated JSON and Markdown automation queue artifacts without changing pipeline or scheduler behavior
+
+## v1.6-operator-automation-slice-2
+- added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
+- added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
+- preserved automation queue, worklist, dashboard, and pipeline outputs as read-only inputs with no scheduler or canonical schema changes
+
+## v1.6-operator-automation-slice-1
+- added a read-only automation and escalation queue derived from the operator worklist
+- flagged escalation, reminder, priority-boost, and handoff recommendations without mutating workflow state automatically
+- added runtime-generated JSON and Markdown automation queue artifacts without changing pipeline or scheduler behavior
