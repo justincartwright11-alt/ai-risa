@@ -133,6 +133,11 @@
 - added conservative gate classification output (`blocked`, `conditionally_eligible`, `eligible_for_controlled_application`) with gate decisions, reasons, pre-application checks, and operator-role requirements
 - added runtime-generated application-gate artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
 
+## v2.4-controlled-application-packets-slice-1
+- added a read-only controlled application packet generator derived from proposals, approval-ledger state, validation-manifest state, and application-gate state
+- added operator-ready packet fields for packet status, manual-review-only mode, planned change scope, required sources/backups/checks, rollback plan, and conservative execution readiness
+- added runtime-generated controlled application packet artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
