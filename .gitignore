@@ -24,6 +24,8 @@ ops/automation/operator_automation_queue.md
 ops/automation/operator_automation_policy.json
 ops/automation/operator_automation_plan.json
 ops/automation/operator_automation_plan.md
+ops/calibration/model_calibration_report.json
+ops/calibration/model_calibration_report.md
 
 # Timestamped run folders are operational outputs
 runs/*
