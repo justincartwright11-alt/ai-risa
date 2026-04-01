@@ -206,3 +206,9 @@
 - added a canonical release-conditions register that defines release state, release status, required release conditions, currently unmet release conditions, required release evidence, required release authority, and unresolved release blockers per proposal and prohibition
 - added release-condition fields for release condition id, policy id, criteria id, ineligibility id, prohibition id, release state/status, required release conditions/evidence/authority, required operator role, release blockers, rollback reference, and governance-only release notes
 - added runtime-generated execution release-conditions artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
+
+## v3.6-controlled-execution-release-authority-slice-1
+- added a read-only controlled execution release-authority generator derived from execution release conditions, execution prohibition matrix, execution ineligibility register, execution blocker registry, execution policy, execution enablement criteria, readiness decisions, preflight records, execution intents, authorizations, and upstream governance artifacts
+- added a canonical release-authority register that defines release authority state, authority class, required signoff chain, required release authority, authority availability, and authority blockers per proposal and release-condition lineage
+- added release-authority fields for release authority id, policy id, criteria id, ineligibility id, prohibition id, release condition id, release authority state, authority class, required signoff chain, required release authority, authority availability, authority blockers, required operator role, rollback reference, and governance-only authority notes
+- added runtime-generated execution release-authority artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
