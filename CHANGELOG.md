@@ -71,3 +71,8 @@
 - added a minimal read-only operator dashboard artifact generator that consumes existing summary outputs and reporting-quality blocks
 - added operator dashboard artifacts in JSON and Markdown at ops/dashboard for fast latest-run operational visibility
 - preserved pipeline behavior and canonical schemas (dashboard/read-layer only)
+
+## v1.4-operator-dashboard-cleanup
+- fixed dashboard source-summary metadata checks to use repo-root-qualified paths for correct existence and timestamp reporting
+- reclassified ops/dashboard/operator_dashboard.json and ops/dashboard/operator_dashboard.md as runtime-generated artifacts
+- added ignore rules and removed dashboard artifact outputs from Git tracking while keeping the generator script tracked

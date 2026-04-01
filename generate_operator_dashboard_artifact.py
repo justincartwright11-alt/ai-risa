@@ -62,16 +62,16 @@ def safe_read_json(path: Path) -> tuple[Any, str | None]:
         return None, f"unreadable: {exc}"
 
 
-def file_meta(path: Path) -> dict[str, Any]:
-    if not path.exists():
+def file_meta(abs_path: Path, rel_path: Path) -> dict[str, Any]:
+    if not abs_path.exists():
         return {
-            "path": normalize_path(path),
+            "path": normalize_path(rel_path),
             "exists": False,
             "last_modified_utc": None,
         }
-    mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
+    mtime = datetime.fromtimestamp(abs_path.stat().st_mtime, tz=timezone.utc).isoformat()
     return {
-        "path": normalize_path(path),
+        "path": normalize_path(rel_path),
         "exists": True,
         "last_modified_utc": mtime,
     }
@@ -109,7 +109,7 @@ def collect_source_summaries(repo_root: Path) -> list[dict[str, Any]]:
         summary, error = safe_read_json(abs_path)
         entry = {
             "label": label,
-            **file_meta(rel_path),
+            **file_meta(abs_path, rel_path),
             "read_error": error,
             "stage": summary.get("stage") if isinstance(summary, dict) else None,
             "status": summary.get("status") if isinstance(summary, dict) else None,

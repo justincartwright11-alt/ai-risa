@@ -12,6 +12,8 @@ ops/state/
 ops/checklists/
 ops/logs/
 ops/_slice1_tests/
+ops/dashboard/operator_dashboard.json
+ops/dashboard/operator_dashboard.md
 
 # Timestamped run folders are operational outputs
 runs/*
