@@ -41,3 +41,8 @@
 - standardized unresolved/partial reason-code wording across resolver and queue-build warning surfaces
 - added coherent insufficient-enrichment count/reporting in resolver summary
 - added queue-build reason-code tally for operator visibility while preserving existing summary contracts
+
+## v1.2-source-hardening-slice-5
+- hardened full-pipeline summary propagation to surface resolver and queue-build unresolved/partial/insufficient-enrichment diagnostics at top level
+- added additive operator-facing enrichment diagnostic warnings and count rollups in full-pipeline summary output
+- preserved canonical stage contracts and run behavior (no scheduler or execution semantic changes)
