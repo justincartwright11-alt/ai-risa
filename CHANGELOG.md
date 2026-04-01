@@ -103,6 +103,11 @@
 - added calibration diagnostics for evaluated accuracy, confidence buckets, over/underconfidence indicators, and recurring miss-pattern summaries
 - added runtime-generated calibration report artifacts in JSON and Markdown with recommended follow-up actions, without changing pipeline or scheduler behavior
 
+## v1.8-calibration-actions-slice-1
+- added a read-only calibration action queue generator derived from the model calibration report, reconciliation history, and pending prediction backlog
+- added prioritized action categories for overconfidence review, sparse-confidence bucket review, recurring miss-pattern investigation, and data-gap cleanup
+- added runtime-generated calibration action queue artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
