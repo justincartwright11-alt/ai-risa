@@ -64,6 +64,8 @@ ops/model_adjustments/model_adjustment_execution_release_conditions.json
 ops/model_adjustments/model_adjustment_execution_release_conditions.md
 ops/model_adjustments/model_adjustment_execution_release_authority.json
 ops/model_adjustments/model_adjustment_execution_release_authority.md
+ops/model_adjustments/model_adjustment_execution_release_gate_assessments.json
+ops/model_adjustments/model_adjustment_execution_release_gate_assessments.md
 
 # Timestamped run folders are operational outputs
 runs/*
