@@ -426,9 +426,18 @@ def main():
     # Warnings: metadata-only, missing-bouts
     for row in csv_rows:
         if row['status'] == 'skipped_metadata_only':
-            warnings.append({'event_id': row['event_id'], 'type': 'skipped_metadata_only'})
+            warnings.append({
+                'event_id': row['event_id'],
+                'type': 'skipped_metadata_only',
+                'message': 'Event was skipped in metadata-only mode; per-format report generation was not attempted.'
+            })
         if row['tba_bouts'] > 0:
-            warnings.append({'event_id': row['event_id'], 'type': 'missing_bouts', 'count': row['tba_bouts']})
+            warnings.append({
+                'event_id': row['event_id'],
+                'type': 'missing_bouts',
+                'count': row['tba_bouts'],
+                'message': f"Event has {row['tba_bouts']} bout(s) with incomplete matchup identity (coverage limit)."
+            })
     # Errors: true runnable-event failures
     for row in csv_rows:
         if row['status'] == 'failed':
@@ -443,6 +452,26 @@ def main():
         'skipped_existing': counts.get('skipped_existing', 0),
         'missing_bouts_total': sum(int(w.get('count', 0) or 0) for w in warnings if w.get('type') == 'missing_bouts'),
     }
+
+    informational = [
+        {
+            'event_id': w.get('event_id'),
+            'type': w.get('type'),
+            'message': w.get('message')
+        }
+        for w in warnings
+        if w.get('type') == 'skipped_metadata_only'
+    ]
+    action_needed = [
+        {
+            'event_id': w.get('event_id'),
+            'type': w.get('type'),
+            'count': w.get('count'),
+            'message': w.get('message')
+        }
+        for w in warnings
+        if w.get('type') == 'missing_bouts'
+    ]
 
     if errors:
         interpretation_note = 'Batch run contains event-level failures. Review errors before using generated outputs.'
@@ -475,6 +504,14 @@ def main():
             "operator_interpretation": {
                 "note": interpretation_note,
                 "warning_non_fatal": bool(warnings and not errors),
+            },
+            "warning_readability": {
+                "informational_count": len(informational),
+                "non_fatal_operational_count": 0,
+                "action_needed_count": len(action_needed),
+                "informational_examples": informational[:5],
+                "non_fatal_operational_examples": [],
+                "action_needed_examples": action_needed[:5],
             },
         }
     }

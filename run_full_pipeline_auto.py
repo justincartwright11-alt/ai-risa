@@ -244,8 +244,23 @@ def propagate_enrichment_diagnostics(summary, stage_name, stage_payload):
                     "type": "enrichment_diagnostic",
                     "reason": reason,
                     "count": count,
+                    "message": f"{stage_name} reported {count} item(s) for enrichment diagnostic '{reason}'.",
                 }
             )
+
+
+def classify_warning_readability(warning):
+    wtype = warning.get("type")
+    reason = warning.get("reason")
+    if wtype == "dry_run_soft_skip":
+        return "informational"
+    if wtype == "enrichment_diagnostic":
+        if reason == "skipped_tba":
+            return "non_fatal_operational"
+        return "action_needed"
+    if "exit_code" in warning:
+        return "action_needed"
+    return "non_fatal_operational"
 
 
 def add_reporting_clarity_blocks(summary):
@@ -285,8 +300,38 @@ def add_reporting_clarity_blocks(summary):
         "enrichment_reason_rollup": enrichment_rollup,
     }
 
+    informational = []
+    non_fatal_operational = []
+    action_needed = []
+    for warning in warnings:
+        classification = classify_warning_readability(warning)
+        bucket_entry = {
+            "type": warning.get("type"),
+            "stage": warning.get("stage"),
+            "reason": warning.get("reason"),
+            "count": warning.get("count"),
+            "message": warning.get("message") or warning.get("detail") or "No detail provided.",
+        }
+        if classification == "informational":
+            informational.append(bucket_entry)
+        elif classification == "action_needed":
+            action_needed.append(bucket_entry)
+        else:
+            non_fatal_operational.append(bucket_entry)
+
+    details["warning_readability"] = {
+        "informational_count": len(informational),
+        "non_fatal_operational_count": len(non_fatal_operational),
+        "action_needed_count": len(action_needed),
+        "informational_examples": informational[:5],
+        "non_fatal_operational_examples": non_fatal_operational[:5],
+        "action_needed_examples": action_needed[:5],
+    }
+
     if errors:
         interpretation = "Run contains hard failures. Review errors before consuming downstream outputs."
+    elif summary.get("status") == "success" and summary.get("warnings") and summary.get("counts", {}).get("soft_skipped", 0) > 0:
+        interpretation = "Dry-run completed. Warnings are expected soft-skip notices and coverage indicators, not execution failures."
     elif warnings:
         interpretation = "Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits."
     else:
@@ -334,6 +379,7 @@ def main():
                     "stage": stage_name,
                     "type": "dry_run_soft_skip",
                     "detail": stage_result.get("details", {}).get("note", "not executed in dry-run mode"),
+                    "message": f"Stage '{stage_name}' was skipped by dry-run policy; this is informational.",
                 })
 
             if stage_result["status"] == "warning":
@@ -341,6 +387,7 @@ def main():
                     "stage": stage_name,
                     "exit_code": stage_result["exit_code"],
                     "detail": (stage_result["details"].get("stderr") or stage_result["details"].get("stdout") or "").strip(),
+                    "message": f"Stage '{stage_name}' completed with warning (exit_code={stage_result['exit_code']}). Review detail for actionability.",
                 })
             if stage_result["status"] == "failed":
                 summary["errors"].append({

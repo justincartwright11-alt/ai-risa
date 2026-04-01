@@ -56,3 +56,8 @@
 - improved top-level report clarity with additive analysis coverage and skipped/exclusion blocks in full-pipeline and batch summaries
 - added clearer operator interpretation notes for non-fatal warning runs versus hard-failure runs
 - preserved canonical schemas and run behavior (reporting-layer additive changes only)
+
+## v1.3-reporting-quality-slice-2
+- improved warning readability with explicit operator-facing messages in full-pipeline and batch summaries
+- added additive warning-readability classification blocks to separate informational/non-fatal warnings from action-needed conditions
+- clarified dry-run versus normal-run interpretation without changing run behavior or canonical schemas
