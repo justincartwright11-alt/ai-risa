@@ -66,3 +66,8 @@
 - improved human-readable summary presentation with ordered sections: executive summary, coverage snapshot, exclusions snapshot, warning interpretation, and recommended action
 - surfaced markdown-ready operator summary blocks in full-pipeline and batch summary details without altering existing computed metrics
 - preserved canonical schemas and run behavior (additive presentation-only enhancements)
+
+## v1.4-operator-dashboard-slice-1
+- added a minimal read-only operator dashboard artifact generator that consumes existing summary outputs and reporting-quality blocks
+- added operator dashboard artifacts in JSON and Markdown at ops/dashboard for fast latest-run operational visibility
+- preserved pipeline behavior and canonical schemas (dashboard/read-layer only)
