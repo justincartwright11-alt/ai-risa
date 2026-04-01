@@ -25,6 +25,12 @@ FULL_SUMMARY = Path("output/full_pipeline_run_summary.json")
 BATCH_SUMMARY = Path("output/event_batch_run_summary.json")
 BATCH_DRY_RUN_SUMMARY = Path("output/dry_run/event_batch_run_summary.json")
 QUEUE_SUMMARY = Path("output/prediction_queue_run_summary.json")
+RUN_HISTORY_INDEX = Path("runs/run_history_index.json")
+RUN_FULL_PIPELINE_SUMMARY = "full_pipeline_run_summary.json"
+
+STALE_WARNING_MINUTES = 120
+STALE_CRITICAL_MINUTES = 720
+LOCAL_TZ = datetime.now().astimezone().tzinfo or timezone.utc
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,8 +50,58 @@ def now_utc_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def normalize_path(path: Path) -> str:
     return path.as_posix()
+
+
+def parse_iso_datetime(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    candidate = value.strip()
+    if candidate.endswith("Z"):
+        candidate = candidate[:-1] + "+00:00"
+
+    try:
+        dt = datetime.fromisoformat(candidate)
+    except ValueError:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=LOCAL_TZ)
+    return dt.astimezone(timezone.utc)
+
+
+def minutes_between(older: datetime, newer: datetime) -> int:
+    delta_seconds = max(0.0, (newer - older).total_seconds())
+    return int(delta_seconds // 60)
+
+
+def classify_freshness(reference_time: datetime | None, now: datetime) -> dict[str, Any]:
+    if reference_time is None:
+        return {
+            "state": "unknown",
+            "age_minutes": None,
+            "reference_timestamp_utc": None,
+        }
+
+    age_minutes = minutes_between(reference_time, now)
+    if age_minutes >= STALE_CRITICAL_MINUTES:
+        state = "stale_critical"
+    elif age_minutes >= STALE_WARNING_MINUTES:
+        state = "stale"
+    else:
+        state = "fresh"
+
+    return {
+        "state": state,
+        "age_minutes": age_minutes,
+        "reference_timestamp_utc": reference_time.isoformat(),
+    }
 
 
 def load_json(path: Path) -> Any:
@@ -95,7 +151,7 @@ def extract_recommended_action(markdown: str | None) -> str | None:
     return None
 
 
-def collect_source_summaries(repo_root: Path) -> list[dict[str, Any]]:
+def collect_source_summaries(repo_root: Path, now: datetime) -> list[dict[str, Any]]:
     candidates = [
         ("full_pipeline", FULL_SUMMARY),
         ("event_batch", BATCH_SUMMARY),
@@ -107,14 +163,27 @@ def collect_source_summaries(repo_root: Path) -> list[dict[str, Any]]:
     for label, rel_path in candidates:
         abs_path = repo_root / rel_path
         summary, error = safe_read_json(abs_path)
+        meta = file_meta(abs_path, rel_path)
+
+        finished_at = summary.get("finished_at") if isinstance(summary, dict) else None
+        finished_at_dt = parse_iso_datetime(finished_at)
+        modified_dt = parse_iso_datetime(meta.get("last_modified_utc"))
+        freshness = classify_freshness(finished_at_dt or modified_dt, now)
+
+        if not meta.get("exists"):
+            freshness["state"] = "missing"
+        elif error is not None:
+            freshness["state"] = "unreadable"
+
         entry = {
             "label": label,
-            **file_meta(abs_path, rel_path),
+            **meta,
             "read_error": error,
             "stage": summary.get("stage") if isinstance(summary, dict) else None,
             "status": summary.get("status") if isinstance(summary, dict) else None,
             "started_at": summary.get("started_at") if isinstance(summary, dict) else None,
-            "finished_at": summary.get("finished_at") if isinstance(summary, dict) else None,
+            "finished_at": finished_at,
+            "freshness": freshness,
         }
         out.append(entry)
 
@@ -145,6 +214,238 @@ def pick_primary(full_summary: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def summarize_source_health(source_summaries: list[dict[str, Any]]) -> dict[str, Any]:
+    totals = {
+        "total": len(source_summaries),
+        "fresh": 0,
+        "stale": 0,
+        "stale_critical": 0,
+        "missing": 0,
+        "unreadable": 0,
+        "unknown": 0,
+    }
+    problematic: list[dict[str, Any]] = []
+
+    for row in source_summaries:
+        freshness = row.get("freshness") if isinstance(row.get("freshness"), dict) else {}
+        state = str(freshness.get("state") or "unknown")
+        if state not in totals:
+            state = "unknown"
+        totals[state] += 1
+
+        if state != "fresh":
+            problematic.append(
+                {
+                    "label": row.get("label"),
+                    "path": row.get("path"),
+                    "state": state,
+                    "age_minutes": freshness.get("age_minutes"),
+                    "read_error": row.get("read_error"),
+                }
+            )
+
+    if totals["missing"] > 0 or totals["unreadable"] > 0 or totals["stale_critical"] > 0:
+        overall = "critical"
+    elif totals["stale"] > 0 or totals["unknown"] > 0:
+        overall = "watch"
+    else:
+        overall = "healthy"
+
+    return {
+        "overall_state": overall,
+        "totals": totals,
+        "problematic_sources": problematic[:8],
+    }
+
+
+def parse_run_sort_timestamp(run: dict[str, Any]) -> datetime | None:
+    for key in ("completed_at", "started_at", "timestamp"):
+        parsed = parse_iso_datetime(run.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def get_recent_runs(repo_root: Path) -> list[dict[str, Any]]:
+    raw, err = safe_read_json(repo_root / RUN_HISTORY_INDEX)
+    if err is not None or not isinstance(raw, list):
+        return []
+
+    rows = [r for r in raw if isinstance(r, dict)]
+    rows.sort(key=lambda r: parse_run_sort_timestamp(r) or datetime.min.replace(tzinfo=timezone.utc))
+    return rows
+
+
+def get_run_summary(repo_root: Path, run: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    run_path_value = run.get("run_path")
+    if not isinstance(run_path_value, str) or not run_path_value.strip():
+        return None, "missing_run_path"
+
+    run_path = Path(run_path_value)
+    if not run_path.is_absolute():
+        run_path = repo_root / run_path
+
+    summary_path = run_path / RUN_FULL_PIPELINE_SUMMARY
+    summary, err = safe_read_json(summary_path)
+    if err is not None:
+        return None, err
+    return summary if isinstance(summary, dict) else None, None
+
+
+def int_or_none(value: Any) -> int | None:
+    try:
+        return int(value)
+    except Exception:
+        return None
+
+
+def build_change_snapshot(repo_root: Path, current_full_summary: dict[str, Any] | None) -> dict[str, Any]:
+    runs = get_recent_runs(repo_root)
+    if len(runs) < 2:
+        return {
+            "available": False,
+            "reason": "insufficient_run_history",
+        }
+
+    latest_run = runs[-1]
+    previous_run = runs[-2]
+
+    previous_summary, previous_err = get_run_summary(repo_root, previous_run)
+    if previous_summary is None:
+        return {
+            "available": False,
+            "reason": f"previous_summary_{previous_err or 'unavailable'}",
+            "latest_run_id": latest_run.get("timestamp"),
+            "previous_run_id": previous_run.get("timestamp"),
+        }
+
+    latest_summary = current_full_summary
+    if latest_summary is None:
+        latest_summary, latest_err = get_run_summary(repo_root, latest_run)
+        if latest_summary is None:
+            return {
+                "available": False,
+                "reason": f"latest_summary_{latest_err or 'unavailable'}",
+                "latest_run_id": latest_run.get("timestamp"),
+                "previous_run_id": previous_run.get("timestamp"),
+            }
+
+    latest_counts = latest_summary.get("counts") if isinstance(latest_summary.get("counts"), dict) else {}
+    previous_counts = previous_summary.get("counts") if isinstance(previous_summary.get("counts"), dict) else {}
+    latest_warnings = latest_summary.get("warnings") if isinstance(latest_summary.get("warnings"), list) else []
+    previous_warnings = previous_summary.get("warnings") if isinstance(previous_summary.get("warnings"), list) else []
+
+    metrics = {
+        "failed": (int_or_none(latest_counts.get("failed")) or 0) - (int_or_none(previous_counts.get("failed")) or 0),
+        "soft_skipped": (int_or_none(latest_counts.get("soft_skipped")) or 0) - (int_or_none(previous_counts.get("soft_skipped")) or 0),
+        "completed": (int_or_none(latest_counts.get("completed")) or 0) - (int_or_none(previous_counts.get("completed")) or 0),
+        "warnings": len(latest_warnings) - len(previous_warnings),
+    }
+
+    status_latest = latest_summary.get("status")
+    status_previous = previous_summary.get("status")
+    status_changed = status_latest != status_previous
+
+    highlights: list[str] = []
+    if status_changed:
+        highlights.append(f"Run status changed: {status_previous} -> {status_latest}")
+    for key, delta in metrics.items():
+        if delta != 0:
+            direction = "+" if delta > 0 else ""
+            highlights.append(f"{key} delta: {direction}{delta}")
+
+    if not highlights:
+        highlights.append("No top-line count or status changes vs previous run.")
+
+    return {
+        "available": True,
+        "latest_run_id": latest_run.get("timestamp"),
+        "previous_run_id": previous_run.get("timestamp"),
+        "status": {
+            "latest": status_latest,
+            "previous": status_previous,
+            "changed": status_changed,
+        },
+        "count_deltas": metrics,
+        "highlights": highlights,
+    }
+
+
+def build_prioritized_actions(
+    latest_pipeline_snapshot: dict[str, Any],
+    warning_readability: dict[str, Any],
+    source_health: dict[str, Any],
+    change_snapshot: dict[str, Any],
+    fallback_action: str,
+) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = []
+
+    if (latest_pipeline_snapshot.get("status") != "success") or (int_or_none(latest_pipeline_snapshot.get("errors_count")) or 0) > 0:
+        actions.append(
+            {
+                "priority": 1,
+                "severity": "critical",
+                "title": "Investigate latest pipeline run",
+                "action": "Review full pipeline summary errors and stage statuses before downstream use.",
+            }
+        )
+
+    if source_health.get("overall_state") == "critical":
+        actions.append(
+            {
+                "priority": 1,
+                "severity": "critical",
+                "title": "Recover unhealthy source summaries",
+                "action": "Address missing/unreadable/stale-critical source summaries to restore dashboard reliability.",
+            }
+        )
+    elif source_health.get("overall_state") == "watch":
+        actions.append(
+            {
+                "priority": 2,
+                "severity": "watch",
+                "title": "Refresh stale source summaries",
+                "action": "Re-run bounded reporting refresh for stale sources and confirm timestamps are current.",
+            }
+        )
+
+    action_needed_count = int_or_none(warning_readability.get("action_needed_count")) or 0
+    if action_needed_count > 0:
+        actions.append(
+            {
+                "priority": 2,
+                "severity": "watch",
+                "title": "Resolve action-needed warnings",
+                "action": f"Investigate {action_needed_count} action-needed warning(s) in reporting summaries.",
+            }
+        )
+
+    if change_snapshot.get("available"):
+        deltas = change_snapshot.get("count_deltas") if isinstance(change_snapshot.get("count_deltas"), dict) else {}
+        failed_delta = int_or_none(deltas.get("failed")) or 0
+        if failed_delta > 0:
+            actions.append(
+                {
+                    "priority": 2,
+                    "severity": "watch",
+                    "title": "Review increased failed count",
+                    "action": f"Failed count increased by {failed_delta} vs previous run; inspect run-to-run differences.",
+                }
+            )
+
+    actions.append(
+        {
+            "priority": 3,
+            "severity": "info",
+            "title": "Baseline operator follow-up",
+            "action": fallback_action,
+        }
+    )
+
+    actions.sort(key=lambda x: (int_or_none(x.get("priority")) or 99, str(x.get("title") or "")))
+    return actions
+
+
 def pick_reporting_block(
     full_summary: dict[str, Any] | None,
     batch_dry_run_summary: dict[str, Any] | None,
@@ -167,10 +468,11 @@ def pick_reporting_block(
 
 
 def build_dashboard_payload(repo_root: Path) -> dict[str, Any]:
+    now = now_utc()
     full_summary, _ = safe_read_json(repo_root / FULL_SUMMARY)
     batch_dry_run_summary, _ = safe_read_json(repo_root / BATCH_DRY_RUN_SUMMARY)
 
-    source_summaries = collect_source_summaries(repo_root)
+    source_summaries = collect_source_summaries(repo_root, now)
     latest_pipeline_snapshot = pick_primary(full_summary if isinstance(full_summary, dict) else None)
 
     details, details_source = pick_reporting_block(
@@ -211,9 +513,22 @@ def build_dashboard_payload(repo_root: Path) -> dict[str, Any]:
                 "Inspect failed stages and latest summary details before proceeding."
             )
 
+    source_health = summarize_source_health(source_summaries)
+    change_snapshot = build_change_snapshot(
+        repo_root,
+        full_summary if isinstance(full_summary, dict) else None,
+    )
+    prioritized_actions = build_prioritized_actions(
+        latest_pipeline_snapshot,
+        warning_readability,
+        source_health,
+        change_snapshot,
+        recommended_action,
+    )
+
     payload: dict[str, Any] = {
-        "generated_at_utc": now_utc_iso(),
-        "dashboard_version": "v1.4-slice-1",
+        "generated_at_utc": now.isoformat(),
+        "dashboard_version": "v1.4-slice-2",
         "latest_pipeline_snapshot": {
             **latest_pipeline_snapshot,
             "source_summary_path": normalize_path(FULL_SUMMARY),
@@ -232,9 +547,14 @@ def build_dashboard_payload(repo_root: Path) -> dict[str, Any]:
             "warning_readability": warning_readability,
         },
         "recommended_operator_action": {
-            "action": recommended_action,
+            "action": prioritized_actions[0]["action"] if prioritized_actions else recommended_action,
+            "priority": prioritized_actions[0]["priority"] if prioritized_actions else 3,
+            "title": prioritized_actions[0]["title"] if prioritized_actions else "Baseline operator follow-up",
             "source": details_source,
         },
+        "prioritized_recommended_actions": prioritized_actions,
+        "source_summary_health": source_health,
+        "what_changed_since_last_run": change_snapshot,
         "source_summaries": source_summaries,
     }
 
@@ -247,6 +567,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
     skipped = payload.get("skipped_exclusions_snapshot", {})
     warn = payload.get("warning_interpretation_snapshot", {})
     action = payload.get("recommended_operator_action", {})
+    prioritized_actions = payload.get("prioritized_recommended_actions", [])
+    source_health = payload.get("source_summary_health", {})
+    change_snapshot = payload.get("what_changed_since_last_run", {})
     sources = payload.get("source_summaries", [])
 
     analysis_coverage = coverage.get("analysis_coverage", {})
@@ -255,7 +578,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     warning_readability = warn.get("warning_readability", {})
 
     lines = [
-        "# AI-RISA Operator Dashboard (Slice 1)",
+        "# AI-RISA Operator Dashboard (Slice 2)",
         "",
         f"Generated (UTC): {payload.get('generated_at_utc')}",
         "",
@@ -284,21 +607,62 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## Recommended Operator Action",
         f"- {action.get('action')}",
         "",
-        "## Source Summaries",
+        "## Prioritized Recommended Actions",
     ]
+
+    if isinstance(prioritized_actions, list) and prioritized_actions:
+        for row in prioritized_actions:
+            if not isinstance(row, dict):
+                continue
+            lines.append(
+                "- P{priority} [{severity}] {title}: {action}".format(
+                    priority=row.get("priority"),
+                    severity=row.get("severity"),
+                    title=row.get("title"),
+                    action=row.get("action"),
+                )
+            )
+    else:
+        lines.append("- None")
+
+    lines.extend([
+        "",
+        "## Source Summary Health",
+        f"- Overall State: {source_health.get('overall_state')}",
+        f"- Totals: {source_health.get('totals')}",
+        "",
+        "## What Changed Since Last Run",
+    ])
+
+    if isinstance(change_snapshot, dict) and change_snapshot.get("available"):
+        lines.append(f"- Latest Run ID: {change_snapshot.get('latest_run_id')}")
+        lines.append(f"- Previous Run ID: {change_snapshot.get('previous_run_id')}")
+        lines.append(f"- Status: {change_snapshot.get('status')}")
+        lines.append(f"- Count Deltas: {change_snapshot.get('count_deltas')}")
+        highlights = change_snapshot.get("highlights") if isinstance(change_snapshot.get("highlights"), list) else []
+        lines.append(f"- Highlights: {highlights}")
+    else:
+        lines.append(f"- Unavailable: {change_snapshot.get('reason') if isinstance(change_snapshot, dict) else 'unknown'}")
+
+    lines.extend([
+        "",
+        "## Source Summaries",
+    ])
 
     if isinstance(sources, list) and sources:
         for row in sources:
             if not isinstance(row, dict):
                 continue
             lines.append(
-                "- {label}: path={path} exists={exists} status={status} stage={stage} finished_at={finished_at}".format(
+                "- {label}: path={path} exists={exists} status={status} stage={stage} finished_at={finished_at} freshness={freshness} age_m={age_minutes}".format(
                     label=row.get("label"),
                     path=row.get("path"),
                     exists=row.get("exists"),
                     status=row.get("status"),
                     stage=row.get("stage"),
                     finished_at=row.get("finished_at"),
+                    freshness=(row.get("freshness") or {}).get("state") if isinstance(row, dict) else None,
+                    age_minutes=(row.get("freshness") or {}).get("age_minutes") if isinstance(row, dict) else None,
                 )
             )
     else:

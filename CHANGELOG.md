@@ -76,3 +76,9 @@
 - fixed dashboard source-summary metadata checks to use repo-root-qualified paths for correct existence and timestamp reporting
 - reclassified ops/dashboard/operator_dashboard.json and ops/dashboard/operator_dashboard.md as runtime-generated artifacts
 - added ignore rules and removed dashboard artifact outputs from Git tracking while keeping the generator script tracked
+
+## v1.4-operator-dashboard-slice-2
+- added per-source freshness indicators (fresh/stale/stale-critical/missing/unreadable) to improve staleness scanning speed
+- added prioritized recommended actions so the most important operator action appears first
+- added compact source-summary health and run-to-run change snapshot blocks derived read-only from existing summaries and run history
+- preserved pipeline behavior and canonical schemas (dashboard usability/read-layer only)
