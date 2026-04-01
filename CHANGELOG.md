@@ -138,6 +138,11 @@
 - added operator-ready packet fields for packet status, manual-review-only mode, planned change scope, required sources/backups/checks, rollback plan, and conservative execution readiness
 - added runtime-generated controlled application packet artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
 
+## v2.5-controlled-application-dry-runs-slice-1
+- added a read-only controlled application dry-run generator derived from proposals, approval-ledger state, validation manifests, application gates, and application packets
+- added rehearsal-layer fields for ordered dry-run steps, checkpoint sequence, preconditions, abort conditions, expected observations, operator role, and conservative dry-run readiness
+- added runtime-generated controlled application dry-run artifacts in JSON and Markdown without model mutation, auto-application, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
