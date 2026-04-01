@@ -194,3 +194,9 @@
 - added a read-only automation and escalation queue derived from the operator worklist
 - flagged escalation, reminder, priority-boost, and handoff recommendations without mutating workflow state automatically
 - added runtime-generated JSON and Markdown automation queue artifacts without changing pipeline or scheduler behavior
+
+## v3.4-controlled-execution-prohibition-matrix-slice-1
+- added a read-only controlled execution prohibition matrix generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, dry-run plans, authorization records, execution intents, preflight records, readiness decisions, execution policy, execution enablement criteria, execution blocker registry, and execution ineligibility register
+- added a canonical matrix of which execution action types are explicitly prohibited by which governance layer and under what condition, consolidating prohibited action type, prohibition state, prohibition source, prohibition reason, and required release condition per proposal
+- added prohibition fields for prohibition id, policy id, criteria id, ineligibility id, prohibited action type, prohibition state, prohibition source, prohibition reason, required release condition, required operator role, rollback reference, and governance-only prohibition notes
+- added runtime-generated execution prohibition matrix artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
