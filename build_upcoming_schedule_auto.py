@@ -56,6 +56,16 @@ def slugify(text):
 def strip_record_from_name(name):
     return re.sub(r'\s*\([^)]*\)', '', name).strip()
 
+
+def parse_bout_text(raw_text):
+    text = str(raw_text or '').strip()
+    if not text:
+        return '', ''
+    parts = [p.strip() for p in re.split(r'\s+v(?:s|s\.)?\s+', text, flags=re.I) if p.strip()]
+    if len(parts) == 2:
+        return strip_record_from_name(parts[0]), strip_record_from_name(parts[1])
+    return strip_record_from_name(text), ''
+
 def build_event_id(event):
     promo = slugify(event.get('promotion', 'unknown'))
     name_raw = event.get('event_name', event.get('title', 'event'))
@@ -82,9 +92,18 @@ def normalize_event(raw_event):
     event['main_event'] = None
     bouts = raw_event.get('bouts', [])
     for i, bout in enumerate(bouts):
-        f1 = strip_record_from_name(bout.get('fighter_1', bout.get('red', '')))
-        f2 = strip_record_from_name(bout.get('fighter_2', bout.get('blue', '')))
-        is_main = bout.get('is_main_event', bout.get('main_event', False)) or (i == 0)
+        if isinstance(bout, dict):
+            f1 = strip_record_from_name(bout.get('fighter_1', bout.get('red', '')))
+            f2 = strip_record_from_name(bout.get('fighter_2', bout.get('blue', '')))
+            is_main = bout.get('is_main_event', bout.get('main_event', False)) or (i == 0)
+            is_title_fight = bout.get('is_title_fight', False)
+            bout_status = bout.get('status', 'scheduled')
+        else:
+            f1, f2 = parse_bout_text(bout)
+            is_main = i == 0
+            is_title_fight = False
+            bout_status = 'scheduled'
+
         bout_obj = {
             'bout_id': None,  # to be filled after event_id is known
             'card_segment': 'main' if is_main else 'undercard',
@@ -96,8 +115,8 @@ def normalize_event(raw_event):
             'matchup_id': None,
             'prediction_id': None,
             'is_main_event': is_main,
-            'is_title_fight': bout.get('is_title_fight', False),
-            'status': bout.get('status', 'scheduled')
+            'is_title_fight': is_title_fight,
+            'status': bout_status
         }
         event['bouts'].append(bout_obj)
         if is_main:

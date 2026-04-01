@@ -46,3 +46,8 @@
 - hardened full-pipeline summary propagation to surface resolver and queue-build unresolved/partial/insufficient-enrichment diagnostics at top level
 - added additive operator-facing enrichment diagnostic warnings and count rollups in full-pipeline summary output
 - preserved canonical stage contracts and run behavior (no scheduler or execution semantic changes)
+
+## v1.2-source-hardening-stabilization-defects
+- fixed schedule normalization crash path when upstream bout entries are strings rather than dict objects
+- fixed queue-run non-zero failures caused by Windows-invalid prediction output filenames derived from unsanitized IDs
+- kept stabilization scope narrow (no schema or scheduler changes)
