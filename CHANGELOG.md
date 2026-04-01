@@ -51,3 +51,8 @@
 - fixed schedule normalization crash path when upstream bout entries are strings rather than dict objects
 - fixed queue-run non-zero failures caused by Windows-invalid prediction output filenames derived from unsanitized IDs
 - kept stabilization scope narrow (no schema or scheduler changes)
+
+## v1.3-reporting-quality-slice-1
+- improved top-level report clarity with additive analysis coverage and skipped/exclusion blocks in full-pipeline and batch summaries
+- added clearer operator interpretation notes for non-fatal warning runs versus hard-failure runs
+- preserved canonical schemas and run behavior (reporting-layer additive changes only)

@@ -248,6 +248,55 @@ def propagate_enrichment_diagnostics(summary, stage_name, stage_payload):
             )
 
 
+def add_reporting_clarity_blocks(summary):
+    details = summary.setdefault("details", {})
+    stages = details.get("stages", [])
+    warnings = summary.get("warnings", [])
+    errors = summary.get("errors", [])
+
+    analyzed_stages = [s.get("stage") for s in stages if s.get("status") in {"success", "warning", "failed"}]
+    skipped_stages = [s.get("stage") for s in stages if s.get("status") == "soft_skip"]
+
+    warning_type_counts = {}
+    for warning in warnings:
+        wtype = warning.get("type") or "unspecified"
+        warning_type_counts[wtype] = warning_type_counts.get(wtype, 0) + 1
+
+    enrichment_diag = details.get("enrichment_diagnostics", {}) if isinstance(details.get("enrichment_diagnostics"), dict) else {}
+    enrichment_rollup = {}
+    for stage_name, stage_diag in enrichment_diag.items():
+        if not isinstance(stage_diag, dict):
+            continue
+        for reason, count in stage_diag.items():
+            n = int(count or 0)
+            if n > 0:
+                key = f"{stage_name}:{reason}"
+                enrichment_rollup[key] = n
+
+    details["analysis_coverage"] = {
+        "stages_total": len(stages),
+        "stages_analyzed": len(analyzed_stages),
+        "stages_soft_skipped": len(skipped_stages),
+        "analyzed_stage_names": analyzed_stages,
+        "skipped_stage_names": skipped_stages,
+    }
+    details["skipped_items_exclusions"] = {
+        "warning_type_counts": warning_type_counts,
+        "enrichment_reason_rollup": enrichment_rollup,
+    }
+
+    if errors:
+        interpretation = "Run contains hard failures. Review errors before consuming downstream outputs."
+    elif warnings:
+        interpretation = "Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits."
+    else:
+        interpretation = "Run completed without warnings. Coverage is complete for executed stages."
+    details["operator_interpretation"] = {
+        "note": interpretation,
+        "warning_non_fatal": bool(warnings and not errors),
+    }
+
+
 def main():
     args = parse_args()
     verbose = args.verbose
@@ -332,6 +381,7 @@ def main():
                 "queue_excluded_insufficient_enrichment": int(queue_diag.get("excluded_insufficient_enrichment", 0) or 0),
             }
         )
+        add_reporting_clarity_blocks(summary)
         if summary["errors"]:
             summary["status"] = "error"
             exit_code = 1

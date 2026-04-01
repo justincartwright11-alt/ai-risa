@@ -433,6 +433,24 @@ def main():
     for row in csv_rows:
         if row['status'] == 'failed':
             errors.append({'event_id': row['event_id'], 'type': 'event_failed'})
+    warning_type_counts = {}
+    for warning in warnings:
+        wtype = warning.get('type') or 'unspecified'
+        warning_type_counts[wtype] = warning_type_counts.get(wtype, 0) + 1
+
+    exclusions_rollup = {
+        'skipped_metadata_only': counts.get('skipped_metadata_only', 0),
+        'skipped_existing': counts.get('skipped_existing', 0),
+        'missing_bouts_total': sum(int(w.get('count', 0) or 0) for w in warnings if w.get('type') == 'missing_bouts'),
+    }
+
+    if errors:
+        interpretation_note = 'Batch run contains event-level failures. Review errors before using generated outputs.'
+    elif warnings:
+        interpretation_note = 'Batch run completed with non-fatal warnings. Some events were skipped or had coverage limits.'
+    else:
+        interpretation_note = 'Batch run completed without warnings. All scheduled events were analyzed as configured.'
+
     summary_payload = {
         "stage": "batch",
         "status": status if not errors else "error",
@@ -445,6 +463,19 @@ def main():
         "details": {
             "rows": csv_rows,
             "events": summary.get('events', []),
+            "analysis_coverage": {
+                "events_total": counts.get('total_events', 0),
+                "events_analyzed": max(counts.get('total_events', 0) - counts.get('skipped_metadata_only', 0), 0),
+                "events_skipped_metadata_only": counts.get('skipped_metadata_only', 0),
+            },
+            "skipped_items_exclusions": {
+                "warning_type_counts": warning_type_counts,
+                "reason_rollup": exclusions_rollup,
+            },
+            "operator_interpretation": {
+                "note": interpretation_note,
+                "warning_non_fatal": bool(warnings and not errors),
+            },
         }
     }
     # Write unified summary JSON
