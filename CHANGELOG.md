@@ -113,6 +113,11 @@
 - added proposed intervention types for confidence-threshold review, confidence-bucket coverage review, recurring miss-family investigation, data-gap cleanup prerequisites, and candidate weighting/rule-review targets
 - added runtime-generated calibration intervention plan artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
 
+## v2.0-controlled-model-adjustments-slice-1
+- added a read-only controlled model-adjustment proposal generator derived from calibration reports, calibration action queues, and intervention plans
+- added approval-gated proposal packages for confidence-threshold review, confidence-bucket coverage review, miss-family weighting review, rule-review targets, and data-gap prerequisite gates
+- added runtime-generated controlled model-adjustment proposal artifacts in JSON and Markdown without mutating model behavior or changing pipeline/scheduler logic
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state
