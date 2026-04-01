@@ -19,6 +19,8 @@ ops/action_queue/operator_action_queue.md
 ops/action_queue/operator_action_state.json
 ops/action_queue/operator_action_worklist.json
 ops/action_queue/operator_action_worklist.md
+ops/automation/operator_automation_queue.json
+ops/automation/operator_automation_queue.md
 
 # Timestamped run folders are operational outputs
 runs/*
