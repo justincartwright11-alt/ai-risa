@@ -515,6 +515,40 @@ def main():
             },
         }
     }
+
+    details = summary_payload["details"]
+    action_needed_count = int(details.get("warning_readability", {}).get("action_needed_count", 0) or 0)
+    informational_count = int(details.get("warning_readability", {}).get("informational_count", 0) or 0)
+    if errors or action_needed_count > 0:
+        recommended_action = "Inspect events flagged by missing_bouts and resolve matchup identity gaps before relying on full coverage."
+    elif warnings:
+        recommended_action = "Treat warnings as non-fatal operational limits and continue with bounded follow-up checks as needed."
+    else:
+        recommended_action = "No immediate action required."
+
+    lines = [
+        "# Executive Summary",
+        f"- Batch Status: {summary_payload.get('status')}",
+        f"- Events Total: {details['analysis_coverage'].get('events_total', 0)}",
+        f"- Events Analyzed: {details['analysis_coverage'].get('events_analyzed', 0)}",
+        f"- Events Skipped (Metadata-Only): {details['analysis_coverage'].get('events_skipped_metadata_only', 0)}",
+        "",
+        "# Analysis Coverage Snapshot",
+        f"- Coverage Metrics: {details.get('analysis_coverage', {})}",
+        "",
+        "# Skipped/Excluded Items Snapshot",
+        f"- Warning Types: {details.get('skipped_items_exclusions', {}).get('warning_type_counts', {})}",
+        f"- Exclusion Rollup: {details.get('skipped_items_exclusions', {}).get('reason_rollup', {})}",
+        "",
+        "# Warning Interpretation",
+        f"- Informational: {informational_count}",
+        f"- Action-Needed: {action_needed_count}",
+        f"- Interpretation: {details.get('operator_interpretation', {}).get('note')}",
+        "",
+        "# Recommended Operator Action",
+        f"- {recommended_action}",
+    ]
+    details["human_readable_summary_markdown"] = "\n".join(lines)
     # Write unified summary JSON
     if args.summary_json:
         outdir = os.path.dirname(args.summary_json)

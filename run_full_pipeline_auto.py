@@ -341,6 +341,43 @@ def add_reporting_clarity_blocks(summary):
         "warning_non_fatal": bool(warnings and not errors),
     }
 
+    warning_readability = details.get("warning_readability", {}) if isinstance(details.get("warning_readability"), dict) else {}
+    action_needed_count = int(warning_readability.get("action_needed_count", 0) or 0)
+    non_fatal_count = int(warning_readability.get("non_fatal_operational_count", 0) or 0)
+    informational_count = int(warning_readability.get("informational_count", 0) or 0)
+
+    if errors or action_needed_count > 0:
+        recommended_action = "Review stage errors and action-needed warnings first; then re-run bounded validation."
+    elif warnings:
+        recommended_action = "Proceed with outputs while monitoring documented exclusions and non-fatal warning trends."
+    else:
+        recommended_action = "No immediate action required. Continue normal operations."
+
+    lines = [
+        "# Executive Summary",
+        f"- Run Status: {summary.get('status')}",
+        f"- Stages Run: {details['analysis_coverage'].get('stages_analyzed', 0)}/{details['analysis_coverage'].get('stages_total', 0)}",
+        f"- Stages Soft-Skipped: {details['analysis_coverage'].get('stages_soft_skipped', 0)}",
+        "",
+        "# Analysis Coverage Snapshot",
+        f"- Executed Stages: {', '.join(details['analysis_coverage'].get('analyzed_stage_names', [])) or 'None'}",
+        f"- Soft-Skipped Stages: {', '.join(details['analysis_coverage'].get('skipped_stage_names', [])) or 'None'}",
+        "",
+        "# Skipped/Excluded Items Snapshot",
+        f"- Warning Types: {details['skipped_items_exclusions'].get('warning_type_counts', {})}",
+        f"- Enrichment Exclusions: {details['skipped_items_exclusions'].get('enrichment_reason_rollup', {})}",
+        "",
+        "# Warning Interpretation",
+        f"- Informational: {informational_count}",
+        f"- Non-Fatal Operational: {non_fatal_count}",
+        f"- Action-Needed: {action_needed_count}",
+        f"- Interpretation: {details['operator_interpretation'].get('note')}",
+        "",
+        "# Recommended Operator Action",
+        f"- {recommended_action}",
+    ]
+    details["human_readable_summary_markdown"] = "\n".join(lines)
+
 
 def main():
     args = parse_args()
