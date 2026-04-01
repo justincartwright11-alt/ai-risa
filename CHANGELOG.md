@@ -173,6 +173,12 @@
 - added criteria fields for enablement state/status, required criteria list, currently unmet criteria, required operator role, enablement blockers, rollback references, and governance-only criteria notes
 - added runtime-generated execution-enablement criteria artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
 
+## v3.2-controlled-execution-blocker-registry-slice-1
+- added a read-only controlled execution blocker registry generator derived from proposals, approval-ledger state, validation manifests, application gates, application packets, dry-run plans, authorization records, execution intents, preflight records, readiness decisions, execution policy, and execution enablement criteria
+- added a canonical flat registry of active blockers consolidating policy blockers, enablement blockers, unmet criteria, preflight stop conditions, readiness blockers, and execution intent blockers per proposal
+- added blocker fields for blocker state, blocker category, blocker source, blocking condition, required resolution, required operator role, rollback references, and governance-only blocker notes
+- added runtime-generated execution blocker registry artifacts in JSON and Markdown without execution path creation, auto-promotion, config writes, model mutation, or pipeline/scheduler changes
+
 ## v1.6-operator-automation-slice-2
 - added a separate local automation policy overlay with configurable escalation/reminder thresholds, severity weighting, routing rules, and handoff inclusion rules
 - added a merged automation plan artifact that overlays local policy on the read-only automation queue without mutating workflow state

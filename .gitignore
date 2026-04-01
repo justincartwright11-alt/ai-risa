@@ -54,6 +54,8 @@ ops/model_adjustments/model_adjustment_execution_policy.json
 ops/model_adjustments/model_adjustment_execution_policy.md
 ops/model_adjustments/model_adjustment_execution_enablement_criteria.json
 ops/model_adjustments/model_adjustment_execution_enablement_criteria.md
+ops/model_adjustments/model_adjustment_execution_blocker_registry.json
+ops/model_adjustments/model_adjustment_execution_blocker_registry.md
 
 # Timestamped run folders are operational outputs
 runs/*
