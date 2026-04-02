@@ -302,3 +302,9 @@
 - added a canonical remediation wave plan that sequences shared clusters into deterministic prohibition, blocker, and remaining-resolution waves while preserving terminal posture and downstream read-only behavior
 - added wave-plan fields for resolution wave id, wave rank, wave type, member cluster ids, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, cluster count, dependency count, has prohibition path, has blocker path, wave priority, and terminal posture
 - added runtime-generated release resolution-wave-plan artifacts in JSON and Markdown as a pure downstream projection of v5.0 cluster map records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
+
+## v5.2-controlled-release-resolution-wave-packet-manifest-slice-1
+- added a read-only controlled release resolution-wave-packet-manifest generator derived exclusively from the frozen v5.1 release resolution wave plan output
+- added a canonical wave packet manifest that produces one deterministic operator packet per upstream wave while preserving wave type and terminal posture exactly
+- added packet-manifest fields for resolution wave packet id, source resolution wave id, wave rank, wave type, packet priority, member cluster ids, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, cluster count, dependency count, has prohibition path, has blocker path, and terminal posture
+- added runtime-generated release resolution-wave-packet-manifest artifacts in JSON and Markdown as a pure downstream projection of v5.1 wave plan records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
