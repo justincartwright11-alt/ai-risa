@@ -44,10 +44,23 @@ def normalize_string(value, name):
     return value
 
 
+def get_required_field(record, field_name, record_index):
+    if field_name not in record:
+        raise ValueError(f"Missing required field '{field_name}' in journal record {record_index}")
+    return record[field_name]
+
+
 def normalize_list(value, name):
     if not isinstance(value, list):
         raise ValueError(f"Invalid {name}: expected list, got {type(value).__name__}")
-    return sorted(set(value))
+    normalized = []
+    for idx, item in enumerate(value):
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError(
+                f"Invalid {name}[{idx}]: expected non-empty string, got {repr(item)}"
+            )
+        normalized.append(item)
+    return sorted(set(normalized))
 
 
 def normalize_int(value, name):
@@ -62,6 +75,15 @@ def normalize_bool(value, name):
     return value
 
 
+def normalize_review_lane(value, name):
+    lane = normalize_string(value, name)
+    if lane not in LANE_ORDER:
+        raise ValueError(
+            f"Invalid {name}: expected one of {sorted(LANE_ORDER.keys())}, got {repr(lane)}"
+        )
+    return lane
+
+
 def validate_upstream_payload(payload, path):
     if not isinstance(payload, dict):
         raise ValueError(f"Upstream payload {path} is not a dict: {type(payload).__name__}")
@@ -70,7 +92,10 @@ def validate_upstream_payload(payload, path):
     if version != "v6.4-slice-1":
         raise ValueError(f"Expected journal version 'v6.4-slice-1', got {repr(version)}")
 
-    records = payload.get("release_resolution_wave_packet_review_session_journal", [])
+    if "release_resolution_wave_packet_review_session_journal" not in payload:
+        raise ValueError("Missing upstream field: release_resolution_wave_packet_review_session_journal")
+
+    records = payload["release_resolution_wave_packet_review_session_journal"]
     if not isinstance(records, list):
         raise ValueError(
             "release_resolution_wave_packet_review_session_journal is not a list: "
@@ -85,130 +110,135 @@ def build_archive_records(journal_records):
     archive_records = []
 
     for idx, journal_record in enumerate(journal_records):
+        if not isinstance(journal_record, dict):
+            raise ValueError(
+                "Validation error in journal record "
+                f"{idx}: expected object, got {type(journal_record).__name__}"
+            )
         try:
             journal_id = normalize_string(
-                journal_record.get("resolution_wave_packet_review_session_journal_id"),
+                get_required_field(journal_record, "resolution_wave_packet_review_session_journal_id", idx),
                 "journal_id",
             )
             ledger_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_ledger_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_ledger_id", idx),
                 "ledger_id",
             )
             register_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_register_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_register_id", idx),
                 "register_id",
             )
             receipt_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_receipt_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_receipt_id", idx),
                 "receipt_id",
             )
             intake_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_intake_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_intake_id", idx),
                 "intake_id",
             )
             handoff_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_handoff_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_handoff_id", idx),
                 "handoff_id",
             )
             brief_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_brief_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_brief_id", idx),
                 "brief_id",
             )
             pack_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_session_pack_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_session_pack_id", idx),
                 "pack_id",
             )
             agenda_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_agenda_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_agenda_id", idx),
                 "agenda_id",
             )
             docket_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_docket_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_docket_id", idx),
                 "docket_id",
             )
             board_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_review_board_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_review_board_id", idx),
                 "board_id",
             )
             checklist_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_checklist_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_checklist_id", idx),
                 "checklist_id",
             )
             packet_id = normalize_string(
-                journal_record.get("source_resolution_wave_packet_id"),
+                get_required_field(journal_record, "source_resolution_wave_packet_id", idx),
                 "packet_id",
             )
             wave_id = normalize_string(
-                journal_record.get("source_resolution_wave_id"),
+                get_required_field(journal_record, "source_resolution_wave_id", idx),
                 "wave_id",
             )
 
-            wave_rank = normalize_int(journal_record.get("wave_rank"), "wave_rank")
-            wave_type = normalize_string(journal_record.get("wave_type"), "wave_type")
-            packet_priority = normalize_string(journal_record.get("packet_priority"), "packet_priority")
-            checklist_priority = normalize_string(journal_record.get("checklist_priority"), "checklist_priority")
+            wave_rank = normalize_int(get_required_field(journal_record, "wave_rank", idx), "wave_rank")
+            wave_type = normalize_string(get_required_field(journal_record, "wave_type", idx), "wave_type")
+            packet_priority = normalize_string(get_required_field(journal_record, "packet_priority", idx), "packet_priority")
+            checklist_priority = normalize_string(get_required_field(journal_record, "checklist_priority", idx), "checklist_priority")
             review_board_priority = normalize_string(
-                journal_record.get("review_board_priority"), "review_board_priority"
+                get_required_field(journal_record, "review_board_priority", idx), "review_board_priority"
             )
             review_docket_priority = normalize_string(
-                journal_record.get("review_docket_priority"), "review_docket_priority"
+                get_required_field(journal_record, "review_docket_priority", idx), "review_docket_priority"
             )
             review_agenda_priority = normalize_string(
-                journal_record.get("review_agenda_priority"), "review_agenda_priority"
+                get_required_field(journal_record, "review_agenda_priority", idx), "review_agenda_priority"
             )
             review_session_pack_priority = normalize_string(
-                journal_record.get("review_session_pack_priority"), "review_session_pack_priority"
+                get_required_field(journal_record, "review_session_pack_priority", idx), "review_session_pack_priority"
             )
             review_session_brief_priority = normalize_string(
-                journal_record.get("review_session_brief_priority"), "review_session_brief_priority"
+                get_required_field(journal_record, "review_session_brief_priority", idx), "review_session_brief_priority"
             )
             review_session_handoff_priority = normalize_string(
-                journal_record.get("review_session_handoff_priority"), "review_session_handoff_priority"
+                get_required_field(journal_record, "review_session_handoff_priority", idx), "review_session_handoff_priority"
             )
             review_session_intake_priority = normalize_string(
-                journal_record.get("review_session_intake_priority"), "review_session_intake_priority"
+                get_required_field(journal_record, "review_session_intake_priority", idx), "review_session_intake_priority"
             )
             review_session_receipt_priority = normalize_string(
-                journal_record.get("review_session_receipt_priority"), "review_session_receipt_priority"
+                get_required_field(journal_record, "review_session_receipt_priority", idx), "review_session_receipt_priority"
             )
             review_session_register_priority = normalize_string(
-                journal_record.get("review_session_register_priority"), "review_session_register_priority"
+                get_required_field(journal_record, "review_session_register_priority", idx), "review_session_register_priority"
             )
             review_session_ledger_priority = normalize_string(
-                journal_record.get("review_session_ledger_priority"), "review_session_ledger_priority"
+                get_required_field(journal_record, "review_session_ledger_priority", idx), "review_session_ledger_priority"
             )
             review_session_journal_priority = normalize_string(
-                journal_record.get("review_session_journal_priority"), "review_session_journal_priority"
+                get_required_field(journal_record, "review_session_journal_priority", idx), "review_session_journal_priority"
             )
-            review_lane = normalize_string(journal_record.get("review_lane"), "review_lane")
-            terminal_posture = normalize_string(journal_record.get("terminal_posture"), "terminal_posture")
+            review_lane = normalize_review_lane(get_required_field(journal_record, "review_lane", idx), "review_lane")
+            terminal_posture = normalize_string(get_required_field(journal_record, "terminal_posture", idx), "terminal_posture")
 
             member_cluster_ids = normalize_list(
-                journal_record.get("member_cluster_ids", []), "member_cluster_ids"
+                get_required_field(journal_record, "member_cluster_ids", idx), "member_cluster_ids"
             )
             member_dependency_ids = normalize_list(
-                journal_record.get("member_dependency_ids", []), "member_dependency_ids"
+                get_required_field(journal_record, "member_dependency_ids", idx), "member_dependency_ids"
             )
             member_source_refs = normalize_list(
-                journal_record.get("member_source_refs", []), "member_source_refs"
+                get_required_field(journal_record, "member_source_refs", idx), "member_source_refs"
             )
             affected_proposal_ids = normalize_list(
-                journal_record.get("affected_proposal_ids", []), "affected_proposal_ids"
+                get_required_field(journal_record, "affected_proposal_ids", idx), "affected_proposal_ids"
             )
             affected_queue_ids = normalize_list(
-                journal_record.get("affected_queue_ids", []), "affected_queue_ids"
+                get_required_field(journal_record, "affected_queue_ids", idx), "affected_queue_ids"
             )
 
             affected_record_count = normalize_int(
-                journal_record.get("affected_record_count"), "affected_record_count"
+                get_required_field(journal_record, "affected_record_count", idx), "affected_record_count"
             )
-            cluster_count = normalize_int(journal_record.get("cluster_count"), "cluster_count")
-            dependency_count = normalize_int(journal_record.get("dependency_count"), "dependency_count")
+            cluster_count = normalize_int(get_required_field(journal_record, "cluster_count", idx), "cluster_count")
+            dependency_count = normalize_int(get_required_field(journal_record, "dependency_count", idx), "dependency_count")
             has_prohibition_path = normalize_bool(
-                journal_record.get("has_prohibition_path"), "has_prohibition_path"
+                get_required_field(journal_record, "has_prohibition_path", idx), "has_prohibition_path"
             )
             has_blocker_path = normalize_bool(
-                journal_record.get("has_blocker_path"), "has_blocker_path"
+                get_required_field(journal_record, "has_blocker_path", idx), "has_blocker_path"
             )
         except ValueError as e:
             raise ValueError(f"Validation error in journal record {idx}: {e}")
@@ -382,10 +412,17 @@ def main():
         archive_records = build_archive_records(journal_records)
 
         coverage_reconciled = len(journal_records) == len(archive_records)
-        is_sorted = all(
-            archive_records[i]["archive_position"] <= archive_records[i + 1]["archive_position"]
-            for i in range(len(archive_records) - 1)
-        )
+
+        ordering_keys = [
+            (
+                LANE_ORDER[rec["review_lane"]],
+                rec["wave_rank"],
+                rec["source_resolution_wave_packet_review_session_journal_id"],
+                rec["source_resolution_wave_packet_review_session_ledger_id"],
+            )
+            for rec in archive_records
+        ]
+        is_sorted = ordering_keys == sorted(ordering_keys)
 
         lane_counts = {}
         for rec in archive_records:
