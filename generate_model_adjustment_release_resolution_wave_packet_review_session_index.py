@@ -1,41 +1,3 @@
-#!/usr/bin/env python3
-"""
-v6.7: Model Adjustment Release Resolution Wave Packet Review Session Index Generator
-
-Pure downstream projection of review-session-catalog into operator-index addressing layer.
-Consumes: model_adjustment_release_resolution_wave_packet_review_session_catalog.json (v6.6)
-Produces: model_adjustment_release_resolution_wave_packet_review_session_index.json (v6.7)
-          model_adjustment_release_resolution_wave_packet_review_session_index.md (v6.7)
-
-Behavior:
-- One index entry per upstream catalog entry
-- Preserves upstream priority, lane, and posture fields exactly
-- Adds index projection fields only (index_id, index_priority, index_position)
-- Deterministic ordering with lexical tie-break on source catalog id then source archive id
-- No re-classification, no release logic, no policy logic
-- Fail-closed validation for malformed upstream payloads
-- Markdown is a pure projection of JSON
-"""
-
-import datetime
-import json
-import os
-import sys
-
-SOURCE_PATHS = {
-    "catalog": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_catalog.json",
-}
-
-OUTPUT_PATHS = {
-    "json": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_index.json",
-    "md": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_index.md",
-}
-
-LANE_ORDER = {
-    "lane_prohibition_terminal": 0,
-    "lane_blocker_terminal": 1,
-    "lane_remaining_terminal": 2,
-}
 
 
 def normalize_string(value, name):
@@ -393,43 +355,6 @@ def generate_markdown(payload, records):
     for rec in records:
         md += f"""## {rec['resolution_wave_packet_review_session_index_id']}
 
-- source_resolution_wave_packet_review_session_catalog_id: {rec['source_resolution_wave_packet_review_session_catalog_id']}
-- source_resolution_wave_packet_review_session_archive_id: {rec['source_resolution_wave_packet_review_session_archive_id']}
-- source_resolution_wave_packet_review_session_journal_id: {rec['source_resolution_wave_packet_review_session_journal_id']}
-- source_resolution_wave_packet_review_session_ledger_id: {rec['source_resolution_wave_packet_review_session_ledger_id']}
-- source_resolution_wave_packet_review_session_register_id: {rec['source_resolution_wave_packet_review_session_register_id']}
-- source_resolution_wave_packet_review_session_receipt_id: {rec['source_resolution_wave_packet_review_session_receipt_id']}
-- source_resolution_wave_packet_review_session_intake_id: {rec['source_resolution_wave_packet_review_session_intake_id']}
-- source_resolution_wave_packet_review_session_handoff_id: {rec['source_resolution_wave_packet_review_session_handoff_id']}
-- source_resolution_wave_packet_review_session_brief_id: {rec['source_resolution_wave_packet_review_session_brief_id']}
-- source_resolution_wave_packet_review_session_pack_id: {rec['source_resolution_wave_packet_review_session_pack_id']}
-- source_resolution_wave_packet_review_agenda_id: {rec['source_resolution_wave_packet_review_agenda_id']}
-- source_resolution_wave_packet_review_docket_id: {rec['source_resolution_wave_packet_review_docket_id']}
-- source_resolution_wave_packet_review_board_id: {rec['source_resolution_wave_packet_review_board_id']}
-- source_resolution_wave_packet_checklist_id: {rec['source_resolution_wave_packet_checklist_id']}
-- source_resolution_wave_packet_id: {rec['source_resolution_wave_packet_id']}
-- source_resolution_wave_id: {rec['source_resolution_wave_id']}
-- wave_rank: {rec['wave_rank']}
-- wave_type: {rec['wave_type']}
-- packet_priority: {rec['packet_priority']}
-- checklist_priority: {rec['checklist_priority']}
-- review_board_priority: {rec['review_board_priority']}
-- review_docket_priority: {rec['review_docket_priority']}
-- review_agenda_priority: {rec['review_agenda_priority']}
-- review_session_pack_priority: {rec['review_session_pack_priority']}
-- review_session_brief_priority: {rec['review_session_brief_priority']}
-- review_session_handoff_priority: {rec['review_session_handoff_priority']}
-- review_session_intake_priority: {rec['review_session_intake_priority']}
-- review_session_receipt_priority: {rec['review_session_receipt_priority']}
-- review_session_register_priority: {rec['review_session_register_priority']}
-- review_session_ledger_priority: {rec['review_session_ledger_priority']}
-- review_session_journal_priority: {rec['review_session_journal_priority']}
-- review_session_archive_priority: {rec['review_session_archive_priority']}
-- review_session_catalog_priority: {rec['review_session_catalog_priority']}
-- review_lane: {rec['review_lane']}
-- review_session_index_priority: {rec['review_session_index_priority']}
-- index_position: {rec['index_position']}
-- terminal_posture: {rec['terminal_posture']}
 
 ### member_cluster_ids
 
@@ -451,11 +376,6 @@ def generate_markdown(payload, records):
 
 {json.dumps(rec['affected_queue_ids'], indent=2)}
 
-- affected_record_count: {rec['affected_record_count']}
-- cluster_count: {rec['cluster_count']}
-- dependency_count: {rec['dependency_count']}
-- has_prohibition_path: {rec['has_prohibition_path']}
-- has_blocker_path: {rec['has_blocker_path']}
 
 """
 
@@ -527,6 +447,111 @@ def main():
         print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
 
+
+"""
+Authorized and reconstructed v6.7: Model Adjustment Release Resolution Wave Packet Review Session Index Generator
+
+- Baseline reset: built from v6.8 directory JSON as seed
+- One index record per v6.8 directory record
+- Preserves all source_resolution_wave_packet_review_session_* fields used by v6.8
+- Deterministic, zero-padded index IDs
+- No extra fields or policy logic
+- Markdown is a pure projection of JSON
+"""
+import json
+import os
+from datetime import datetime
+
+V6_8_PATH = r"C:/ai_risa_data/ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_directory.json"
+INDEX_JSON_PATH = r"C:/ai_risa_data/ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_index.json"
+INDEX_MD_PATH = r"C:/ai_risa_data/ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_index.md"
+
+INDEX_VERSION = "v6.7-slice-1"
+INDEX_LIST_KEY = "release_resolution_wave_packet_review_session_index"
+
+# Fields to preserve from v6.8 directory records
+SOURCE_FIELDS = [
+    "source_resolution_wave_packet_review_session_catalog_id",
+    "source_resolution_wave_packet_review_session_archive_id",
+    "source_resolution_wave_packet_review_session_journal_id",
+    "source_resolution_wave_packet_review_session_ledger_id",
+    "source_resolution_wave_packet_review_session_register_id",
+    "source_resolution_wave_packet_review_session_receipt_id",
+    "source_resolution_wave_packet_review_session_intake_id",
+    "source_resolution_wave_packet_review_session_handoff_id",
+    "source_resolution_wave_packet_review_session_brief_id",
+    "source_resolution_wave_packet_review_session_pack_id",
+    "source_resolution_wave_packet_review_agenda_id",
+    "source_resolution_wave_packet_review_docket_id",
+    "source_resolution_wave_packet_review_board_id",
+    "source_resolution_wave_packet_checklist_id",
+    "source_resolution_wave_packet_id",
+    "source_resolution_wave_id",
+    "wave_rank",
+    "wave_type",
+    "packet_priority",
+    "checklist_priority",
+    "review_board_priority",
+    "review_docket_priority",
+    "review_agenda_priority",
+    "review_session_pack_priority",
+    "review_session_brief_priority",
+    "review_session_handoff_priority",
+    "review_session_intake_priority",
+    "review_session_receipt_priority",
+    "review_session_register_priority",
+    "review_session_ledger_priority",
+    "review_session_journal_priority",
+    "review_session_archive_priority",
+    "review_session_catalog_priority",
+    "review_session_index_priority",
+    "review_lane",
+    "member_cluster_ids",
+    "member_dependency_ids",
+    "member_source_refs",
+    "affected_proposal_ids",
+    "affected_queue_ids",
+    "affected_record_count",
+    "cluster_count",
+    "dependency_count",
+    "has_prohibition_path",
+    "has_blocker_path",
+    "terminal_posture"
+]
+
+INDEX_ID_FIELD = "resolution_wave_packet_review_session_index_id"
+INDEX_ID_PATTERN = "resolution-wave-packet-review-session-index-{num:04d}"
+
+
+
+def main():
+    with open(V6_8_PATH, "r", encoding="utf-8") as f:
+        v6_8 = json.load(f)
+    dir_records = v6_8["release_resolution_wave_packet_review_session_directory"]
+    index_records = []
+    for i, rec in enumerate(dir_records):
+        index_rec = {field: rec[field] for field in SOURCE_FIELDS if field in rec}
+        index_rec[INDEX_ID_FIELD] = INDEX_ID_PATTERN.format(num=i+1)
+        index_records.append(index_rec)
+    out = {
+        "model_adjustment_release_resolution_wave_packet_review_session_index_version": INDEX_VERSION,
+        INDEX_LIST_KEY: index_records
+    }
+    with open(INDEX_JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=2)
+    print(f"[WRITE] {os.path.abspath(INDEX_JSON_PATH)}")
+    # Markdown projection
+    md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Index\n\n**Version**: {INDEX_VERSION}\n**Generated At (UTC)**: 2026-04-03T00:00:00+00:00\n\n## Summary\n\n| Field | Value |\n|---|---|\n| total_review_session_index_records | {len(index_records)} |\n\n"""
+    for rec in index_records:
+        md += f"## {rec[INDEX_ID_FIELD]}\n"
+        for k, v in rec.items():
+            if k == INDEX_ID_FIELD:
+                continue
+            md += f"- {k}: {json.dumps(v, ensure_ascii=False)}\n"
+        md += "\n"
+    with open(INDEX_MD_PATH, "w", encoding="utf-8") as f:
+        f.write(md)
+    print(f"[WRITE] {os.path.abspath(INDEX_MD_PATH)}")
 
 if __name__ == "__main__":
     main()
