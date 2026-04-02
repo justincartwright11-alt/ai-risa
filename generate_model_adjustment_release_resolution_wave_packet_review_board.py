@@ -71,6 +71,35 @@ REQUIRED_CHECKLIST_FIELDS = (
     "terminal_posture",
 )
 
+REQUIRED_NON_EMPTY_STRING_FIELDS = (
+    "resolution_wave_packet_checklist_id",
+    "source_resolution_wave_packet_id",
+    "source_resolution_wave_id",
+    "packet_priority",
+    "checklist_priority",
+    "terminal_posture",
+)
+
+REQUIRED_LIST_FIELDS = (
+    "member_cluster_ids",
+    "member_dependency_ids",
+    "member_source_refs",
+    "affected_proposal_ids",
+    "affected_queue_ids",
+)
+
+REQUIRED_NON_NEGATIVE_INT_FIELDS = (
+    "wave_rank",
+    "affected_record_count",
+    "cluster_count",
+    "dependency_count",
+)
+
+REQUIRED_BOOL_FIELDS = (
+    "has_prohibition_path",
+    "has_blocker_path",
+)
+
 
 def abs_path(rel_path: str) -> str:
     return os.path.join(SCRIPT_DIR, rel_path.replace("/", os.sep))
@@ -93,7 +122,103 @@ def dedup_sorted(values) -> list:
     return sorted(set(str(value) for value in (values or []) if value))
 
 
+def normalize_non_empty_string(value, field_name: str, index: int) -> str:
+    if not isinstance(value, str):
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be str; "
+            "fail-closed — manual review required"
+        )
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be non-empty; "
+            "fail-closed — manual review required"
+        )
+    return normalized
+
+
+def normalize_non_negative_int(value, field_name: str, index: int) -> int:
+    if isinstance(value, bool):
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be int, not bool; "
+            "fail-closed — manual review required"
+        )
+    try:
+        normalized = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} malformed int={value!r}; "
+            "fail-closed — manual review required"
+        ) from exc
+    if normalized < 0:
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be >= 0; "
+            "fail-closed — manual review required"
+        )
+    return normalized
+
+
+def normalize_bool(value, field_name: str, index: int) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be bool; "
+            "fail-closed — manual review required"
+        )
+    return value
+
+
+def normalize_string_list(value, field_name: str, index: int) -> list:
+    if not isinstance(value, list):
+        raise ValueError(
+            f"checklist record[{index}] field {field_name!r} must be list; "
+            "fail-closed — manual review required"
+        )
+
+    normalized_values = []
+    for item_index, item in enumerate(value):
+        if not isinstance(item, str):
+            raise ValueError(
+                f"checklist record[{index}] field {field_name!r} has non-str item at "
+                f"index {item_index}; fail-closed — manual review required"
+            )
+        item_value = item.strip()
+        if not item_value:
+            raise ValueError(
+                f"checklist record[{index}] field {field_name!r} has empty item at "
+                f"index {item_index}; fail-closed — manual review required"
+            )
+        normalized_values.append(item_value)
+
+    return normalized_values
+
+
+def validate_upstream_payload(source_data: dict) -> None:
+    if not isinstance(source_data, dict):
+        raise ValueError("upstream checklist payload is not a dict; fail-closed")
+
+    version = source_data.get(
+        "model_adjustment_release_resolution_wave_packet_checklist_version"
+    )
+    if not isinstance(version, str) or not version.strip():
+        raise ValueError(
+            "upstream checklist version missing or malformed; fail-closed"
+        )
+
+    checklist_records = source_data.get("release_resolution_wave_packet_checklist")
+    if not isinstance(checklist_records, list):
+        raise ValueError(
+            "upstream release_resolution_wave_packet_checklist missing or malformed; "
+            "fail-closed"
+        )
+
+
 def validate_checklist_record(record: dict, index: int) -> None:
+    if not isinstance(record, dict):
+        raise ValueError(
+            f"checklist record[{index}] malformed type={type(record).__name__}; "
+            "fail-closed — manual review required"
+        )
+
     for field in REQUIRED_CHECKLIST_FIELDS:
         if field not in record:
             raise ValueError(
@@ -101,12 +226,17 @@ def validate_checklist_record(record: dict, index: int) -> None:
                 "fail-closed — manual review required"
             )
 
-    checklist_id = record.get("resolution_wave_packet_checklist_id", "")
-    if not checklist_id:
-        raise ValueError(
-            f"checklist record[{index}] has empty resolution_wave_packet_checklist_id; "
-            "fail-closed — manual review required"
-        )
+    for field in REQUIRED_NON_EMPTY_STRING_FIELDS:
+        record[field] = normalize_non_empty_string(record.get(field), field, index)
+
+    for field in REQUIRED_LIST_FIELDS:
+        record[field] = normalize_string_list(record.get(field), field, index)
+
+    for field in REQUIRED_NON_NEGATIVE_INT_FIELDS:
+        record[field] = normalize_non_negative_int(record.get(field), field, index)
+
+    for field in REQUIRED_BOOL_FIELDS:
+        record[field] = normalize_bool(record.get(field), field, index)
 
     wave_type = record.get("wave_type", "")
     if wave_type not in WAVE_TYPE_ORDER:
@@ -120,19 +250,23 @@ def sorted_checklist_records(records: list) -> list:
     return sorted(
         records,
         key=lambda record: (
-            WAVE_TYPE_ORDER[record.get("wave_type", "remaining_resolution_cluster")],
-            record.get("source_resolution_wave_packet_id", ""),
-            record.get("resolution_wave_packet_checklist_id", ""),
+            WAVE_TYPE_ORDER[record["wave_type"]],
+            record["wave_rank"],
+            record["packet_priority"],
+            record["checklist_priority"],
+            record["source_resolution_wave_packet_id"],
+            record["resolution_wave_packet_checklist_id"],
         ),
     )
 
 
 def build_review_board_records(records: list) -> list:
+    for index, record in enumerate(records):
+        validate_checklist_record(record, index)
+
     output = []
 
     for index, record in enumerate(sorted_checklist_records(records), start=1):
-        validate_checklist_record(record, index)
-
         output.append(
             {
                 "resolution_wave_packet_review_board_id": (
@@ -145,27 +279,23 @@ def build_review_board_records(records: list) -> list:
                     "source_resolution_wave_packet_id"
                 ],
                 "source_resolution_wave_id": record["source_resolution_wave_id"],
-                "wave_rank": int(record.get("wave_rank", 0)),
+                "wave_rank": record["wave_rank"],
                 "wave_type": record["wave_type"],
-                "packet_priority": record.get("packet_priority", ""),
-                "checklist_priority": record.get("checklist_priority", ""),
-                "review_board_priority": record.get("checklist_priority", ""),
+                "packet_priority": record["packet_priority"],
+                "checklist_priority": record["checklist_priority"],
+                "review_board_priority": record["checklist_priority"],
                 "review_lane": REVIEW_LANE_BY_WAVE_TYPE[record["wave_type"]],
-                "member_cluster_ids": dedup_sorted(record.get("member_cluster_ids", [])),
-                "member_dependency_ids": dedup_sorted(
-                    record.get("member_dependency_ids", [])
-                ),
-                "member_source_refs": dedup_sorted(record.get("member_source_refs", [])),
-                "affected_proposal_ids": dedup_sorted(
-                    record.get("affected_proposal_ids", [])
-                ),
-                "affected_queue_ids": dedup_sorted(record.get("affected_queue_ids", [])),
-                "affected_record_count": int(record.get("affected_record_count", 0)),
-                "cluster_count": int(record.get("cluster_count", 0)),
-                "dependency_count": int(record.get("dependency_count", 0)),
-                "has_prohibition_path": bool(record.get("has_prohibition_path", False)),
-                "has_blocker_path": bool(record.get("has_blocker_path", False)),
-                "terminal_posture": record.get("terminal_posture", ""),
+                "member_cluster_ids": dedup_sorted(record["member_cluster_ids"]),
+                "member_dependency_ids": dedup_sorted(record["member_dependency_ids"]),
+                "member_source_refs": dedup_sorted(record["member_source_refs"]),
+                "affected_proposal_ids": dedup_sorted(record["affected_proposal_ids"]),
+                "affected_queue_ids": dedup_sorted(record["affected_queue_ids"]),
+                "affected_record_count": record["affected_record_count"],
+                "cluster_count": record["cluster_count"],
+                "dependency_count": record["dependency_count"],
+                "has_prohibition_path": record["has_prohibition_path"],
+                "has_blocker_path": record["has_blocker_path"],
+                "terminal_posture": record["terminal_posture"],
                 "review_board_notes": (
                     "v5_4_read_only_review_board_projection_of_v5_3_checklist"
                     "_no_reclassification_no_release_recommendation_no_upstream_mutation"
@@ -221,6 +351,11 @@ def validate_review_board(records: list, checklist_records: list) -> None:
                     f"duplicate values in {field!r} for "
                     f"{record['resolution_wave_packet_review_board_id']}; fail-closed"
                 )
+            if values != dedup_sorted(values):
+                raise ValueError(
+                    f"non-canonical ordering in {field!r} for "
+                    f"{record['resolution_wave_packet_review_board_id']}; fail-closed"
+                )
 
 
 def build_summary(records: list, checklist_records: list) -> dict:
@@ -250,7 +385,9 @@ def build_source_versions(source_data: dict) -> dict:
     }
 
 
-def write_markdown(records: list, summary: dict, source_versions: dict, generated_at: str):
+def build_markdown_lines(
+    records: list, summary: dict, source_versions: dict, generated_at: str
+) -> list:
     lines = [
         "# Model Adjustment Release Resolution Wave Packet Review Board",
         "",
@@ -315,6 +452,12 @@ def write_markdown(records: list, summary: dict, source_versions: dict, generate
         lines.append("---")
         lines.append("")
 
+    return lines
+
+
+def write_markdown(records: list, summary: dict, source_versions: dict, generated_at: str):
+    lines = build_markdown_lines(records, summary, source_versions, generated_at)
+
     with open(OUTPUT_MD, "w", encoding="utf-8") as file_handle:
         file_handle.write("\n".join(lines))
 
@@ -331,6 +474,8 @@ def main():
         for key in failures:
             print(f"[ERROR] {key}: {errors[key]}", file=sys.stderr)
         sys.exit(1)
+
+    validate_upstream_payload(source_data)
 
     checklist_records = source_data.get("release_resolution_wave_packet_checklist", [])
     records = build_review_board_records(checklist_records)
