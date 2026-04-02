@@ -290,3 +290,9 @@
 - added a canonical cross-record dependency index that deduplicates shared blocker refs, prohibition refs, and remaining resolutions across queue records and ranks them by severity and cross-record impact for operator use
 - added dependency-index fields for resolution dependency id, dependency type, source ref, affected proposal ids, affected queue ids, affected record count, has prohibition path, has blocker path, dependency priority, terminal posture, and governance-only dependency index notes
 - added runtime-generated release resolution-dependency-index artifacts in JSON and Markdown as a pure downstream projection of v4.8 queue records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
+
+## v5.0-controlled-release-resolution-cluster-map-slice-1
+- added a read-only controlled release resolution-cluster-map generator derived exclusively from the frozen v4.9 release resolution dependency index output
+- added a canonical shared-resolution cluster map that groups dependency entries by shared remediation footprint and preserves dependency type and terminal posture exactly for operator packeting
+- added cluster-map fields for resolution cluster id, cluster type, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, member count, has prohibition path, has blocker path, cluster priority, terminal posture, and governance-only cluster map notes
+- added runtime-generated release resolution-cluster-map artifacts in JSON and Markdown as a pure downstream projection of v4.9 dependency index records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
