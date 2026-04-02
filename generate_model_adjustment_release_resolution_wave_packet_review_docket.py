@@ -50,6 +50,12 @@ REVIEW_LANE_ORDER = {
     "lane_remaining_terminal": 2,
 }
 
+REVIEW_LANE_BY_WAVE_TYPE = {
+    "prohibition_cluster": "lane_prohibition_terminal",
+    "blocker_cluster": "lane_blocker_terminal",
+    "remaining_resolution_cluster": "lane_remaining_terminal",
+}
+
 REQUIRED_REVIEW_BOARD_FIELDS = (
     "resolution_wave_packet_review_board_id",
     "source_resolution_wave_packet_checklist_id",
@@ -258,6 +264,14 @@ def validate_review_board_record(record: dict, index: int) -> None:
             "fail-closed — manual review required"
         )
 
+    expected_lane = REVIEW_LANE_BY_WAVE_TYPE[wave_type]
+    if review_lane != expected_lane:
+        raise ValueError(
+            f"review-board record[{index}] has wave_type/review_lane mismatch: "
+            f"wave_type={wave_type!r} review_lane={review_lane!r} "
+            f"expected={expected_lane!r}; fail-closed — manual review required"
+        )
+
 
 def sorted_review_board_records(records: list) -> list:
     return sorted(
@@ -269,6 +283,21 @@ def sorted_review_board_records(records: list) -> list:
             record["packet_priority"],
             record["checklist_priority"],
             record["resolution_wave_packet_review_board_id"],
+            record["source_resolution_wave_packet_checklist_id"],
+        ),
+    )
+
+
+def sorted_review_docket_records(records: list) -> list:
+    return sorted(
+        records,
+        key=lambda record: (
+            REVIEW_LANE_ORDER[record["review_lane"]],
+            record["review_board_priority"],
+            record["wave_rank"],
+            record["packet_priority"],
+            record["checklist_priority"],
+            record["source_resolution_wave_packet_review_board_id"],
             record["source_resolution_wave_packet_checklist_id"],
         ),
     )
@@ -329,6 +358,10 @@ def build_review_docket_records(records: list) -> list:
 
 
 def validate_review_docket(records: list, review_board_records: list) -> None:
+    expected_sorted = sorted_review_docket_records(records)
+    if records != expected_sorted:
+        raise ValueError("review docket output ordering is non-deterministic; fail-closed")
+
     docket_ids = [record["resolution_wave_packet_review_docket_id"] for record in records]
     if len(docket_ids) != len(set(docket_ids)):
         raise ValueError("duplicate resolution_wave_packet_review_docket_id in output; fail-closed")
@@ -358,6 +391,12 @@ def validate_review_docket(records: list, review_board_records: list) -> None:
         )
 
     for record in records:
+        if record.get("review_docket_priority") != record.get("review_board_priority"):
+            raise ValueError(
+                f"review_docket_priority drift for {record['resolution_wave_packet_review_docket_id']}; "
+                "fail-closed"
+            )
+
         for field in (
             "member_cluster_ids",
             "member_dependency_ids",
