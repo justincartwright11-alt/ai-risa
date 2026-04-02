@@ -328,3 +328,9 @@
 - refactored markdown generation into a single projection builder to prevent JSON/Markdown logic drift
 - verified clean-state two-run stability for JSON and Markdown outputs after timestamp normalization
 - added v5.4 stabilization validation report documenting checks and pass results
+
+## v5.5-controlled-release-resolution-wave-packet-review-docket-slice-1
+- added a read-only controlled release resolution-wave-packet-review-docket generator derived exclusively from the frozen v5.4 release resolution wave packet review board output
+- added a canonical board-session review docket view that emits one deterministic docket entry per upstream review-board record while preserving wave type, packet priority, checklist priority, review-board priority, review lane, and terminal posture exactly
+- added review-docket fields for resolution wave packet review docket id, source resolution wave packet review board id, source resolution wave packet checklist id, source resolution wave packet id, source resolution wave id, wave rank, wave type, packet priority, checklist priority, review board priority, review lane, review docket priority, docket position, member cluster ids, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, cluster count, dependency count, has prohibition path, has blocker path, and terminal posture
+- added runtime-generated release resolution-wave-packet-review-docket artifacts in JSON and Markdown as a pure downstream projection of v5.4 review-board records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
