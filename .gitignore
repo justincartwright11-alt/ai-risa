@@ -72,6 +72,8 @@ ops/model_adjustments/model_adjustment_release_ineligibility_decisions.json
 ops/model_adjustments/model_adjustment_release_ineligibility_decisions.md
 ops/model_adjustments/model_adjustment_release_prohibition_matrix.json
 ops/model_adjustments/model_adjustment_release_prohibition_matrix.md
+ops/model_adjustments/model_adjustment_release_blocker_registry.json
+ops/model_adjustments/model_adjustment_release_blocker_registry.md
 
 # Timestamped run folders are operational outputs
 runs/*
