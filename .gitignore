@@ -86,6 +86,8 @@ ops/model_adjustments/model_adjustment_release_finality_decisions.json
 ops/model_adjustments/model_adjustment_release_finality_decisions.md
 ops/model_adjustments/model_adjustment_release_finality_registry.json
 ops/model_adjustments/model_adjustment_release_finality_registry.md
+ops/model_adjustments/model_adjustment_release_resolution_queue.json
+ops/model_adjustments/model_adjustment_release_resolution_queue.md
 
 # Timestamped run folders are operational outputs
 runs/*
