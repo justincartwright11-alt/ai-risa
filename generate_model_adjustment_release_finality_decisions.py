@@ -50,6 +50,29 @@ OUTPUT_MD = os.path.join(OPS_DIR, "model_adjustment_release_finality_decisions.m
 VERSION = "v4.6-slice-1"
 EXPECTED_RECORD_COUNT = 4
 
+KNOWN_CLOSURE_STATES = frozenset({
+    "effectively_closed",
+    "structurally_closed",
+    "theoretically_open",
+})
+
+KNOWN_FINALITY_STATES = frozenset({
+    "governance_final_no_release",
+    "structurally_closed",
+    "temporarily_closed",
+})
+
+REQUIRED_CLOSURE_RECORD_FIELDS = (
+    "proposal_id",
+    "release_closure_assessment_id",
+    "closure_state",
+    "closure_classification",
+    "release_blocker_refs",
+    "release_prohibition_refs",
+    "structural_closure_drivers",
+    "structurally_blocked_dependencies",
+)
+
 
 def abs_path(rel_path: str) -> str:
     return os.path.join(SCRIPT_DIR, rel_path.replace("/", os.sep))
@@ -79,8 +102,74 @@ def dedup_sorted(values) -> list:
     return sorted(set(str(value) for value in (values or []) if value))
 
 
+def validate_closure_record(record: dict, index: int) -> None:
+    """Fail-closed: raises ValueError on missing or empty required fields."""
+    for field in REQUIRED_CLOSURE_RECORD_FIELDS:
+        if field not in record:
+            raise ValueError(
+                f"closure record[{index}] missing required field {field!r}; "
+                "fail-closed — manual review required"
+            )
+    if not record.get("proposal_id"):
+        raise ValueError(
+            f"closure record[{index}] has empty proposal_id; "
+            "fail-closed — manual review required"
+        )
+    if not record.get("release_closure_assessment_id"):
+        raise ValueError(
+            f"closure record[{index}] has empty release_closure_assessment_id; "
+            "fail-closed — manual review required"
+        )
+    if record.get("closure_state", "") not in KNOWN_CLOSURE_STATES:
+        raise ValueError(
+            f"closure record[{index}] unrecognized closure_state={record.get('closure_state')!r}; "
+            "fail-closed — manual review required"
+        )
+
+
+def validate_records(records: list) -> None:
+    """Structural assertions on fully built output records before any write."""
+    decision_ids = [record["release_finality_decision_id"] for record in records]
+    if len(decision_ids) != len(set(decision_ids)):
+        raise ValueError("duplicate release_finality_decision_id in output; fail-closed")
+
+    proposal_ids = [record["proposal_id"] for record in records]
+    if len(proposal_ids) != len(set(proposal_ids)):
+        raise ValueError("duplicate proposal_id in output records; fail-closed")
+
+    if len(records) != EXPECTED_RECORD_COUNT:
+        raise ValueError(
+            f"record count {len(records)} does not match "
+            f"EXPECTED_RECORD_COUNT={EXPECTED_RECORD_COUNT}; fail-closed"
+        )
+
+    for record in records:
+        state = record.get("release_finality_state", "")
+        if state not in KNOWN_FINALITY_STATES:
+            raise ValueError(
+                f"unrecognized release_finality_state={state!r} for proposal "
+                f"{record.get('proposal_id')!r}; fail-closed"
+            )
+        for field in (
+            "required_remaining_resolutions",
+            "release_blocker_refs",
+            "release_prohibition_refs",
+        ):
+            values = record.get(field, [])
+            if len(values) != len(set(values)):
+                raise ValueError(
+                    f"duplicate entries in {field!r} for proposal "
+                    f"{record.get('proposal_id')!r}; fail-closed"
+                )
+
+
 def classify_finality(closure_record: dict, blocker_record: dict, prohibition_record: dict):
     closure_state = closure_record.get("closure_state", "")
+    if closure_state not in KNOWN_CLOSURE_STATES:
+        raise ValueError(
+            f"classify_finality: unrecognized closure_state={closure_state!r}; "
+            "fail-closed — manual review required"
+        )
     blocked_dependencies = len(closure_record.get("structurally_blocked_dependencies", []))
     blocker_refs = len(closure_record.get("release_blocker_refs", []))
     prohibition_refs = len(closure_record.get("release_prohibition_refs", []))
@@ -140,6 +229,7 @@ def build_records(
 
     output = []
     for index, closure_record in enumerate(closure_records, start=1):
+        validate_closure_record(closure_record, index)
         proposal_id = closure_record.get("proposal_id", "")
         rr_record = first_by_proposal(rr_records, proposal_id)
         inelig_record = first_by_proposal(inelig_records, proposal_id)
@@ -377,6 +467,7 @@ def main():
         auth_data,
         cond_data,
     )
+    validate_records(records)
     source_total = len(closure_data.get("release_closure_assessments", []))
     summary = build_summary(records, source_total)
     source_versions = build_source_versions(
