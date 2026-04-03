@@ -1,0 +1,32 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_live_event_production_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operator_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "live_event_production_intake_id": "resolution-wave-packet-review-session-live-event-production-intake-0001",
+      "intake_position": 1,
+      "objective": "execute one live AI-RISA event/report production path",
+      "operator": "provided_by_operator",
+      "target_event_or_workload": "provided_by_operator",
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "success_criteria": [
+        "all requested deliverables generated",
+        "outputs internally consistent",
+        "execution evidence captured"
+      ],
+      "evidence_artifact": "live_event_execution_evidence",
+      "stop_condition": "intake_frozen_and_ready_for_execution",
+      "lineage_source_layer": "archive_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-archive-handoff-0001"
+    }
+  ]
+}
