@@ -1,0 +1,37 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_archive_export",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_program_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operator_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_post_run_retrospective.json"
+  ],
+  "frozen_slices": [
+    "v23.0-controlled-release-resolution-wave-packet-review-session-post-run-retrospective"
+  ],
+  "archive_export_ready": true,
+  "archive_completeness": "complete",
+  "archive_export_status": "export_ready",
+  "record_count": 1,
+  "records": [
+    {
+      "archive_export_id": "resolution-wave-packet-review-session-archive-export-0001",
+      "export_position": 1,
+      "program_closeout_id": "resolution-wave-packet-review-session-program-closeout-0001",
+      "operator_handoff_id": "resolution-wave-packet-review-session-operator-handoff-0001",
+      "live_execution_handoff_id": "resolution-wave-packet-review-session-live-execution-handoff-0001",
+      "post_run_retrospective_id": "resolution-wave-packet-review-session-post-run-retrospective-0001",
+      "archive_export_status": "export_ready",
+      "archive_completeness": "complete",
+      "archive_export_summary": "Sealed archive is ready for external export, transfer, or re-import.",
+      "archive_export_notes": [
+        "All review-session program slices v8.8 through v23.0 are frozen and untouched.",
+        "Export artifact is a deterministic, audit-ready package.",
+        "No policy or release logic applied in export family."
+      ],
+      "lineage_source_layer": "post_run_retrospective",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_post_run_retrospective.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-post-run-retrospective-0001"
+    }
+  ]
+}
