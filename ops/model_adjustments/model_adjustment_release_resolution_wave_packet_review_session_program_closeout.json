@@ -1,0 +1,38 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_program_closeout",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_publication_handoff.json"
+  ],
+  "record_count": 1,
+  "routing_catalog_complete": true,
+  "execution_complete": true,
+  "orchestration_complete": true,
+  "delivery_complete": true,
+  "publication_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "records": [
+    {
+      "program_closeout_id": "resolution-wave-packet-review-session-program-closeout-0001",
+      "closeout_position": 1,
+      "routing_catalog_closeout_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_closeout.json",
+      "execution_handoff_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_handoff.json",
+      "orchestration_handoff_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_handoff.json",
+      "delivery_handoff_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_handoff.json",
+      "publication_handoff_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_publication_handoff.json",
+      "routing_catalog_complete": true,
+      "execution_complete": true,
+      "orchestration_complete": true,
+      "delivery_complete": true,
+      "publication_complete": true,
+      "merge_performed": false,
+      "tag_performed": false,
+      "push_performed": false
+    }
+  ]
+}
