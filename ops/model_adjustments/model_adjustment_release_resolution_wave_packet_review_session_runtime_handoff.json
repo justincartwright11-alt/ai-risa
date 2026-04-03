@@ -1,0 +1,30 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_runtime_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_acceptance.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_smoke_test.json"
+  ],
+  "frozen_slices": [
+    "v15.0-controlled-release-resolution-wave-packet-review-session-runtime-acceptance",
+    "v15.1-controlled-release-resolution-wave-packet-review-session-runtime-smoke-test"
+  ],
+  "runtime_acceptance_complete": true,
+  "runtime_smoke_test_complete": true,
+  "runtime_family_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "runtime_handoff_id": "resolution-wave-packet-review-session-runtime-handoff-0001",
+      "handoff_position": 1,
+      "terminal_runtime_acceptance_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_acceptance.json",
+      "terminal_runtime_smoke_test_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_smoke_test.json",
+      "runtime_family_complete": true,
+      "lineage_source_layer": "runtime_smoke_test",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_smoke_test.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-runtime-smoke-test-0001"
+    }
+  ]
+}
