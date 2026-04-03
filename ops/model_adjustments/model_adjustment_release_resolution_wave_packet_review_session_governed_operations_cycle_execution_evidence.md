@@ -1,0 +1,5 @@
+# v38.2 Governed Operations Cycle Execution Evidence
+
+| governed_operations_cycle_execution_evidence_id | governed_operations_cycle_plan_id | evidence_position | execution_attempted | execution_pass | requested_deliverables | delivered_artifacts | governance_thresholds_breached | approval_requirements_satisfied | operator_intervention_invoked | rollback_triggered | incident_detected | execution_result_summary | lineage_source_layer | lineage_source_file | lineage_source_record_id |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| resolution-wave-packet-review-session-governed-operations-cycle-execution-evidence-0001 | resolution-wave-packet-review-session-governed-operations-cycle-plan-0001 | 1 | True | True | full report<br>simulation brief<br>operator summary | provided_by_operator | False | provided_by_operator | False | False | False | provided_by_operator | governed_operations_cycle_plan | ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_plan.json | resolution-wave-packet-review-session-governed-operations-cycle-plan-0001 |
