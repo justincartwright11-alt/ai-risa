@@ -1,0 +1,40 @@
+{
+  "closeout_version": "v9.6-controlled-release-resolution-wave-packet-review-session-routing-catalog-closeout",
+  "frozen_chain": [
+    {
+      "version": "v8.8",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_index.json"
+    },
+    {
+      "version": "v9.0",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory.json"
+    },
+    {
+      "version": "v9.1",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_locator.json"
+    },
+    {
+      "version": "v9.2",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_register.json"
+    },
+    {
+      "version": "v9.3",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_ledger.json"
+    },
+    {
+      "version": "v9.3",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_manifest.json"
+    },
+    {
+      "version": "v9.4",
+      "artifact": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_chain_audit.json"
+    }
+  ],
+  "chain_complete": true,
+  "audit_complete": true,
+  "handoff_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "result": "CLOSED"
+}
