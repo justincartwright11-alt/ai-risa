@@ -1,0 +1,39 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_policy.json"
+  ],
+  "frozen_slices": [
+    "v27.0-controlled-release-resolution-wave-packet-review-session-performance-governance-intake",
+    "v27.1-controlled-release-resolution-wave-packet-review-session-performance-governance-policy"
+  ],
+  "performance_governance_intake_complete": true,
+  "performance_governance_policy_complete": true,
+  "performance_governance_family_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "performance_governance_handoff_id": "resolution-wave-packet-review-session-performance-governance-handoff-0001",
+      "performance_governance_policy_id": "resolution-wave-packet-review-session-performance-governance-policy-0001",
+      "handoff_position": 1,
+      "governance_family_complete": true,
+      "rollout_gate": "future live-event family may proceed only when governance policy is accepted",
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "lineage_source_layer": "performance_governance_policy",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_policy.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-governance-policy-0001"
+    }
+  ]
+}
