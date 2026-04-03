@@ -1,0 +1,14 @@
+{
+  "alert_triggered": false,
+  "closeout_position": 1,
+  "deviation_detected": false,
+  "final_monitoring_outcome": "within_expected_range",
+  "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_evidence.json",
+  "lineage_source_layer": "steady_state_operations_monitoring_evidence",
+  "lineage_source_record_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-evidence-0001",
+  "monitoring_result_summary": "provided_by_operator",
+  "steady_state_operations_monitoring_baseline_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-baseline-0001",
+  "steady_state_operations_monitoring_closeout_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-closeout-0001",
+  "steady_state_operations_monitoring_evidence_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-evidence-0001",
+  "steady_state_operations_monitoring_family_complete": true
+}
