@@ -437,3 +437,9 @@
 - Pure downstream projection from v6.9 locator artifact
 - Deterministic, unique registry IDs, stable ordering, and frozen metadata timestamp
 - Markdown is a pure projection of JSON
+
+## v7.1 (2026-04-03)
+- Implement v7.1 controlled release resolution wave packet review session manifest
+- Pure downstream projection from v7.0 registry artifact
+- Deterministic, unique manifest IDs, stable ordering, and frozen metadata timestamp
+- Markdown is a pure projection of JSON
