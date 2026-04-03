@@ -1,0 +1,31 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "scale_hold_review_intake_id": "resolution-wave-packet-review-session-scale-hold-review-intake-0001",
+      "prior_scale_reauthorization_handoff_id": "resolution-wave-packet-review-session-scale-reauthorization-handoff-0001",
+      "rollout_authorized": false,
+      "hold_review_objective": "capture unresolved authorization state and final review requirements before any further scale operations",
+      "hold_review_targets": [
+        "operator review",
+        "governance review",
+        "remediation review"
+      ],
+      "operator_review_required": true,
+      "governance_review_required": true,
+      "remediation_review_required": true,
+      "final_review_requirements": [
+        "provided_by_operator"
+      ],
+      "evidence_artifact": "scale_hold_review_evidence",
+      "stop_condition": "hold_review_frozen_and_ready_for_final_review",
+      "lineage_source_layer": "scale_reauthorization_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-reauthorization-handoff-0001"
+    }
+  ]
+}
