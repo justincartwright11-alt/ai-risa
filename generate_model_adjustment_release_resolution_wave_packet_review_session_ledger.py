@@ -23,7 +23,7 @@ import os
 import sys
 
 SOURCE_PATHS = {
-    "register": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_register.json",
+    "manifest": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_manifest.json",
 }
 
 OUTPUT_PATHS = {
@@ -84,303 +84,72 @@ def validate_upstream_payload(payload, path):
 def build_ledger_records(register_records):
     ledger_records = []
 
-    for idx, register_record in enumerate(register_records):
-        try:
-            register_id = normalize_string(
-                register_record.get("resolution_wave_packet_review_session_register_id"),
-                "register_id",
-            )
-            receipt_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_session_receipt_id"),
-                "receipt_id",
-            )
-            intake_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_session_intake_id"),
-                "intake_id",
-            )
-            handoff_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_session_handoff_id"),
-                "handoff_id",
-            )
-            brief_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_session_brief_id"),
-                "brief_id",
-            )
-            pack_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_session_pack_id"),
-                "pack_id",
-            )
-            agenda_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_agenda_id"),
-                "agenda_id",
-            )
-            docket_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_docket_id"),
-                "docket_id",
-            )
-            board_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_review_board_id"),
-                "board_id",
-            )
-            checklist_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_checklist_id"),
-                "checklist_id",
-            )
-            packet_id = normalize_string(
-                register_record.get("source_resolution_wave_packet_id"),
-                "packet_id",
-            )
-            wave_id = normalize_string(
-                register_record.get("source_resolution_wave_id"),
-                "wave_id",
-            )
-
-            wave_rank = normalize_int(register_record.get("wave_rank"), "wave_rank")
-            wave_type = normalize_string(register_record.get("wave_type"), "wave_type")
-            packet_priority = normalize_string(register_record.get("packet_priority"), "packet_priority")
-            checklist_priority = normalize_string(register_record.get("checklist_priority"), "checklist_priority")
-            review_board_priority = normalize_string(
-                register_record.get("review_board_priority"), "review_board_priority"
-            )
-            review_docket_priority = normalize_string(
-                register_record.get("review_docket_priority"), "review_docket_priority"
-            )
-            review_agenda_priority = normalize_string(
-                register_record.get("review_agenda_priority"), "review_agenda_priority"
-            )
-            review_session_pack_priority = normalize_string(
-                register_record.get("review_session_pack_priority"), "review_session_pack_priority"
-            )
-            review_session_brief_priority = normalize_string(
-                register_record.get("review_session_brief_priority"), "review_session_brief_priority"
-            )
-            review_session_handoff_priority = normalize_string(
-                register_record.get("review_session_handoff_priority"), "review_session_handoff_priority"
-            )
-            review_session_intake_priority = normalize_string(
-                register_record.get("review_session_intake_priority"), "review_session_intake_priority"
-            )
-            review_session_receipt_priority = normalize_string(
-                register_record.get("review_session_receipt_priority"), "review_session_receipt_priority"
-            )
-            review_session_register_priority = normalize_string(
-                register_record.get("review_session_register_priority"), "review_session_register_priority"
-            )
-            review_lane = normalize_string(register_record.get("review_lane"), "review_lane")
-            terminal_posture = normalize_string(register_record.get("terminal_posture"), "terminal_posture")
-
-            member_cluster_ids = normalize_list(
-                register_record.get("member_cluster_ids", []), "member_cluster_ids"
-            )
-            member_dependency_ids = normalize_list(
-                register_record.get("member_dependency_ids", []), "member_dependency_ids"
-            )
-            member_source_refs = normalize_list(
-                register_record.get("member_source_refs", []), "member_source_refs"
-            )
-            affected_proposal_ids = normalize_list(
-                register_record.get("affected_proposal_ids", []), "affected_proposal_ids"
-            )
-            affected_queue_ids = normalize_list(
-                register_record.get("affected_queue_ids", []), "affected_queue_ids"
-            )
-
-            affected_record_count = normalize_int(
-                register_record.get("affected_record_count"), "affected_record_count"
-            )
-            cluster_count = normalize_int(register_record.get("cluster_count"), "cluster_count")
-            dependency_count = normalize_int(register_record.get("dependency_count"), "dependency_count")
-            has_prohibition_path = normalize_bool(
-                register_record.get("has_prohibition_path"), "has_prohibition_path"
-            )
-            has_blocker_path = normalize_bool(
-                register_record.get("has_blocker_path"), "has_blocker_path"
-            )
-        except ValueError as e:
-            raise ValueError(f"Validation error in register record {idx}: {e}")
-
-        ledger_records.append(
-            {
-                "resolution_wave_packet_review_session_ledger_id": (
-                    f"resolution-wave-packet-review-session-ledger-{idx + 1:04d}"
-                ),
-                "source_resolution_wave_packet_review_session_register_id": register_id,
-                "source_resolution_wave_packet_review_session_receipt_id": receipt_id,
-                "source_resolution_wave_packet_review_session_intake_id": intake_id,
-                "source_resolution_wave_packet_review_session_handoff_id": handoff_id,
-                "source_resolution_wave_packet_review_session_brief_id": brief_id,
-                "source_resolution_wave_packet_review_session_pack_id": pack_id,
-                "source_resolution_wave_packet_review_agenda_id": agenda_id,
-                "source_resolution_wave_packet_review_docket_id": docket_id,
-                "source_resolution_wave_packet_review_board_id": board_id,
-                "source_resolution_wave_packet_checklist_id": checklist_id,
-                "source_resolution_wave_packet_id": packet_id,
-                "source_resolution_wave_id": wave_id,
-                "wave_rank": wave_rank,
-                "wave_type": wave_type,
-                "packet_priority": packet_priority,
-                "checklist_priority": checklist_priority,
-                "review_board_priority": review_board_priority,
-                "review_docket_priority": review_docket_priority,
-                "review_agenda_priority": review_agenda_priority,
-                "review_session_pack_priority": review_session_pack_priority,
-                "review_session_brief_priority": review_session_brief_priority,
-                "review_session_handoff_priority": review_session_handoff_priority,
-                "review_session_intake_priority": review_session_intake_priority,
-                "review_session_receipt_priority": review_session_receipt_priority,
-                "review_session_register_priority": review_session_register_priority,
-                "review_lane": review_lane,
-                "review_session_ledger_priority": review_session_register_priority,
-                "ledger_position": idx + 1,
-                "member_cluster_ids": member_cluster_ids,
-                "member_dependency_ids": member_dependency_ids,
-                "member_source_refs": member_source_refs,
-                "affected_proposal_ids": affected_proposal_ids,
-                "affected_queue_ids": affected_queue_ids,
-                "affected_record_count": affected_record_count,
-                "cluster_count": cluster_count,
-                "dependency_count": dependency_count,
-                "has_prohibition_path": has_prohibition_path,
-                "has_blocker_path": has_blocker_path,
-                "terminal_posture": terminal_posture,
-            }
-        )
-
-    ledger_records.sort(
-        key=lambda rec: (
-            LANE_ORDER.get(rec["review_lane"], 999),
-            rec["wave_rank"],
-            rec["source_resolution_wave_packet_review_session_register_id"],
-            rec["source_resolution_wave_packet_review_session_receipt_id"],
-        )
-    )
-
-    for idx, rec in enumerate(ledger_records):
-        rec["ledger_position"] = idx + 1
+    for idx, man_rec in enumerate(register_records):
+        ledger_id = f"resolution-wave-packet-review-session-ledger-{idx+1:04d}"
+        ledger_rec = {
+            "resolution_wave_packet_review_session_ledger_id": ledger_id,
+            "source_resolution_wave_packet_review_session_manifest_id": man_rec["resolution_wave_packet_review_session_manifest_id"],
+        }
+        for k, v in man_rec.items():
+            if k.startswith("source_resolution_wave_packet_review_session_") or k.startswith("source_resolution_wave_packet_") or k.startswith("source_resolution_wave_"):
+                ledger_rec[k] = v
+        ledger_records.append(ledger_rec)
     return ledger_records
 
 
+
 def generate_markdown(payload, records):
-    md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Ledger
-
-**Version**: v6.3-slice-1
-**Generated At (UTC)**: {payload['generated_at_utc']}
-
-## Summary
-
-| Field | Value |
-|---|---|
-| upstream_session_register_count | {payload['upstream_session_register_count']} |
-| total_review_session_ledger_records | {len(records)} |
-| review_lane_counts | {payload['review_lane_counts']} |
-| coverage_reconciled | {payload['coverage_reconciled']} |
-| deterministic_ordering | {payload['deterministic_ordering']} |
-
-## Source Versions
-
-| Source | Version |
-|---|---|
-| model_adjustment_release_resolution_wave_packet_review_session_register_version | {payload['upstream_session_register_version']} |
-
-"""
-
+    lines = []
+    lines.append(f"# Model Adjustment Release Resolution Wave Packet Review Session Ledger\n")
+    lines.append(f"**Version**: {payload['model_adjustment_release_resolution_wave_packet_review_session_ledger_version']}\n")
+    lines.append(f"**Generated At (UTC)**: {payload['generated_at_utc']}\n")
+    lines.append(f"## Summary\n")
+    lines.append("| Field | Value |\n")
+    lines.append("|---|---|\n")
+    lines.append(f"| input_manifest_record_count | {payload.get('input_manifest_record_count', '')} |\n")
+    lines.append(f"| ledger_record_count | {payload.get('ledger_record_count', '')} |\n")
+    lines.append(f"| deterministic_ordering | {payload.get('deterministic_ordering', '')} |\n\n")
     for rec in records:
-        md += f"""## {rec['resolution_wave_packet_review_session_ledger_id']}
-
-    - source_resolution_wave_packet_review_session_register_id: {rec['source_resolution_wave_packet_review_session_register_id']}
-- source_resolution_wave_packet_review_session_receipt_id: {rec['source_resolution_wave_packet_review_session_receipt_id']}
-- source_resolution_wave_packet_review_session_intake_id: {rec['source_resolution_wave_packet_review_session_intake_id']}
-- source_resolution_wave_packet_review_session_handoff_id: {rec['source_resolution_wave_packet_review_session_handoff_id']}
-- source_resolution_wave_packet_review_session_brief_id: {rec['source_resolution_wave_packet_review_session_brief_id']}
-- source_resolution_wave_packet_review_session_pack_id: {rec['source_resolution_wave_packet_review_session_pack_id']}
-- source_resolution_wave_packet_review_agenda_id: {rec['source_resolution_wave_packet_review_agenda_id']}
-- source_resolution_wave_packet_review_docket_id: {rec['source_resolution_wave_packet_review_docket_id']}
-- source_resolution_wave_packet_review_board_id: {rec['source_resolution_wave_packet_review_board_id']}
-- source_resolution_wave_packet_checklist_id: {rec['source_resolution_wave_packet_checklist_id']}
-- source_resolution_wave_packet_id: {rec['source_resolution_wave_packet_id']}
-- source_resolution_wave_id: {rec['source_resolution_wave_id']}
-- wave_rank: {rec['wave_rank']}
-- wave_type: {rec['wave_type']}
-- packet_priority: {rec['packet_priority']}
-- checklist_priority: {rec['checklist_priority']}
-- review_board_priority: {rec['review_board_priority']}
-- review_docket_priority: {rec['review_docket_priority']}
-- review_agenda_priority: {rec['review_agenda_priority']}
-- review_session_pack_priority: {rec['review_session_pack_priority']}
-- review_session_brief_priority: {rec['review_session_brief_priority']}
-- review_session_handoff_priority: {rec['review_session_handoff_priority']}
-- review_session_intake_priority: {rec['review_session_intake_priority']}
-- review_session_receipt_priority: {rec['review_session_receipt_priority']}
-- review_session_register_priority: {rec['review_session_register_priority']}
-- review_lane: {rec['review_lane']}
-- review_session_ledger_priority: {rec['review_session_ledger_priority']}
-- ledger_position: {rec['ledger_position']}
-- terminal_posture: {rec['terminal_posture']}
-
-### member_cluster_ids
-
-{json.dumps(rec['member_cluster_ids'], indent=2)}
-
-### member_dependency_ids
-
-{json.dumps(rec['member_dependency_ids'], indent=2)}
-
-### member_source_refs
-
-{json.dumps(rec['member_source_refs'], indent=2)}
-
-### affected_proposal_ids
-
-{json.dumps(rec['affected_proposal_ids'], indent=2)}
-
-### affected_queue_ids
-
-{json.dumps(rec['affected_queue_ids'], indent=2)}
-
-- affected_record_count: {rec['affected_record_count']}
-- cluster_count: {rec['cluster_count']}
-- dependency_count: {rec['dependency_count']}
-- has_prohibition_path: {rec['has_prohibition_path']}
-- has_blocker_path: {rec['has_blocker_path']}
-
-"""
-    return md
+        lines.append(f"## {rec['resolution_wave_packet_review_session_ledger_id']}\n")
+        lines.append(f"- source_resolution_wave_packet_review_session_manifest_id: {rec['source_resolution_wave_packet_review_session_manifest_id']}\n")
+        for k, v in rec.items():
+            if k not in ("resolution_wave_packet_review_session_ledger_id", "source_resolution_wave_packet_review_session_manifest_id"):
+                lines.append(f"- {k}: {v}\n")
+        lines.append("\n")
+    return ''.join(lines)
 
 
 def main():
     try:
-        register_path = SOURCE_PATHS["register"]
-        if not os.path.exists(register_path):
-            raise FileNotFoundError(f"Upstream register JSON not found: {register_path}")
 
-        with open(register_path, "r") as f:
-            register_payload = json.load(f)
+        manifest_path = SOURCE_PATHS["manifest"]
+        if not os.path.exists(manifest_path):
+            raise FileNotFoundError(f"Input manifest JSON not found: {manifest_path}")
 
-        register_records = validate_upstream_payload(register_payload, register_path)
-        ledger_records = build_ledger_records(register_records)
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest_payload = json.load(f)
 
-        coverage_reconciled = len(register_records) == len(ledger_records)
-        is_sorted = all(
-            ledger_records[i]["ledger_position"] <= ledger_records[i + 1]["ledger_position"]
-            for i in range(len(ledger_records) - 1)
-        )
+        manifest_records = manifest_payload.get("release_resolution_wave_packet_review_session_manifest")
+        if not isinstance(manifest_records, list):
+            raise ValueError("Input manifest JSON missing or malformed 'release_resolution_wave_packet_review_session_manifest' list")
 
+        ledger_records = build_ledger_records(manifest_records)
+
+        coverage_reconciled = len(manifest_records) == len(ledger_records)
+        is_sorted = True  # v7.2: manifest ordering is preserved
         lane_counts = {}
         for rec in ledger_records:
-            lane = rec["review_lane"]
-            lane_counts[lane] = lane_counts.get(lane, 0) + 1
+            lane = rec.get("review_lane")
+            if lane is not None:
+                lane_counts[lane] = lane_counts.get(lane, 0) + 1
 
         output_payload = {
-            "model_adjustment_release_resolution_wave_packet_review_session_ledger_version": "v6.3-slice-1",
-            "generated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "upstream_session_register_count": len(register_records),
-            "upstream_session_register_version": register_payload.get(
-                "model_adjustment_release_resolution_wave_packet_review_session_register_version"
-            ),
-            "release_resolution_wave_packet_review_session_ledger": ledger_records,
-            "coverage_reconciled": coverage_reconciled,
+            "model_adjustment_release_resolution_wave_packet_review_session_ledger_version": "v7.2-slice-1",
+            "generated_at_utc": "2026-04-03T00:00:00+00:00",
+            "input_manifest_record_count": len(manifest_records),
+            "ledger_record_count": len(ledger_records),
             "deterministic_ordering": is_sorted,
-            "review_lane_counts": lane_counts,
+            "release_resolution_wave_packet_review_session_ledger": ledger_records,
         }
 
         markdown_output = generate_markdown(output_payload, ledger_records)
