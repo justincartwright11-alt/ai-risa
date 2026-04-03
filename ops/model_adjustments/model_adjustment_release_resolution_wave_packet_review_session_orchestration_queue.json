@@ -1,0 +1,17 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_orchestration_queue",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_intake.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "orchestration_queue_id": "resolution-wave-packet-review-session-orchestration-queue-0001",
+      "orchestration_intake_id": "resolution-wave-packet-review-session-orchestration-intake-0001",
+      "queue_position": 1,
+      "orchestration_ready": true,
+      "lineage_source_layer": "orchestration_intake",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-orchestration-intake-0001"
+    }
+  ]
+}
