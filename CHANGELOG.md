@@ -425,3 +425,9 @@
 - Authorize and stabilize v6.8 controlled release resolution wave packet review session directory
 - Determinism patch: freeze generated_at_utc to 2026-04-03T00:00:00+00:00 for auditability
 - No semantic, ordering, or ID changes; only metadata timestamp made deterministic
+
+## v6.9 (2026-04-03)
+- Implement v6.9 controlled release resolution wave packet review session locator
+- Pure downstream projection from v6.8 directory artifact
+- Deterministic, unique locator IDs, stable ordering, and frozen metadata timestamp
+- Markdown is a pure projection of JSON
