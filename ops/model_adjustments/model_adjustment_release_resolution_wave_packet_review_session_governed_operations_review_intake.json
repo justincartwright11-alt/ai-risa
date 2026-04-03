@@ -1,0 +1,43 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_review_intake",
+  "records": [
+    {
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "governance_handoff_reference": "resolution-wave-packet-review-session-operations-governance-handoff-0001",
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "governed_operations_cycle_closeout_id": "resolution-wave-packet-review-session-governed-operations-cycle-closeout-0001",
+      "governed_operations_review_intake_id": "resolution-wave-packet-review-session-governed-operations-review-intake-0001",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_closeout.json",
+      "lineage_source_layer": "governed_operations_cycle_closeout",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-closeout-0001",
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "review_cadence": "provided_by_operator",
+      "review_position": 1,
+      "review_targets": [
+        "governed cycle compliance with v37.2 governance handoff",
+        "threshold adherence",
+        "approval requirements met",
+        "intervention/rollback rule triggers",
+        "steady-state behavior under governance"
+      ],
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ]
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_handoff.json",
+    "operator_governed_operations_review_targets.json"
+  ]
+}
