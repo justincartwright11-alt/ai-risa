@@ -1,27 +1,27 @@
 import json
 from pathlib import Path
 
-INPUT_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_ledger.json"
+INPUT_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_locator.json"
 OUTPUT_JSON_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_registry.json"
 OUTPUT_MD_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_registry.md"
 
 FROZEN_TIMESTAMP = "2026-04-03T00:00:00+00:00"
-VERSION = "v7.7-slice-1"
+VERSION = "v8.2-slice-1"
 LIST_KEY = "release_resolution_wave_packet_review_session_routing_registry"
 
 # Load input
 with open(INPUT_PATH, "r", encoding="utf-8") as f:
-    routing_ledger = json.load(f)["release_resolution_wave_packet_review_session_routing_ledger"]
+    routing_locator = json.load(f)["release_resolution_wave_packet_review_session_routing_locator"]
 
 # Build routing-registry records
 registry_records = []
-for i, ledger_record in enumerate(routing_ledger, 1):
+for i, locator_record in enumerate(routing_locator, 1):
     registry_id = f"resolution-wave-packet-review-session-routing-registry-{i:04d}"
     registry_record = {
         "resolution_wave_packet_review_session_routing_registry_id": registry_id,
-        "source_resolution_wave_packet_review_session_routing_ledger_id": ledger_record["resolution_wave_packet_review_session_routing_ledger_id"],
-        # Pure downstream projection: copy all source_* fields from ledger_record
-        **{k: v for k, v in ledger_record.items() if k.startswith("source_")}
+        "source_resolution_wave_packet_review_session_routing_locator_id": locator_record["resolution_wave_packet_review_session_routing_locator_id"],
+        # Pure downstream projection: copy all source_* fields from locator_record
+        **{k: v for k, v in locator_record.items() if k.startswith("source_")}
     }
     registry_records.append(registry_record)
 
@@ -29,7 +29,7 @@ for i, ledger_record in enumerate(routing_ledger, 1):
 data = {
     "model_adjustment_release_resolution_wave_packet_review_session_routing_registry_version": VERSION,
     "generated_at_utc": FROZEN_TIMESTAMP,
-    "input_routing_ledger_record_count": len(routing_ledger),
+    "input_routing_locator_record_count": len(routing_locator),
     "routing_registry_record_count": len(registry_records),
     "deterministic_ordering": True,
     LIST_KEY: registry_records
@@ -49,11 +49,11 @@ def to_md_table(records):
         lines.append("| " + " | ".join(str(rec[h]) for h in headers) + " |")
     return "\n".join(lines)
 
-md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Routing Registry (v7.7)
+md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Routing Registry (v8.2)
 
 - Version: {VERSION}
 - generated_at_utc: {FROZEN_TIMESTAMP}
-- Input routing-ledger record count: {len(routing_ledger)}
+- Input routing-locator record count: {len(routing_locator)}
 - Routing-registry record count: {len(registry_records)}
 - Deterministic ordering: True
 
