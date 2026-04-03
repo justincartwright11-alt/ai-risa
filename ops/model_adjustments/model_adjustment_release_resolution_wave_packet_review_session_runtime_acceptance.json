@@ -1,0 +1,19 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_runtime_acceptance",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_program_closeout.json",
+  "record_count": 1,
+  "records": [
+    {
+      "runtime_acceptance_id": "resolution-wave-packet-review-session-runtime-acceptance-0001",
+      "acceptance_position": 1,
+      "program_closeout_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_program_closeout.json",
+      "routing_catalog_complete": true,
+      "execution_complete": true,
+      "orchestration_complete": true,
+      "delivery_complete": true,
+      "publication_complete": true,
+      "program_closeout_complete": true,
+      "acceptance_ready": true
+    }
+  ]
+}
