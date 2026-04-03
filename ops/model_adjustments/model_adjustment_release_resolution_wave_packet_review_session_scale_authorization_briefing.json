@@ -1,0 +1,26 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_authorization_briefing",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "scale_authorization_briefing_id": "resolution-wave-packet-review-session-scale-authorization-briefing-0001",
+      "prior_hold_review_handoff_id": "resolution-wave-packet-review-session-scale-hold-review-handoff-0001",
+      "prior_reauthorization_handoff_id": "resolution-wave-packet-review-session-scale-reauthorization-handoff-0001",
+      "performance_governance_handoff_id": "provided_by_operator",
+      "rollout_authorized": false,
+      "blocked_scale_reason": "rollout gate not explicitly approved by operator",
+      "final_hold_review_summary": "provided_by_operator",
+      "final_governance_summary": "provided_by_operator",
+      "operator_decision_required": true,
+      "authorization_request": "authorize / deny / defer",
+      "lineage_source_layer": "scale_hold_review_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-hold-review-handoff-0001"
+    }
+  ]
+}
