@@ -1,0 +1,25 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_multi_run_operational_decision",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_multi_run_operational_readiness.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "multi_run_operational_decision_id": "resolution-wave-packet-review-session-multi-run-operational-decision-0001",
+      "multi_run_operational_readiness_id": "resolution-wave-packet-review-session-multi-run-operational-readiness-0001",
+      "decision_position": 1,
+      "readiness_result": "provided_by_operator",
+      "scale_recommendation": "provided_by_operator",
+      "decision_outcome": "provided_by_operator",
+      "operator_review_required": true,
+      "rollout_authorized": "provided_by_operator",
+      "rationale_summary": "provided_by_operator",
+      "next_family_recommendation": "provided_by_operator",
+      "lineage_source_layer": "multi_run_operational_readiness",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_multi_run_operational_readiness.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-multi-run-operational-readiness-0001"
+    }
+  ]
+}
