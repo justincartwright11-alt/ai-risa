@@ -1,0 +1,44 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_closeout",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_plan.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_evidence.json"
+  ],
+  "frozen_slices": [
+    "v30.0-controlled-release-resolution-wave-packet-review-session-scale-remediation-intake",
+    "v30.1-controlled-release-resolution-wave-packet-review-session-scale-remediation-plan",
+    "v30.2-controlled-release-resolution-wave-packet-review-session-scale-remediation-evidence"
+  ],
+  "scale_remediation_plan_complete": true,
+  "scale_remediation_evidence_complete": true,
+  "scale_remediation_family_complete": true,
+  "remediation_attempted": true,
+  "remediation_pass": true,
+  "approval_gap_resolved": "provided_by_operator",
+  "operational_readiness_gap_resolved": "provided_by_operator",
+  "governance_acceptance_gap_resolved": "provided_by_operator",
+  "alert_triggered": false,
+  "incident_detected": false,
+  "rollback_required": false,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "scale_remediation_closeout_id": "resolution-wave-packet-review-session-scale-remediation-closeout-0001",
+      "closeout_position": 1,
+      "scale_remediation_plan_id": "resolution-wave-packet-review-session-scale-remediation-plan-0001",
+      "scale_remediation_evidence_id": "resolution-wave-packet-review-session-scale-remediation-evidence-0001",
+      "final_remediation_outcome": "resolved_for_reauthorization",
+      "approval_gap_resolved": "provided_by_operator",
+      "operational_readiness_gap_resolved": "provided_by_operator",
+      "governance_acceptance_gap_resolved": "provided_by_operator",
+      "remediation_result_summary": "provided_by_operator",
+      "scale_remediation_family_complete": true,
+      "lineage_source_layer": "scale_remediation_evidence",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_evidence.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-remediation-evidence-0001"
+    }
+  ]
+}
