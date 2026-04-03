@@ -1,0 +1,42 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_orchestration_audit",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_queue.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_dispatch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_batch.json"
+  ],
+  "source_record_counts": {
+    "orchestration_intake": 1,
+    "orchestration_queue": 1,
+    "orchestration_dispatch": 1,
+    "orchestration_batch": 1
+  },
+  "record_count": 1,
+  "all_checks_pass": true,
+  "checks": {
+    "layer_record_count_parity_pass": true,
+    "audit_record_count_matches_batch_pass": true,
+    "exact_once_lineage_pass": true,
+    "source_order_preserved_pass": true,
+    "deterministic_suffix_alignment_pass": true,
+    "terminal_batch_coverage_pass": true
+  },
+  "records": [
+    {
+      "orchestration_audit_id": "resolution-wave-packet-review-session-orchestration-audit-0001",
+      "audit_position": 1,
+      "orchestration_intake_id": "resolution-wave-packet-review-session-orchestration-intake-0001",
+      "orchestration_queue_id": "resolution-wave-packet-review-session-orchestration-queue-0001",
+      "orchestration_dispatch_id": "resolution-wave-packet-review-session-orchestration-dispatch-0001",
+      "orchestration_batch_id": "resolution-wave-packet-review-session-orchestration-batch-0001",
+      "lineage_chain_complete": true,
+      "source_order_preserved": true,
+      "deterministic_suffix_alignment": true,
+      "exact_once_lineage": true,
+      "lineage_source_layer": "orchestration_batch",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_batch.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-orchestration-batch-0001"
+    }
+  ]
+}
