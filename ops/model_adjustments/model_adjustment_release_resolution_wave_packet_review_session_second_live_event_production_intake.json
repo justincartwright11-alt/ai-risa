@@ -1,0 +1,43 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_second_live_event_production_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operator_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "second_live_event_production_intake_id": "resolution-wave-packet-review-session-second-live-event-production-intake-0001",
+      "intake_position": 1,
+      "governance_handoff_id": "resolution-wave-packet-review-session-performance-governance-handoff-0001",
+      "operator": "provided_by_operator",
+      "target_event_or_workload": "provided_by_operator",
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "success_criteria": [
+        "all requested deliverables generated",
+        "outputs internally consistent",
+        "execution evidence captured",
+        "governance thresholds not breached"
+      ],
+      "rollout_gate": "future live-event family may proceed only when governance policy is accepted",
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "evidence_artifact": "second_live_event_execution_evidence",
+      "stop_condition": "intake_frozen_and_ready_for_execution",
+      "lineage_source_layer": "performance_governance_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-governance-handoff-0001"
+    }
+  ]
+}
