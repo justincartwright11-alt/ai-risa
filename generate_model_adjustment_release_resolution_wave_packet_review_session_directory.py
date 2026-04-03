@@ -506,7 +506,8 @@ def main():
 
         output_payload = {
             "model_adjustment_release_resolution_wave_packet_review_session_directory_version": "v6.8-slice-1",
-            "generated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            # Deterministic timestamp for v6.8 controlled baseline
+            "generated_at_utc": "2026-04-03T00:00:00+00:00",
             "upstream_session_index_count": len(index_records),
             "upstream_session_index_version": index_payload.get(
                 "model_adjustment_release_resolution_wave_packet_review_session_index_version"
