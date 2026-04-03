@@ -1,0 +1,22 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_external_consumer_trial",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_handoff.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "external_consumer_trial_pass": true,
+  "records": [
+    {
+      "external_consumer_trial_id": "resolution-wave-packet-review-session-external-consumer-trial-0001",
+      "trial_position": 1,
+      "consumer_handoff_id": "resolution-wave-packet-review-session-consumer-activation-handoff-0001",
+      "external_consumer_trial_pass": true,
+      "consumer_handoff_present_pass": true,
+      "activation_family_complete_pass": true,
+      "downstream_trial_execution_pass": true,
+      "deterministic_output_pass": true,
+      "lineage_source_layer": "consumer_activation_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-consumer-activation-handoff-0001"
+    }
+  ]
+}
