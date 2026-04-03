@@ -1,0 +1,5 @@
+# v41.0 Governed Operations Cycle 2 Review Intake
+
+| governed_operations_cycle_2_review_intake_id | review_position | governed_operations_cycle_2_closeout_id | frozen_slices | lineage_source_layer | lineage_source_file | lineage_source_record_id |
+|---|---|---|---|---|---|---|
+| resolution-wave-packet-review-session-governed-operations-cycle-2-review-intake-0001 | 1 | resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001 | v40.0-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-intake<br>v40.1-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-plan<br>v40.2-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-execution-evidence<br>v40.3-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-closeout | governed_operations_cycle_2_closeout | ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json | resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001 |
