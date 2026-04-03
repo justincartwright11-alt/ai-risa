@@ -1,7 +1,12 @@
 {
-  "model_adjustment_release_resolution_wave_packet_review_session_index_version": "v6.7-slice-1",
-  "release_resolution_wave_packet_review_session_index": [
+  "model_adjustment_release_resolution_wave_packet_review_session_directory_version": "v6.8-slice-1",
+  "generated_at_utc": "2026-04-02T23:20:58.275945+00:00",
+  "upstream_session_index_count": 3,
+  "upstream_session_index_version": "v6.7-slice-1",
+  "release_resolution_wave_packet_review_session_directory": [
     {
+      "resolution_wave_packet_review_session_directory_id": "resolution-wave-packet-review-session-directory-0001",
+      "source_resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0001",
       "source_resolution_wave_packet_review_session_catalog_id": "resolution-wave-packet-review-session-catalog-0001",
       "source_resolution_wave_packet_review_session_archive_id": "resolution-wave-packet-review-session-archive-0001",
       "source_resolution_wave_packet_review_session_journal_id": "resolution-wave-packet-review-session-journal-0001",
@@ -37,6 +42,8 @@
       "review_session_catalog_priority": "WAVE_P0_PROHIBITION",
       "review_session_index_priority": "WAVE_P0_PROHIBITION",
       "review_lane": "lane_prohibition_terminal",
+      "review_session_directory_priority": "WAVE_P0_PROHIBITION",
+      "directory_position": 1,
       "member_cluster_ids": [
         "resolution-cluster-0001",
         "resolution-cluster-0002",
@@ -75,10 +82,11 @@
       "dependency_count": 5,
       "has_prohibition_path": true,
       "has_blocker_path": true,
-      "terminal_posture": "governance_final_no_release::governance_terminal_closure",
-      "resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0001"
+      "terminal_posture": "governance_final_no_release::governance_terminal_closure"
     },
     {
+      "resolution_wave_packet_review_session_directory_id": "resolution-wave-packet-review-session-directory-0002",
+      "source_resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0002",
       "source_resolution_wave_packet_review_session_catalog_id": "resolution-wave-packet-review-session-catalog-0002",
       "source_resolution_wave_packet_review_session_archive_id": "resolution-wave-packet-review-session-archive-0002",
       "source_resolution_wave_packet_review_session_journal_id": "resolution-wave-packet-review-session-journal-0002",
@@ -114,6 +122,8 @@
       "review_session_catalog_priority": "WAVE_P1_BLOCKER",
       "review_session_index_priority": "WAVE_P1_BLOCKER",
       "review_lane": "lane_blocker_terminal",
+      "review_session_directory_priority": "WAVE_P1_BLOCKER",
+      "directory_position": 2,
       "member_cluster_ids": [
         "resolution-cluster-0006",
         "resolution-cluster-0007",
@@ -429,10 +439,11 @@
       "dependency_count": 144,
       "has_prohibition_path": true,
       "has_blocker_path": true,
-      "terminal_posture": "governance_final_no_release::governance_terminal_closure",
-      "resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0002"
+      "terminal_posture": "governance_final_no_release::governance_terminal_closure"
     },
     {
+      "resolution_wave_packet_review_session_directory_id": "resolution-wave-packet-review-session-directory-0003",
+      "source_resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0003",
       "source_resolution_wave_packet_review_session_catalog_id": "resolution-wave-packet-review-session-catalog-0003",
       "source_resolution_wave_packet_review_session_archive_id": "resolution-wave-packet-review-session-archive-0003",
       "source_resolution_wave_packet_review_session_journal_id": "resolution-wave-packet-review-session-journal-0003",
@@ -468,6 +479,8 @@
       "review_session_catalog_priority": "WAVE_P2_REMAINING",
       "review_session_index_priority": "WAVE_P2_REMAINING",
       "review_lane": "lane_remaining_terminal",
+      "review_session_directory_priority": "WAVE_P2_REMAINING",
+      "directory_position": 3,
       "member_cluster_ids": [
         "resolution-cluster-0010",
         "resolution-cluster-0011",
@@ -583,8 +596,14 @@
       "dependency_count": 44,
       "has_prohibition_path": true,
       "has_blocker_path": true,
-      "terminal_posture": "governance_final_no_release::governance_terminal_closure",
-      "resolution_wave_packet_review_session_index_id": "resolution-wave-packet-review-session-index-0003"
+      "terminal_posture": "governance_final_no_release::governance_terminal_closure"
     }
-  ]
+  ],
+  "coverage_reconciled": true,
+  "deterministic_ordering": true,
+  "review_lane_counts": {
+    "lane_prohibition_terminal": 1,
+    "lane_blocker_terminal": 1,
+    "lane_remaining_terminal": 1
+  }
 }
