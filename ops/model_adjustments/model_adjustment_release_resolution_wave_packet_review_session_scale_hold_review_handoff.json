@@ -1,0 +1,35 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_assessment.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_decision.json"
+  ],
+  "frozen_slices": [
+    "v32.0-controlled-release-resolution-wave-packet-review-session-scale-hold-review-intake",
+    "v32.1-controlled-release-resolution-wave-packet-review-session-scale-hold-review-assessment",
+    "v32.2-controlled-release-resolution-wave-packet-review-session-scale-hold-review-decision"
+  ],
+  "scale_hold_review_assessment_complete": true,
+  "scale_hold_review_decision_complete": true,
+  "scale_hold_review_handoff_complete": true,
+  "rollout_authorized": false,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "scale_hold_review_handoff_id": "resolution-wave-packet-review-session-scale-hold-review-handoff-0001",
+      "scale_hold_review_decision_id": "resolution-wave-packet-review-session-scale-hold-review-decision-0001",
+      "handoff_position": 1,
+      "blocked_scale_reason": "rollout gate not explicitly approved by operator",
+      "decision_outcome": "provided_by_operator",
+      "rollout_authorized": false,
+      "next_family_recommendation": "provided_by_operator",
+      "hold_review_family_complete": true,
+      "lineage_source_layer": "scale_hold_review_decision",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_hold_review_decision.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-hold-review-decision-0001"
+    }
+  ]
+}
