@@ -364,7 +364,7 @@
 ## v5.9-controlled-release-resolution-wave-packet-review-session-handoff-slice-1
 - added a read-only controlled release resolution-wave-packet-review-session-handoff generator derived exclusively from the frozen v5.8 release resolution wave packet review session brief output
 - added a canonical operator-handoff review session handoff view that emits one deterministic handoff entry per upstream brief record while preserving wave type, packet priority, checklist priority, review-board priority, review-docket priority, review-agenda priority, review-session-pack priority, review-session-brief priority, review lane, and terminal posture exactly
-- added review-session-handoff fields for resolution wave packet review session handoff id, source resolution wave packet review session brief id, source resolution wave packet review session pack id, source resolution wave packet review agenda id, source resolution wave packet review docket id, source resolution wave packet review board id, source resolution wave packet checklist id, source resolution wave packet id, source resolution wave id, wave rank, wave type, packet priority, checklist priority, review board priority, review docket priority, review agenda priority, review session pack priority, review session brief priority, review lane, review session handoff priority, handoff position, member cluster ids, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, cluster count, dependency count, has prohibition path, has blocker path, and terminal posture
+- added review-session-handoff fields for resolution wave packet review session handoff id, source resolution wave packet review session brief id, source resolution wave packet review session pack id, source resolution wave packet review agenda id, source resolution wave packet review docket id, source resolution wave packet review board id, source resolution wave packet checklist id, source resolution wave packet id, source resolution wave id, wave rank, wave type, packet priority, checklist priority, review board priority, review docket priority, review agenda priority, review session pack priority, review session brief priority, review session handoff priority, handoff position, member cluster ids, member dependency ids, member source refs, affected proposal ids, affected queue ids, affected record count, cluster count, dependency count, has prohibition path, has blocker path, and terminal posture
 - added runtime-generated release resolution-wave-packet-review-session-handoff artifacts in JSON and Markdown as a pure downstream projection of v5.8 review-session-brief records with no reclassification, no release recommendation logic, no release-enabling behavior, no auto-promotion, no config writes, no model mutation, and no upstream governance artifact mutation
 
 ## v6.0-controlled-release-resolution-wave-packet-review-session-intake-slice-1
@@ -430,4 +430,10 @@
 - Implement v6.9 controlled release resolution wave packet review session locator
 - Pure downstream projection from v6.8 directory artifact
 - Deterministic, unique locator IDs, stable ordering, and frozen metadata timestamp
+- Markdown is a pure projection of JSON
+
+## v7.0 (2026-04-03)
+- Implement v7.0 controlled release resolution wave packet review session registry
+- Pure downstream projection from v6.9 locator artifact
+- Deterministic, unique registry IDs, stable ordering, and frozen metadata timestamp
 - Markdown is a pure projection of JSON
