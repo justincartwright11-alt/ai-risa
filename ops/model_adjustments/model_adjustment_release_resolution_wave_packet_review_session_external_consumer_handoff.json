@@ -1,0 +1,8 @@
+{
+  "generated_at_utc": "2026-04-03T00:00:00Z",
+  "trial_id": null,
+  "consumer_handoff_id": null,
+  "external_consumer_trial_pass": true,
+  "handoff_ready": true,
+  "handoff_notes": "External consumer trial passed; proceeding to handoff."
+}
