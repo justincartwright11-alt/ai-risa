@@ -1,0 +1,47 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_intake",
+  "records": [
+    {
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "authorization_source": "operator",
+      "authorization_status": "authorized",
+      "evidence_artifact": "governed_operations_cycle_2_execution_evidence",
+      "governance_handoff_id": "resolution-wave-packet-review-session-operations-governance-handoff-0001",
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "governed_operations_cycle_2_intake_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-intake-0001",
+      "intake_position": 1,
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_review_handoff.json",
+      "lineage_source_layer": "governed_operations_review_handoff",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-review-handoff-0001",
+      "operator": "provided_by_operator",
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "prior_review_reference": "resolution-wave-packet-review-session-governed-operations-review-handoff-0001",
+      "recommended_disposition": "continue_governed_cycle",
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "review_cadence": "provided_by_operator",
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "stop_condition": "intake_frozen_and_ready_for_governed_cycle_2",
+      "target_operational_scope": "provided_by_operator"
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_review_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_handoff.json"
+  ]
+}
