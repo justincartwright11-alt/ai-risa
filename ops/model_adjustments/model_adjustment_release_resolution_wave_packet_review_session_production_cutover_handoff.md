@@ -1,0 +1,22 @@
+# v20.1 Production Cutover Handoff
+
+- record_type: model_adjustment_release_resolution_wave_packet_review_session_production_cutover_handoff
+- source_files: ['ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_cutover_trial.json', 'ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_handoff.json']
+- production_cutover_trial_complete: True
+- production_activation_handoff_complete: True
+- production_cutover_family_complete: True
+- merge_performed: False
+- tag_performed: False
+- push_performed: False
+- record_count: 1
+
+## Records
+
+- production_cutover_handoff_id: resolution-wave-packet-review-session-production-cutover-handoff-0001
+- handoff_position: 1
+- terminal_production_cutover_trial_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_cutover_trial.json
+- terminal_production_activation_handoff_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_handoff.json
+- production_cutover_family_complete: True
+- lineage_source_layer: production_cutover_trial
+- lineage_source_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_cutover_trial.json
+- lineage_source_record_id: resolution-wave-packet-review-session-production-cutover-trial-0001
