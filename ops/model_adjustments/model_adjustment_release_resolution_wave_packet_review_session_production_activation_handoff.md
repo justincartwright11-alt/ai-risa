@@ -1,0 +1,23 @@
+# v19.2 Production Activation Handoff
+
+- record_type: model_adjustment_release_resolution_wave_packet_review_session_production_activation_handoff
+- source_files: ['ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_intake.json', 'ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_smoke_test.json']
+- frozen_slices: ['v19.0-controlled-release-resolution-wave-packet-review-session-production-activation-intake', 'v19.1-controlled-release-resolution-wave-packet-review-session-production-activation-smoke-test']
+- production_activation_intake_complete: True
+- production_activation_smoke_test_complete: True
+- production_activation_family_complete: True
+- merge_performed: False
+- tag_performed: False
+- push_performed: False
+- record_count: 1
+
+## Records
+
+- production_activation_handoff_id: resolution-wave-packet-review-session-production-activation-handoff-0001
+- handoff_position: 1
+- terminal_production_activation_intake_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_intake.json
+- terminal_production_activation_smoke_test_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_smoke_test.json
+- production_activation_family_complete: True
+- lineage_source_layer: production_activation_smoke_test
+- lineage_source_file: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_production_activation_smoke_test.json
+- lineage_source_record_id: resolution-wave-packet-review-session-production-activation-smoke-test-0001
