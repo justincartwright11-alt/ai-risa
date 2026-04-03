@@ -1,0 +1,16 @@
+{
+  "approval_requirements_satisfied": "provided_by_operator",
+  "closeout_position": 1,
+  "execution_result_summary": "provided_by_operator",
+  "final_operational_outcome": "accepted_into_operation",
+  "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_scaled_operations_execution_evidence.json",
+  "lineage_source_layer": "scaled_operations_execution_evidence",
+  "lineage_source_record_id": "resolution-wave-packet-review-session-scaled-operations-execution-evidence-0001",
+  "operator_intervention_invoked": false,
+  "requested_deliverables_completed": true,
+  "rollback_triggered": false,
+  "scaled_operations_closeout_id": "resolution-wave-packet-review-session-scaled-operations-closeout-0001",
+  "scaled_operations_execution_evidence_id": "resolution-wave-packet-review-session-scaled-operations-execution-evidence-0001",
+  "scaled_operations_family_complete": true,
+  "scaled_operations_plan_id": "v34.1-scaled-operations-plan-v34.0-scaled-operations-intake-resolution-wave-packet-review-session-scale-authorization-briefing-0001"
+}
