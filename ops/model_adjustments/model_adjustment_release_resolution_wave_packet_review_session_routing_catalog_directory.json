@@ -1,0 +1,32 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_index.json",
+  "source_record_count": 3,
+  "record_count": 3,
+  "records": [
+    {
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0001",
+      "routing_catalog_index_id": "resolution-wave-packet-review-session-routing-catalog-index-0001",
+      "directory_position": 1,
+      "lineage_source_layer": "routing_catalog_index",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_index.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-index-0001"
+    },
+    {
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0002",
+      "routing_catalog_index_id": "resolution-wave-packet-review-session-routing-catalog-index-0002",
+      "directory_position": 2,
+      "lineage_source_layer": "routing_catalog_index",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_index.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-index-0002"
+    },
+    {
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0003",
+      "routing_catalog_index_id": "resolution-wave-packet-review-session-routing-catalog-index-0003",
+      "directory_position": 3,
+      "lineage_source_layer": "routing_catalog_index",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_index.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-index-0003"
+    }
+  ]
+}
