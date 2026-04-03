@@ -1,0 +1,35 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_execution_evidence.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "performance_monitoring_intake_id": "resolution-wave-packet-review-session-performance-monitoring-intake-0001",
+      "monitored_family": "v25.0-v25.3-controlled-release-resolution-wave-packet-review-session-live-event-family",
+      "baseline_run_reference": "resolution-wave-packet-review-session-live-event-closeout-0001",
+      "monitoring_metrics": [
+        "event_completion_time",
+        "incident_rate",
+        "deliverable_accuracy"
+      ],
+      "acceptable_ranges": {
+        "event_completion_time": "< 2 hours",
+        "incident_rate": "0%",
+        "deliverable_accuracy": ">= 99%"
+      },
+      "alert_conditions": [
+        "incident_rate > 0%",
+        "deliverable_accuracy < 99%"
+      ],
+      "evidence_artifact": "resolution-wave-packet-review-session-live-event-execution-evidence-0001",
+      "review_interval": "per event",
+      "stop_condition": "3 consecutive failures",
+      "lineage_source_layer": "live_event_closeout",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_closeout.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-live-event-closeout-0001"
+    }
+  ]
+}
