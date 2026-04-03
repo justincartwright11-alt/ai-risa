@@ -1,5 +1,5 @@
 {
-  "model_adjustment_release_resolution_wave_packet_review_session_routing_manifest_version": "v7.8-slice-1",
+  "model_adjustment_release_resolution_wave_packet_review_session_routing_manifest_version": "v8.3-slice-1",
   "generated_at_utc": "2026-04-03T00:00:00+00:00",
   "input_routing_registry_record_count": 3,
   "routing_manifest_record_count": 3,
@@ -8,6 +8,10 @@
     {
       "resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0001",
       "source_resolution_wave_packet_review_session_routing_registry_id": "resolution-wave-packet-review-session-routing-registry-0001",
+      "source_resolution_wave_packet_review_session_routing_locator_id": "resolution-wave-packet-review-session-routing-locator-0001",
+      "source_resolution_wave_packet_review_session_routing_directory_id": "resolution-wave-packet-review-session-routing-directory-0001",
+      "source_resolution_wave_packet_review_session_routing_index_id": "resolution-wave-packet-review-session-routing-index-0001",
+      "source_resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0001",
       "source_resolution_wave_packet_review_session_routing_ledger_id": "resolution-wave-packet-review-session-routing-ledger-0001",
       "source_resolution_wave_packet_review_session_routing_map_id": "resolution-wave-packet-review-session-routing-map-0001",
       "source_resolution_wave_packet_review_session_index_map_id": "resolution-wave-packet-review-session-index-map-0001",
@@ -37,6 +41,10 @@
     {
       "resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0002",
       "source_resolution_wave_packet_review_session_routing_registry_id": "resolution-wave-packet-review-session-routing-registry-0002",
+      "source_resolution_wave_packet_review_session_routing_locator_id": "resolution-wave-packet-review-session-routing-locator-0002",
+      "source_resolution_wave_packet_review_session_routing_directory_id": "resolution-wave-packet-review-session-routing-directory-0002",
+      "source_resolution_wave_packet_review_session_routing_index_id": "resolution-wave-packet-review-session-routing-index-0002",
+      "source_resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0002",
       "source_resolution_wave_packet_review_session_routing_ledger_id": "resolution-wave-packet-review-session-routing-ledger-0002",
       "source_resolution_wave_packet_review_session_routing_map_id": "resolution-wave-packet-review-session-routing-map-0002",
       "source_resolution_wave_packet_review_session_index_map_id": "resolution-wave-packet-review-session-index-map-0002",
@@ -66,6 +74,10 @@
     {
       "resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0003",
       "source_resolution_wave_packet_review_session_routing_registry_id": "resolution-wave-packet-review-session-routing-registry-0003",
+      "source_resolution_wave_packet_review_session_routing_locator_id": "resolution-wave-packet-review-session-routing-locator-0003",
+      "source_resolution_wave_packet_review_session_routing_directory_id": "resolution-wave-packet-review-session-routing-directory-0003",
+      "source_resolution_wave_packet_review_session_routing_index_id": "resolution-wave-packet-review-session-routing-index-0003",
+      "source_resolution_wave_packet_review_session_routing_manifest_id": "resolution-wave-packet-review-session-routing-manifest-0003",
       "source_resolution_wave_packet_review_session_routing_ledger_id": "resolution-wave-packet-review-session-routing-ledger-0003",
       "source_resolution_wave_packet_review_session_routing_map_id": "resolution-wave-packet-review-session-routing-map-0003",
       "source_resolution_wave_packet_review_session_index_map_id": "resolution-wave-packet-review-session-index-map-0003",

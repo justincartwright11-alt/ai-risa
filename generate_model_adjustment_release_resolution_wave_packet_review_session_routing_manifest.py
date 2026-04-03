@@ -1,12 +1,13 @@
 import json
 from pathlib import Path
 
+
 INPUT_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_registry.json"
 OUTPUT_JSON_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_manifest.json"
 OUTPUT_MD_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_manifest.md"
 
 FROZEN_TIMESTAMP = "2026-04-03T00:00:00+00:00"
-VERSION = "v7.8-slice-1"
+VERSION = "v8.3-slice-1"
 LIST_KEY = "release_resolution_wave_packet_review_session_routing_manifest"
 
 # Load input
@@ -49,7 +50,7 @@ def to_md_table(records):
         lines.append("| " + " | ".join(str(rec[h]) for h in headers) + " |")
     return "\n".join(lines)
 
-md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Routing Manifest (v7.8)
+md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Routing Manifest (v8.3)
 
 - Version: {VERSION}
 - generated_at_utc: {FROZEN_TIMESTAMP}
