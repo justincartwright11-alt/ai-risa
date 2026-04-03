@@ -1,0 +1,15 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_publication_intake",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_handoff.json",
+  "record_count": 1,
+  "records": [
+    {
+      "publication_intake_id": "resolution-wave-packet-review-session-publication-intake-0001",
+      "intake_position": 1,
+      "delivery_handoff_id": "resolution-wave-packet-review-session-delivery-handoff-0001",
+      "lineage_source_layer": "delivery_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-delivery-handoff-0001"
+    }
+  ]
+}
