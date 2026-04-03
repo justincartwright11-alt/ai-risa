@@ -1,0 +1,45 @@
+{
+  "approval_requirements_satisfied": "provided_by_operator",
+  "execution_attempted": true,
+  "execution_pass": true,
+  "frozen_slices": [
+    "v40.0-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-intake",
+    "v40.1-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-plan",
+    "v40.2-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-execution-evidence"
+  ],
+  "governance_thresholds_breached": false,
+  "governed_operations_cycle_2_execution_evidence_complete": true,
+  "governed_operations_cycle_2_family_complete": true,
+  "governed_operations_cycle_2_plan_complete": true,
+  "incident_detected": false,
+  "merge_performed": false,
+  "operator_intervention_invoked": false,
+  "push_performed": false,
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout",
+  "records": [
+    {
+      "approval_requirements_satisfied": "provided_by_operator",
+      "closeout_position": 1,
+      "execution_result_summary": "provided_by_operator",
+      "final_operational_outcome": "accepted_into_operation",
+      "governance_thresholds_breached": false,
+      "governed_operations_cycle_2_closeout_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+      "governed_operations_cycle_2_execution_evidence_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-execution-evidence-0001",
+      "governed_operations_cycle_2_family_complete": true,
+      "governed_operations_cycle_2_plan_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-plan-0001",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_execution_evidence.json",
+      "lineage_source_layer": "governed_operations_cycle_2_execution_evidence",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-execution-evidence-0001",
+      "operator_intervention_invoked": false,
+      "requested_deliverables_completed": true,
+      "rollback_triggered": false
+    }
+  ],
+  "rollback_triggered": false,
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_plan.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_execution_evidence.json"
+  ],
+  "tag_performed": false
+}
