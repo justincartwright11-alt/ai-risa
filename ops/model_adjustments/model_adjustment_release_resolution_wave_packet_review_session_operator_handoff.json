@@ -1,0 +1,35 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_operator_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_go_live_readiness.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_go_live_checklist.json"
+  ],
+  "frozen_slices": [
+    "v21.0-controlled-release-resolution-wave-packet-review-session-go-live-readiness",
+    "v21.1-controlled-release-resolution-wave-packet-review-session-go-live-checklist"
+  ],
+  "review_session_program_complete": true,
+  "runtime_handoff_complete": true,
+  "external_consumer_handoff_complete": true,
+  "production_cutover_handoff_complete": true,
+  "go_live_ready": true,
+  "operator_review_required": true,
+  "execution_authorization_required": true,
+  "operator_handoff_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "operator_handoff_id": "resolution-wave-packet-review-session-operator-handoff-0001",
+      "handoff_position": 1,
+      "terminal_go_live_readiness_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_go_live_readiness.json",
+      "terminal_go_live_checklist_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_go_live_checklist.json",
+      "operator_handoff_complete": true,
+      "lineage_source_layer": "go_live_checklist",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_go_live_checklist.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-go-live-checklist-0001"
+    }
+  ]
+}
