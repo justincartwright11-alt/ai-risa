@@ -1,0 +1,36 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_governance_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_baseline.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_evidence.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_closeout.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "performance_governance_intake_id": "resolution-wave-packet-review-session-performance-governance-intake-0001",
+      "monitored_family_range": "v26.0-v26.3 performance monitoring family",
+      "governance_objective": "define reusable performance governance rules for all future live event families",
+      "baseline_reference": "resolution-wave-packet-review-session-performance-monitoring-baseline-0001",
+      "evidence_reference": "resolution-wave-packet-review-session-performance-monitoring-evidence-0001",
+      "closeout_reference": "resolution-wave-packet-review-session-performance-monitoring-closeout-0001",
+      "governance_metrics": [
+        "deliverable_completion_rate",
+        "success_criteria_pass_rate",
+        "incident_rate",
+        "rollback_rate"
+      ],
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "review_cadence": "provided_by_operator",
+      "rollout_gate": "provided_by_operator",
+      "lineage_source_layer": "performance_monitoring_closeout",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_closeout.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-monitoring-closeout-0001"
+    }
+  ]
+}
