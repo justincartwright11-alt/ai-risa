@@ -1,0 +1,17 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_consumer_intake",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_handoff.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "consumer_intake_id": "resolution-wave-packet-review-session-consumer-intake-0001",
+      "intake_position": 1,
+      "source_runtime_handoff_id": "resolution-wave-packet-review-session-runtime-handoff-0001",
+      "terminal_runtime_handoff_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_handoff.json",
+      "lineage_source_layer": "runtime_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-runtime-handoff-0001"
+    }
+  ]
+}
