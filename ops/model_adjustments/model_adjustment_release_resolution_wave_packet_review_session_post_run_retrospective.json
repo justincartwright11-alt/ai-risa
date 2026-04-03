@@ -1,0 +1,50 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_post_run_retrospective",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operator_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_evidence.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_decision.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_handoff.json"
+  ],
+  "frozen_slices": [
+    "v21.2-controlled-release-resolution-wave-packet-review-session-operator-handoff",
+    "v22.0-controlled-release-resolution-wave-packet-review-session-live-execution-evidence",
+    "v22.1-controlled-release-resolution-wave-packet-review-session-live-execution-decision",
+    "v22.2-controlled-release-resolution-wave-packet-review-session-live-execution-handoff"
+  ],
+  "review_session_program_complete": true,
+  "operator_handoff_complete": true,
+  "live_execution_evidence_complete": true,
+  "live_execution_decision_complete": true,
+  "live_execution_handoff_complete": true,
+  "post_run_retrospective_complete": true,
+  "archive_ready": true,
+  "archive_decision": "archive_complete",
+  "record_count": 1,
+  "records": [
+    {
+      "post_run_retrospective_id": "resolution-wave-packet-review-session-post-run-retrospective-0001",
+      "retrospective_position": 1,
+      "operator_handoff_id": "resolution-wave-packet-review-session-operator-handoff-0001",
+      "live_execution_handoff_id": "resolution-wave-packet-review-session-live-execution-handoff-0001",
+      "final_operational_outcome": "accepted_into_operation",
+      "operator_decision_outcome": "continue",
+      "rollback_required": false,
+      "incident_detected": false,
+      "archive_status": "archived_complete",
+      "operator_rationale_summary": "operator accepted the live outcome and archived the family as complete",
+      "lessons_learned": [
+        "Deterministic slice discipline preserved auditability end to end.",
+        "Operational handoff before live execution reduced ambiguity.",
+        "Evidence plus decision artifacts made final archival state explicit."
+      ],
+      "followup_actions": [
+        "Monitor steady-state operation under normal governance.",
+        "Do not reopen sealed families unless a new top-level family is authorized."
+      ],
+      "lineage_source_layer": "live_execution_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-live-execution-handoff-0001"
+    }
+  ]
+}
