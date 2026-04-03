@@ -24,7 +24,7 @@
       "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_assessment.json",
       "lineage_source_layer": "governed_operations_cycle_2_review_assessment",
       "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-assessment-0001",
-      "recommended_disposition": "provided_by_operator",
+      "recommended_disposition": "continue_governed_cycle",
       "review_family_complete": true,
       "reviewed_cycle_reference": "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
       "rollback_rule_compliance": "provided_by_operator"
