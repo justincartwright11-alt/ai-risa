@@ -1,0 +1,35 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_decision.json"
+  ],
+  "frozen_slices": [
+    "v31.0-controlled-release-resolution-wave-packet-review-session-scale-reauthorization-intake",
+    "v31.1-controlled-release-resolution-wave-packet-review-session-scale-reauthorization-decision"
+  ],
+  "scale_reauthorization_intake_complete": true,
+  "scale_reauthorization_decision_complete": true,
+  "scale_reauthorization_handoff_complete": true,
+  "rollout_authorized": "provided_by_operator",
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "scale_reauthorization_handoff_id": "resolution-wave-packet-review-session-scale-reauthorization-handoff-0001",
+      "scale_reauthorization_decision_id": "resolution-wave-packet-review-session-scale-reauthorization-decision-0001",
+      "handoff_position": 1,
+      "previous_rollout_authorization": false,
+      "decision_outcome": "provided_by_operator",
+      "rollout_authorized": "provided_by_operator",
+      "operator_review_required": true,
+      "next_family_recommendation": "provided_by_operator",
+      "reauthorization_family_complete": true,
+      "lineage_source_layer": "scale_reauthorization_decision",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_decision.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-reauthorization-decision-0001"
+    }
+  ]
+}
