@@ -1,0 +1,29 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_evidence",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_plan.json",
+  "record_count": 1,
+  "records": [
+    {
+      "scale_remediation_evidence_id": "resolution-wave-packet-review-session-scale-remediation-evidence-0001",
+      "scale_remediation_plan_id": "resolution-wave-packet-review-session-scale-remediation-plan-0001",
+      "evidence_position": 1,
+      "remediation_attempted": true,
+      "remediation_pass": true,
+      "remediation_targets": [
+        "approval gap",
+        "operational readiness gap",
+        "governance acceptance gap"
+      ],
+      "approval_gap_resolved": "provided_by_operator",
+      "operational_readiness_gap_resolved": "provided_by_operator",
+      "governance_acceptance_gap_resolved": "provided_by_operator",
+      "alert_triggered": false,
+      "incident_detected": false,
+      "rollback_required": false,
+      "remediation_result_summary": "provided_by_operator",
+      "lineage_source_layer": "scale_remediation_plan",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_plan.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-remediation-plan-0001"
+    }
+  ]
+}
