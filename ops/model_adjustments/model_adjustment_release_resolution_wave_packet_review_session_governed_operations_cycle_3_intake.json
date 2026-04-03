@@ -1,0 +1,20 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_intake",
+  "records": [
+    {
+      "frozen_slices": [
+        "v41.0-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-review-intake",
+        "v41.1-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-review-assessment"
+      ],
+      "governed_operations_cycle_2_review_handoff_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-handoff-0001",
+      "governed_operations_cycle_3_intake_id": "resolution-wave-packet-review-session-governed-operations-cycle-3-intake-0001",
+      "intake_position": 1,
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_handoff.json",
+      "lineage_source_layer": "governed_operations_cycle_2_review_handoff",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-handoff-0001",
+      "recommended_disposition": "continue_governed_cycle"
+    }
+  ],
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_handoff.json"
+}
