@@ -1,7 +1,9 @@
-# v64.79 closure-release-final-prep-rollup
+# closure-release-final-prep-rollup
 
-Generated at: 2026-04-04T00:00:00Z
+- id: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-rollup-0001
+  upstream_id: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-matrix-0001
+  generated_at_utc: 2026-04-04T00:00:00Z
+  handoff_status: pending
+  trace: {}
+  data: {}
 
-| id | upstream_id |
-| --- | --- |
-| resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-rollup-0001 | resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-matrix-0001 |
