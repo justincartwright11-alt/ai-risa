@@ -2,6 +2,10 @@
 # Pure downstream projection from closure-release-final-prep-resolution
 # Reads: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_resolution.json
 # Writes: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_catalog.json, .md
+# v64.88 closure-release-final-prep-catalog generator
+# Pure downstream projection from v64.87 prep resolution
+# Reads: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_prep_resolution.json
+# Writes: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_catalog.json, .md
 
 import json
 from pathlib import Path
@@ -10,7 +14,7 @@ INPUT_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wav
 OUTPUT_JSON_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_catalog.json")
 OUTPUT_MD_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_catalog.md")
 
-LOCKED_GENERATED_AT_UTC = "2026-04-04T00:00:00Z"  # update if spec changes
+FROZEN_GENERATED_AT_UTC = "2026-04-04T00:00:00Z"  # locked for determinism
 ID_PREFIX = "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-catalog-"
 
 def deterministic_id(idx):
@@ -28,9 +32,11 @@ def main():
         out.append({
             "id": new_id,
             "upstream_id": record["id"],
-            "generated_at_utc": LOCKED_GENERATED_AT_UTC,
+            "generated_at_utc": FROZEN_GENERATED_AT_UTC,
             # Pure projection: copy all traceable fields
             "trace": record.get("trace", {}),
+            "data": record.get("data", {}),
+            "handoff_status": record.get("handoff_status", "pending")
         })
 
     # Write JSON
@@ -40,12 +46,14 @@ def main():
 
     # Write Markdown
     with OUTPUT_MD_PATH.open("w", encoding="utf-8") as f:
-        f.write(f"# v64.70 closure-release-final-prep-catalog\n\n")
-        f.write(f"Generated at: {LOCKED_GENERATED_AT_UTC}\n\n")
-        f.write("| id | upstream_id |\n")
-        f.write("| --- | --- |\n")
+        f.write(f"# v64.88 Closure Release Final Prep Catalog\n\n")
+        f.write(f"Generated at: {FROZEN_GENERATED_AT_UTC}\n\n")
         for rec in out:
-            f.write(f"| {rec['id']} | {rec['upstream_id']} |\n")
+            f.write(f"## Record: {rec['id']}\n")
+            f.write(f"- Upstream ID: {rec['upstream_id']}\n")
+            f.write(f"- Handoff Status: {rec['handoff_status']}\n")
+            f.write(f"- Trace: {json.dumps(rec['trace'])}\n")
+            f.write(f"- Data: {json.dumps(rec['data'])}\n\n")
 
 if __name__ == "__main__":
     main()
