@@ -1,143 +1,22 @@
 # Model Adjustment Release Resolution Wave Packet Review Session Governed Operations Closure Assessment
 
-Source artifact: `ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_intake.json`  
+Source artifact: `ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_execution_state.json`  
 Record count: 1
 
-| Closure Assessment ID | Source Closure Intake ID | Source Index |
+| Closure Assessment ID | Source Execution State ID | Source Index |
 |---|---|---|
-| resolution-wave-packet-review-session-governed-operations-closure-assessment-0001 | resolution-wave-packet-review-session-governed-operations-closure-intake-0001 | 1 |
+| resolution-wave-packet-review-session-governed-operations-closure-assessment-0001 | resolution-wave-packet-review-session-governed-operations-execution-state-0001 | 1 |
 
 ## resolution-wave-packet-review-session-governed-operations-closure-assessment-0001
-Source closure intake ID: resolution-wave-packet-review-session-governed-operations-closure-intake-0001
+Source execution state ID: resolution-wave-packet-review-session-governed-operations-execution-state-0001
 Source record index: 1
-Source artifact: `ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_intake.json`
+Source artifact: `ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_execution_state.json`
 
 ```json
 {
-  "governed_operations_closure_intake_id": "resolution-wave-packet-review-session-governed-operations-closure-intake-0001",
-  "source_governed_operations_verification_handoff_id": "resolution-wave-packet-review-session-governed-operations-verification-handoff-0001",
-  "source_record_index": 1,
-  "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_verification_handoff.json",
-  "verification_handoff_record": {
-    "governed_operations_verification_handoff_id": "resolution-wave-packet-review-session-governed-operations-verification-handoff-0001",
-    "source_governed_operations_verification_assessment_id": "resolution-wave-packet-review-session-governed-operations-verification-assessment-0001",
-    "source_record_index": 1,
-    "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_verification_assessment.json",
-    "verification_assessment_record": {
-      "governed_operations_verification_assessment_id": "resolution-wave-packet-review-session-governed-operations-verification-assessment-0001",
-      "source_governed_operations_verification_intake_id": "resolution-wave-packet-review-session-governed-operations-verification-intake-0001",
-      "source_record_index": 1,
-      "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_verification_intake.json",
-      "verification_intake_record": {
-        "governed_operations_verification_intake_id": "resolution-wave-packet-review-session-governed-operations-verification-intake-0001",
-        "source_governed_operations_execution_handoff_id": "resolution-wave-packet-review-session-governed-operations-execution-handoff-0001",
-        "source_record_index": 1,
-        "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_execution_handoff.json",
-        "execution_handoff_record": {
-          "governed_operations_execution_handoff_id": "resolution-wave-packet-review-session-governed-operations-execution-handoff-0001",
-          "source_governed_operations_execution_assessment_id": "resolution-wave-packet-review-session-governed-operations-execution-assessment-0001",
-          "source_record_index": 1,
-          "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_execution_assessment.json",
-          "execution_assessment_record": {
-            "governed_operations_execution_assessment_id": "resolution-wave-packet-review-session-governed-operations-execution-assessment-0001",
-            "source_governed_operations_execution_intake_id": "resolution-wave-packet-review-session-governed-operations-execution-intake-0001",
-            "source_record_index": 1,
-            "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_execution_intake.json",
-            "execution_intake_record": {
-              "governed_operations_execution_intake_id": "resolution-wave-packet-review-session-governed-operations-execution-intake-0001",
-              "source_governed_operations_dispatch_handoff_id": "resolution-wave-packet-review-session-governed-operations-dispatch-handoff-0001",
-              "source_record_index": 1,
-              "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_dispatch_handoff.json",
-              "dispatch_handoff_record": {
-                "governed_operations_dispatch_handoff_id": "resolution-wave-packet-review-session-governed-operations-dispatch-handoff-0001",
-                "source_governed_operations_dispatch_assessment_id": "resolution-wave-packet-review-session-governed-operations-dispatch-assessment-0001",
-                "source_record_index": 1,
-                "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_dispatch_assessment.json",
-                "dispatch_assessment_record": {
-                  "governed_operations_dispatch_assessment_id": "resolution-wave-packet-review-session-governed-operations-dispatch-assessment-0001",
-                  "source_governed_operations_dispatch_intake_id": "resolution-wave-packet-review-session-governed-operations-dispatch-intake-0001",
-                  "source_record_index": 1,
-                  "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_dispatch_intake.json",
-                  "dispatch_intake_record": {
-                    "governed_operations_dispatch_intake_id": "resolution-wave-packet-review-session-governed-operations-dispatch-intake-0001",
-                    "source_governed_operations_routing_handoff_id": "resolution-wave-packet-review-session-governed-operations-routing-handoff-0001",
-                    "source_record_index": 1,
-                    "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_routing_handoff.json",
-                    "routing_handoff_record": {
-                      "governed_operations_routing_handoff_id": "resolution-wave-packet-review-session-governed-operations-routing-handoff-0001",
-                      "source_governed_operations_routing_assessment_id": "resolution-wave-packet-review-session-governed-operations-routing-assessment-0001",
-                      "source_record_index": 1,
-                      "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_routing_assessment.json",
-                      "routing_assessment_record": {
-                        "governed_operations_routing_assessment_id": "resolution-wave-packet-review-session-governed-operations-routing-assessment-0001",
-                        "source_governed_operations_routing_intake_id": "resolution-wave-packet-review-session-governed-operations-routing-intake-0001",
-                        "source_record_index": 1,
-                        "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_routing_intake.json",
-                        "routing_intake_record": {
-                          "governed_operations_routing_intake_id": "resolution-wave-packet-review-session-governed-operations-routing-intake-0001",
-                          "source_governed_operations_receipt_handoff_id": "resolution-wave-packet-review-session-governed-operations-receipt-handoff-0001",
-                          "source_record_index": 1,
-                          "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_receipt_handoff.json",
-                          "receipt_handoff_record": {
-                            "governed_operations_receipt_handoff_id": "resolution-wave-packet-review-session-governed-operations-receipt-handoff-0001",
-                            "receipt_assessment_record": {
-                              "governed_operations_receipt_assessment_id": "resolution-wave-packet-review-session-governed-operations-receipt-assessment-0001",
-                              "receipt_intake_record": {
-                                "cadence_handoff_record": {
-                                  "assessment_record": {
-                                    "approval_requirement_trend": "provided_by_operator",
-                                    "assessment_position": 1,
-                                    "cadence_findings": [
-                                      "provided_by_operator"
-                                    ],
-                                    "deliverable_completion_trend": "provided_by_operator",
-                                    "governance_reference": "resolution-wave-packet-review-session-operations-governance-handoff-0001",
-                                    "governance_threshold_trend": "provided_by_operator",
-                                    "governed_operations_cadence_assessment_id": "resolution-wave-packet-review-session-governed-operations-cadence-assessment-0001",
-                                    "governed_operations_cadence_checkpoint_intake_id": "resolution-wave-packet-review-session-governed-operations-cadence-checkpoint-intake-0001",
-                                    "incident_trend": "provided_by_operator",
-                                    "intervention_trend": "provided_by_operator",
-                                    "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cadence_checkpoint_intake.json",
-                                    "lineage_source_layer": "governed_operations_cadence_checkpoint_intake",
-                                    "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cadence-checkpoint-intake-0001",
-                                    "multi_cycle_stability_status": "provided_by_operator",
-                                    "recommended_disposition": "provided_by_operator",
-                                    "reviewed_cycle_references": [
-                                      "resolution-wave-packet-review-session-governed-operations-cycle-closeout-0001",
-                                      "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
-                                      "resolution-wave-packet-review-session-governed-operations-cycle-3-closeout-0001"
-                                    ],
-                                    "rollback_trend": "provided_by_operator"
-                                  },
-                                  "cadence_handoff_id": "resolution-wave-packet-review-session-governed-operations-cadence-handoff-0001",
-                                  "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cadence_assessment.json",
-                                  "source_cadence_assessment_id": "resolution-wave-packet-review-session-governed-operations-cadence-assessment-0001",
-                                  "source_record_index": 1
-                                },
-                                "governed_operations_receipt_intake_id": "resolution-wave-packet-review-session-governed-operations-receipt-intake-0001",
-                                "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cadence_handoff.json",
-                                "source_governed_operations_cadence_handoff_id": "resolution-wave-packet-review-session-governed-operations-cadence-handoff-0001",
-                                "source_record_index": 1
-                              },
-                              "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_receipt_intake.json",
-                              "source_governed_operations_receipt_intake_id": "resolution-wave-packet-review-session-governed-operations-receipt-intake-0001",
-                              "source_record_index": 1
-                            },
-                            "source_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_receipt_assessment.json",
-                            "source_governed_operations_receipt_assessment_id": "resolution-wave-packet-review-session-governed-operations-receipt-assessment-0001",
-                            "source_record_index": 1
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  "id": "resolution-wave-packet-review-session-governed-operations-execution-state-0001",
+  "source_governed_operations_execution_ledger_id": "resolution-wave-packet-review-session-governed-operations-execution-ledger-0001",
+  "projected_at_utc": "2026-04-04T00:00:00Z",
+  "trace": {}
 }
 ```
