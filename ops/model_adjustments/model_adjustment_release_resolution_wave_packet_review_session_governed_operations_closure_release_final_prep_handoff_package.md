@@ -1,10 +1,8 @@
-# v64.83 Closure Release Final Prep Handoff Package
+# closure-release-final-prep-handoff-package
 
-Generated at: 2026-04-04T00:00:00Z
-
-## Record: af51031415d08f7a695eeff18fc4b8f3b2e1865d6d1f6396686b991ebf1fb1d7
-- Upstream ID: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-package-0001
-- Handoff Status: pending
-- Trace: {}
-- Data: {}
+- id: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-handoff-package-0001
+  upstream_id: 20c211469ff9fbc2440d33e6570ddc579b3dd02362b7317daee33c04ebc0cfd5
+  generated_at_utc: 2026-04-04T00:00:00Z
+  trace: {}
+  data: {}
 
