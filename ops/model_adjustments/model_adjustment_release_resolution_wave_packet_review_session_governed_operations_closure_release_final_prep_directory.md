@@ -1,7 +1,10 @@
-# v64.73 closure-release-final-prep-directory
+# v64.91 Closure Release Final Prep Directory
 
 Generated at: 2026-04-04T00:00:00Z
 
-| id | upstream_id |
-| --- | --- |
-| resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-directory-0001 | resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-manifest-0001 |
+## Record: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-directory-0001
+- Upstream ID: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-manifest-0001
+- Handoff Status: pending
+- Trace: {}
+- Data: {}
+
