@@ -1,7 +1,8 @@
-# v64.82 closure-release-final-prep-package
+# closure-release-final-prep-package
 
-Generated at: 2026-04-04T00:00:00Z
+- id: 20c211469ff9fbc2440d33e6570ddc579b3dd02362b7317daee33c04ebc0cfd5
+  upstream_id: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-archive-0001
+  generated_at_utc: 2026-04-04T00:00:00Z
+  trace: {}
+  data: {}
 
-| id | upstream_id |
-| --- | --- |
-| resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-package-0001 | resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-archive-0001 |
