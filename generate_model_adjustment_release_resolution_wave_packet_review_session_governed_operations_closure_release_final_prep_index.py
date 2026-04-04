@@ -1,5 +1,5 @@
-# v64.71 closure-release-final-prep-index generator
-# Pure downstream projection from closure-release-final-prep-catalog
+# v64.89 closure-release-final-prep-index generator
+# Pure downstream projection from v64.88 catalog
 # Reads: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_catalog.json
 # Writes: ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_index.json, .md
 
@@ -10,7 +10,7 @@ INPUT_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wav
 OUTPUT_JSON_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_index.json")
 OUTPUT_MD_PATH = Path("ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_index.md")
 
-LOCKED_GENERATED_AT_UTC = "2026-04-04T00:00:00Z"  # update if spec changes
+FROZEN_GENERATED_AT_UTC = "2026-04-04T00:00:00Z"  # locked for determinism
 ID_PREFIX = "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-index-"
 
 def deterministic_id(idx):
@@ -28,9 +28,10 @@ def main():
         out.append({
             "id": new_id,
             "upstream_id": record["id"],
-            "generated_at_utc": LOCKED_GENERATED_AT_UTC,
-            # Pure projection: copy all traceable fields
+            "generated_at_utc": FROZEN_GENERATED_AT_UTC,
             "trace": record.get("trace", {}),
+            "data": record.get("data", {}),
+            "handoff_status": record.get("handoff_status", "pending")
         })
 
     # Write JSON
@@ -40,12 +41,14 @@ def main():
 
     # Write Markdown
     with OUTPUT_MD_PATH.open("w", encoding="utf-8") as f:
-        f.write(f"# v64.71 closure-release-final-prep-index\n\n")
-        f.write(f"Generated at: {LOCKED_GENERATED_AT_UTC}\n\n")
-        f.write("| id | upstream_id |\n")
-        f.write("| --- | --- |\n")
+        f.write(f"# v64.89 Closure Release Final Prep Index\n\n")
+        f.write(f"Generated at: {FROZEN_GENERATED_AT_UTC}\n\n")
         for rec in out:
-            f.write(f"| {rec['id']} | {rec['upstream_id']} |\n")
+            f.write(f"## Record: {rec['id']}\n")
+            f.write(f"- Upstream ID: {rec['upstream_id']}\n")
+            f.write(f"- Handoff Status: {rec['handoff_status']}\n")
+            f.write(f"- Trace: {json.dumps(rec['trace'])}\n")
+            f.write(f"- Data: {json.dumps(rec['data'])}\n\n")
 
 if __name__ == "__main__":
     main()
