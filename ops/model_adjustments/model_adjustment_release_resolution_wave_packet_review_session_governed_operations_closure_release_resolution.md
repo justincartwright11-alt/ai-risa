@@ -1,0 +1,6 @@
+# Closure Release Resolution
+
+## resolution-wave-packet-review-session-governed-operations-closure-release-resolution-0001
+- source_governed_operations_closure_release_state_id: resolution-wave-packet-review-session-governed-operations-closure-release-state-0001
+- projected_at_utc: 2026-04-04T00:00:00Z
+
