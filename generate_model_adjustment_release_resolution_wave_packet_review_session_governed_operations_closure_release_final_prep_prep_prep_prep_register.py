@@ -51,7 +51,7 @@ def main():
 
     # Markdown projection
     with open(OUTPUT_MD, "w", encoding="utf-8") as f:
-        f.write(f"# {REGISTER_FAMILY} (v64.149)\n\n")
+        f.write(f"# {REGISTER_FAMILY} (v64.150)\n\n")
         for rec in register_records:
             f.write(f"- id: {rec['id']}\n")
             f.write(f"  parent_id: {rec['parent_id']}\n")
