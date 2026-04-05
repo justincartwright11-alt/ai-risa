@@ -132,3 +132,9 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, retry_policy_script], check=True)
     except Exception as e:
         print(f"[WARN] Retry policy engine failed: {e}")
+    # v69.3: Integrate retry dispatcher after retry policy is finalized
+    retry_dispatcher_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_retry_dispatcher.py")
+    try:
+        subprocess.run([sys.executable, retry_dispatcher_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Retry dispatcher failed: {e}")
