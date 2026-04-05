@@ -1,0 +1,70 @@
+{
+  "deliveries": [
+    {
+      "notification_id": "e80bc45748d00d63",
+      "delivery_id": "3b075956e45a040e",
+      "delivery_status": "skipped",
+      "transport": "local-log",
+      "attempt_count": 5,
+      "first_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "last_attempt_at": "2026-04-05T09:54:41.396843Z",
+      "delivered_at": null,
+      "failure_reason": null
+    },
+    {
+      "notification_id": "c327e5a256e90667",
+      "delivery_id": "d3494ce14747947f",
+      "delivery_status": "sent",
+      "transport": "local-log",
+      "attempt_count": 1,
+      "first_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "last_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "delivered_at": "2026-04-05T09:54:03.877196Z",
+      "failure_reason": null
+    },
+    {
+      "notification_id": "2a558e63c1f0e2cf",
+      "delivery_id": "8cfa7a5b10887d98",
+      "delivery_status": "sent",
+      "transport": "local-log",
+      "attempt_count": 1,
+      "first_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "last_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "delivered_at": "2026-04-05T09:54:03.877196Z",
+      "failure_reason": null
+    },
+    {
+      "notification_id": "e03f683c78faa659",
+      "delivery_id": "780500ed671c3e28",
+      "delivery_status": "skipped",
+      "transport": "local-log",
+      "attempt_count": 5,
+      "first_attempt_at": "2026-04-05T09:54:03.877196Z",
+      "last_attempt_at": "2026-04-05T09:54:41.396843Z",
+      "delivered_at": null,
+      "failure_reason": null
+    },
+    {
+      "notification_id": "pendingtest12345678",
+      "delivery_id": "fc124060d0f85e20",
+      "delivery_status": "sent",
+      "transport": "local-log",
+      "attempt_count": 1,
+      "first_attempt_at": "2026-04-05T09:54:16.529097Z",
+      "last_attempt_at": "2026-04-05T09:54:16.529097Z",
+      "delivered_at": "2026-04-05T09:54:16.529097Z",
+      "failure_reason": null
+    },
+    {
+      "notification_id": "failretry123456789",
+      "delivery_id": "1807ad3a11584ccf",
+      "delivery_status": "failed",
+      "transport": "local-log",
+      "attempt_count": 2,
+      "first_attempt_at": "2026-04-05T09:54:37.374132Z",
+      "last_attempt_at": "2026-04-05T09:54:41.396843Z",
+      "delivered_at": null,
+      "failure_reason": "Simulated delivery failure"
+    }
+  ]
+}
