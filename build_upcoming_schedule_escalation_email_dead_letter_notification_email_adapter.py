@@ -67,14 +67,51 @@ def main():
     delivery_state = json.load(open(DELIVERY_STATE_PATH, encoding="utf-8")) if DELIVERY_STATE_PATH.exists() else {"delivered": {}}
     cfg = load_config()
     smtp_cfg = cfg["smtp"]
+    # Load routing outputs if present
+    ROUTING_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_routing.json")
+    routing_by_id = {}
+    if ROUTING_PATH.exists():
+        routing = json.load(open(ROUTING_PATH, encoding="utf-8"))
+        routing_by_id = {r["notification_id"]: r for r in routing}
     for n in outbox:
         notification_id = n["notification_id"]
         if delivery_state["delivered"].get(notification_id, {}).get("result") == "sent":
             continue
-        recipients = cfg.get("recipients", [])
+        # Use routing outputs if available
+        routing = routing_by_id.get(notification_id)
+        if routing:
+            to = routing["to"]
+            cc = routing["cc"]
+            bcc = routing["bcc"]
+            subject_prefix = routing["subject_prefix"]
+        else:
+            to = cfg.get("recipients", [])
+            cc = []
+            bcc = []
+            subject_prefix = ""
         subject, body = render_email(n)
+        subject = f"{subject_prefix}{subject}"
+        recipients = to
+        # Add CC/BCC if present
+        msg_cc = cc if cc else None
+        msg_bcc = bcc if bcc else None
         try:
-            send_email(smtp_cfg, recipients, subject, body)
+            # send_email only supports To, so extend for CC/BCC
+            msg = EmailMessage()
+            msg["From"] = smtp_cfg["from"]
+            msg["To"] = ", ".join(recipients)
+            if msg_cc:
+                msg["Cc"] = ", ".join(msg_cc)
+            if msg_bcc:
+                msg["Bcc"] = ", ".join(msg_bcc)
+            msg["Subject"] = subject
+            msg.set_content(body)
+            with smtplib.SMTP(smtp_cfg["host"], smtp_cfg.get("port", 25)) as s:
+                if smtp_cfg.get("tls"):
+                    s.starttls()
+                if smtp_cfg.get("user"):
+                    s.login(smtp_cfg["user"], smtp_cfg["password"])
+                s.send_message(msg)
             result = "sent"
             reason = "Email delivered"
         except Exception as e:

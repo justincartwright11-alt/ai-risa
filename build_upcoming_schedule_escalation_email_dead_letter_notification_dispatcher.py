@@ -85,9 +85,15 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # v70.1: Real email transport for dead-letter notifications
+    # v70.3: Integrate routing policy before email delivery
     import subprocess
     import sys
+    routing_policy_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_routing_policy.py")
+    try:
+        subprocess.run([sys.executable, routing_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email routing policy failed: {e}")
+    # v70.1: Real email transport for dead-letter notifications (now routing-aware)
     email_adapter_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_adapter.py")
     try:
         subprocess.run([sys.executable, email_adapter_script], check=True)
