@@ -172,3 +172,10 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, manual_intervention_assignment_summary_script], check=True)
     except Exception as e:
         print(f"[WARN] Manual intervention assignment runtime summary failed: {e}")
+
+    # v72.0: Emit deterministic SLA/aging policy for manual intervention queue
+    manual_intervention_sla_policy_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_sla_policy.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_sla_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention SLA policy failed: {e}")
