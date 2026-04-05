@@ -1,0 +1,1 @@
+{  "timestamp": "Sun 05/04/2026 19:12:36.43",  "launcher": "run_upcoming_schedule_cadence.bat",  "working_dir": "C:\ai_risa_data",  "python": "C:\Users\jusin\AppData\Local\Python\pythoncore-3.14-64\python.exe",  "runner": "build_upcoming_schedule_cadence_runner.py",  "exit_code": 0}
