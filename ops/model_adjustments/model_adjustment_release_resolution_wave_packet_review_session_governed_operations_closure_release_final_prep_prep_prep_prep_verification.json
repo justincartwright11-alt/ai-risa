@@ -1,0 +1,19 @@
+{
+  "parent_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_prep_prep_prep_attestation.json",
+  "record_count": 1,
+  "records": [
+    {
+      "verification_id": "closure-release-final-prep-prep-prep-prep-verification-0001",
+      "verification_position": 1,
+      "source_attestation_id": "closure-release-final-prep-prep-prep-prep-attestation-0001",
+      "source_attestation_position": 1,
+      "source_attestation_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_prep_prep_prep_attestation.json",
+      "verification_locator_key": "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-prep-prep-prep-register-0001",
+      "attestation_id": "closure-release-final-prep-prep-prep-prep-attestation-0001",
+      "receipt_id": "closure-release-final-prep-prep-prep-prep-receipt-0001",
+      "source_handoff_id": "closure-release-final-prep-prep-prep-prep-handoff-0001",
+      "handoff_id": "closure-release-final-prep-prep-prep-prep-handoff-0001",
+      "source_register_id": "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-prep-prep-prep-register-0001"
+    }
+  ]
+}
