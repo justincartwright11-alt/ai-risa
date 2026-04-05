@@ -1,0 +1,16 @@
+{
+  "escalation_active": false,
+  "escalation_reason": null,
+  "escalation_level": null,
+  "escalation_id": null,
+  "escalation_status": "cleared",
+  "opened_at": "2026-04-05T12:00:00.000000Z",
+  "last_seen_at": "2026-04-05T12:10:00.000000Z",
+  "cleared_at": "2026-04-05T12:10:00.000000Z",
+  "trigger_metrics": {
+    "consecutive_failed_runs": 0,
+    "consecutive_stale_runs": 0,
+    "blocked_run_count": 0,
+    "incident_age_minutes": 0
+  }
+}
