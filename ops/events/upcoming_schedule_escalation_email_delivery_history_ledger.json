@@ -7,8 +7,34 @@
     "recipients": [],
     "escalation_level": "critical",
     "notification_type": "cleared",
-    "attempt_count": 2,
+    "attempt_count": 3,
     "timestamp": "2026-04-05T11:27:06.446925Z",
     "reason": "Simulated failure for testability"
+  },
+  {
+    "notification_id": "1632c2401d074c59",
+    "escalation_id": "testescalationid1234",
+    "delivery_id": "delivery-1632c2401d074c59S",
+    "delivery_status": "sent",
+    "recipients": [
+      "user@example.com"
+    ],
+    "escalation_level": "critical",
+    "notification_type": "opened",
+    "attempt_count": 1,
+    "timestamp": "2026-04-05T12:00:00.000000Z",
+    "reason": "Delivery successful"
+  },
+  {
+    "notification_id": "1632c2401d074c59",
+    "escalation_id": "testescalationid1234",
+    "delivery_id": "delivery-1632c2401d074c59K",
+    "delivery_status": "skipped",
+    "recipients": [],
+    "escalation_level": "critical",
+    "notification_type": "opened",
+    "attempt_count": 1,
+    "timestamp": "2026-04-05T12:05:00.000000Z",
+    "reason": "Suppressed by escalation policy"
   }
 ]
