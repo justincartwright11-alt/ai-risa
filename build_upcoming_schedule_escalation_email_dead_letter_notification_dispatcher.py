@@ -144,3 +144,10 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, runtime_summary_script], check=True)
     except Exception as e:
         print(f"[WARN] Dead-letter notification email runtime summary failed: {e}")
+
+    # v71.6: Emit deterministic manual intervention queue for terminal dead-letter notification emails
+    manual_intervention_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_queue.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention queue generation failed: {e}")
