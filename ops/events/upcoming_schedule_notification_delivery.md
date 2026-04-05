@@ -1,14 +1,14 @@
 # Upcoming Schedule Notification Delivery
 
-- Delivery ID: 3b075956e45a040e
+- Delivery ID: 14c34f29d6c9f63e
   Notification ID: e80bc45748d00d63
-  Status: skipped
-  Transport: local-log
-  Attempt count: 5
+  Status: failed
+  Transport: email
+  Attempt count: 6
   First attempt: 2026-04-05T09:54:03.877196Z
-  Last attempt: 2026-04-05T09:54:41.396843Z
+  Last attempt: 2026-04-05T10:25:13.081995Z
   Delivered at: None
-  Failure reason: None
+  Failure reason: [Errno 11001] getaddrinfo failed
 
 - Delivery ID: d3494ce14747947f
   Notification ID: c327e5a256e90667
@@ -30,15 +30,15 @@
   Delivered at: 2026-04-05T09:54:03.877196Z
   Failure reason: None
 
-- Delivery ID: 780500ed671c3e28
+- Delivery ID: 44a38583a7797b95
   Notification ID: e03f683c78faa659
-  Status: skipped
-  Transport: local-log
-  Attempt count: 5
+  Status: failed
+  Transport: email
+  Attempt count: 6
   First attempt: 2026-04-05T09:54:03.877196Z
-  Last attempt: 2026-04-05T09:54:41.396843Z
+  Last attempt: 2026-04-05T10:25:13.081995Z
   Delivered at: None
-  Failure reason: None
+  Failure reason: [Errno 11001] getaddrinfo failed
 
 - Delivery ID: fc124060d0f85e20
   Notification ID: pendingtest12345678
