@@ -1,5 +1,6 @@
 [
   {
+    "adapter_status": "ok",
     "complete": true,
     "date": "2026-04-13",
     "divisions": [
@@ -9,10 +10,13 @@
     "event_id": "ufc_300",
     "missing_fields": [],
     "promotion": "UFC",
+    "source_event_key": "ufc_300",
+    "source_name": "UFC_API",
     "sport": "MMA",
     "venue": "T-Mobile Arena"
   },
   {
+    "adapter_status": "ok",
     "complete": false,
     "date": "2026-05-01",
     "divisions": [
@@ -23,10 +27,13 @@
       "venue"
     ],
     "promotion": "PFL",
+    "source_event_key": "pfl_2026_01",
+    "source_name": "PFL_FEED",
     "sport": "MMA",
     "venue": "unknown"
   },
   {
+    "adapter_status": "incomplete",
     "complete": false,
     "date": "unknown",
     "divisions": [],
@@ -36,6 +43,8 @@
       "divisions"
     ],
     "promotion": "ONE",
+    "source_event_key": "one_2026_04",
+    "source_name": "ONE_CHAMPIONSHIP",
     "sport": "MMA",
     "venue": "Singapore Indoor Stadium"
   }
