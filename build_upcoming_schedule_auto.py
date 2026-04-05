@@ -97,6 +97,26 @@ def adapt_one_source(source):
         records.append(record)
     return records
 
+def detect_missing_dependencies(event):
+    # Blocker-level: missing date, venue, divisions, promotion, sport
+    blockers = []
+    missing = []
+    for field in REQUIRED_FIELDS:
+        value = event.get(field)
+        if field == "divisions":
+            if not value:
+                missing.append(field)
+                blockers.append(field)
+        elif value == "unknown":
+            missing.append(field)
+            blockers.append(field)
+    return {
+        "dependency_status": "blocked" if blockers else ("incomplete" if missing else "ready"),
+        "missing_dependencies": missing,
+        "handoff_ready": len(blockers) == 0,
+        "handoff_blockers": blockers,
+    }
+
 def normalize_event(event):
     norm = {k: event.get(k) for k in ["event_id", "date", "promotion", "venue", "sport", "divisions", "source_name", "source_event_key", "adapter_status"]}
     missing_fields = []
@@ -109,6 +129,8 @@ def normalize_event(event):
             missing_fields.append(field)
     norm["complete"] = len(missing_fields) == 0
     norm["missing_fields"] = missing_fields
+    dep = detect_missing_dependencies(norm)
+    norm.update(dep)
     return norm
 
 def normalize_events(events):
@@ -119,14 +141,17 @@ def write_json(path, records):
 
 def write_markdown(path, records):
     lines = [
-        "# Upcoming Schedule Live-Source Adapter",
+        "# Upcoming Schedule Dependency Readiness",
         "",
-        "This deterministic output is based on embedded source fixtures and adapter logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, and dependency readiness assessment.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
         f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
         f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
+        "",
+        f"## Handoff Readiness: {sum(1 for r in records if r['handoff_ready'])} ready / {len(records)} total",
+        f"## Blocked Events: {sum(1 for r in records if not r['handoff_ready'])}",
         "",
         "## Normalized Events",
         "",
@@ -136,13 +161,16 @@ def write_markdown(path, records):
         lines.append(
             f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
-            f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']}"
+            f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
+            f"**Dependency Status:** {rec['dependency_status']} | **Handoff Ready:** {rec['handoff_ready']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
+        if rec["handoff_blockers"]:
+            lines.append(f"  - Blockers: {', '.join(rec['handoff_blockers'])}")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, and batch handoff format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, and batch handoff format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")

@@ -3,11 +3,15 @@
     "adapter_status": "ok",
     "complete": true,
     "date": "2026-04-13",
+    "dependency_status": "ready",
     "divisions": [
       "Lightweight",
       "Welterweight"
     ],
     "event_id": "ufc_300",
+    "handoff_blockers": [],
+    "handoff_ready": true,
+    "missing_dependencies": [],
     "missing_fields": [],
     "promotion": "UFC",
     "source_event_key": "ufc_300",
@@ -19,10 +23,18 @@
     "adapter_status": "ok",
     "complete": false,
     "date": "2026-05-01",
+    "dependency_status": "blocked",
     "divisions": [
       "Featherweight"
     ],
     "event_id": "pfl_2026_01",
+    "handoff_blockers": [
+      "venue"
+    ],
+    "handoff_ready": false,
+    "missing_dependencies": [
+      "venue"
+    ],
     "missing_fields": [
       "venue"
     ],
@@ -36,8 +48,18 @@
     "adapter_status": "incomplete",
     "complete": false,
     "date": "unknown",
+    "dependency_status": "blocked",
     "divisions": [],
     "event_id": "one_2026_04",
+    "handoff_blockers": [
+      "date",
+      "divisions"
+    ],
+    "handoff_ready": false,
+    "missing_dependencies": [
+      "date",
+      "divisions"
+    ],
     "missing_fields": [
       "date",
       "divisions"
