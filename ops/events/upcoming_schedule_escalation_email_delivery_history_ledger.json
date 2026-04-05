@@ -1,0 +1,14 @@
+[
+  {
+    "notification_id": "b8d519a8767dacfaF",
+    "escalation_id": "testescalationid1234",
+    "delivery_id": "delivery-b8d519a8767dacfaF",
+    "delivery_status": "failed",
+    "recipients": [],
+    "escalation_level": "critical",
+    "notification_type": "cleared",
+    "attempt_count": 2,
+    "timestamp": "2026-04-05T11:27:06.446925Z",
+    "reason": "Simulated failure for testability"
+  }
+]
