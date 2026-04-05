@@ -1,0 +1,9 @@
+{
+  "smtp": {
+    "host": "localhost",
+    "port": 1025,
+    "from": "noreply@example.com",
+    "tls": false
+  },
+  "recipients": ["operator@example.com"]
+}

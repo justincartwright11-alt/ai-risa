@@ -85,3 +85,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # v70.1: Real email transport for dead-letter notifications
+    import subprocess
+    import sys
+    email_adapter_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_adapter.py")
+    try:
+        subprocess.run([sys.executable, email_adapter_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email adapter failed: {e}")
