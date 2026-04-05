@@ -55,38 +55,41 @@ def send_email(config, subject, body):
             server.login(config["smtp_user"], config["smtp_pass"])
         server.send_message(msg)
 
+
+# For dispatcher integration: single notification send
+def send_notification_email(entry):
+    escalation_state = load_json("ops/events/upcoming_schedule_escalation_state.json") or {}
+    config = load_json(EMAIL_CONFIG_PATH)
+    now = datetime.utcnow().isoformat() + "Z"
+    if not config:
+        return {"result": "failed", "reason": "Missing escalation email config."}
+    subject, body = render_email(entry, escalation_state)
+    try:
+        send_email(config, subject, body)
+        return {"result": "sent", "reason": "Email sent successfully"}
+    except Exception as e:
+        return {"result": "failed", "reason": f"Email send failed: {e}"}
+
+# Standalone mode: send all pending
 def main():
     outbox_data = load_json(OUTBOX_PATH) or {}
     outbox = outbox_data.get("notifications", [])
     outbox_state = load_json(OUTBOX_STATE_PATH) or {}
     delivery_state = load_json(DELIVERY_STATE_PATH) or {}
-    escalation_state = load_json("ops/events/upcoming_schedule_escalation_state.json") or {}
     now = datetime.utcnow().isoformat() + "Z"
-    config = load_json(EMAIL_CONFIG_PATH)
-    if not config:
-        print("ERROR: Missing escalation email config.")
-        exit(2)
-    delivery_state_out = dict(delivery_state)
     for entry in outbox:
         notification_id = entry.get("notification_id")
         delivery_id = make_delivery_id(notification_id)
         prev = delivery_state.get(delivery_id)
         if prev and prev.get("result") == "sent":
             continue
-        subject, body = render_email(entry, escalation_state)
-        try:
-            send_email(config, subject, body)
-            result = "sent"
-            reason = "Email sent successfully"
-        except Exception as e:
-            result = "failed"
-            reason = f"Email send failed: {e}"
-        delivery_state_out[delivery_id] = {
-            "result": result,
-            "reason": reason,
+        send_result = send_notification_email(entry)
+        delivery_state[delivery_id] = {
+            "result": send_result["result"],
+            "reason": send_result["reason"],
             "dispatched_at": now,
         }
-    save_json(DELIVERY_STATE_PATH, delivery_state_out)
+    save_json(DELIVERY_STATE_PATH, delivery_state)
 
 if __name__ == "__main__":
     main()

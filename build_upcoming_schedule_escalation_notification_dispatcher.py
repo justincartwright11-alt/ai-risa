@@ -54,15 +54,19 @@ def main():
     delivery_results = []
     delivery_state_out = dict(delivery_state)  # Copy for update
     now = datetime.utcnow().isoformat() + "Z"
+    # Integration: use real email adapter for real sends, preserve exact-once
+    import importlib.util
+    email_adapter_path = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_adapter.py")
+    spec = importlib.util.spec_from_file_location("escalation_email_adapter", email_adapter_path)
+    email_adapter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(email_adapter)
     for entry in outbox:
         notification_id = entry.get("notification_id")
         delivery_id = make_delivery_id(notification_id)
         prev = delivery_state.get(delivery_id)
         if prev and prev.get("result") == "sent":
-            # Already sent, skip
             continue
-        # Simulate deterministic dispatch
-        # For demo: fail if notification_id ends with 'F', skip if ends with 'S', else sent
+        # Use real email adapter for real notifications, simulate for test IDs
         if notification_id.endswith("F"):
             result = "failed"
             reason = "Simulated failure for testability"
@@ -70,8 +74,14 @@ def main():
             result = "skipped"
             reason = "Simulated skip for testability"
         else:
-            result = "sent"
-            reason = "Dispatched successfully"
+            # Real send via email adapter
+            try:
+                send_result = email_adapter.send_notification_email(entry)
+                result = send_result["result"]
+                reason = send_result["reason"]
+            except Exception as e:
+                result = "failed"
+                reason = f"Email adapter error: {e}"
         record = {
             "delivery_id": delivery_id,
             "notification_id": notification_id,
