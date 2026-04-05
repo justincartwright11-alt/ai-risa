@@ -1,0 +1,34 @@
+[
+  {
+    "notification_id": "1632c2401d074c59",
+    "escalation_id": "testescalationid1234",
+    "notification_type": "opened",
+    "escalation_level": "critical",
+    "recipients": [
+      "level1@example.com",
+      "level2@example.com"
+    ],
+    "routed_at": "2026-04-05T11:59:43.869579Z"
+  },
+  {
+    "notification_id": "b8d519a8767dacfa",
+    "escalation_id": "testescalationid1234",
+    "notification_type": "cleared",
+    "escalation_level": "critical",
+    "recipients": [
+      "level1@example.com",
+      "level2@example.com"
+    ],
+    "routed_at": "2026-04-05T11:59:43.869579Z"
+  },
+  {
+    "notification_id": "748bcc0ce6dbd147",
+    "escalation_id": "98be9889a3d30230",
+    "notification_type": "opened",
+    "escalation_level": "warning",
+    "recipients": [
+      "level2@example.com"
+    ],
+    "routed_at": "2026-04-05T11:59:43.869579Z"
+  }
+]
