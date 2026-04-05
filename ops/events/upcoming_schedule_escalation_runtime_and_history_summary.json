@@ -1,0 +1,30 @@
+{
+  "runtime": {
+    "dispatcher_commit": "1cdaeadbd546887da8452f281b37a8c659742196",
+    "delivery_artifact": "upcoming_schedule_escalation_notification_delivery.json",
+    "history_artifact": "upcoming_schedule_escalation_email_delivery_history_ledger.json",
+    "history_md": "upcoming_schedule_escalation_email_delivery_history_ledger.md",
+    "delivery_entries": 3,
+    "history_entries": 3
+  },
+  "history": [
+    {
+      "delivery_id": "delivery-b8d519a8767dacfaF",
+      "notification_id": "b8d519a8767dacfaF",
+      "status": "failed",
+      "attempt_count": 3
+    },
+    {
+      "delivery_id": "delivery-1632c2401d074c59S",
+      "notification_id": "1632c2401d074c59",
+      "status": "sent",
+      "attempt_count": 1
+    },
+    {
+      "delivery_id": "delivery-1632c2401d074c59K",
+      "notification_id": "1632c2401d074c59",
+      "status": "skipped",
+      "attempt_count": 1
+    }
+  ]
+}
