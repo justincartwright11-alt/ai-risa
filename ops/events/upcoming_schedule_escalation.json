@@ -1,0 +1,57 @@
+{
+  "escalation": {
+    "escalation_active": false,
+    "escalation_reason": null,
+    "escalation_level": null,
+    "escalation_id": null,
+    "escalation_status": "none",
+    "opened_at": null,
+    "last_seen_at": "2026-04-05T10:50:06.993173Z",
+    "cleared_at": null,
+    "trigger_metrics": {
+      "consecutive_failed_runs": 0,
+      "consecutive_stale_runs": 0,
+      "blocked_run_count": 0,
+      "incident_age_minutes": 67
+    }
+  },
+  "alert": {
+    "timestamp": "2026-04-05T09:43:05.877795Z",
+    "alert_active": false,
+    "alert_reason": null,
+    "incident_id": "a6ae7a7b-33f2-43ea-b085-20f913455f63",
+    "incident_status": "cleared",
+    "opened_at": "2026-04-05T09:42:54.315708Z",
+    "last_seen_at": "2026-04-05T09:43:05.877795Z",
+    "cleared_at": "2026-04-05T09:43:05.877795Z",
+    "heartbeat_health": "healthy",
+    "heartbeat_timestamp": "2026-04-05T09:35:45.191604Z"
+  },
+  "alert_state": {
+    "timestamp": "2026-04-05T09:43:05.877795Z",
+    "alert_active": false,
+    "alert_reason": null,
+    "incident_id": "a6ae7a7b-33f2-43ea-b085-20f913455f63",
+    "incident_status": "cleared",
+    "opened_at": "2026-04-05T09:42:54.315708Z",
+    "last_seen_at": "2026-04-05T09:43:05.877795Z",
+    "cleared_at": "2026-04-05T09:43:05.877795Z",
+    "heartbeat_health": "healthy",
+    "heartbeat_timestamp": "2026-04-05T09:35:45.191604Z"
+  },
+  "history_tail": [
+    {
+      "run_id": "2026-04-05T10:42:38.843484Z:scheduled",
+      "invoked_at": "2026-04-05T10:42:38.843484Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "success",
+      "alerting_status": "success",
+      "heartbeat_health": "healthy",
+      "lock_status": "success",
+      "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
+      "terminal_status": "success"
+    }
+  ]
+}
