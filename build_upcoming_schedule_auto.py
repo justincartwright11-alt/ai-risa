@@ -24,6 +24,48 @@ def build_queue_sink_target(record):
     # Deterministic sink target (could be extended in future)
     return "local_sink"
 
+# v66.3: dispatch outcome ledger helpers
+def assess_dispatch_outcome(records):
+    for rec in records:
+        if rec.get("queue_consume_eligible"):
+            rec["dispatch_outcome"] = "simulated_success"
+            rec["dispatch_outcome_reasons"] = []
+            rec["retry_class"] = assign_retry_class(rec)
+            rec["retry_eligible"] = rec["retry_class"] in ("retryable", "deferred")
+            rec["ack_state"] = assign_ack_state(rec)
+            rec["ledger_recorded"] = True
+            rec["ledger_record_id"] = build_ledger_record_id(rec)
+        else:
+            rec["dispatch_outcome"] = "not_dispatched"
+            rec["dispatch_outcome_reasons"] = ["not consume-eligible"]
+            rec["retry_class"] = None
+            rec["retry_eligible"] = False
+            rec["ack_state"] = "not_applicable"
+            rec["ledger_recorded"] = False
+            rec["ledger_record_id"] = None
+
+def assign_retry_class(rec):
+    # Deterministic retry class assignment based on simulated outcome
+    if rec.get("dispatch_outcome") == "simulated_success":
+        return "none"
+    if rec.get("queue_consume_status") == "blocked":
+        return "deferred"
+    return "terminal"
+
+def assign_ack_state(rec):
+    # Deterministic ack state based on outcome
+    if rec.get("dispatch_outcome") == "simulated_success":
+        return "acked"
+    if rec.get("queue_consume_status") == "blocked":
+        return "withheld"
+    return "not_applicable"
+
+def build_ledger_record_id(rec):
+    # Deterministic ledger record ID for outcome-logged entries
+    if rec.get("queue_consume_eligible"):
+        return f"ledger_{rec['dispatch_simulation_id']}"
+    return None
+
 # v66.2: queue-consumer simulation helpers
 def assess_queue_consume_eligibility(records, sink_entries):
     sink_ids = {entry["queue_write_id"] for entry in sink_entries}
@@ -92,6 +134,19 @@ def write_local_queue_sink(path, records):
                 "dry_run_only": False,
                 "written_at_cycle": rec["run_cycle_id"],
             }
+            # v66.3: outcome, retry, ack, ledger fields for simulated consumed entries
+            if rec.get("queue_consume_eligible"):
+                entry["dispatch_outcome"] = rec["dispatch_outcome"]
+                entry["retry_class"] = rec["retry_class"]
+                entry["retry_eligible"] = rec["retry_eligible"]
+                entry["ack_state"] = rec["ack_state"]
+                entry["ledger_record_id"] = rec["ledger_record_id"]
+            else:
+                entry["dispatch_outcome"] = "not_dispatched"
+                entry["retry_class"] = None
+                entry["retry_eligible"] = False
+                entry["ack_state"] = "not_applicable"
+                entry["ledger_record_id"] = None
             sink_entries.append(entry)
     sink_entries = sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")
     # v66.2: simulate queue consumption
@@ -561,6 +616,8 @@ def normalize_events(events):
     else:
         sink_entries = []
     assess_queue_consume_eligibility(normalized, sink_entries)
+    # v66.3: dispatch outcome ledger
+    assess_dispatch_outcome(normalized)
     return normalized
 
 def write_json(path, records):
@@ -624,18 +681,53 @@ def write_markdown(path, records):
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = [
-        "# Upcoming Schedule Queue Consumer Simulation",
+        "# Upcoming Schedule Dispatch Outcome Ledger",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, and queue-consumer simulation logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, queue-consumer simulation, and dispatch outcome ledger logic.",
         "",
         f"## Total Sink Entries: {sum(1 for r in records if r['queue_write_eligible'])}",
         f"## Consume-Eligible: {sum(1 for r in records if r.get('queue_consume_eligible'))}",
         f"## Consume-Blocked: {sum(1 for r in records if not r.get('queue_consume_eligible'))}",
         f"## Simulated Dispatch-Ready: {sum(1 for r in records if r.get('dispatch_simulation_status')=='ready')}",
         f"## Withheld: {sum(1 for r in records if r.get('queue_consume_status')=='blocked')}",
+        f"## Simulated Dispatch Outcome: {sum(1 for r in records if r.get('dispatch_outcome')=='simulated_success')}",
+        f"## Not Dispatched: {sum(1 for r in records if r.get('dispatch_outcome')=='not_dispatched')}",
+        "",
+        "## Acknowledgement State Summary",
+    ]
+    ack_counts = {}
+    for rec in records:
+        ack = rec.get("ack_state")
+        if ack:
+            ack_counts.setdefault(ack, 0)
+            ack_counts[ack] += 1
+    for ack, count in sorted(ack_counts.items()):
+        lines.append(f"- {ack}: {count}")
+    lines.extend([
+        "",
+        "## Retry Class Distribution",
+    ])
+    retry_counts = {}
+    for rec in records:
+        rc = rec.get("retry_class")
+        if rc:
+            retry_counts.setdefault(rc, 0)
+            retry_counts[rc] += 1
+    for rc, count in sorted(retry_counts.items()):
+        lines.append(f"- {rc}: {count}")
+    lines.extend([
+        "",
+        "## Ledger Record Summary",
+    ])
+    ledger_counts = {True: 0, False: 0}
+    for rec in records:
+        ledger_counts[rec.get("ledger_recorded", False)] += 1
+    lines.append(f"- Recorded: {ledger_counts[True]}")
+    lines.append(f"- Not Recorded: {ledger_counts[False]}")
+    lines.extend([
         "",
         "## Dispatch Target Summary",
-    ]
+    ])
     target_counts = {}
     for rec in records:
         tgt = rec.get("dispatch_simulation_target")
@@ -668,7 +760,9 @@ def write_markdown(path, records):
             f"**Queue Write Eligible:** {rec['queue_write_eligible']} | **Queue Consume Eligible:** {rec.get('queue_consume_eligible')} | "
             f"**Queue Consume Status:** {rec.get('queue_consume_status')} | **Dispatch Simulation ID:** {rec.get('dispatch_simulation_id')} | "
             f"**Dispatch Simulation Status:** {rec.get('dispatch_simulation_status')} | **Dispatch Simulation Target:** {rec.get('dispatch_simulation_target')} | "
-            f"**Dispatch Simulation Payload:** {rec.get('dispatch_simulation_payload')}"
+            f"**Dispatch Simulation Payload:** {rec.get('dispatch_simulation_payload')} | "
+            f"**Dispatch Outcome:** {rec.get('dispatch_outcome')} | **Retry Class:** {rec.get('retry_class')} | **Retry Eligible:** {rec.get('retry_eligible')} | "
+            f"**Ack State:** {rec.get('ack_state')} | **Ledger Recorded:** {rec.get('ledger_recorded')} | **Ledger Record ID:** {rec.get('ledger_record_id')}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -678,7 +772,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, and queue-consumer simulation format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, queue-consumer simulation, and dispatch outcome ledger format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
