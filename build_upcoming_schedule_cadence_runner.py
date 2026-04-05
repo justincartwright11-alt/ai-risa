@@ -10,8 +10,8 @@ Emits:
 
 See v66.9 locked spec for full requirements.
 """
-import json
 
+import json
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -248,7 +248,6 @@ def main():
     # --- Escalation policy engine integration (v68.1) ---
     # Import and call escalation policy engine after history ledger is updated
     try:
-        import subprocess
         esc_proc = subprocess.run([
             PYTHON,
             "build_upcoming_schedule_escalation_policy_engine.py"
