@@ -8,7 +8,7 @@
       "level1@example.com",
       "level2@example.com"
     ],
-    "routed_at": "2026-04-05T11:59:43.869579Z"
+    "routed_at": "2026-04-05T12:19:46.380727Z"
   },
   {
     "notification_id": "b8d519a8767dacfa",
@@ -19,16 +19,6 @@
       "level1@example.com",
       "level2@example.com"
     ],
-    "routed_at": "2026-04-05T11:59:43.869579Z"
-  },
-  {
-    "notification_id": "748bcc0ce6dbd147",
-    "escalation_id": "98be9889a3d30230",
-    "notification_type": "opened",
-    "escalation_level": "warning",
-    "recipients": [
-      "level2@example.com"
-    ],
-    "routed_at": "2026-04-05T11:59:43.869579Z"
+    "routed_at": "2026-04-05T12:19:46.380727Z"
   }
 ]
