@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-04-05T09:35:45.191604Z",
+  "health": "stale",
+  "last_due_invocation": "2026-04-05T07:00:00.000000Z",
+  "last_not_due_invocation": "2026-04-05T09:35:45.191604Z",
+  "last_cycle_invoked": "2026-04-05T09:35:31.231574Z",
+  "last_cycle_result": "success",
+  "last_outcome": "not-due",
+  "stale": true,
+  "failure": false,
+  "invocation_source": "manual",
+  "due": false,
+  "cycle_invoked": false,
+  "cycle_result": null,
+  "next_run": "2026-04-05T10:35:31.231574Z"
+}

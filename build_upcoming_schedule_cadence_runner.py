@@ -11,10 +11,15 @@ Emits:
 See v66.9 locked spec for full requirements.
 """
 import json
+
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 import subprocess
+
+HEARTBEAT_JSON_PATH = Path("ops/events/upcoming_schedule_heartbeat.json")
+HEARTBEAT_MD_PATH = Path("ops/events/upcoming_schedule_heartbeat.md")
+HEARTBEAT_STALE_MINUTES = 90  # If last due invocation >90min ago, consider stale
 
 CADENCE_STATE_PATH = Path("ops/events/upcoming_schedule_cadence_state.json")
 CADENCE_CONFIG_PATH = Path("ops/events/upcoming_schedule_cadence_config.json")
@@ -57,6 +62,28 @@ def emit_run_artifacts(result):
             f.write(f"Lock guard report: {result.get('lock_guard_md', 'N/A')}\n")
         f.write("\n")
 
+def emit_heartbeat_artifacts(hb):
+    with open(HEARTBEAT_JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(hb, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    with open(HEARTBEAT_MD_PATH, "w", encoding="utf-8") as f:
+        f.write(f"# Upcoming Schedule Heartbeat\n\n")
+        f.write(f"Heartbeat at: {hb['timestamp']} UTC\n\n")
+        f.write(f"Health: {hb['health']}\n\n")
+        f.write(f"Last due invocation: {hb['last_due_invocation']}\n")
+        f.write(f"Last not-due invocation: {hb['last_not_due_invocation']}\n")
+        f.write(f"Last cycle invoked: {hb['last_cycle_invoked']}\n")
+        f.write(f"Last cycle result: {hb['last_cycle_result']}\n")
+        f.write(f"Last outcome: {hb['last_outcome']}\n")
+        f.write(f"Stale: {hb['stale']}\n")
+        f.write(f"Failure: {hb['failure']}\n")
+        f.write(f"Invocation source: {hb['invocation_source']}\n")
+        f.write(f"Due: {hb['due']}\n")
+        f.write(f"Cycle invoked: {hb['cycle_invoked']}\n")
+        f.write(f"Cycle result: {hb['cycle_result']}\n")
+        f.write(f"Next run: {hb['next_run']}\n")
+        f.write("\n")
+
 def main():
     now = datetime.utcnow()
     config = load_json(CADENCE_CONFIG_PATH, DEFAULT_CONFIG)
@@ -91,6 +118,25 @@ def main():
         "lock_guard_json": None,
         "lock_guard_md": None,
     }
+    # --- Heartbeat logic ---
+    # Load previous heartbeat
+    prev_hb = None
+    if HEARTBEAT_JSON_PATH.exists():
+        try:
+            with open(HEARTBEAT_JSON_PATH, "r", encoding="utf-8") as f:
+                prev_hb = json.load(f)
+        except Exception:
+            prev_hb = None
+
+    invocation_source = "manual" if any(arg in sys.argv for arg in ["--manual", "-m"]) else "scheduled"
+    last_due_invocation = prev_hb["last_due_invocation"] if prev_hb else None
+    last_not_due_invocation = prev_hb["last_not_due_invocation"] if prev_hb else None
+    last_cycle_invoked = prev_hb["last_cycle_invoked"] if prev_hb else None
+    last_cycle_result = prev_hb["last_cycle_result"] if prev_hb else None
+    last_outcome = prev_hb["last_outcome"] if prev_hb else None
+    # If due, update last_due_invocation, last_cycle_invoked, last_cycle_result, last_outcome
+    # If not due, update last_not_due_invocation, last_outcome
+
     if due:
         # Update state for next run
         result["last_run"] = now.isoformat() + "Z"
@@ -108,6 +154,11 @@ def main():
             result["lock_guard_json"] = str(lg_json)
         if lg_md.exists():
             result["lock_guard_md"] = str(lg_md)
+        # Heartbeat update for due path
+        last_due_invocation = now.isoformat() + "Z"
+        last_cycle_invoked = now.isoformat() + "Z"
+        last_cycle_result = result["cycle_result"]
+        last_outcome = result["cycle_result"]
     else:
         # Not due: next_run remains as previously scheduled or computed from now
         if next_run_dt:
@@ -116,6 +167,46 @@ def main():
             result["next_run"] = (now + interval).isoformat() + "Z"
         # Save state (no change to last_run)
         save_json(CADENCE_STATE_PATH, {"last_run": last_run, "next_run": result["next_run"]})
+        # Heartbeat update for not-due path
+        last_not_due_invocation = now.isoformat() + "Z"
+        last_outcome = "not-due"
+
+    # --- Stale/failure detection ---
+    stale = False
+    failure = False
+    health = "healthy"
+    # Stale if last_due_invocation is too old
+    if last_due_invocation:
+        try:
+            last_due_dt = datetime.fromisoformat(last_due_invocation.replace("Z", ""))
+            if (now - last_due_dt) > timedelta(minutes=HEARTBEAT_STALE_MINUTES):
+                stale = True
+                health = "stale"
+        except Exception:
+            pass
+    # Failure if last_cycle_result is a fail
+    if last_cycle_result and last_cycle_result.startswith("fail"):
+        failure = True
+        health = "failed"
+
+    # Emit heartbeat artifact
+    heartbeat = {
+        "timestamp": now.isoformat() + "Z",
+        "health": health,
+        "last_due_invocation": last_due_invocation,
+        "last_not_due_invocation": last_not_due_invocation,
+        "last_cycle_invoked": last_cycle_invoked,
+        "last_cycle_result": last_cycle_result,
+        "last_outcome": last_outcome,
+        "stale": stale,
+        "failure": failure,
+        "invocation_source": invocation_source,
+        "due": due,
+        "cycle_invoked": result["cycle_invoked"],
+        "cycle_result": result["cycle_result"],
+        "next_run": result["next_run"]
+    }
+    emit_heartbeat_artifacts(heartbeat)
     emit_run_artifacts(result)
     if due and result["cycle_result"] != "success":
         sys.exit(1)
