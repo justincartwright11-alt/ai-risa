@@ -5,9 +5,9 @@
       "delivery_id": "14c34f29d6c9f63e",
       "delivery_status": "failed",
       "transport": "email",
-      "attempt_count": 6,
+      "attempt_count": 7,
       "first_attempt_at": "2026-04-05T09:54:03.877196Z",
-      "last_attempt_at": "2026-04-05T10:25:13.081995Z",
+      "last_attempt_at": "2026-04-05T12:45:01.654071Z",
       "delivered_at": null,
       "failure_reason": "[Errno 11001] getaddrinfo failed"
     },
@@ -38,9 +38,9 @@
       "delivery_id": "44a38583a7797b95",
       "delivery_status": "failed",
       "transport": "email",
-      "attempt_count": 6,
+      "attempt_count": 7,
       "first_attempt_at": "2026-04-05T09:54:03.877196Z",
-      "last_attempt_at": "2026-04-05T10:25:13.081995Z",
+      "last_attempt_at": "2026-04-05T12:45:01.654071Z",
       "delivered_at": null,
       "failure_reason": "[Errno 11001] getaddrinfo failed"
     },
@@ -65,6 +65,17 @@
       "last_attempt_at": "2026-04-05T09:54:41.396843Z",
       "delivered_at": null,
       "failure_reason": "Simulated delivery failure"
+    },
+    {
+      "notification_id": "28d3a7a23b953cad",
+      "delivery_id": "b08d06583d6a180c",
+      "delivery_status": "failed",
+      "transport": "email",
+      "attempt_count": 1,
+      "first_attempt_at": "2026-04-05T12:45:01.654071Z",
+      "last_attempt_at": "2026-04-05T12:45:01.654071Z",
+      "delivered_at": null,
+      "failure_reason": "[Errno 11001] getaddrinfo failed"
     }
   ]
 }

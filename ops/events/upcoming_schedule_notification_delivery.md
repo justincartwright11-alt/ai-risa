@@ -4,9 +4,9 @@
   Notification ID: e80bc45748d00d63
   Status: failed
   Transport: email
-  Attempt count: 6
+  Attempt count: 7
   First attempt: 2026-04-05T09:54:03.877196Z
-  Last attempt: 2026-04-05T10:25:13.081995Z
+  Last attempt: 2026-04-05T12:45:01.654071Z
   Delivered at: None
   Failure reason: [Errno 11001] getaddrinfo failed
 
@@ -34,9 +34,9 @@
   Notification ID: e03f683c78faa659
   Status: failed
   Transport: email
-  Attempt count: 6
+  Attempt count: 7
   First attempt: 2026-04-05T09:54:03.877196Z
-  Last attempt: 2026-04-05T10:25:13.081995Z
+  Last attempt: 2026-04-05T12:45:01.654071Z
   Delivered at: None
   Failure reason: [Errno 11001] getaddrinfo failed
 
@@ -59,4 +59,14 @@
   Last attempt: 2026-04-05T09:54:41.396843Z
   Delivered at: None
   Failure reason: Simulated delivery failure
+
+- Delivery ID: b08d06583d6a180c
+  Notification ID: 28d3a7a23b953cad
+  Status: failed
+  Transport: email
+  Attempt count: 1
+  First attempt: 2026-04-05T12:45:01.654071Z
+  Last attempt: 2026-04-05T12:45:01.654071Z
+  Delivered at: None
+  Failure reason: [Errno 11001] getaddrinfo failed
 

@@ -32,3 +32,11 @@
   Reason: None
   Dedupe key: deadbeef-dead-beef-dead-beefdeadbeef:cleared
 
+- Notification ID: 28d3a7a23b953cad
+  Incident ID: db8d5b90-270a-46c1-9abd-0ce6d79baba2
+  Type: opened
+  Status: pending
+  Created at: 2026-04-05T12:45:01.583211Z
+  Reason: stale
+  Dedupe key: db8d5b90-270a-46c1-9abd-0ce6d79baba2:opened
+

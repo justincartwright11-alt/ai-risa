@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-05T11:35:48.456238Z",
-  "due": false,
-  "cycle_result": null,
-  "alerting_result": null,
+  "timestamp": "2026-04-05T12:45:01.137857Z",
+  "due": true,
+  "cycle_result": "success",
+  "alerting_result": "success",
   "escalation_policy_result": "fail (code 1)",
   "escalation_notification_outbox_result": "skipped (not due or prior failure)",
   "escalation_notification_dispatch_result": "skipped (not due or prior failure)",
