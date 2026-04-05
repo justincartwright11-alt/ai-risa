@@ -154,6 +154,22 @@ def main():
             result["lock_guard_json"] = str(lg_json)
         if lg_md.exists():
             result["lock_guard_md"] = str(lg_md)
+        # If lock guard succeeded, invoke alerting orchestrator
+        alerting_json = None
+        alerting_md = None
+        if proc.returncode == 0:
+            alerting_proc = subprocess.run([PYTHON, "build_upcoming_schedule_alerting_orchestrator.py"], capture_output=True, text=True, check=False)
+            result["alerting_result"] = "success" if alerting_proc.returncode == 0 else f"fail (code {alerting_proc.returncode})"
+            alerting_json_path = Path("ops/events/upcoming_schedule_alerting_cycle_summary.json")
+            alerting_md_path = Path("ops/events/upcoming_schedule_alerting_cycle_report.md")
+            if alerting_json_path.exists():
+                alerting_json = str(alerting_json_path)
+            if alerting_md_path.exists():
+                alerting_md = str(alerting_md_path)
+            result["alerting_json"] = alerting_json
+            result["alerting_md"] = alerting_md
+        else:
+            result["alerting_result"] = "skipped (lock guard failed)"
         # Heartbeat update for due path
         last_due_invocation = now.isoformat() + "Z"
         last_cycle_invoked = now.isoformat() + "Z"
