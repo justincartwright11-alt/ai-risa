@@ -1,0 +1,37 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_multi_run_scale_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "scale_remediation_intake_id": "resolution-wave-packet-review-session-scale-remediation-intake-0001",
+      "multi_run_scale_handoff_id": "resolution-wave-packet-review-session-multi-run-scale-handoff-0001",
+      "remediation_position": 1,
+      "rollout_authorized": false,
+      "blocked_scale_reason": "rollout gate not explicitly approved by operator",
+      "remediation_objective": "resolve blocked rollout authorization before scaled operations",
+      "remediation_targets": [
+        "approval gap",
+        "operational readiness gap",
+        "governance acceptance gap"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "evidence_artifact": "scale_remediation_evidence",
+      "stop_condition": "intake_frozen_and_ready_for_remediation",
+      "lineage_source_layer": "multi_run_scale_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_multi_run_scale_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-multi-run-scale-handoff-0001"
+    }
+  ]
+}

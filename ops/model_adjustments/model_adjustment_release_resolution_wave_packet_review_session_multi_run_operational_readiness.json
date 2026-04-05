@@ -1,0 +1,36 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_multi_run_operational_readiness",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_second_live_event_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_closeout.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "multi_run_operational_readiness_id": "resolution-wave-packet-review-session-multi-run-operational-readiness-0001",
+      "evaluated_family_range": [
+        "v25.0-controlled-release-resolution-wave-packet-review-session-live-event-family",
+        "v28.0-controlled-release-resolution-wave-packet-review-session-second-live-event-family"
+      ],
+      "first_live_event_reference": "resolution-wave-packet-review-session-live-event-closeout-0001",
+      "second_live_event_reference": "resolution-wave-packet-review-session-second-live-event-closeout-0001",
+      "governance_reference": "resolution-wave-packet-review-session-performance-governance-handoff-0001",
+      "monitoring_reference": "resolution-wave-packet-review-session-performance-monitoring-closeout-0001",
+      "readiness_metrics": [
+        "all deliverables completed in both runs",
+        "success criteria met in both runs",
+        "no governance thresholds breached",
+        "no incidents or rollbacks required"
+      ],
+      "readiness_result": "ready_for_routine_operation",
+      "scale_recommendation": "proceed_to_scale_handoff",
+      "operator_review_required": false,
+      "rollout_authorized": true,
+      "lineage_source_layer": "multi_run_operational_readiness",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_second_live_event_closeout.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-second-live-event-closeout-0001"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "review_session_program_complete": true,
+  "runtime_handoff_complete": true,
+  "external_consumer_handoff_complete": true,
+  "production_cutover_handoff_complete": true,
+  "go_live_ready": true,
+  "operator_review_required": true,
+  "execution_authorization_required": true
+}

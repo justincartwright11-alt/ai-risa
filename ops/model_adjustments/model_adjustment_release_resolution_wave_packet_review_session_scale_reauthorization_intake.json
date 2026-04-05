@@ -1,0 +1,32 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_scale_reauthorization_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_multi_run_scale_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_closeout.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "scale_reauthorization_intake_id": "resolution-wave-packet-review-session-scale-reauthorization-intake-0001",
+      "prior_scale_handoff_id": "resolution-wave-packet-review-session-multi-run-scale-handoff-0001",
+      "remediation_closeout_id": "resolution-wave-packet-review-session-scale-remediation-closeout-0001",
+      "previous_rollout_authorization": false,
+      "remediation_outcome": "resolved_for_reauthorization",
+      "reauthorization_objective": "determine if post-remediation conditions now permit scale rollout authorization",
+      "reauthorization_targets": [
+        "approval gap",
+        "operational readiness gap",
+        "governance acceptance gap"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "operator_review_required": true,
+      "evidence_artifact": "scale_reauthorization_evidence",
+      "stop_condition": "intake_frozen_and_ready_for_review",
+      "lineage_source_layer": "scale_remediation_closeout",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_scale_remediation_closeout.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-scale-remediation-closeout-0001"
+    }
+  ]
+}

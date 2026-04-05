@@ -1,0 +1,17 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_delivery_batch",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_dispatch.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "delivery_batch_id": "resolution-wave-packet-review-session-delivery-batch-0001",
+      "delivery_dispatch_id": "resolution-wave-packet-review-session-delivery-dispatch-0001",
+      "batch_position": 1,
+      "batch_ready": true,
+      "lineage_source_layer": "delivery_dispatch",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_dispatch.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-delivery-dispatch-0001"
+    }
+  ]
+}

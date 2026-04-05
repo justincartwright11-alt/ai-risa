@@ -1,0 +1,38 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_intake",
+  "records": [
+    {
+      "acceptable_ranges": [
+        "provided_by_operator"
+      ],
+      "alert_conditions": [
+        "provided_by_operator"
+      ],
+      "comparison_reference": "v35 steady-state monitoring family",
+      "evidence_artifact": "steady_state_operations_monitoring_window_2_evidence",
+      "intake_position": 1,
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_closeout.json",
+      "lineage_source_layer": "steady_state_operations_monitoring_closeout",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-closeout-0001",
+      "monitored_family": "v34.0-v34.3 scaled-operations family",
+      "monitoring_metrics": [
+        "deliverable_completion_rate",
+        "approval_requirement_satisfaction_rate",
+        "intervention_rate",
+        "rollback_rate",
+        "incident_rate"
+      ],
+      "monitoring_objective": "confirm steady-state operational stability across a second monitoring window",
+      "monitoring_window_label": "window_2",
+      "prior_monitoring_reference": "resolution-wave-packet-review-session-steady-state-operations-monitoring-closeout-0001",
+      "review_interval": "provided_by_operator",
+      "steady_state_operations_monitoring_window_2_intake_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-intake-0001",
+      "stop_condition": "intake_frozen_and_ready_for_window_2_monitoring"
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json"
+  ]
+}

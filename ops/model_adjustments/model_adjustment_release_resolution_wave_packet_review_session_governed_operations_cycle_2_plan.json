@@ -1,0 +1,52 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_plan",
+  "records": [
+    {
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "authorization_source": "operator",
+      "authorization_status": "authorized",
+      "evidence_artifact": "governed_operations_cycle_2_execution_evidence",
+      "execution_steps": [
+        "validate governed cycle 2 intake and inherited governance controls",
+        "prepare governed operational inputs",
+        "run governed operations cycle 2",
+        "capture governed cycle 2 execution evidence",
+        "evaluate outcome against governance thresholds and approval requirements"
+      ],
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "governed_operations_cycle_2_intake_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-intake-0001",
+      "governed_operations_cycle_2_plan_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-plan-0001",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_intake.json",
+      "lineage_source_layer": "governed_operations_cycle_2_intake",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-intake-0001",
+      "operator": "provided_by_operator",
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "plan_position": 1,
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "review_cadence": "provided_by_operator",
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "stop_condition": "plan_frozen_and_ready_for_governed_cycle_2_execution",
+      "target_operational_scope": "provided_by_operator"
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_handoff.json"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_smoke_test",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_acceptance.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "activation_smoke_test_pass": true,
+  "records": [
+    {
+      "activation_smoke_test_id": "resolution-wave-packet-review-session-consumer-activation-smoke-test-0001",
+      "smoke_test_position": 1,
+      "activation_acceptance_id": "resolution-wave-packet-review-session-consumer-activation-acceptance-0001",
+      "activation_smoke_test_pass": true,
+      "lineage_source_layer": "consumer_activation_acceptance",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_acceptance.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-consumer-activation-acceptance-0001"
+    }
+  ]
+}

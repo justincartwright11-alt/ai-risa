@@ -1,0 +1,25 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_runtime_smoke_test",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_acceptance.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "runtime_smoke_test_pass": true,
+  "checks": {
+    "runtime_acceptance_present_pass": true,
+    "program_closeout_complete_pass": true,
+    "terminal_workstreams_complete_pass": true,
+    "downstream_consumption_path_pass": true,
+    "deterministic_output_pass": true
+  },
+  "records": [
+    {
+      "runtime_smoke_test_id": "resolution-wave-packet-review-session-runtime-smoke-test-0001",
+      "smoke_test_position": 1,
+      "runtime_acceptance_id": "resolution-wave-packet-review-session-runtime-acceptance-0001",
+      "runtime_smoke_test_pass": true,
+      "lineage_source_layer": "runtime_acceptance",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_runtime_acceptance.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-runtime-acceptance-0001"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_archive_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_export.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_verification.json"
+  ],
+  "frozen_slices": [
+    "v24.0-controlled-release-resolution-wave-packet-review-session-archive-export",
+    "v24.1-controlled-release-resolution-wave-packet-review-session-archive-verification"
+  ],
+  "archive_export_complete": true,
+  "archive_verification_complete": true,
+  "archive_family_complete": true,
+  "archive_transfer_ready": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "archive_handoff_id": "resolution-wave-packet-review-session-archive-handoff-0001",
+      "handoff_position": 1,
+      "terminal_archive_export_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_export.json",
+      "terminal_archive_verification_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_verification.json",
+      "archive_family_complete": true,
+      "archive_transfer_ready": true,
+      "lineage_source_layer": "archive_verification",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_verification.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-archive-verification-0001"
+    }
+  ]
+}

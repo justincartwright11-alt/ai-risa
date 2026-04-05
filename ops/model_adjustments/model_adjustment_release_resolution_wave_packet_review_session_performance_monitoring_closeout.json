@@ -1,0 +1,38 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_closeout",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_baseline.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_evidence.json"
+  ],
+  "frozen_slices": [
+    "v26.0-controlled-release-resolution-wave-packet-review-session-performance-monitoring-intake",
+    "v26.1-controlled-release-resolution-wave-packet-review-session-performance-monitoring-baseline",
+    "v26.2-controlled-release-resolution-wave-packet-review-session-performance-monitoring-evidence"
+  ],
+  "performance_monitoring_baseline_complete": true,
+  "performance_monitoring_evidence_complete": true,
+  "performance_monitoring_family_complete": true,
+  "monitoring_window_observed": true,
+  "alert_triggered": false,
+  "deviation_detected": false,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "performance_monitoring_closeout_id": "resolution-wave-packet-review-session-performance-monitoring-closeout-0001",
+      "closeout_position": 1,
+      "performance_monitoring_baseline_id": "resolution-wave-packet-review-session-performance-monitoring-baseline-0001",
+      "performance_monitoring_evidence_id": "resolution-wave-packet-review-session-performance-monitoring-evidence-0001",
+      "final_monitoring_outcome": "within_expected_range",
+      "alert_triggered": false,
+      "deviation_detected": false,
+      "monitoring_result_summary": "provided_by_operator",
+      "performance_monitoring_family_complete": true,
+      "lineage_source_layer": "performance_monitoring_evidence",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_evidence.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-monitoring-evidence-0001"
+    }
+  ]
+}

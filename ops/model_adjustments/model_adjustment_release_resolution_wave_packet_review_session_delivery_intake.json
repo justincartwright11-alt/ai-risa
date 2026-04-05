@@ -1,0 +1,23 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_delivery_intake",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_handoff.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_handoff.json"
+  ],
+  "source_record_counts": {
+    "execution_handoff": 1,
+    "orchestration_handoff": 1
+  },
+  "record_count": 1,
+  "records": [
+    {
+      "delivery_intake_id": "resolution-wave-packet-review-session-delivery-intake-0001",
+      "intake_position": 1,
+      "orchestration_handoff_id": "resolution-wave-packet-review-session-orchestration-handoff-0001",
+      "execution_handoff_id": "resolution-wave-packet-review-session-execution-handoff-0001",
+      "lineage_source_layer": "orchestration_handoff",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_handoff.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-orchestration-handoff-0001"
+    }
+  ]
+}

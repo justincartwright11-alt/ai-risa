@@ -1,0 +1,17 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_publication_queue",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_publication_intake.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "publication_queue_id": "resolution-wave-packet-review-session-publication-queue-0001",
+      "publication_intake_id": "resolution-wave-packet-review-session-publication-intake-0001",
+      "queue_position": 1,
+      "publication_ready": true,
+      "lineage_source_layer": "publication_intake",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_publication_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-publication-intake-0001"
+    }
+  ]
+}

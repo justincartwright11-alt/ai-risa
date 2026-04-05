@@ -1,0 +1,17 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_consumer_batch",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_dispatch.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "consumer_batch_id": "resolution-wave-packet-review-session-consumer-batch-0001",
+      "consumer_dispatch_id": "resolution-wave-packet-review-session-consumer-dispatch-0001",
+      "batch_position": 1,
+      "consumer_batch_ready": true,
+      "lineage_source_layer": "consumer_dispatch",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_dispatch.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-consumer-dispatch-0001"
+    }
+  ]
+}

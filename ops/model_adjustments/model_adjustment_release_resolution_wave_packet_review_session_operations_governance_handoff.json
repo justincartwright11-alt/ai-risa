@@ -1,0 +1,56 @@
+{
+  "frozen_slices": [
+    "v37.0-controlled-release-resolution-wave-packet-review-session-operations-governance-intake",
+    "v37.1-controlled-release-resolution-wave-packet-review-session-operations-governance-policy"
+  ],
+  "merge_performed": false,
+  "operations_governance_handoff_complete": true,
+  "operations_governance_intake_complete": true,
+  "operations_governance_policy_complete": true,
+  "push_performed": false,
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_operations_governance_handoff",
+  "records": [
+    {
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "governance_family_complete": true,
+      "governance_metrics": [
+        "deliverable_completion_rate",
+        "approval_requirement_satisfaction_rate",
+        "intervention_rate",
+        "rollback_rate",
+        "incident_rate"
+      ],
+      "governance_objective": "govern ongoing scaled operations using validated steady-state evidence across multiple monitoring windows",
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "handoff_position": 1,
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_policy.json",
+      "lineage_source_layer": "operations_governance_policy",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-operations-governance-policy-0001",
+      "operations_governance_handoff_id": "resolution-wave-packet-review-session-operations-governance-handoff-0001",
+      "operations_governance_policy_id": "resolution-wave-packet-review-session-operations-governance-policy-0001",
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "review_cadence": "provided_by_operator",
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "steady_state_acceptance_rules": [
+        "provided_by_operator"
+      ]
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_policy.json"
+  ],
+  "tag_performed": false
+}

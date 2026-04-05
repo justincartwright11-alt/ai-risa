@@ -1,0 +1,30 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_live_execution_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_evidence.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_decision.json"
+  ],
+  "frozen_slices": [
+    "v22.0-controlled-release-resolution-wave-packet-review-session-live-execution-evidence",
+    "v22.1-controlled-release-resolution-wave-packet-review-session-live-execution-decision"
+  ],
+  "live_execution_evidence_complete": true,
+  "live_execution_decision_complete": true,
+  "live_execution_family_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "live_execution_handoff_id": "resolution-wave-packet-review-session-live-execution-handoff-0001",
+      "handoff_position": 1,
+      "terminal_live_execution_evidence_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_evidence.json",
+      "terminal_live_execution_decision_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_decision.json",
+      "live_execution_family_complete": true,
+      "lineage_source_layer": "live_execution_decision",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_execution_decision.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-live-execution-decision-0001"
+    }
+  ]
+}

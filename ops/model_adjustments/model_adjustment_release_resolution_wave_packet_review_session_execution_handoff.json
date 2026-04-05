@@ -1,0 +1,36 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_execution_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_queue.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_dispatch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_batch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_audit.json"
+  ],
+  "frozen_slices": [
+    "v10.0-controlled-release-resolution-wave-packet-review-session-execution-intake",
+    "v10.1-controlled-release-resolution-wave-packet-review-session-execution-queue",
+    "v10.2-controlled-release-resolution-wave-packet-review-session-execution-dispatch",
+    "v10.3-controlled-release-resolution-wave-packet-review-session-execution-batch",
+    "v10.4-controlled-release-resolution-wave-packet-review-session-execution-audit"
+  ],
+  "execution_chain_complete": true,
+  "execution_audit_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "execution_handoff_id": "resolution-wave-packet-review-session-execution-handoff-0001",
+      "handoff_position": 1,
+      "terminal_execution_batch_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_batch.json",
+      "terminal_execution_audit_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_audit.json",
+      "execution_chain_complete": true,
+      "execution_audit_complete": true,
+      "lineage_source_layer": "execution_audit",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_execution_audit.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-execution-audit-0001"
+    }
+  ]
+}

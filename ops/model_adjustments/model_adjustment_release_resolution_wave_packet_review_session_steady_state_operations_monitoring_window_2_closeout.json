@@ -1,0 +1,39 @@
+{
+  "alert_triggered": false,
+  "deviation_detected": false,
+  "frozen_slices": [
+    "v36.0-controlled-release-resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-intake",
+    "v36.1-controlled-release-resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-baseline",
+    "v36.2-controlled-release-resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-evidence"
+  ],
+  "merge_performed": false,
+  "monitoring_window_observed": true,
+  "push_performed": false,
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_closeout",
+  "records": [
+    {
+      "alert_triggered": false,
+      "closeout_position": 1,
+      "comparison_to_window_1": "provided_by_operator",
+      "deviation_detected": false,
+      "final_monitoring_outcome": "within_expected_range",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_evidence.json",
+      "lineage_source_layer": "steady_state_operations_monitoring_window_2_evidence",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-evidence-0001",
+      "monitoring_result_summary": "provided_by_operator",
+      "steady_state_operations_monitoring_window_2_baseline_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-baseline-0001",
+      "steady_state_operations_monitoring_window_2_closeout_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-closeout-0001",
+      "steady_state_operations_monitoring_window_2_evidence_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-evidence-0001",
+      "steady_state_operations_monitoring_window_2_family_complete": true
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_baseline.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_evidence.json"
+  ],
+  "steady_state_operations_monitoring_window_2_baseline_complete": true,
+  "steady_state_operations_monitoring_window_2_evidence_complete": true,
+  "steady_state_operations_monitoring_window_2_family_complete": true,
+  "tag_performed": false
+}

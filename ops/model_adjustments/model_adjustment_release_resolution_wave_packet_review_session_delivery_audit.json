@@ -1,0 +1,42 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_delivery_audit",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_queue.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_dispatch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_batch.json"
+  ],
+  "source_record_counts": {
+    "delivery_intake": 1,
+    "delivery_queue": 1,
+    "delivery_dispatch": 1,
+    "delivery_batch": 1
+  },
+  "record_count": 1,
+  "all_checks_pass": true,
+  "checks": {
+    "layer_record_count_parity_pass": true,
+    "audit_record_count_matches_batch_pass": true,
+    "exact_once_lineage_pass": true,
+    "source_order_preserved_pass": true,
+    "deterministic_suffix_alignment_pass": true,
+    "terminal_batch_coverage_pass": true
+  },
+  "records": [
+    {
+      "delivery_audit_id": "resolution-wave-packet-review-session-delivery-audit-0001",
+      "audit_position": 1,
+      "delivery_intake_id": "resolution-wave-packet-review-session-delivery-intake-0001",
+      "delivery_queue_id": "resolution-wave-packet-review-session-delivery-queue-0001",
+      "delivery_dispatch_id": "resolution-wave-packet-review-session-delivery-dispatch-0001",
+      "delivery_batch_id": "resolution-wave-packet-review-session-delivery-batch-0001",
+      "lineage_chain_complete": true,
+      "source_order_preserved": true,
+      "deterministic_suffix_alignment": true,
+      "exact_once_lineage": true,
+      "lineage_source_layer": "delivery_batch",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_delivery_batch.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-delivery-batch-0001"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_locator",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory.json",
+  "source_record_count": 3,
+  "record_count": 3,
+  "records": [
+    {
+      "routing_catalog_locator_id": "resolution-wave-packet-review-session-routing-catalog-locator-0001",
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0001",
+      "locator_position": 1,
+      "lineage_source_layer": "routing_catalog_directory",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-directory-0001"
+    },
+    {
+      "routing_catalog_locator_id": "resolution-wave-packet-review-session-routing-catalog-locator-0002",
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0002",
+      "locator_position": 2,
+      "lineage_source_layer": "routing_catalog_directory",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-directory-0002"
+    },
+    {
+      "routing_catalog_locator_id": "resolution-wave-packet-review-session-routing-catalog-locator-0003",
+      "routing_catalog_directory_id": "resolution-wave-packet-review-session-routing-catalog-directory-0003",
+      "locator_position": 3,
+      "lineage_source_layer": "routing_catalog_directory",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_directory.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-directory-0003"
+    }
+  ]
+}

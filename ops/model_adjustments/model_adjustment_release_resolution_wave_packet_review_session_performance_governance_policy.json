@@ -1,0 +1,44 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_governance_policy",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_baseline.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_evidence.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_closeout.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "performance_governance_policy_id": "resolution-wave-packet-review-session-performance-governance-policy-0001",
+      "performance_governance_intake_id": "resolution-wave-packet-review-session-performance-governance-intake-0001",
+      "policy_position": 1,
+      "governance_objective": "govern future live-event production families using validated monitoring thresholds and escalation rules",
+      "governance_metrics": [
+        "deliverable_completion_rate",
+        "success_criteria_pass_rate",
+        "incident_rate",
+        "rollback_rate"
+      ],
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "alert_escalation_rules": [
+        "provided_by_operator"
+      ],
+      "review_cadence": "provided_by_operator",
+      "rollout_gate": "future live-event family may proceed only when governance policy is accepted",
+      "operator_intervention_rules": [
+        "provided_by_operator"
+      ],
+      "rollback_trigger_rules": [
+        "provided_by_operator"
+      ],
+      "approval_requirements": [
+        "provided_by_operator"
+      ],
+      "lineage_source_layer": "performance_governance_intake",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-governance-intake-0001"
+    }
+  ]
+}

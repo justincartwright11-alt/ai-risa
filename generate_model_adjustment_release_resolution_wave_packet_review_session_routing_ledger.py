@@ -1,0 +1,67 @@
+import json
+from datetime import datetime
+from pathlib import Path
+
+INPUT_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_map.json"
+OUTPUT_JSON_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_ledger.json"
+OUTPUT_MD_PATH = "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_routing_ledger.md"
+
+FROZEN_TIMESTAMP = "2026-04-03T00:00:00+00:00"
+VERSION = "v7.6-slice-1"
+LIST_KEY = "release_resolution_wave_packet_review_session_routing_ledger"
+
+# Load input
+with open(INPUT_PATH, "r", encoding="utf-8") as f:
+    routing_map = json.load(f)["release_resolution_wave_packet_review_session_routing_map"]
+
+# Build routing-ledger records
+ledger_records = []
+for i, routing_map_record in enumerate(routing_map, 1):
+    ledger_id = f"resolution-wave-packet-review-session-routing-ledger-{i:04d}"
+    ledger_record = {
+        "resolution_wave_packet_review_session_routing_ledger_id": ledger_id,
+        "source_resolution_wave_packet_review_session_routing_map_id": routing_map_record["resolution_wave_packet_review_session_routing_map_id"],
+        # Pure downstream projection: copy all source_* fields from routing_map_record
+        **{k: v for k, v in routing_map_record.items() if k.startswith("source_")}
+    }
+    ledger_records.append(ledger_record)
+
+# Compose output JSON
+data = {
+    "model_adjustment_release_resolution_wave_packet_review_session_routing_ledger_version": VERSION,
+    "generated_at_utc": FROZEN_TIMESTAMP,
+    "input_routing_map_record_count": len(routing_map),
+    "routing_ledger_record_count": len(ledger_records),
+    "deterministic_ordering": True,
+    LIST_KEY: ledger_records
+}
+
+with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+
+# Compose Markdown as a pure projection of JSON
+def to_md_table(records):
+    if not records:
+        return "| (no records) |\n"
+    headers = list(records[0].keys())
+    lines = ["| " + " | ".join(headers) + " |", "|" + "|".join(["---"] * len(headers)) + "|"]
+    for rec in records:
+        lines.append("| " + " | ".join(str(rec[h]) for h in headers) + " |")
+    return "\n".join(lines)
+
+md = f"""# Model Adjustment Release Resolution Wave Packet Review Session Routing Ledger (v7.6)
+
+- Version: {VERSION}
+- generated_at_utc: {FROZEN_TIMESTAMP}
+- Input routing-map record count: {len(routing_map)}
+- Routing-ledger record count: {len(ledger_records)}
+- Deterministic ordering: True
+
+## Routing Ledger Records
+
+{to_md_table(ledger_records)}
+"""
+
+with open(OUTPUT_MD_PATH, "w", encoding="utf-8") as f:
+    f.write(md)

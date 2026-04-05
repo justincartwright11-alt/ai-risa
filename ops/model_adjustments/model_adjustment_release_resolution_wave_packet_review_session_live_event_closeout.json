@@ -1,0 +1,39 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_live_event_closeout",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_production_plan.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_execution_evidence.json"
+  ],
+  "frozen_slices": [
+    "v25.0-controlled-release-resolution-wave-packet-review-session-live-event-production-intake",
+    "v25.1-controlled-release-resolution-wave-packet-review-session-live-event-production-plan",
+    "v25.2-controlled-release-resolution-wave-packet-review-session-live-event-execution-evidence"
+  ],
+  "live_event_production_plan_complete": true,
+  "live_event_execution_evidence_complete": true,
+  "live_event_family_complete": true,
+  "execution_attempted": true,
+  "execution_pass": true,
+  "incident_detected": false,
+  "rollback_required": false,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "live_event_closeout_id": "resolution-wave-packet-review-session-live-event-closeout-0001",
+      "closeout_position": 1,
+      "live_event_production_plan_id": "resolution-wave-packet-review-session-live-event-production-plan-0001",
+      "live_event_execution_evidence_id": "resolution-wave-packet-review-session-live-event-execution-evidence-0001",
+      "final_operational_outcome": "accepted_into_operation",
+      "requested_deliverables_completed": true,
+      "success_criteria_met": true,
+      "execution_result_summary": "provided_by_operator",
+      "live_event_family_complete": true,
+      "lineage_source_layer": "live_event_execution_evidence",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_execution_evidence.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-live-event-execution-evidence-0001"
+    }
+  ]
+}

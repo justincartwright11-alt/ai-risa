@@ -1,0 +1,40 @@
+{
+  "checkpoint_rule": "full review required only if governance thresholds breached or operator requests; otherwise, lighter monitoring is sufficient",
+  "consolidated_cycles_count": 3,
+  "operating_rhythm_stable": true,
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cadence_checkpoint_intake",
+  "records": [
+    {
+      "checkpoint_rule": "full review required only if governance thresholds breached or operator requests; otherwise, lighter monitoring is sufficient",
+      "consolidated_cycles": [
+        "resolution-wave-packet-review-session-governed-operations-cycle-closeout-0001",
+        "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+        "resolution-wave-packet-review-session-governed-operations-cycle-3-closeout-0001"
+      ],
+      "governed_operations_cadence_checkpoint_intake_id": "resolution-wave-packet-review-session-governed-operations-cadence-checkpoint-intake-0001",
+      "intake_position": 1,
+      "lineage_source_files": [
+        "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_closeout.json",
+        "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json",
+        "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_closeout.json"
+      ],
+      "lineage_source_layers": [
+        "governed_operations_cycle_closeout",
+        "governed_operations_cycle_2_closeout",
+        "governed_operations_cycle_3_closeout"
+      ],
+      "lineage_source_record_ids": [
+        "resolution-wave-packet-review-session-governed-operations-cycle-closeout-0001",
+        "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+        "resolution-wave-packet-review-session-governed-operations-cycle-3-closeout-0001"
+      ],
+      "operating_rhythm_stable": true
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_closeout.json"
+  ]
+}

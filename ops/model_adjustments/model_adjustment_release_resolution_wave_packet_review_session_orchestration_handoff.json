@@ -1,0 +1,36 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_orchestration_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_queue.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_dispatch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_batch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_audit.json"
+  ],
+  "frozen_slices": [
+    "v11.0-controlled-release-resolution-wave-packet-review-session-orchestration-intake",
+    "v11.1-controlled-release-resolution-wave-packet-review-session-orchestration-queue",
+    "v11.2-controlled-release-resolution-wave-packet-review-session-orchestration-dispatch",
+    "v11.3-controlled-release-resolution-wave-packet-review-session-orchestration-batch",
+    "v11.4-controlled-release-resolution-wave-packet-review-session-orchestration-audit"
+  ],
+  "orchestration_chain_complete": true,
+  "orchestration_audit_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "orchestration_handoff_id": "resolution-wave-packet-review-session-orchestration-handoff-0001",
+      "handoff_position": 1,
+      "terminal_orchestration_batch_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_batch.json",
+      "terminal_orchestration_audit_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_audit.json",
+      "orchestration_chain_complete": true,
+      "orchestration_audit_complete": true,
+      "lineage_source_layer": "orchestration_audit",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_orchestration_audit.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-orchestration-audit-0001"
+    }
+  ]
+}

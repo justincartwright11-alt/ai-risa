@@ -1,0 +1,39 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_archive_verification",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_export.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_program_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_post_run_retrospective.json"
+  ],
+  "frozen_slices": [
+    "v24.0-controlled-release-resolution-wave-packet-review-session-archive-export"
+  ],
+  "archive_verification_ready": true,
+  "archive_verification_pass": true,
+  "record_count": 1,
+  "records": [
+    {
+      "archive_verification_id": "resolution-wave-packet-review-session-archive-verification-0001",
+      "verification_position": 1,
+      "archive_export_id": "resolution-wave-packet-review-session-archive-export-0001",
+      "program_closeout_id": "resolution-wave-packet-review-session-program-closeout-0001",
+      "post_run_retrospective_id": "resolution-wave-packet-review-session-post-run-retrospective-0001",
+      "archive_export_present_pass": true,
+      "program_closeout_present_pass": true,
+      "retrospective_present_pass": true,
+      "archive_completeness_pass": true,
+      "export_readiness_pass": true,
+      "deterministic_output_pass": true,
+      "archive_verification_pass": true,
+      "archive_verification_summary": "All required archive export, closeout, and retrospective artifacts are present and verified. Export is deterministic and ready for handoff.",
+      "archive_verification_notes": [
+        "All required input artifacts are present and unmodified since archive export.",
+        "Archive export is complete and export-ready.",
+        "Deterministic output confirmed by two-run hash validation."
+      ],
+      "lineage_source_layer": "archive_export",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_archive_export.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-archive-export-0001"
+    }
+  ]
+}

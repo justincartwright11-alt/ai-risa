@@ -1,0 +1,21 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_intake",
+  "records": [
+    {
+      "frozen_slices": [
+        "v40.0-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-intake",
+        "v40.1-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-plan",
+        "v40.2-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-execution-evidence",
+        "v40.3-controlled-release-resolution-wave-packet-review-session-governed-operations-cycle-2-closeout"
+      ],
+      "governed_operations_cycle_2_closeout_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+      "governed_operations_cycle_2_review_intake_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-intake-0001",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json",
+      "lineage_source_layer": "governed_operations_cycle_2_closeout",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+      "review_position": 1
+    }
+  ],
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json"
+}

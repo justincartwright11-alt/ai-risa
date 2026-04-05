@@ -1,0 +1,31 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_execution_evidence",
+  "records": [
+    {
+      "approval_requirements_satisfied": "provided_by_operator",
+      "delivered_artifacts": [
+        "provided_by_operator"
+      ],
+      "evidence_position": 1,
+      "execution_attempted": true,
+      "execution_pass": true,
+      "execution_result_summary": "provided_by_operator",
+      "governance_thresholds_breached": false,
+      "governed_operations_cycle_3_execution_evidence_id": "resolution-wave-packet-review-session-governed-operations-cycle-3-execution-evidence-0001",
+      "governed_operations_cycle_3_plan_id": "resolution-wave-packet-review-session-governed-operations-cycle-3-plan-0001",
+      "incident_detected": false,
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_plan.json",
+      "lineage_source_layer": "governed_operations_cycle_3_plan",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-3-plan-0001",
+      "operator_intervention_invoked": false,
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "rollback_triggered": false
+    }
+  ],
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_3_plan.json"
+}

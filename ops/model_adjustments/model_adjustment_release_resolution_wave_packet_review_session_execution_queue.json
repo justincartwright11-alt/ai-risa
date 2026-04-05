@@ -1,0 +1,35 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_execution_queue",
+  "source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_execution_intake.json",
+  "source_record_count": 3,
+  "record_count": 3,
+  "records": [
+    {
+      "execution_queue_id": "resolution-wave-packet-review-session-execution-queue-0001",
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0001",
+      "queue_position": 1,
+      "execution_ready": true,
+      "lineage_source_layer": "execution_intake",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_execution_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-execution-intake-0001"
+    },
+    {
+      "execution_queue_id": "resolution-wave-packet-review-session-execution-queue-0002",
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0002",
+      "queue_position": 2,
+      "execution_ready": true,
+      "lineage_source_layer": "execution_intake",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_execution_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-execution-intake-0002"
+    },
+    {
+      "execution_queue_id": "resolution-wave-packet-review-session-execution-queue-0003",
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0003",
+      "queue_position": 3,
+      "execution_ready": true,
+      "lineage_source_layer": "execution_intake",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_execution_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-execution-intake-0003"
+    }
+  ]
+}

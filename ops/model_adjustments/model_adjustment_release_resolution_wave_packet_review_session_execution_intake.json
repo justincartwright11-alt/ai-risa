@@ -1,0 +1,63 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_execution_intake",
+  "source_files": [
+    "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_manifest.json",
+    "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_chain_audit.json",
+    "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_audit_handoff.json",
+    "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_closeout.json"
+  ],
+  "record_count": 3,
+  "records": [
+    {
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0001",
+      "intake_position": 1,
+      "routing_catalog_manifest_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0001",
+      "lineage_source_layer": "routing_catalog_manifest",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_manifest.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0001",
+      "sealed_chain_status": {
+        "chain_complete": true,
+        "audit_complete": true,
+        "handoff_complete": true,
+        "closeout_complete": true,
+        "merge_performed": false,
+        "tag_performed": false,
+        "push_performed": false
+      }
+    },
+    {
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0002",
+      "intake_position": 2,
+      "routing_catalog_manifest_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0002",
+      "lineage_source_layer": "routing_catalog_manifest",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_manifest.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0002",
+      "sealed_chain_status": {
+        "chain_complete": true,
+        "audit_complete": true,
+        "handoff_complete": true,
+        "closeout_complete": true,
+        "merge_performed": false,
+        "tag_performed": false,
+        "push_performed": false
+      }
+    },
+    {
+      "execution_intake_id": "resolution-wave-packet-review-session-execution-intake-0003",
+      "intake_position": 3,
+      "routing_catalog_manifest_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0003",
+      "lineage_source_layer": "routing_catalog_manifest",
+      "lineage_source_file": "ops\\model_adjustments\\model_adjustment_release_resolution_wave_packet_review_session_routing_catalog_manifest.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-routing-catalog-manifest-0003",
+      "sealed_chain_status": {
+        "chain_complete": true,
+        "audit_complete": true,
+        "handoff_complete": true,
+        "closeout_complete": true,
+        "merge_performed": false,
+        "tag_performed": false,
+        "push_performed": false
+      }
+    }
+  ]
+}

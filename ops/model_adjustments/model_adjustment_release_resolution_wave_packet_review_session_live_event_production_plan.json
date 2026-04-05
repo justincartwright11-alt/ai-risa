@@ -1,0 +1,38 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_live_event_production_plan",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_production_intake.json",
+  "source_record_count": 1,
+  "record_count": 1,
+  "records": [
+    {
+      "live_event_production_plan_id": "resolution-wave-packet-review-session-live-event-production-plan-0001",
+      "live_event_production_intake_id": "resolution-wave-packet-review-session-live-event-production-intake-0001",
+      "plan_position": 1,
+      "objective": "execute one live AI-RISA event/report production path",
+      "operator": "provided_by_operator",
+      "target_event_or_workload": "provided_by_operator",
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "success_criteria": [
+        "all requested deliverables generated",
+        "outputs internally consistent",
+        "execution evidence captured"
+      ],
+      "execution_steps": [
+        "validate intake and target event payload",
+        "prepare production inputs",
+        "run live event/report generation path",
+        "capture execution evidence",
+        "evaluate outcome against success criteria"
+      ],
+      "evidence_artifact": "live_event_execution_evidence",
+      "stop_condition": "plan_frozen_and_ready_for_execution",
+      "lineage_source_layer": "live_event_production_intake",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_production_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-live-event-production-intake-0001"
+    }
+  ]
+}

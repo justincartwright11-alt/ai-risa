@@ -1,0 +1,31 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_assessment",
+  "records": [
+    {
+      "approval_requirement_compliance": "provided_by_operator",
+      "assessment_position": 1,
+      "deliverable_completion_status": "provided_by_operator",
+      "governance_reference": "resolution-wave-packet-review-session-operations-governance-handoff-0001",
+      "governance_threshold_compliance": "provided_by_operator",
+      "governed_operations_cycle_2_review_assessment_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-assessment-0001",
+      "governed_operations_cycle_2_review_intake_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-intake-0001",
+      "incident_status": "provided_by_operator",
+      "intervention_rule_compliance": "provided_by_operator",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_intake.json",
+      "lineage_source_layer": "governed_operations_cycle_2_review_intake",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-governed-operations-cycle-2-review-intake-0001",
+      "recommended_disposition": "provided_by_operator",
+      "review_findings": [
+        "provided_by_operator"
+      ],
+      "reviewed_cycle_reference": "resolution-wave-packet-review-session-governed-operations-cycle-2-closeout-0001",
+      "rollback_rule_compliance": "provided_by_operator"
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_review_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_cycle_2_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_operations_governance_handoff.json"
+  ]
+}

@@ -1,0 +1,8 @@
+# closure-release-final-prep-handoff-package
+
+- id: resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-handoff-package-0001
+  upstream_id: 20c211469ff9fbc2440d33e6570ddc579b3dd02362b7317daee33c04ebc0cfd5
+  generated_at_utc: 2026-04-04T00:00:00Z
+  trace: {}
+  data: {}
+

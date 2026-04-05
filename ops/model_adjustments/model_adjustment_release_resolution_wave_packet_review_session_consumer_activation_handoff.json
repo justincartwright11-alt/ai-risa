@@ -1,0 +1,24 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_acceptance.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_smoke_test.json"
+  ],
+  "activation_family_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "activation_handoff_id": "resolution-wave-packet-review-session-consumer-activation-handoff-0001",
+      "handoff_position": 1,
+      "terminal_activation_acceptance_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_acceptance.json",
+      "terminal_activation_smoke_test_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_smoke_test.json",
+      "activation_family_complete": true,
+      "lineage_source_layer": "consumer_activation_smoke_test",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_activation_smoke_test.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-consumer-activation-smoke-test-0001"
+    }
+  ]
+}

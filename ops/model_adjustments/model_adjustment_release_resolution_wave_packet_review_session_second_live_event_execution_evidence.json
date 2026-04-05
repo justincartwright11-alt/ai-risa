@@ -1,0 +1,33 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_second_live_event_execution_evidence",
+  "source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_second_live_event_production_plan.json",
+  "record_count": 1,
+  "records": [
+    {
+      "second_live_event_execution_evidence_id": "resolution-wave-packet-review-session-second-live-event-execution-evidence-0001",
+      "second_live_event_production_plan_id": "resolution-wave-packet-review-session-second-live-event-production-plan-0001",
+      "evidence_position": 1,
+      "execution_attempted": true,
+      "execution_pass": true,
+      "requested_deliverables": [
+        "full report",
+        "simulation brief",
+        "operator summary"
+      ],
+      "delivered_artifacts": [
+        "provided_by_operator"
+      ],
+      "success_criteria_results": [
+        "provided_by_operator"
+      ],
+      "governance_thresholds_breached": false,
+      "alert_triggered": false,
+      "incident_detected": false,
+      "rollback_required": false,
+      "execution_result_summary": "provided_by_operator",
+      "lineage_source_layer": "second_live_event_production_plan",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_second_live_event_production_plan.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-second-live-event-production-plan-0001"
+    }
+  ]
+}

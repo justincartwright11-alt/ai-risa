@@ -1,0 +1,36 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_consumer_handoff",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_queue.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_dispatch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_batch.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_audit.json"
+  ],
+  "frozen_slices": [
+    "v16.0-controlled-release-resolution-wave-packet-review-session-consumer-intake",
+    "v16.1-controlled-release-resolution-wave-packet-review-session-consumer-queue",
+    "v16.2-controlled-release-resolution-wave-packet-review-session-consumer-dispatch",
+    "v16.3-controlled-release-resolution-wave-packet-review-session-consumer-batch",
+    "v16.4-controlled-release-resolution-wave-packet-review-session-consumer-audit"
+  ],
+  "consumer_chain_complete": true,
+  "consumer_audit_complete": true,
+  "merge_performed": false,
+  "tag_performed": false,
+  "push_performed": false,
+  "record_count": 1,
+  "records": [
+    {
+      "consumer_handoff_id": "resolution-wave-packet-review-session-consumer-handoff-0001",
+      "handoff_position": 1,
+      "terminal_consumer_batch_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_batch.json",
+      "terminal_consumer_audit_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_audit.json",
+      "consumer_chain_complete": true,
+      "consumer_audit_complete": true,
+      "lineage_source_layer": "consumer_audit",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_consumer_audit.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-consumer-audit-0001"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_baseline",
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_intake.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_execution_evidence.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_live_event_closeout.json"
+  ],
+  "record_count": 1,
+  "records": [
+    {
+      "performance_monitoring_baseline_id": "resolution-wave-packet-review-session-performance-monitoring-baseline-0001",
+      "performance_monitoring_intake_id": "resolution-wave-packet-review-session-performance-monitoring-intake-0001",
+      "baseline_position": 1,
+      "monitored_family": "v25.0-v25.3 live-event production family",
+      "baseline_run_reference": "resolution-wave-packet-review-session-live-event-closeout-0001",
+      "monitoring_metrics": [
+        "deliverable_completion_rate",
+        "success_criteria_pass_rate",
+        "incident_rate",
+        "rollback_rate"
+      ],
+      "baseline_values": [
+        "provided_by_operator"
+      ],
+      "acceptable_ranges": [
+        "provided_by_operator"
+      ],
+      "alert_conditions": [
+        "provided_by_operator"
+      ],
+      "review_interval": "provided_by_operator",
+      "stop_condition": "baseline_frozen_and_ready_for_monitoring",
+      "lineage_source_layer": "performance_monitoring_intake",
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_monitoring_intake.json",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-performance-monitoring-intake-0001"
+    }
+  ]
+}

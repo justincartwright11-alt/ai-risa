@@ -1,0 +1,42 @@
+{
+  "record_count": 1,
+  "record_type": "model_adjustment_release_resolution_wave_packet_review_session_operations_governance_intake",
+  "records": [
+    {
+      "escalation_paths": [
+        "provided_by_operator"
+      ],
+      "governance_metrics": [
+        "deliverable_completion_rate",
+        "approval_requirement_satisfaction_rate",
+        "intervention_rate",
+        "rollback_rate",
+        "incident_rate"
+      ],
+      "governance_objective": "convert stable steady-state results into durable operating rules for ongoing scaled operation",
+      "governance_thresholds": [
+        "provided_by_operator"
+      ],
+      "intervention_triggers": [
+        "provided_by_operator"
+      ],
+      "lineage_source_file": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_closeout.json",
+      "lineage_source_layer": "steady_state_operations_monitoring_window_2_closeout",
+      "lineage_source_record_id": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-closeout-0001",
+      "monitored_family_range": "v35.0-v36.3 steady-state monitoring families",
+      "operations_governance_intake_id": "resolution-wave-packet-review-session-operations-governance-intake-0001",
+      "performance_governance_handoff_reference": "resolution-wave-packet-review-session-performance-governance-handoff-0001",
+      "review_cadence": "provided_by_operator",
+      "rollback_governance": [
+        "provided_by_operator"
+      ],
+      "steady_state_monitoring_closeout_reference": "resolution-wave-packet-review-session-steady-state-operations-monitoring-closeout-0001",
+      "steady_state_monitoring_window_2_closeout_reference": "resolution-wave-packet-review-session-steady-state-operations-monitoring-window-2-closeout-0001"
+    }
+  ],
+  "source_files": [
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_steady_state_operations_monitoring_window_2_closeout.json",
+    "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_performance_governance_handoff.json"
+  ]
+}
