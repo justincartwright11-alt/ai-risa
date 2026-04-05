@@ -83,7 +83,12 @@
       "payload_id": "handoff_ufc_300_UFC_API_v1",
       "queue_target": "queue_ufc_event_batch"
     },
+    "queue_sink_target": "local_sink",
     "queue_target": "queue_ufc_event_batch",
+    "queue_write_eligible": true,
+    "queue_write_id": "queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "queue_write_reasons": [],
+    "queue_write_status": "eligible",
     "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
     "run_cycle_position": 1,
     "runner_mode": "event-batch",
@@ -182,7 +187,14 @@
     "queue_bundle_position": null,
     "queue_bundle_size": null,
     "queue_emission_preview": null,
+    "queue_sink_target": null,
     "queue_target": null,
+    "queue_write_eligible": false,
+    "queue_write_id": null,
+    "queue_write_reasons": [
+      "not execution-go"
+    ],
+    "queue_write_status": "blocked",
     "run_cycle_id": null,
     "run_cycle_position": null,
     "runner_mode": null,
@@ -269,7 +281,14 @@
     "queue_bundle_position": null,
     "queue_bundle_size": null,
     "queue_emission_preview": null,
+    "queue_sink_target": null,
     "queue_target": null,
+    "queue_write_eligible": false,
+    "queue_write_id": null,
+    "queue_write_reasons": [
+      "not execution-go"
+    ],
+    "queue_write_status": "blocked",
     "run_cycle_id": null,
     "run_cycle_position": null,
     "runner_mode": null,

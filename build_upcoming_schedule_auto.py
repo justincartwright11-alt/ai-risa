@@ -1,3 +1,49 @@
+# v66.1: queue-write eligibility and local sink helpers
+def assess_queue_write_eligibility(records):
+    for rec in records:
+        if rec.get("execution_go"):
+            rec["queue_write_eligible"] = True
+            rec["queue_write_status"] = "eligible"
+            rec["queue_write_reasons"] = []
+            rec["queue_write_id"] = build_queue_write_id(rec)
+            rec["queue_sink_target"] = build_queue_sink_target(rec)
+        else:
+            rec["queue_write_eligible"] = False
+            rec["queue_write_status"] = "blocked"
+            rec["queue_write_reasons"] = ["not execution-go"]
+            rec["queue_write_id"] = None
+            rec["queue_sink_target"] = None
+
+def build_queue_write_id(record):
+    # Deterministic queue write ID based on run_cycle_id
+    if record.get("run_cycle_id"):
+        return f"queue_write_{record['run_cycle_id']}"
+    return None
+
+def build_queue_sink_target(record):
+    # Deterministic sink target (could be extended in future)
+    return "local_sink"
+
+def write_local_queue_sink(path, records):
+    # Only execution-go records, stable order by queue_write_id
+    sink_entries = []
+    for rec in records:
+        if rec.get("queue_write_eligible"):
+            entry = {
+                "queue_write_id": rec["queue_write_id"],
+                "event_id": rec["event_id"],
+                "handoff_payload_id": rec["handoff_payload_id"],
+                "runner_stage_id": rec["runner_stage_id"],
+                "queue_bundle_id": rec["queue_bundle_id"],
+                "emission_manifest_id": rec["emission_manifest_id"],
+                "run_cycle_id": rec["run_cycle_id"],
+                "queue_target": rec["queue_target"],
+                "dry_run_only": False,
+                "written_at_cycle": rec["run_cycle_id"],
+            }
+            sink_entries.append(entry)
+    sink_entries = sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")
+    path.write_text(json.dumps(sink_entries, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 # v65.9: execution-decision helpers
 def assess_execution_decision(records):
     # Only ledger_included records can be go; others are no-go
@@ -449,6 +495,8 @@ def normalize_events(events):
     gate_summary = build_execution_gate_summary(normalized)
     for rec in normalized:
         rec["execution_gate_summary"] = gate_summary
+    # v66.1: queue-write eligibility
+    assess_queue_write_eligibility(normalized)
     return normalized
 
 def write_json(path, records):
@@ -512,9 +560,9 @@ def write_markdown(path, records):
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = [
-        "# Upcoming Schedule Execution Decision Gate",
+        "# Upcoming Schedule Local Queue Writer",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, and local queue writing logic.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
@@ -522,30 +570,22 @@ def write_markdown(path, records):
         f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
         "",
         f"## Total Records: {len(records)}",
-        f"## Ledger Included: {sum(1 for r in records if r['ledger_included'])}",
-        f"## Go: {sum(1 for r in records if r['execution_decision']=='go')}",
-        f"## Conditional: {sum(1 for r in records if r['execution_decision']=='conditional')}",
-        f"## No-Go: {sum(1 for r in records if r['execution_decision']=='no_go')}",
-        f"## Gate Level Distribution: open={sum(1 for r in records if r['execution_gate_level']=='open')}, conditional={sum(1 for r in records if r['execution_gate_level']=='conditional')}, blocked={sum(1 for r in records if r['execution_gate_level']=='blocked')}",
+        f"## Go: {sum(1 for r in records if r['execution_go'])}",
+        f"## Queue-Write Eligible: {sum(1 for r in records if r['queue_write_eligible'])}",
+        f"## Queue-Write Blocked: {sum(1 for r in records if not r['queue_write_eligible'])}",
+        f"## Written: {sum(1 for r in records if r['queue_write_eligible'])}",
+        f"## Blocked: {sum(1 for r in records if not r['queue_write_eligible'])}",
         "",
-        "## Blocked Reason Summary",
+        "## Queue Write Reason Summary",
     ]
-    # Blocked reason summary
     reason_counts = {}
     for rec in records:
-        for reason in rec["execution_decision_reasons"]:
+        for reason in rec["queue_write_reasons"]:
             reason_counts.setdefault(reason, 0)
             reason_counts[reason] += 1
     for reason, count in sorted(reason_counts.items()):
         lines.append(f"- {reason}: {count}")
     lines.extend([
-        "",
-        "## Final Cycle Decision Summary",
-        f"- Go: {sum(1 for r in records if r['execution_go'])}",
-        f"- Blocked: {sum(1 for r in records if r['execution_blocked'])}",
-        f"- Open: {sum(1 for r in records if r['execution_gate_level']=='open')}",
-        f"- Conditional: {sum(1 for r in records if r['execution_gate_level']=='conditional')}",
-        f"- Blocked: {sum(1 for r in records if r['execution_gate_level']=='blocked')}",
         "",
         "## Normalized Events",
         "",
@@ -557,10 +597,9 @@ def write_markdown(path, records):
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
             f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
             f"**Run Cycle ID:** {rec['run_cycle_id']} | **Run Cycle Position:** {rec['run_cycle_position']} | "
-            f"**Execution Gate Status:** {rec['execution_gate_status']} | **Ledger Included:** {rec['ledger_included']} | "
-            f"**Execution Decision:** {rec['execution_decision']} | **Execution Go:** {rec['execution_go']} | **Execution Blocked:** {rec['execution_blocked']} | "
-            f"**Execution Gate Level:** {rec['execution_gate_level']} | **Execution Decision Reasons:** {rec['execution_decision_reasons']} | "
-            f"**Ledger Summary:** {rec['ledger_summary']} | **Execution Gate Summary:** {rec['execution_gate_summary']}"
+            f"**Execution Decision:** {rec['execution_decision']} | **Execution Go:** {rec['execution_go']} | "
+            f"**Queue Write Eligible:** {rec['queue_write_eligible']} | **Queue Write Status:** {rec['queue_write_status']} | **Queue Write ID:** {rec['queue_write_id']} | "
+            f"**Queue Sink Target:** {rec['queue_sink_target']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -570,7 +609,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, and local queue writing format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
@@ -586,6 +625,7 @@ def main():
     normalized = normalize_events(adapted)
     write_json(out_dir / "upcoming_schedule_auto_discovery.json", normalized)
     write_markdown(out_dir / "upcoming_schedule_auto_discovery.md", normalized)
+    write_local_queue_sink(out_dir / "upcoming_schedule_queue_sink.json", normalized)
 
 if __name__ == "__main__":
     main()
