@@ -1,6 +1,8 @@
 [
   {
     "adapter_status": "ok",
+    "bundle_emission_blockers": [],
+    "bundle_emission_ready": true,
     "complete": true,
     "date": "2026-04-13",
     "dependency_status": "ready",
@@ -29,6 +31,12 @@
     "missing_dependencies": [],
     "missing_fields": [],
     "promotion": "UFC",
+    "queue_bundle_id": "bundle_queue_ufc_event_batch_1",
+    "queue_bundle_members": [
+      "handoff_ufc_300_UFC_API_v1"
+    ],
+    "queue_bundle_position": 1,
+    "queue_bundle_size": 1,
     "queue_emission_preview": {
       "dry_run_only": true,
       "payload_id": "handoff_ufc_300_UFC_API_v1",
@@ -61,6 +69,10 @@
   },
   {
     "adapter_status": "ok",
+    "bundle_emission_blockers": [
+      "not staged"
+    ],
+    "bundle_emission_ready": false,
     "complete": false,
     "date": "2026-05-01",
     "dependency_status": "blocked",
@@ -84,6 +96,10 @@
       "venue"
     ],
     "promotion": "PFL",
+    "queue_bundle_id": null,
+    "queue_bundle_members": null,
+    "queue_bundle_position": null,
+    "queue_bundle_size": null,
     "queue_emission_preview": null,
     "queue_target": null,
     "runner_mode": null,
@@ -99,6 +115,10 @@
   },
   {
     "adapter_status": "incomplete",
+    "bundle_emission_blockers": [
+      "not staged"
+    ],
+    "bundle_emission_ready": false,
     "complete": false,
     "date": "unknown",
     "dependency_status": "blocked",
@@ -123,6 +143,10 @@
       "divisions"
     ],
     "promotion": "ONE",
+    "queue_bundle_id": null,
+    "queue_bundle_members": null,
+    "queue_bundle_position": null,
+    "queue_bundle_size": null,
     "queue_emission_preview": null,
     "queue_target": null,
     "runner_mode": null,
