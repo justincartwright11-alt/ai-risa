@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "retry_attempt_id": "delivery-1632c2401d074c59:1",
+    "delivery_id": "delivery-1632c2401d074c59",
+    "notification_id": "notif-1",
+    "escalation_id": "esc-1",
+    "retry_status": "sent",
+    "attempt_number": 1,
+    "recipients": [
+      "user1@example.com"
+    ],
+    "escalation_level": 1,
+    "notification_type": "escalation",
+    "timestamp": "2026-04-05T12:00:00Z",
+    "reason": ""
+  },
+  {
+    "retry_attempt_id": "delivery-b8d519a8767dacfaF:1",
+    "delivery_id": "delivery-b8d519a8767dacfaF",
+    "notification_id": "notif-2",
+    "escalation_id": "esc-2",
+    "retry_status": "failed",
+    "attempt_number": 1,
+    "recipients": [
+      "user2@example.com"
+    ],
+    "escalation_level": 2,
+    "notification_type": "escalation",
+    "timestamp": "2026-04-05T12:01:00Z",
+    "reason": ""
+  },
+  {
+    "retry_attempt_id": "delivery-skipped-1:1",
+    "delivery_id": "delivery-skipped-1",
+    "notification_id": "notif-3",
+    "escalation_id": "esc-3",
+    "retry_status": "skipped",
+    "attempt_number": 1,
+    "recipients": [
+      "user3@example.com"
+    ],
+    "escalation_level": 3,
+    "notification_type": "escalation",
+    "timestamp": "2026-04-05T12:02:00Z",
+    "reason": ""
+  }
+]
