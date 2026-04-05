@@ -227,6 +227,7 @@ def main():
 
     # --- Runtime history ledger integration (v67.9) ---
     # Import and call ledger after all runtime+alerting logic
+
     from build_upcoming_schedule_runtime_history_ledger import append_history
     run_id = result["timestamp"] + ":" + heartbeat["invocation_source"]
     entry = {
@@ -243,6 +244,18 @@ def main():
         "terminal_status": (result["cycle_result"] if result["cycle_invoked"] else "not-invoked")
     }
     append_history(entry)
+
+    # --- Escalation policy engine integration (v68.1) ---
+    # Import and call escalation policy engine after history ledger is updated
+    try:
+        import subprocess
+        esc_proc = subprocess.run([
+            PYTHON,
+            "build_upcoming_schedule_escalation_policy_engine.py"
+        ], capture_output=True, text=True, check=False)
+        result["escalation_policy_result"] = "success" if esc_proc.returncode == 0 else f"fail (code {esc_proc.returncode})"
+    except Exception as e:
+        result["escalation_policy_result"] = f"exception: {e}"
 
     if due and result["cycle_result"] != "success":
         sys.exit(1)
