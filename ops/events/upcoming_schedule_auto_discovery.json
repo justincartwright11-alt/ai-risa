@@ -10,13 +10,32 @@
     ],
     "event_id": "ufc_300",
     "handoff_blockers": [],
+    "handoff_payload": {
+      "event_id": "ufc_300",
+      "handoff_payload_version": "v1",
+      "runner_mode": "event-batch",
+      "source_event_key": "ufc_300",
+      "source_name": "UFC_API",
+      "target_report_types": [
+        "event_summary",
+        "runner_log"
+      ]
+    },
+    "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+    "handoff_payload_version": "v1",
     "handoff_ready": true,
+    "included_in_handoff": true,
     "missing_dependencies": [],
     "missing_fields": [],
     "promotion": "UFC",
+    "runner_mode": "event-batch",
     "source_event_key": "ufc_300",
     "source_name": "UFC_API",
     "sport": "MMA",
+    "target_report_types": [
+      "event_summary",
+      "runner_log"
+    ],
     "venue": "T-Mobile Arena"
   },
   {
@@ -31,7 +50,11 @@
     "handoff_blockers": [
       "venue"
     ],
+    "handoff_payload": null,
+    "handoff_payload_id": null,
+    "handoff_payload_version": null,
     "handoff_ready": false,
+    "included_in_handoff": false,
     "missing_dependencies": [
       "venue"
     ],
@@ -39,9 +62,11 @@
       "venue"
     ],
     "promotion": "PFL",
+    "runner_mode": null,
     "source_event_key": "pfl_2026_01",
     "source_name": "PFL_FEED",
     "sport": "MMA",
+    "target_report_types": null,
     "venue": "unknown"
   },
   {
@@ -55,7 +80,11 @@
       "date",
       "divisions"
     ],
+    "handoff_payload": null,
+    "handoff_payload_id": null,
+    "handoff_payload_version": null,
     "handoff_ready": false,
+    "included_in_handoff": false,
     "missing_dependencies": [
       "date",
       "divisions"
@@ -65,9 +94,11 @@
       "divisions"
     ],
     "promotion": "ONE",
+    "runner_mode": null,
     "source_event_key": "one_2026_04",
     "source_name": "ONE_CHAMPIONSHIP",
     "sport": "MMA",
+    "target_report_types": null,
     "venue": "Singapore Indoor Stadium"
   }
 ]

@@ -117,6 +117,29 @@ def detect_missing_dependencies(event):
         "handoff_blockers": blockers,
     }
 
+def build_handoff_payload(record):
+    # Only for handoff_ready records
+    payload_version = "v1"
+    runner_mode = "event-batch"
+    target_report_types = select_target_report_types(record)
+    payload = {
+        "event_id": record["event_id"],
+        "source_name": record["source_name"],
+        "source_event_key": record["source_event_key"],
+        "runner_mode": runner_mode,
+        "target_report_types": target_report_types,
+        "handoff_payload_version": payload_version,
+    }
+    return payload
+
+def build_handoff_payload_id(payload):
+    # Deterministic ID based on event_id, source_name, version
+    return f"handoff_{payload['event_id']}_{payload['source_name']}_{payload['handoff_payload_version']}"
+
+def select_target_report_types(record):
+    # Deterministic, could be more complex in future
+    return ["event_summary", "runner_log"]
+
 def normalize_event(event):
     norm = {k: event.get(k) for k in ["event_id", "date", "promotion", "venue", "sport", "divisions", "source_name", "source_event_key", "adapter_status"]}
     missing_fields = []
@@ -131,6 +154,22 @@ def normalize_event(event):
     norm["missing_fields"] = missing_fields
     dep = detect_missing_dependencies(norm)
     norm.update(dep)
+    # v65.4: batch handoff logic
+    if norm["handoff_ready"]:
+        payload = build_handoff_payload(norm)
+        norm["included_in_handoff"] = True
+        norm["handoff_payload"] = payload
+        norm["handoff_payload_id"] = build_handoff_payload_id(payload)
+        norm["handoff_payload_version"] = payload["handoff_payload_version"]
+        norm["runner_mode"] = payload["runner_mode"]
+        norm["target_report_types"] = payload["target_report_types"]
+    else:
+        norm["included_in_handoff"] = False
+        norm["handoff_payload"] = None
+        norm["handoff_payload_id"] = None
+        norm["handoff_payload_version"] = None
+        norm["runner_mode"] = None
+        norm["target_report_types"] = None
     return norm
 
 def normalize_events(events):
@@ -141,36 +180,47 @@ def write_json(path, records):
 
 def write_markdown(path, records):
     lines = [
-        "# Upcoming Schedule Dependency Readiness",
+        "# Upcoming Schedule Batch Handoff Builder",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, and dependency readiness assessment.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, and batch handoff packaging.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
         f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
         f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
         "",
-        f"## Handoff Readiness: {sum(1 for r in records if r['handoff_ready'])} ready / {len(records)} total",
+        f"## Handoff Ready: {sum(1 for r in records if r['handoff_ready'])} / {len(records)}",
+        f"## Included in Handoff: {sum(1 for r in records if r['included_in_handoff'])}",
         f"## Blocked Events: {sum(1 for r in records if not r['handoff_ready'])}",
+        "",
+        "## Handoff Payload IDs",
+    ]
+    for rec in records:
+        if rec["included_in_handoff"] and rec["handoff_payload_id"]:
+            lines.append(f"- {rec['handoff_payload_id']}")
+    lines.extend([
         "",
         "## Normalized Events",
         "",
-    ]
+    ])
     for rec in records:
         divisions = ", ".join(rec["divisions"]) if rec["divisions"] else "None"
         lines.append(
             f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
             f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
-            f"**Dependency Status:** {rec['dependency_status']} | **Handoff Ready:** {rec['handoff_ready']}"
+            f"**Dependency Status:** {rec['dependency_status']} | **Handoff Ready:** {rec['handoff_ready']} | "
+            f"**Included in Handoff:** {rec['included_in_handoff']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
         if rec["handoff_blockers"]:
             lines.append(f"  - Blockers: {', '.join(rec['handoff_blockers'])}")
+        if not rec["included_in_handoff"]:
+            lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, and batch handoff format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, and batch handoff format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
