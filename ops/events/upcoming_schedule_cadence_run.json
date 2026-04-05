@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-04-05T09:09:40.942999Z",
+  "cadence_config": {
+    "interval_minutes": 60
+  },
+  "last_run": "2026-04-05T09:09:36.986288Z",
+  "next_run": "2026-04-05T10:09:36.986288Z",
+  "due": false,
+  "cycle_invoked": false,
+  "cycle_result": null,
+  "lock_guard_json": null,
+  "lock_guard_md": null
+}
