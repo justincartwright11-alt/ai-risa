@@ -150,3 +150,15 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, dead_letter_ledger_script], check=True)
     except Exception as e:
         print(f"[WARN] Dead-letter ledger failed: {e}")
+    # v70.0: Integrate dead-letter notification outbox after dead-letter ledger is finalized
+    dead_letter_notification_outbox_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_dead_letter_notification_outbox.py")
+    try:
+        subprocess.run([sys.executable, dead_letter_notification_outbox_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification outbox failed: {e}")
+    # v70.0: Integrate dead-letter notification dispatcher after notification outbox is generated
+    dead_letter_notification_dispatcher_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_dead_letter_notification_dispatcher.py")
+    try:
+        subprocess.run([sys.executable, dead_letter_notification_dispatcher_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification dispatcher failed: {e}")
