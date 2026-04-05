@@ -144,3 +144,9 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, retry_history_ledger_script], check=True)
     except Exception as e:
         print(f"[WARN] Retry history ledger failed: {e}")
+    # v69.7: Integrate dead-letter ledger after retry history is finalized
+    dead_letter_ledger_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_dead_letter_ledger.py")
+    try:
+        subprocess.run([sys.executable, dead_letter_ledger_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter ledger failed: {e}")
