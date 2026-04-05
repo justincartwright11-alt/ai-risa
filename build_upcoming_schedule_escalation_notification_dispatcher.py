@@ -138,3 +138,9 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, retry_dispatcher_script], check=True)
     except Exception as e:
         print(f"[WARN] Retry dispatcher failed: {e}")
+    # v69.5: Integrate retry history ledger after retry-dispatch state is finalized
+    retry_history_ledger_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_retry_history_ledger.py")
+    try:
+        subprocess.run([sys.executable, retry_history_ledger_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Retry history ledger failed: {e}")
