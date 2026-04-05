@@ -1,0 +1,14 @@
+{
+  "parent_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_prep_prep_prep_register.json",
+  "record_count": 1,
+  "records": [
+    {
+      "handoff_id": "closure-release-final-prep-prep-prep-prep-handoff-0001",
+      "handoff_position": 1,
+      "source_register_id": "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-prep-prep-prep-register-0001",
+      "source_register_position": 1,
+      "source_register_artifact": "ops/model_adjustments/model_adjustment_release_resolution_wave_packet_review_session_governed_operations_closure_release_final_prep_prep_prep_prep_register.json",
+      "handoff_locator_key": "resolution-wave-packet-review-session-governed-operations-closure-release-final-prep-prep-prep-prep-register-0001"
+    }
+  ]
+}
