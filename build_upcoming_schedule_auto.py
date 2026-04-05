@@ -1,3 +1,42 @@
+# v65.8: run-cycle ledger helpers
+def build_run_cycle_id(record):
+    # Deterministic run cycle ID based on emission_manifest_id
+    if record.get("emission_manifest_id"):
+        return f"run_cycle_{record['emission_manifest_id']}"
+    return None
+
+def assign_run_cycle_positions(records):
+    # Only for dispatch_ready records, ordered by dispatch_order
+    ready = [r for r in records if r.get("dispatch_ready")]
+    ready_sorted = sorted(ready, key=lambda r: r["dispatch_order"] or 0)
+    for i, rec in enumerate(ready_sorted):
+        rec["run_cycle_position"] = i+1
+    return ready_sorted
+
+def assess_execution_gate(records):
+    # If any dispatch_ready record exists, gate is open; else blocked
+    open_count = sum(1 for r in records if r.get("dispatch_ready"))
+    if open_count > 0:
+        return "open", []
+    else:
+        return "blocked", ["no dispatch-ready records"]
+
+def build_ledger_summary(records):
+    # Summary: total, staged, bundles, manifest, ledger-included, blocked
+    total = len(records)
+    staged = sum(1 for r in records if r.get("staged_for_runner"))
+    bundles = len(set(r["queue_bundle_id"] for r in records if r["queue_bundle_id"]))
+    manifest = sum(1 for r in records if r.get("emission_manifest_id"))
+    ledger = sum(1 for r in records if r.get("ledger_included"))
+    blocked = total - ledger
+    return {
+        "total_records": total,
+        "staged_records": staged,
+        "bundles": bundles,
+        "manifest_entries": manifest,
+        "ledger_included": ledger,
+        "blocked_records": blocked,
+    }
 # v65.7: emission-manifest helpers
 def build_emission_manifest_id(record):
     # Deterministic manifest ID based on queue_bundle_id and handoff_payload_id
@@ -330,6 +369,24 @@ def normalize_events(events):
             rec["dispatch_order"] = None
             rec["dispatch_ready"] = False
             rec["dispatch_blockers"] = ["not bundle emission ready"]
+    # v65.8: run-cycle ledger fields
+    # Only dispatch_ready records are ledger-included
+    ledger_ready = [r for r in normalized if r.get("dispatch_ready")]
+    for rec in normalized:
+        if rec.get("dispatch_ready"):
+            rec["ledger_included"] = True
+            rec["run_cycle_id"] = build_run_cycle_id(rec)
+        else:
+            rec["ledger_included"] = False
+            rec["run_cycle_id"] = None
+            rec["run_cycle_position"] = None
+    assign_run_cycle_positions(normalized)
+    gate_status, gate_reasons = assess_execution_gate(normalized)
+    ledger_summary = build_ledger_summary(normalized)
+    for rec in normalized:
+        rec["execution_gate_status"] = gate_status
+        rec["execution_gate_reasons"] = gate_reasons
+        rec["ledger_summary"] = ledger_summary
     return normalized
 
 def write_json(path, records):
@@ -389,6 +446,62 @@ def write_markdown(path, records):
     lines.extend([
         "",
         "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, and emission manifest sequencing format.",
+        "",
+    ])
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+    lines = [
+        "# Upcoming Schedule Run Cycle Ledger",
+        "",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, and run-cycle ledger logic.",
+        "",
+        "## Adapter Coverage",
+        f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
+        f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
+        f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
+        "",
+        f"## Total Records: {len(records)}",
+        f"## Staged Records: {sum(1 for r in records if r['staged_for_runner'])}",
+        f"## Queue Bundles: {len(set(r['queue_bundle_id'] for r in records if r['queue_bundle_id']))}",
+        f"## Manifest Entries: {sum(1 for r in records if r['emission_manifest_id'])}",
+        f"## Ledger Included: {sum(1 for r in records if r['ledger_included'])}",
+        f"## Execution Gate: {records[0]['execution_gate_status'] if records else 'unknown'}",
+        "",
+        "## Run Order Summary",
+    ]
+    ledger_ready = [r for r in records if r.get("ledger_included")]
+    for rec in sorted(ledger_ready, key=lambda r: r["run_cycle_position"]):
+        lines.append(f"- {rec['run_cycle_id']} (run_cycle_position={rec['run_cycle_position']})")
+    lines.extend([
+        "",
+        "## Blocked Reasons Summary",
+    ])
+    blocked = [r for r in records if not r.get("ledger_included")]
+    for rec in blocked:
+        lines.append(f"- {rec['event_id']}: {rec['execution_gate_reasons']}")
+    lines.extend([
+        "",
+        "## Normalized Events",
+        "",
+    ])
+    for rec in records:
+        divisions = ", ".join(rec["divisions"]) if rec["divisions"] else "None"
+        lines.append(
+            f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
+            f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
+            f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
+            f"**Run Cycle ID:** {rec['run_cycle_id']} | **Run Cycle Position:** {rec['run_cycle_position']} | "
+            f"**Execution Gate Status:** {rec['execution_gate_status']} | **Ledger Included:** {rec['ledger_included']} | "
+            f"**Ledger Summary:** {rec['ledger_summary']}"
+        )
+        if rec["missing_fields"]:
+            lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
+        if rec["handoff_blockers"]:
+            lines.append(f"  - Blockers: {', '.join(rec['handoff_blockers'])}")
+        if not rec["included_in_handoff"]:
+            lines.append("  - Excluded from handoff: not handoff-ready")
+    lines.extend([
+        "",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, and run-cycle ledger format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")

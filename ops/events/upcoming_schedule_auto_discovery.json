@@ -25,6 +25,8 @@
     "emission_manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
     "emission_manifest_position": 1,
     "event_id": "ufc_300",
+    "execution_gate_reasons": [],
+    "execution_gate_status": "open",
     "handoff_blockers": [],
     "handoff_payload": {
       "event_id": "ufc_300",
@@ -41,6 +43,15 @@
     "handoff_payload_version": "v1",
     "handoff_ready": true,
     "included_in_handoff": true,
+    "ledger_included": true,
+    "ledger_summary": {
+      "blocked_records": 2,
+      "bundles": 1,
+      "ledger_included": 1,
+      "manifest_entries": 1,
+      "staged_records": 1,
+      "total_records": 3
+    },
     "missing_dependencies": [],
     "missing_fields": [],
     "promotion": "UFC",
@@ -56,6 +67,8 @@
       "queue_target": "queue_ufc_event_batch"
     },
     "queue_target": "queue_ufc_event_batch",
+    "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "run_cycle_position": 1,
     "runner_mode": "event-batch",
     "runner_stage_id": "runner_stage_handoff_ufc_300_UFC_API_v1",
     "runner_stage_payload": {
@@ -102,6 +115,8 @@
     "emission_manifest_id": null,
     "emission_manifest_position": null,
     "event_id": "pfl_2026_01",
+    "execution_gate_reasons": [],
+    "execution_gate_status": "open",
     "handoff_blockers": [
       "venue"
     ],
@@ -110,6 +125,15 @@
     "handoff_payload_version": null,
     "handoff_ready": false,
     "included_in_handoff": false,
+    "ledger_included": false,
+    "ledger_summary": {
+      "blocked_records": 2,
+      "bundles": 1,
+      "ledger_included": 1,
+      "manifest_entries": 1,
+      "staged_records": 1,
+      "total_records": 3
+    },
     "missing_dependencies": [
       "venue"
     ],
@@ -123,6 +147,8 @@
     "queue_bundle_size": null,
     "queue_emission_preview": null,
     "queue_target": null,
+    "run_cycle_id": null,
+    "run_cycle_position": null,
     "runner_mode": null,
     "runner_stage_id": null,
     "runner_stage_payload": null,
@@ -154,6 +180,8 @@
     "emission_manifest_id": null,
     "emission_manifest_position": null,
     "event_id": "one_2026_04",
+    "execution_gate_reasons": [],
+    "execution_gate_status": "open",
     "handoff_blockers": [
       "date",
       "divisions"
@@ -163,6 +191,15 @@
     "handoff_payload_version": null,
     "handoff_ready": false,
     "included_in_handoff": false,
+    "ledger_included": false,
+    "ledger_summary": {
+      "blocked_records": 2,
+      "bundles": 1,
+      "ledger_included": 1,
+      "manifest_entries": 1,
+      "staged_records": 1,
+      "total_records": 3
+    },
     "missing_dependencies": [
       "date",
       "divisions"
@@ -178,6 +215,8 @@
     "queue_bundle_size": null,
     "queue_emission_preview": null,
     "queue_target": null,
+    "run_cycle_id": null,
+    "run_cycle_position": null,
     "runner_mode": null,
     "runner_stage_id": null,
     "runner_stage_payload": null,
