@@ -256,6 +256,60 @@ def main():
     except Exception as e:
         result["escalation_policy_result"] = f"exception: {e}"
 
+    # --- Escalation notification outbox and dispatcher integration (v68.4) ---
+    escalation_notification_outbox_result = None
+    escalation_notification_dispatch_result = None
+    escalation_notification_delivery_json = None
+    escalation_notification_delivery_md = None
+    if due and result["cycle_result"] == "success" and result["escalation_policy_result"] == "success":
+        # Outbox
+        outbox_proc = subprocess.run([
+            PYTHON,
+            "build_upcoming_schedule_escalation_notification_outbox.py"
+        ], capture_output=True, text=True, check=False)
+        escalation_notification_outbox_result = "success" if outbox_proc.returncode == 0 else f"fail (code {outbox_proc.returncode})"
+        # Dispatcher (only if outbox succeeded)
+        if outbox_proc.returncode == 0:
+            dispatch_proc = subprocess.run([
+                PYTHON,
+                "build_upcoming_schedule_escalation_notification_dispatcher.py"
+            ], capture_output=True, text=True, check=False)
+            escalation_notification_dispatch_result = "success" if dispatch_proc.returncode == 0 else f"fail (code {dispatch_proc.returncode})"
+            # Artifacts
+            delivery_json_path = Path("ops/events/upcoming_schedule_escalation_notification_delivery.json")
+            delivery_md_path = Path("ops/events/upcoming_schedule_escalation_notification_delivery.md")
+            if delivery_json_path.exists():
+                escalation_notification_delivery_json = str(delivery_json_path)
+            if delivery_md_path.exists():
+                escalation_notification_delivery_md = str(delivery_md_path)
+        else:
+            escalation_notification_dispatch_result = "skipped (outbox failed)"
+    else:
+        escalation_notification_outbox_result = "skipped (not due or prior failure)"
+        escalation_notification_dispatch_result = "skipped (not due or prior failure)"
+
+    # Emit unified runtime+alerting+escalation+notification summary
+    summary_json_path = Path("ops/events/upcoming_schedule_runtime_escalation_notification_summary.json")
+    summary_md_path = Path("ops/events/upcoming_schedule_runtime_escalation_notification_summary.md")
+    summary = {
+        "timestamp": now.isoformat() + "Z",
+        "due": due,
+        "cycle_result": result["cycle_result"],
+        "alerting_result": result.get("alerting_result"),
+        "escalation_policy_result": result.get("escalation_policy_result"),
+        "escalation_notification_outbox_result": escalation_notification_outbox_result,
+        "escalation_notification_dispatch_result": escalation_notification_dispatch_result,
+        "escalation_notification_delivery_json": escalation_notification_delivery_json,
+        "escalation_notification_delivery_md": escalation_notification_delivery_md
+    }
+    with open(summary_json_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    with open(summary_md_path, "w", encoding="utf-8") as f:
+        f.write(f"# Runtime + Escalation Notification Summary\n\n")
+        for k, v in summary.items():
+            f.write(f"- {k}: {v}\n")
+
     if due and result["cycle_result"] != "success":
         sys.exit(1)
 
