@@ -54,7 +54,15 @@ def main():
     delivery_results = []
     delivery_state_out = dict(delivery_state)  # Copy for update
     now = datetime.utcnow().isoformat() + "Z"
-    # Integration: use real email adapter for real sends, preserve exact-once
+    # --- v68.7: Run routing policy and load routing outputs ---
+    import subprocess
+    import sys
+    routing_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_routing_policy.py")
+    subprocess.run([sys.executable, routing_script], check=True)
+    ROUTING_JSON_PATH = "ops/events/upcoming_schedule_escalation_email_routing.json"
+    routing_data = load_json(ROUTING_JSON_PATH) or []
+    routing_by_id = {r["notification_id"]: r for r in routing_data}
+    # --- Integration: use real email adapter for real sends, preserve exact-once ---
     import importlib.util
     email_adapter_path = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_adapter.py")
     spec = importlib.util.spec_from_file_location("escalation_email_adapter", email_adapter_path)
@@ -66,6 +74,9 @@ def main():
         prev = delivery_state.get(delivery_id)
         if prev and prev.get("result") == "sent":
             continue
+        # --- v68.7: Use routing outputs for recipient selection ---
+        routing = routing_by_id.get(notification_id, {})
+        recipients = routing.get("recipients", [])
         # Use real email adapter for real notifications, simulate for test IDs
         if notification_id.endswith("F"):
             result = "failed"
@@ -74,9 +85,9 @@ def main():
             result = "skipped"
             reason = "Simulated skip for testability"
         else:
-            # Real send via email adapter
+            # Real send via email adapter, pass recipients
             try:
-                send_result = email_adapter.send_notification_email(entry)
+                send_result = email_adapter.send_notification_email(entry, recipients=recipients)
                 result = send_result["result"]
                 reason = send_result["reason"]
             except Exception as e:
@@ -89,6 +100,7 @@ def main():
             "reason": reason,
             "dispatched_at": now,
             "outbox_entry": entry,
+            "routing": routing,
         }
         delivery_results.append(record)
         delivery_state_out[delivery_id] = {
@@ -96,13 +108,13 @@ def main():
             "reason": reason,
             "dispatched_at": now,
         }
-    # Save delivery artifacts
+    # Save delivery artifacts (now with routing context)
     save_json(DELIVERY_JSON_PATH, delivery_results)
     save_json(DELIVERY_STATE_PATH, delivery_state_out)
-    # Markdown parity
+    # Markdown parity with routing context
     md_lines = ["# Escalation Notification Delivery Report\n"]
     for r in delivery_results:
-        md_lines.append(f"- **{r['notification_id']}**: {r['result']} ({r['reason']}) at {r['dispatched_at']}")
+        md_lines.append(f"- **{r['notification_id']}**: {r['result']} ({r['reason']}) at {r['dispatched_at']} | Recipients: {', '.join(r['routing'].get('recipients', []))}")
     save_md(DELIVERY_MD_PATH, "\n".join(md_lines))
 
 if __name__ == "__main__":

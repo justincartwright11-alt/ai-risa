@@ -7,6 +7,7 @@ v68.5: Real email transport adapter for escalation notifications
 - Sends via configured email transport
 - Records delivery result (sent/failed/skipped) in delivery ledger
 - Enforces exact-once, dedupe, and retry semantics
+- v68.7: Accepts recipients override for integration with routing policy
 """
 import json
 import os
@@ -56,14 +57,22 @@ def send_email(config, subject, body):
         server.send_message(msg)
 
 
+
 # For dispatcher integration: single notification send
-def send_notification_email(entry):
+def send_notification_email(entry, recipients=None):
+    return send_notification_email_with_recipients(entry, recipients=recipients)
+
+def send_notification_email_with_recipients(entry, recipients=None):
     escalation_state = load_json("ops/events/upcoming_schedule_escalation_state.json") or {}
     config = load_json(EMAIL_CONFIG_PATH)
     now = datetime.utcnow().isoformat() + "Z"
     if not config:
         return {"result": "failed", "reason": "Missing escalation email config."}
     subject, body = render_email(entry, escalation_state)
+    # v68.7: override recipients if provided
+    if recipients is not None:
+        config = dict(config)
+        config["to"] = ", ".join(recipients)
     try:
         send_email(config, subject, body)
         return {"result": "sent", "reason": "Email sent successfully"}
