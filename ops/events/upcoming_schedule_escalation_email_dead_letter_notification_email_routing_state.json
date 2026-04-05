@@ -1,0 +1,22 @@
+{
+  "routing": {
+    "delivery-testdeadletter2:cleared": {
+      "notification_id": "delivery-testdeadletter2:cleared",
+      "dead_letter_id": "delivery-testdeadletter2",
+      "delivery_id": "delivery-testdeadletter2",
+      "notification_type": "cleared",
+      "escalation_level": "critical",
+      "to": [
+        "operator@example.com"
+      ],
+      "cc": [
+        "supervisor@example.com"
+      ],
+      "bcc": [
+        "audit@example.com"
+      ],
+      "subject_prefix": "[CRITICAL] ",
+      "dedupe_key": "delivery-testdeadletter2:cleared"
+    }
+  }
+}
