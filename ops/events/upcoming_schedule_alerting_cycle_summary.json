@@ -1,0 +1,46 @@
+{
+  "stages": [
+    {
+      "stage": "heartbeat_alert",
+      "status": "success",
+      "start": "2026-04-05T10:30:05.473704Z",
+      "end": "2026-04-05T10:30:05.529222Z",
+      "error": null,
+      "stdout": "",
+      "stderr": "C:\\ai_risa_data\\build_upcoming_schedule_heartbeat_alert.py:48: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  now = datetime.utcnow().isoformat() + \"Z\"\n",
+      "cmd": [
+        "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "build_upcoming_schedule_heartbeat_alert.py"
+      ]
+    },
+    {
+      "stage": "notification_outbox",
+      "status": "success",
+      "start": "2026-04-05T10:30:05.529241Z",
+      "end": "2026-04-05T10:30:05.584612Z",
+      "error": null,
+      "stdout": "",
+      "stderr": "C:\\ai_risa_data\\build_upcoming_schedule_notification_outbox.py:50: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  now = datetime.utcnow().isoformat() + \"Z\"\n",
+      "cmd": [
+        "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "build_upcoming_schedule_notification_outbox.py"
+      ]
+    },
+    {
+      "stage": "notification_dispatcher",
+      "status": "success",
+      "start": "2026-04-05T10:30:05.584623Z",
+      "end": "2026-04-05T10:30:05.679596Z",
+      "error": null,
+      "stdout": "",
+      "stderr": "C:\\ai_risa_data\\build_upcoming_schedule_notification_dispatcher.py:115: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  now = datetime.utcnow().isoformat() + \"Z\"\n",
+      "cmd": [
+        "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+        "build_upcoming_schedule_notification_dispatcher.py"
+      ]
+    }
+  ],
+  "start": "2026-04-05T10:30:05.473547Z",
+  "end": "2026-04-05T10:30:05.679736Z",
+  "result": "success"
+}
