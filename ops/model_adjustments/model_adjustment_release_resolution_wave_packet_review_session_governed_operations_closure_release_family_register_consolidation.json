@@ -1,0 +1,43 @@
+{
+  "audit": {
+    "deterministic": true,
+    "locked": true,
+    "parent_sha": "2f8a404094f0fbd693eb68539ce60be3c1a89c6c"
+  },
+  "consolidated_by": "v64.163",
+  "created": "2026-04-05",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "register_type": "canonical-family-register",
+  "slices": [
+    {
+      "sha": "e7b4d6adff517bbdc93710f46fcf8560e7280000",
+      "type": "ratification-projection",
+      "version": "v64.157"
+    },
+    {
+      "sha": "1d1a45c86c40c3e589d4a2148424f322b75ae9a3",
+      "type": "confirmation-projection",
+      "version": "v64.158"
+    },
+    {
+      "sha": "9480fe104eacb02b8e5708436466df071f8b452b",
+      "type": "signoff-projection",
+      "version": "v64.159"
+    },
+    {
+      "sha": "358017e51b40eabf3ad9b784d7381659573b65b9",
+      "type": "approval-projection",
+      "version": "v64.160"
+    },
+    {
+      "sha": "79c4d0429528a5794baf6c15fe03952b153b45d2",
+      "type": "authorization-projection",
+      "version": "v64.161"
+    },
+    {
+      "sha": "2f8a404094f0fbd693eb68539ce60be3c1a89c6c",
+      "type": "endorsement-projection",
+      "version": "v64.162"
+    }
+  ]
+}
