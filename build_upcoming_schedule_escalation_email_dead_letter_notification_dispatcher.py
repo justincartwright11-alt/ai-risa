@@ -99,3 +99,10 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, email_adapter_script], check=True)
     except Exception as e:
         print(f"[WARN] Dead-letter notification email adapter failed: {e}")
+
+    # v70.5: Integrate delivery-history ledger after delivery state is finalized
+    delivery_history_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_delivery_history_ledger.py")
+    try:
+        subprocess.run([sys.executable, delivery_history_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email delivery-history ledger failed: {e}")
