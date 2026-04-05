@@ -1,0 +1,42 @@
+[
+  {
+    "complete": true,
+    "date": "2026-04-13",
+    "divisions": [
+      "Lightweight",
+      "Welterweight"
+    ],
+    "event_id": "ufc_300",
+    "missing_fields": [],
+    "promotion": "UFC",
+    "sport": "MMA",
+    "venue": "T-Mobile Arena"
+  },
+  {
+    "complete": false,
+    "date": "2026-05-01",
+    "divisions": [
+      "Featherweight"
+    ],
+    "event_id": "pfl_2026_01",
+    "missing_fields": [
+      "venue"
+    ],
+    "promotion": "PFL",
+    "sport": "MMA",
+    "venue": "unknown"
+  },
+  {
+    "complete": false,
+    "date": "unknown",
+    "divisions": [],
+    "event_id": "one_2026_04",
+    "missing_fields": [
+      "date",
+      "divisions"
+    ],
+    "promotion": "ONE",
+    "sport": "MMA",
+    "venue": "Singapore Indoor Stadium"
+  }
+]
