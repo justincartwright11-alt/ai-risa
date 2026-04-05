@@ -1,3 +1,41 @@
+# v65.7: emission-manifest helpers
+def build_emission_manifest_id(record):
+    # Deterministic manifest ID based on queue_bundle_id and handoff_payload_id
+    if record.get("queue_bundle_id") and record.get("handoff_payload_id"):
+        return f"manifest_{record['queue_bundle_id']}_{record['handoff_payload_id']}"
+    return None
+
+def build_emission_manifest_entry(record):
+    # Deterministic manifest entry for emission-ready records
+    if not record.get("bundle_emission_ready"):
+        return None
+    return {
+        "manifest_id": build_emission_manifest_id(record),
+        "queue_bundle_id": record["queue_bundle_id"],
+        "handoff_payload_id": record["handoff_payload_id"],
+        "queue_target": record["queue_target"],
+        "bundle_position": record["queue_bundle_position"],
+        "event_id": record["event_id"],
+    }
+
+def assign_dispatch_order(records):
+    # Only for bundle_emission_ready records, grouped by queue_target, ordered by bundle_position then handoff_payload_id
+    emission_ready = [r for r in records if r.get("bundle_emission_ready")]
+    # Group by queue_target
+    by_target = {}
+    for rec in emission_ready:
+        qt = rec["queue_target"]
+        by_target.setdefault(qt, []).append(rec)
+    # For each target, sort by bundle_position then handoff_payload_id
+    dispatch_list = []
+    for qt in sorted(by_target):
+        group = sorted(by_target[qt], key=lambda r: (r["queue_bundle_position"], r["handoff_payload_id"]))
+        dispatch_list.extend(group)
+    # Assign dispatch_order and manifest_position
+    for i, rec in enumerate(dispatch_list):
+        rec["dispatch_order"] = i+1
+        rec["emission_manifest_position"] = i+1
+    return dispatch_list
 # v65.6: queue-bundle planning helpers
 def build_queue_bundle_id(queue_target, bundle_index):
     # Deterministic bundle ID based on queue_target and index
@@ -274,6 +312,24 @@ def normalize_events(events):
             rec["queue_bundle_members"] = None
             rec["bundle_emission_ready"] = False
             rec["bundle_emission_blockers"] = ["not staged"]
+    # v65.7: emission-manifest fields
+    # Assign manifest fields only to bundle_emission_ready records
+    manifest_ready = [r for r in normalized if r.get("bundle_emission_ready")]
+    dispatch_list = assign_dispatch_order(normalized)
+    manifest_id_map = {r["handoff_payload_id"]: build_emission_manifest_id(r) for r in manifest_ready}
+    for rec in normalized:
+        if rec.get("bundle_emission_ready"):
+            rec["emission_manifest_id"] = manifest_id_map.get(rec["handoff_payload_id"])
+            rec["emission_manifest_entry"] = build_emission_manifest_entry(rec)
+            rec["dispatch_ready"] = True
+            rec["dispatch_blockers"] = []
+        else:
+            rec["emission_manifest_id"] = None
+            rec["emission_manifest_entry"] = None
+            rec["emission_manifest_position"] = None
+            rec["dispatch_order"] = None
+            rec["dispatch_ready"] = False
+            rec["dispatch_blockers"] = ["not bundle emission ready"]
     return normalized
 
 def write_json(path, records):
@@ -281,32 +337,33 @@ def write_json(path, records):
 
 def write_markdown(path, records):
     lines = [
-        "# Upcoming Schedule Queue Bundle Plan",
+        "# Upcoming Schedule Bundle Emission Manifest",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, and queue-bundle planning.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, and emission manifest sequencing.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
         f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
         f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
         "",
-        f"## Handoff Ready: {sum(1 for r in records if r['handoff_ready'])} / {len(records)}",
-        f"## Included in Handoff: {sum(1 for r in records if r['included_in_handoff'])}",
-        f"## Blocked Events: {sum(1 for r in records if not r['handoff_ready'])}",
-        f"## Staged for Runner: {sum(1 for r in records if r['staged_for_runner'])}",
-        f"## Queue Emission Previews: {sum(1 for r in records if r['queue_emission_preview'] is not None)}",
         f"## Queue Bundles: {len(set(r['queue_bundle_id'] for r in records if r['queue_bundle_id']))}",
+        f"## Manifest Entries: {sum(1 for r in records if r['emission_manifest_id'])}",
+        f"## Dispatch Ready: {sum(1 for r in records if r['dispatch_ready'])}",
+        f"## Dispatch Blocked: {sum(1 for r in records if not r['dispatch_ready'])}",
         "",
-        "## Bundle Membership by Queue Target",
+        "## Dispatch Order by Queue Target",
     ]
-    # Bundle membership
-    bundles = {}
-    for rec in records:
-        if rec.get("queue_bundle_id"):
-            bundles.setdefault(rec["queue_target"], []).append(rec)
-    for qt, bundle_recs in bundles.items():
-        lines.append(f"- {qt}: {len(bundle_recs)} record(s) in bundle {bundle_recs[0]['queue_bundle_id']}")
-        lines.append(f"  - Members: {', '.join(r['handoff_payload_id'] for r in bundle_recs)}")
+    # Dispatch order by queue target
+    manifest_ready = [r for r in records if r.get("dispatch_ready")]
+    by_target = {}
+    for rec in manifest_ready:
+        qt = rec["queue_target"]
+        by_target.setdefault(qt, []).append(rec)
+    for qt in sorted(by_target):
+        group = sorted(by_target[qt], key=lambda r: r["dispatch_order"])
+        lines.append(f"- {qt}: {len(group)} entries")
+        for rec in group:
+            lines.append(f"  - {rec['emission_manifest_id']} (dispatch_order={rec['dispatch_order']})")
     lines.extend([
         "",
         "## Normalized Events",
@@ -318,11 +375,10 @@ def write_markdown(path, records):
             f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
             f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
-            f"**Dependency Status:** {rec['dependency_status']} | **Handoff Ready:** {rec['handoff_ready']} | "
-            f"**Included in Handoff:** {rec['included_in_handoff']} | **Staged for Runner:** {rec['staged_for_runner']} | "
             f"**Queue Bundle ID:** {rec['queue_bundle_id']} | **Bundle Position:** {rec['queue_bundle_position']} | "
-            f"**Bundle Size:** {rec['queue_bundle_size']} | **Bundle Members:** {rec['queue_bundle_members']} | "
-            f"**Bundle Emission Ready:** {rec['bundle_emission_ready']} | **Bundle Emission Blockers:** {rec['bundle_emission_blockers']}"
+            f"**Bundle Emission Ready:** {rec['bundle_emission_ready']} | **Manifest ID:** {rec['emission_manifest_id']} | "
+            f"**Manifest Position:** {rec['emission_manifest_position']} | **Dispatch Order:** {rec['dispatch_order']} | "
+            f"**Dispatch Ready:** {rec['dispatch_ready']} | **Dispatch Blockers:** {rec['dispatch_blockers']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -332,7 +388,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, and queue-bundle planning format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, and emission manifest sequencing format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")

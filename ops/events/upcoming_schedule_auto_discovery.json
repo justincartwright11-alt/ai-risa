@@ -6,11 +6,24 @@
     "complete": true,
     "date": "2026-04-13",
     "dependency_status": "ready",
+    "dispatch_blockers": [],
+    "dispatch_order": 1,
+    "dispatch_ready": true,
     "divisions": [
       "Lightweight",
       "Welterweight"
     ],
     "dry_run_only": true,
+    "emission_manifest_entry": {
+      "bundle_position": 1,
+      "event_id": "ufc_300",
+      "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+      "manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+      "queue_bundle_id": "bundle_queue_ufc_event_batch_1",
+      "queue_target": "queue_ufc_event_batch"
+    },
+    "emission_manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "emission_manifest_position": 1,
     "event_id": "ufc_300",
     "handoff_blockers": [],
     "handoff_payload": {
@@ -76,10 +89,18 @@
     "complete": false,
     "date": "2026-05-01",
     "dependency_status": "blocked",
+    "dispatch_blockers": [
+      "not bundle emission ready"
+    ],
+    "dispatch_order": null,
+    "dispatch_ready": false,
     "divisions": [
       "Featherweight"
     ],
     "dry_run_only": true,
+    "emission_manifest_entry": null,
+    "emission_manifest_id": null,
+    "emission_manifest_position": null,
     "event_id": "pfl_2026_01",
     "handoff_blockers": [
       "venue"
@@ -122,8 +143,16 @@
     "complete": false,
     "date": "unknown",
     "dependency_status": "blocked",
+    "dispatch_blockers": [
+      "not bundle emission ready"
+    ],
+    "dispatch_order": null,
+    "dispatch_ready": false,
     "divisions": [],
     "dry_run_only": true,
+    "emission_manifest_entry": null,
+    "emission_manifest_id": null,
+    "emission_manifest_position": null,
     "event_id": "one_2026_04",
     "handoff_blockers": [
       "date",
