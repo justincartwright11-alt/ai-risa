@@ -1,5 +1,9 @@
 [
   {
+    "consume_position": 1,
+    "consumed_in_simulation": true,
+    "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "dispatch_simulation_status": "simulated",
     "dry_run_only": false,
     "emission_manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
     "event_id": "ufc_300",

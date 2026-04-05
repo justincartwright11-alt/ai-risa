@@ -24,6 +24,57 @@ def build_queue_sink_target(record):
     # Deterministic sink target (could be extended in future)
     return "local_sink"
 
+# v66.2: queue-consumer simulation helpers
+def assess_queue_consume_eligibility(records, sink_entries):
+    sink_ids = {entry["queue_write_id"] for entry in sink_entries}
+    for rec in records:
+        if rec.get("queue_write_id") in sink_ids:
+            rec["queue_consume_eligible"] = True
+            rec["queue_consume_status"] = "eligible"
+            rec["queue_consume_reasons"] = []
+            rec["dispatch_simulation_id"] = build_dispatch_simulation_id(rec)
+            rec["dispatch_simulation_status"] = "ready"
+            rec["dispatch_simulation_target"] = build_dispatch_simulation_target(rec)
+            rec["dispatch_simulation_payload"] = build_dispatch_simulation_payload(rec)
+        else:
+            rec["queue_consume_eligible"] = False
+            rec["queue_consume_status"] = "blocked"
+            rec["queue_consume_reasons"] = ["not in sink"]
+            rec["dispatch_simulation_id"] = None
+            rec["dispatch_simulation_status"] = None
+            rec["dispatch_simulation_target"] = None
+            rec["dispatch_simulation_payload"] = None
+
+def build_dispatch_simulation_id(record):
+    # Deterministic simulation ID based on queue_write_id
+    if record.get("queue_write_id"):
+        return f"dispatch_sim_{record['queue_write_id']}"
+    return None
+
+def build_dispatch_simulation_target(record):
+    # Deterministic simulation target (could be extended in future)
+    return "simulated_dispatch"
+
+def build_dispatch_simulation_payload(record):
+    # Deterministic payload based on sink-approved entry
+    return {
+        "event_id": record["event_id"],
+        "handoff_payload_id": record["handoff_payload_id"],
+        "queue_write_id": record["queue_write_id"],
+        "run_cycle_id": record["run_cycle_id"],
+        "queue_target": record["queue_target"],
+        "dispatch_simulation_id": build_dispatch_simulation_id(record),
+    }
+
+def simulate_queue_consumption(sink_entries):
+    # Add consumption-side fields to sink entries, stable order by queue_write_id
+    for i, entry in enumerate(sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")):
+        entry["consumed_in_simulation"] = True
+        entry["consume_position"] = i+1
+        entry["dispatch_simulation_id"] = f"dispatch_sim_{entry['queue_write_id']}"
+        entry["dispatch_simulation_status"] = "simulated"
+    return sink_entries
+
 def write_local_queue_sink(path, records):
     # Only execution-go records, stable order by queue_write_id
     sink_entries = []
@@ -43,6 +94,8 @@ def write_local_queue_sink(path, records):
             }
             sink_entries.append(entry)
     sink_entries = sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")
+    # v66.2: simulate queue consumption
+    sink_entries = simulate_queue_consumption(sink_entries)
     path.write_text(json.dumps(sink_entries, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 # v65.9: execution-decision helpers
 def assess_execution_decision(records):
@@ -497,6 +550,17 @@ def normalize_events(events):
         rec["execution_gate_summary"] = gate_summary
     # v66.1: queue-write eligibility
     assess_queue_write_eligibility(normalized)
+    # v66.2: queue-consumer simulation
+    sink_path = Path("ops/events/upcoming_schedule_queue_sink.json")
+    if sink_path.exists():
+        with sink_path.open("r", encoding="utf-8") as f:
+            try:
+                sink_entries = json.load(f)
+            except Exception:
+                sink_entries = []
+    else:
+        sink_entries = []
+    assess_queue_consume_eligibility(normalized, sink_entries)
     return normalized
 
 def write_json(path, records):
@@ -560,27 +624,33 @@ def write_markdown(path, records):
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = [
-        "# Upcoming Schedule Local Queue Writer",
+        "# Upcoming Schedule Queue Consumer Simulation",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, and local queue writing logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, and queue-consumer simulation logic.",
         "",
-        "## Adapter Coverage",
-        f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
-        f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
-        f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
+        f"## Total Sink Entries: {sum(1 for r in records if r['queue_write_eligible'])}",
+        f"## Consume-Eligible: {sum(1 for r in records if r.get('queue_consume_eligible'))}",
+        f"## Consume-Blocked: {sum(1 for r in records if not r.get('queue_consume_eligible'))}",
+        f"## Simulated Dispatch-Ready: {sum(1 for r in records if r.get('dispatch_simulation_status')=='ready')}",
+        f"## Withheld: {sum(1 for r in records if r.get('queue_consume_status')=='blocked')}",
         "",
-        f"## Total Records: {len(records)}",
-        f"## Go: {sum(1 for r in records if r['execution_go'])}",
-        f"## Queue-Write Eligible: {sum(1 for r in records if r['queue_write_eligible'])}",
-        f"## Queue-Write Blocked: {sum(1 for r in records if not r['queue_write_eligible'])}",
-        f"## Written: {sum(1 for r in records if r['queue_write_eligible'])}",
-        f"## Blocked: {sum(1 for r in records if not r['queue_write_eligible'])}",
-        "",
-        "## Queue Write Reason Summary",
+        "## Dispatch Target Summary",
     ]
+    target_counts = {}
+    for rec in records:
+        tgt = rec.get("dispatch_simulation_target")
+        if tgt:
+            target_counts.setdefault(tgt, 0)
+            target_counts[tgt] += 1
+    for tgt, count in sorted(target_counts.items()):
+        lines.append(f"- {tgt}: {count}")
+    lines.extend([
+        "",
+        "## Consume Blocker Summary",
+    ])
     reason_counts = {}
     for rec in records:
-        for reason in rec["queue_write_reasons"]:
+        for reason in rec.get("queue_consume_reasons", []):
             reason_counts.setdefault(reason, 0)
             reason_counts[reason] += 1
     for reason, count in sorted(reason_counts.items()):
@@ -595,11 +665,10 @@ def write_markdown(path, records):
         lines.append(
             f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
-            f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
-            f"**Run Cycle ID:** {rec['run_cycle_id']} | **Run Cycle Position:** {rec['run_cycle_position']} | "
-            f"**Execution Decision:** {rec['execution_decision']} | **Execution Go:** {rec['execution_go']} | "
-            f"**Queue Write Eligible:** {rec['queue_write_eligible']} | **Queue Write Status:** {rec['queue_write_status']} | **Queue Write ID:** {rec['queue_write_id']} | "
-            f"**Queue Sink Target:** {rec['queue_sink_target']}"
+            f"**Queue Write Eligible:** {rec['queue_write_eligible']} | **Queue Consume Eligible:** {rec.get('queue_consume_eligible')} | "
+            f"**Queue Consume Status:** {rec.get('queue_consume_status')} | **Dispatch Simulation ID:** {rec.get('dispatch_simulation_id')} | "
+            f"**Dispatch Simulation Status:** {rec.get('dispatch_simulation_status')} | **Dispatch Simulation Target:** {rec.get('dispatch_simulation_target')} | "
+            f"**Dispatch Simulation Payload:** {rec.get('dispatch_simulation_payload')}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -609,7 +678,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, and local queue writing format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, and queue-consumer simulation format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")

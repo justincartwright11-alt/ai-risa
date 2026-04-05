@@ -9,6 +9,17 @@
     "dispatch_blockers": [],
     "dispatch_order": 1,
     "dispatch_ready": true,
+    "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "dispatch_simulation_payload": {
+      "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+      "event_id": "ufc_300",
+      "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+      "queue_target": "queue_ufc_event_batch",
+      "queue_write_id": "queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+      "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1"
+    },
+    "dispatch_simulation_status": "ready",
+    "dispatch_simulation_target": "simulated_dispatch",
     "divisions": [
       "Lightweight",
       "Welterweight"
@@ -78,6 +89,9 @@
     ],
     "queue_bundle_position": 1,
     "queue_bundle_size": 1,
+    "queue_consume_eligible": true,
+    "queue_consume_reasons": [],
+    "queue_consume_status": "eligible",
     "queue_emission_preview": {
       "dry_run_only": true,
       "payload_id": "handoff_ufc_300_UFC_API_v1",
@@ -129,6 +143,10 @@
     ],
     "dispatch_order": null,
     "dispatch_ready": false,
+    "dispatch_simulation_id": null,
+    "dispatch_simulation_payload": null,
+    "dispatch_simulation_status": null,
+    "dispatch_simulation_target": null,
     "divisions": [
       "Featherweight"
     ],
@@ -186,6 +204,11 @@
     "queue_bundle_members": null,
     "queue_bundle_position": null,
     "queue_bundle_size": null,
+    "queue_consume_eligible": false,
+    "queue_consume_reasons": [
+      "not in sink"
+    ],
+    "queue_consume_status": "blocked",
     "queue_emission_preview": null,
     "queue_sink_target": null,
     "queue_target": null,
@@ -222,6 +245,10 @@
     ],
     "dispatch_order": null,
     "dispatch_ready": false,
+    "dispatch_simulation_id": null,
+    "dispatch_simulation_payload": null,
+    "dispatch_simulation_status": null,
+    "dispatch_simulation_target": null,
     "divisions": [],
     "dry_run_only": true,
     "emission_manifest_entry": null,
@@ -280,6 +307,11 @@
     "queue_bundle_members": null,
     "queue_bundle_position": null,
     "queue_bundle_size": null,
+    "queue_consume_eligible": false,
+    "queue_consume_reasons": [
+      "not in sink"
+    ],
+    "queue_consume_status": "blocked",
     "queue_emission_preview": null,
     "queue_sink_target": null,
     "queue_target": null,
