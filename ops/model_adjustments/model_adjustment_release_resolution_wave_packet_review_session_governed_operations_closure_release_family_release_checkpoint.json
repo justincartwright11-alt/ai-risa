@@ -1,0 +1,12 @@
+{
+  "audit": {
+    "deterministic": true,
+    "locked": true,
+    "parent_sha": "a6cef9f269aeb8a494dac524e2f89c1a4181bc77"
+  },
+  "checkpoint_version": "v64.164",
+  "created": "2026-04-05",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "projection_type": "release-checkpoint",
+  "register_consolidation_sha": "a6cef9f269aeb8a494dac524e2f89c1a4181bc77"
+}
