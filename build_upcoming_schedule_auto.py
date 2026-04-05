@@ -140,6 +140,40 @@ def select_target_report_types(record):
     # Deterministic, could be more complex in future
     return ["event_summary", "runner_log"]
 
+# v65.5: runner-staging and queue-emission dry-run helpers
+def build_runner_stage_id(record):
+    # Deterministic runner stage ID based on handoff_payload_id
+    if record.get("handoff_payload_id"):
+        return f"runner_stage_{record['handoff_payload_id']}"
+    return None
+
+def build_runner_stage_payload(record):
+    # Only for staged records
+    if not record.get("included_in_handoff"):
+        return None
+    return {
+        "handoff_payload_id": record["handoff_payload_id"],
+        "event_id": record["event_id"],
+        "runner_mode": record["runner_mode"],
+        "target_report_types": record["target_report_types"],
+        "queue_target": build_queue_target(record),
+        "dry_run_only": True,
+    }
+
+def build_queue_target(record):
+    # Deterministic queue target (could be more complex in future)
+    return f"queue_{record['promotion'].lower()}_event_batch"
+
+def build_queue_emission_preview(record):
+    # Only for staged records
+    if not record.get("included_in_handoff"):
+        return None
+    return {
+        "queue_target": build_queue_target(record),
+        "payload_id": record["handoff_payload_id"],
+        "dry_run_only": True,
+    }
+
 def normalize_event(event):
     norm = {k: event.get(k) for k in ["event_id", "date", "promotion", "venue", "sport", "divisions", "source_name", "source_event_key", "adapter_status"]}
     missing_fields = []
@@ -163,6 +197,14 @@ def normalize_event(event):
         norm["handoff_payload_version"] = payload["handoff_payload_version"]
         norm["runner_mode"] = payload["runner_mode"]
         norm["target_report_types"] = payload["target_report_types"]
+        # v65.5: runner-staging and queue-emission dry-run fields
+        norm["staged_for_runner"] = True
+        norm["runner_stage_status"] = "staged"
+        norm["runner_stage_payload"] = build_runner_stage_payload(norm)
+        norm["runner_stage_id"] = build_runner_stage_id(norm)
+        norm["queue_emission_preview"] = build_queue_emission_preview(norm)
+        norm["queue_target"] = build_queue_target(norm)
+        norm["dry_run_only"] = True
     else:
         norm["included_in_handoff"] = False
         norm["handoff_payload"] = None
@@ -170,6 +212,14 @@ def normalize_event(event):
         norm["handoff_payload_version"] = None
         norm["runner_mode"] = None
         norm["target_report_types"] = None
+        # v65.5: runner-staging and queue-emission dry-run fields for non-staged
+        norm["staged_for_runner"] = False
+        norm["runner_stage_status"] = "not_staged"
+        norm["runner_stage_payload"] = None
+        norm["runner_stage_id"] = None
+        norm["queue_emission_preview"] = None
+        norm["queue_target"] = None
+        norm["dry_run_only"] = True
     return norm
 
 def normalize_events(events):
@@ -180,9 +230,9 @@ def write_json(path, records):
 
 def write_markdown(path, records):
     lines = [
-        "# Upcoming Schedule Batch Handoff Builder",
+        "# Upcoming Schedule Runner Staging Dry Run",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, and batch handoff packaging.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, and runner/queue dry-run staging.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
@@ -192,12 +242,21 @@ def write_markdown(path, records):
         f"## Handoff Ready: {sum(1 for r in records if r['handoff_ready'])} / {len(records)}",
         f"## Included in Handoff: {sum(1 for r in records if r['included_in_handoff'])}",
         f"## Blocked Events: {sum(1 for r in records if not r['handoff_ready'])}",
+        f"## Staged for Runner: {sum(1 for r in records if r['staged_for_runner'])}",
+        f"## Queue Emission Previews: {sum(1 for r in records if r['queue_emission_preview'] is not None)}",
         "",
         "## Handoff Payload IDs",
     ]
     for rec in records:
         if rec["included_in_handoff"] and rec["handoff_payload_id"]:
             lines.append(f"- {rec['handoff_payload_id']}")
+    lines.extend([
+        "",
+        "## Runner Stage IDs",
+    ])
+    for rec in records:
+        if rec["staged_for_runner"] and rec["runner_stage_id"]:
+            lines.append(f"- {rec['runner_stage_id']}")
     lines.extend([
         "",
         "## Normalized Events",
@@ -210,7 +269,8 @@ def write_markdown(path, records):
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
             f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
             f"**Dependency Status:** {rec['dependency_status']} | **Handoff Ready:** {rec['handoff_ready']} | "
-            f"**Included in Handoff:** {rec['included_in_handoff']}"
+            f"**Included in Handoff:** {rec['included_in_handoff']} | **Staged for Runner:** {rec['staged_for_runner']} | "
+            f"**Runner Stage Status:** {rec['runner_stage_status']} | **Queue Emission Preview:** {rec['queue_emission_preview']} | **Dry Run Only:** {rec['dry_run_only']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -220,7 +280,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, and batch handoff format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, and queue emission dry-run format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")

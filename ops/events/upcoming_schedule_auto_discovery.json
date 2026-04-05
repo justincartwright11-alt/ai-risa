@@ -8,6 +8,7 @@
       "Lightweight",
       "Welterweight"
     ],
+    "dry_run_only": true,
     "event_id": "ufc_300",
     "handoff_blockers": [],
     "handoff_payload": {
@@ -28,10 +29,30 @@
     "missing_dependencies": [],
     "missing_fields": [],
     "promotion": "UFC",
+    "queue_emission_preview": {
+      "dry_run_only": true,
+      "payload_id": "handoff_ufc_300_UFC_API_v1",
+      "queue_target": "queue_ufc_event_batch"
+    },
+    "queue_target": "queue_ufc_event_batch",
     "runner_mode": "event-batch",
+    "runner_stage_id": "runner_stage_handoff_ufc_300_UFC_API_v1",
+    "runner_stage_payload": {
+      "dry_run_only": true,
+      "event_id": "ufc_300",
+      "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+      "queue_target": "queue_ufc_event_batch",
+      "runner_mode": "event-batch",
+      "target_report_types": [
+        "event_summary",
+        "runner_log"
+      ]
+    },
+    "runner_stage_status": "staged",
     "source_event_key": "ufc_300",
     "source_name": "UFC_API",
     "sport": "MMA",
+    "staged_for_runner": true,
     "target_report_types": [
       "event_summary",
       "runner_log"
@@ -46,6 +67,7 @@
     "divisions": [
       "Featherweight"
     ],
+    "dry_run_only": true,
     "event_id": "pfl_2026_01",
     "handoff_blockers": [
       "venue"
@@ -62,10 +84,16 @@
       "venue"
     ],
     "promotion": "PFL",
+    "queue_emission_preview": null,
+    "queue_target": null,
     "runner_mode": null,
+    "runner_stage_id": null,
+    "runner_stage_payload": null,
+    "runner_stage_status": "not_staged",
     "source_event_key": "pfl_2026_01",
     "source_name": "PFL_FEED",
     "sport": "MMA",
+    "staged_for_runner": false,
     "target_report_types": null,
     "venue": "unknown"
   },
@@ -75,6 +103,7 @@
     "date": "unknown",
     "dependency_status": "blocked",
     "divisions": [],
+    "dry_run_only": true,
     "event_id": "one_2026_04",
     "handoff_blockers": [
       "date",
@@ -94,10 +123,16 @@
       "divisions"
     ],
     "promotion": "ONE",
+    "queue_emission_preview": null,
+    "queue_target": null,
     "runner_mode": null,
+    "runner_stage_id": null,
+    "runner_stage_payload": null,
+    "runner_stage_status": "not_staged",
     "source_event_key": "one_2026_04",
     "source_name": "ONE_CHAMPIONSHIP",
     "sport": "MMA",
+    "staged_for_runner": false,
     "target_report_types": null,
     "venue": "Singapore Indoor Stadium"
   }
