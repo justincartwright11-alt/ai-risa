@@ -4,5 +4,6 @@
   "smtp_user": "user@example.com",
   "smtp_password": "REPLACE_ME",
   "sender": "noreply@example.com",
-  "recipients": ["recipient1@example.com"]
+  "recipients": ["recipient1@example.com"],
+  "transport": "email"
 }
