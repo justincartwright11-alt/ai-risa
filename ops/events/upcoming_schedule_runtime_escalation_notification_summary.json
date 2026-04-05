@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-04-05T12:45:01.137857Z",
+  "timestamp": "2026-04-05T23:15:01.664293Z",
   "due": true,
   "cycle_result": "success",
   "alerting_result": "success",
-  "escalation_policy_result": "fail (code 1)",
-  "escalation_notification_outbox_result": "skipped (not due or prior failure)",
-  "escalation_notification_dispatch_result": "skipped (not due or prior failure)",
-  "escalation_notification_delivery_json": null,
-  "escalation_notification_delivery_md": null
+  "escalation_policy_result": "success",
+  "escalation_notification_outbox_result": "success",
+  "escalation_notification_dispatch_result": "success",
+  "escalation_notification_delivery_json": "ops\\events\\upcoming_schedule_escalation_notification_delivery.json",
+  "escalation_notification_delivery_md": "ops\\events\\upcoming_schedule_escalation_notification_delivery.md"
 }

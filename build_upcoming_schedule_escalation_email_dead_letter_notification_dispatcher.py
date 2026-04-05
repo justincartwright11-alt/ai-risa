@@ -123,9 +123,17 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[WARN] Dead-letter notification email retry dispatcher failed: {e}")
 
+
     # v71.2: Integrate retry-history ledger after retry-dispatcher is finalized
     retry_history_ledger_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_history_ledger.py")
     try:
         subprocess.run([sys.executable, retry_history_ledger_script], check=True)
     except Exception as e:
         print(f"[WARN] Dead-letter notification email retry-history ledger failed: {e}")
+
+    # v71.4: Integrate dead-letter ledger after retry-history ledger is finalized
+    dead_letter_ledger_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_exhaustion_dead_letter.py")
+    try:
+        subprocess.run([sys.executable, dead_letter_ledger_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email retry-exhaustion dead-letter ledger failed: {e}")

@@ -3,14 +3,14 @@
   "escalation_reason": null,
   "escalation_level": null,
   "escalation_id": null,
-  "escalation_status": "cleared",
-  "opened_at": "2026-04-05T12:00:00.000000Z",
-  "last_seen_at": "2026-04-05T12:10:00.000000Z",
-  "cleared_at": "2026-04-05T12:10:00.000000Z",
+  "escalation_status": "none",
+  "opened_at": null,
+  "last_seen_at": "2026-04-05T23:15:02.918449Z",
+  "cleared_at": null,
   "trigger_metrics": {
-    "consecutive_failed_runs": 0,
+    "consecutive_failed_runs": 1,
     "consecutive_stale_runs": 0,
-    "blocked_run_count": 0,
+    "blocked_run_count": 1,
     "incident_age_minutes": 0
   }
 }

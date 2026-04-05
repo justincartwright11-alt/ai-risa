@@ -40,3 +40,11 @@
   Reason: stale
   Dedupe key: db8d5b90-270a-46c1-9abd-0ce6d79baba2:opened
 
+- Notification ID: 7ceea49ba8c386b7
+  Incident ID: 8c4d9f7f-80f8-4999-b5ad-4e47f4050720
+  Type: opened
+  Status: pending
+  Created at: 2026-04-05T23:15:02.153970Z
+  Reason: failed
+  Dedupe key: 8c4d9f7f-80f8-4999-b5ad-4e47f4050720:opened
+
