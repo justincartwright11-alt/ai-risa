@@ -1,0 +1,6 @@
+{
+  "timestamp": "2026-04-05T09:06:11.725148Z",
+  "status": "blocked",
+  "reason": "active lock present",
+  "lock_path": "ops\\events\\upcoming_schedule_cycle.lock"
+}
