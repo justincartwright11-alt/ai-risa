@@ -123,7 +123,12 @@ if __name__ == "__main__":
     import subprocess
     import sys
     history_ledger_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_delivery_history_ledger.py")
+    retry_policy_script = os.path.join(os.path.dirname(__file__), "build_upcoming_schedule_escalation_email_retry_policy_engine.py")
     try:
         subprocess.run([sys.executable, history_ledger_script], check=True)
     except Exception as e:
         print(f"[WARN] Delivery history ledger failed: {e}")
+    try:
+        subprocess.run([sys.executable, retry_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Retry policy engine failed: {e}")
