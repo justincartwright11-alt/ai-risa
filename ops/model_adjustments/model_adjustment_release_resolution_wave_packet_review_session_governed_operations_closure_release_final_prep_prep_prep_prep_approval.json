@@ -1,0 +1,13 @@
+{
+  "commit_parent_sha": "9480fe104eacb02b8e5708436466df071f8b452b",
+  "created": "2026-04-05",
+  "description": "Approval projection for closure release final prep prep prep prep.",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "fields": {
+    "audit": "locked",
+    "deterministic": true,
+    "status": "approval"
+  },
+  "type": "approval-projection",
+  "version": "v64.160"
+}

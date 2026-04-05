@@ -1,0 +1,14 @@
+{
+  "audit": {
+    "deterministic": true,
+    "locked": true,
+    "parent_sha": "95adc4ea9df2aed91b2c55c32e03ca1db1c8a59b"
+  },
+  "created": "2026-04-05",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "projection_type": "promotion-preparation",
+  "promotion_notes": "All closure-release projections, register, and checkpoint are complete. Family is ready for merge/promotion.",
+  "promotion_ready": true,
+  "promotion_version": "v64.165",
+  "release_checkpoint_sha": "95adc4ea9df2aed91b2c55c32e03ca1db1c8a59b"
+}

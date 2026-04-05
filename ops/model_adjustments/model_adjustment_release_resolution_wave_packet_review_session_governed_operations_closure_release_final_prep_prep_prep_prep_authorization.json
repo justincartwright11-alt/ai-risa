@@ -1,0 +1,13 @@
+{
+  "commit_parent_sha": "358017e51b40eabf3ad9b784d7381659573b65b9",
+  "created": "2026-04-05",
+  "description": "Authorization projection for closure release final prep prep prep prep.",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "fields": {
+    "audit": "locked",
+    "deterministic": true,
+    "status": "authorization"
+  },
+  "type": "authorization-projection",
+  "version": "v64.161"
+}

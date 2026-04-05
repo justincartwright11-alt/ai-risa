@@ -1,0 +1,13 @@
+{
+  "commit_parent_sha": "1d1a45c86c40c3e589d4a2148424f322b75ae9a3",
+  "created": "2026-04-05",
+  "description": "Signoff projection for closure release final prep prep prep prep.",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "fields": {
+    "audit": "locked",
+    "deterministic": true,
+    "status": "signoff"
+  },
+  "type": "signoff-projection",
+  "version": "v64.159"
+}

@@ -1,0 +1,13 @@
+{
+  "commit_parent_sha": "79c4d0429528a5794baf6c15fe03952b153b45d2",
+  "created": "2026-04-05",
+  "description": "Endorsement projection for closure release final prep prep prep prep.",
+  "family": "governed-operations-closure-release-final-prep-prep-prep-prep",
+  "fields": {
+    "audit": "locked",
+    "deterministic": true,
+    "status": "endorsement"
+  },
+  "type": "endorsement-projection",
+  "version": "v64.162"
+}

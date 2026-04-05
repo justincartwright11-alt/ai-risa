@@ -1,0 +1,12 @@
+{
+  "descriptor": "confirmation",
+  "deterministic": true,
+  "fields": [
+    "confirmation_id",
+    "timestamp",
+    "signatory",
+    "status"
+  ],
+  "purpose": "This slice creates the confirmation projection for the governed-operations closure-release-final-prep-prep-prep-prep family.",
+  "slice": "v64.158"
+}

@@ -1,0 +1,12 @@
+{
+  "descriptor": "ratification",
+  "deterministic": true,
+  "fields": [
+    "ratification_id",
+    "timestamp",
+    "signatory",
+    "status"
+  ],
+  "purpose": "This slice creates the ratification projection for the governed-operations closure-release-final-prep-prep-prep-prep family.",
+  "slice": "v64.157"
+}
