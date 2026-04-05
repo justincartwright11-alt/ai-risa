@@ -158,3 +158,10 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, manual_intervention_summary_script], check=True)
     except Exception as e:
         print(f"[WARN] Manual intervention runtime summary failed: {e}")
+
+    # v71.8: Emit deterministic assignment policy for manual intervention queue
+    manual_intervention_assignment_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_assignment_policy.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_assignment_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention assignment policy failed: {e}")
