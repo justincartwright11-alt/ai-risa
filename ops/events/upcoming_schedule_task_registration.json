@@ -1,0 +1,13 @@
+﻿{
+    "timestamp":  "2026-04-05T19:29:24.4151786+10:00",
+    "task_name":  "AI-RISA-Upcoming-Schedule-Cadence",
+    "action":  "C:\\ai_risa_data\\run_upcoming_schedule_cadence.bat",
+    "arguments":  null,
+    "trigger":  "every 15 min",
+    "principal":  "SYSTEM",
+    "state":  null,
+    "last_run_time":  "\/Date(943880400000)\/",
+    "next_run_time":  "\/Date(1775381400000)\/",
+    "exit_code":  267011,
+    "registration_success":  true
+}
