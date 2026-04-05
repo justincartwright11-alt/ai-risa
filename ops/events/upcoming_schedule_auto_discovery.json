@@ -25,8 +25,25 @@
     "emission_manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
     "emission_manifest_position": 1,
     "event_id": "ufc_300",
+    "execution_blocked": false,
+    "execution_decision": "go",
+    "execution_decision_reasons": [],
+    "execution_gate_level": "open",
     "execution_gate_reasons": [],
     "execution_gate_status": "open",
+    "execution_gate_summary": {
+      "blocked_levels": 2,
+      "conditional": 0,
+      "conditional_levels": 0,
+      "go": 1,
+      "no_go": 2,
+      "open_levels": 1,
+      "reasons": {
+        "not ledger-included": 2
+      },
+      "total": 3
+    },
+    "execution_go": true,
     "handoff_blockers": [],
     "handoff_payload": {
       "event_id": "ufc_300",
@@ -115,8 +132,27 @@
     "emission_manifest_id": null,
     "emission_manifest_position": null,
     "event_id": "pfl_2026_01",
+    "execution_blocked": true,
+    "execution_decision": "no_go",
+    "execution_decision_reasons": [
+      "not ledger-included"
+    ],
+    "execution_gate_level": "blocked",
     "execution_gate_reasons": [],
     "execution_gate_status": "open",
+    "execution_gate_summary": {
+      "blocked_levels": 2,
+      "conditional": 0,
+      "conditional_levels": 0,
+      "go": 1,
+      "no_go": 2,
+      "open_levels": 1,
+      "reasons": {
+        "not ledger-included": 2
+      },
+      "total": 3
+    },
+    "execution_go": false,
     "handoff_blockers": [
       "venue"
     ],
@@ -180,8 +216,27 @@
     "emission_manifest_id": null,
     "emission_manifest_position": null,
     "event_id": "one_2026_04",
+    "execution_blocked": true,
+    "execution_decision": "no_go",
+    "execution_decision_reasons": [
+      "not ledger-included"
+    ],
+    "execution_gate_level": "blocked",
     "execution_gate_reasons": [],
     "execution_gate_status": "open",
+    "execution_gate_summary": {
+      "blocked_levels": 2,
+      "conditional": 0,
+      "conditional_levels": 0,
+      "go": 1,
+      "no_go": 2,
+      "open_levels": 1,
+      "reasons": {
+        "not ledger-included": 2
+      },
+      "total": 3
+    },
+    "execution_go": false,
     "handoff_blockers": [
       "date",
       "divisions"

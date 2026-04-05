@@ -1,3 +1,59 @@
+# v65.9: execution-decision helpers
+def assess_execution_decision(records):
+    # Only ledger_included records can be go; others are no-go
+    for rec in records:
+        if rec.get("ledger_included"):
+            blockers = rec.get("dispatch_blockers", []) + rec.get("handoff_blockers", [])
+            if not blockers:
+                rec["execution_decision"] = "go"
+                rec["execution_decision_reasons"] = []
+                rec["execution_go"] = True
+                rec["execution_blocked"] = False
+            else:
+                rec["execution_decision"] = "conditional"
+                rec["execution_decision_reasons"] = blockers
+                rec["execution_go"] = False
+                rec["execution_blocked"] = True
+        else:
+            rec["execution_decision"] = "no_go"
+            rec["execution_decision_reasons"] = ["not ledger-included"]
+            rec["execution_go"] = False
+            rec["execution_blocked"] = True
+
+def assign_execution_gate_level(records):
+    # Assign gate level based on blockers: open, conditional, blocked
+    for rec in records:
+        if rec["execution_decision"] == "go":
+            rec["execution_gate_level"] = "open"
+        elif rec["execution_decision"] == "conditional":
+            rec["execution_gate_level"] = "conditional"
+        else:
+            rec["execution_gate_level"] = "blocked"
+
+def build_execution_gate_summary(records):
+    # Summarize go/no-go/conditional counts and reasons
+    total = len(records)
+    go = sum(1 for r in records if r["execution_decision"] == "go")
+    conditional = sum(1 for r in records if r["execution_decision"] == "conditional")
+    no_go = sum(1 for r in records if r["execution_decision"] == "no_go")
+    open_levels = sum(1 for r in records if r["execution_gate_level"] == "open")
+    conditional_levels = sum(1 for r in records if r["execution_gate_level"] == "conditional")
+    blocked_levels = sum(1 for r in records if r["execution_gate_level"] == "blocked")
+    reasons = {}
+    for r in records:
+        for reason in r["execution_decision_reasons"]:
+            reasons.setdefault(reason, 0)
+            reasons[reason] += 1
+    return {
+        "total": total,
+        "go": go,
+        "conditional": conditional,
+        "no_go": no_go,
+        "open_levels": open_levels,
+        "conditional_levels": conditional_levels,
+        "blocked_levels": blocked_levels,
+        "reasons": reasons,
+    }
 # v65.8: run-cycle ledger helpers
 def build_run_cycle_id(record):
     # Deterministic run cycle ID based on emission_manifest_id
@@ -387,6 +443,12 @@ def normalize_events(events):
         rec["execution_gate_status"] = gate_status
         rec["execution_gate_reasons"] = gate_reasons
         rec["ledger_summary"] = ledger_summary
+    # v65.9: execution-decision logic
+    assess_execution_decision(normalized)
+    assign_execution_gate_level(normalized)
+    gate_summary = build_execution_gate_summary(normalized)
+    for rec in normalized:
+        rec["execution_gate_summary"] = gate_summary
     return normalized
 
 def write_json(path, records):
@@ -450,9 +512,9 @@ def write_markdown(path, records):
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = [
-        "# Upcoming Schedule Run Cycle Ledger",
+        "# Upcoming Schedule Execution Decision Gate",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, and run-cycle ledger logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate logic.",
         "",
         "## Adapter Coverage",
         f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
@@ -460,25 +522,30 @@ def write_markdown(path, records):
         f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
         "",
         f"## Total Records: {len(records)}",
-        f"## Staged Records: {sum(1 for r in records if r['staged_for_runner'])}",
-        f"## Queue Bundles: {len(set(r['queue_bundle_id'] for r in records if r['queue_bundle_id']))}",
-        f"## Manifest Entries: {sum(1 for r in records if r['emission_manifest_id'])}",
         f"## Ledger Included: {sum(1 for r in records if r['ledger_included'])}",
-        f"## Execution Gate: {records[0]['execution_gate_status'] if records else 'unknown'}",
+        f"## Go: {sum(1 for r in records if r['execution_decision']=='go')}",
+        f"## Conditional: {sum(1 for r in records if r['execution_decision']=='conditional')}",
+        f"## No-Go: {sum(1 for r in records if r['execution_decision']=='no_go')}",
+        f"## Gate Level Distribution: open={sum(1 for r in records if r['execution_gate_level']=='open')}, conditional={sum(1 for r in records if r['execution_gate_level']=='conditional')}, blocked={sum(1 for r in records if r['execution_gate_level']=='blocked')}",
         "",
-        "## Run Order Summary",
+        "## Blocked Reason Summary",
     ]
-    ledger_ready = [r for r in records if r.get("ledger_included")]
-    for rec in sorted(ledger_ready, key=lambda r: r["run_cycle_position"]):
-        lines.append(f"- {rec['run_cycle_id']} (run_cycle_position={rec['run_cycle_position']})")
+    # Blocked reason summary
+    reason_counts = {}
+    for rec in records:
+        for reason in rec["execution_decision_reasons"]:
+            reason_counts.setdefault(reason, 0)
+            reason_counts[reason] += 1
+    for reason, count in sorted(reason_counts.items()):
+        lines.append(f"- {reason}: {count}")
     lines.extend([
         "",
-        "## Blocked Reasons Summary",
-    ])
-    blocked = [r for r in records if not r.get("ledger_included")]
-    for rec in blocked:
-        lines.append(f"- {rec['event_id']}: {rec['execution_gate_reasons']}")
-    lines.extend([
+        "## Final Cycle Decision Summary",
+        f"- Go: {sum(1 for r in records if r['execution_go'])}",
+        f"- Blocked: {sum(1 for r in records if r['execution_blocked'])}",
+        f"- Open: {sum(1 for r in records if r['execution_gate_level']=='open')}",
+        f"- Conditional: {sum(1 for r in records if r['execution_gate_level']=='conditional')}",
+        f"- Blocked: {sum(1 for r in records if r['execution_gate_level']=='blocked')}",
         "",
         "## Normalized Events",
         "",
@@ -491,7 +558,9 @@ def write_markdown(path, records):
             f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
             f"**Run Cycle ID:** {rec['run_cycle_id']} | **Run Cycle Position:** {rec['run_cycle_position']} | "
             f"**Execution Gate Status:** {rec['execution_gate_status']} | **Ledger Included:** {rec['ledger_included']} | "
-            f"**Ledger Summary:** {rec['ledger_summary']}"
+            f"**Execution Decision:** {rec['execution_decision']} | **Execution Go:** {rec['execution_go']} | **Execution Blocked:** {rec['execution_blocked']} | "
+            f"**Execution Gate Level:** {rec['execution_gate_level']} | **Execution Decision Reasons:** {rec['execution_decision_reasons']} | "
+            f"**Ledger Summary:** {rec['ledger_summary']} | **Execution Gate Summary:** {rec['execution_gate_summary']}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -501,7 +570,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, and run-cycle ledger format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
