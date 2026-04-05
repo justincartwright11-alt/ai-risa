@@ -224,6 +224,26 @@ def main():
     }
     emit_heartbeat_artifacts(heartbeat)
     emit_run_artifacts(result)
+
+    # --- Runtime history ledger integration (v67.9) ---
+    # Import and call ledger after all runtime+alerting logic
+    from build_upcoming_schedule_runtime_history_ledger import append_history
+    run_id = result["timestamp"] + ":" + heartbeat["invocation_source"]
+    entry = {
+        "run_id": run_id,
+        "invoked_at": result["timestamp"],
+        "invocation_source": heartbeat["invocation_source"],
+        "due_decision": result["due"],
+        "cycle_invoked": result["cycle_invoked"],
+        "cycle_status": result["cycle_result"],
+        "alerting_status": result.get("alerting_result", "N/A"),
+        "heartbeat_health": heartbeat["health"],
+        "lock_status": result["cycle_result"] if result["cycle_invoked"] else "not-invoked",
+        "notification_summary": result.get("alerting_json", "N/A"),
+        "terminal_status": (result["cycle_result"] if result["cycle_invoked"] else "not-invoked")
+    }
+    append_history(entry)
+
     if due and result["cycle_result"] != "success":
         sys.exit(1)
 
