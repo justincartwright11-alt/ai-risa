@@ -8,5 +8,10 @@
     "result": "sent",
     "reason": "Dispatched successfully",
     "dispatched_at": "2026-04-05T11:25:24.001900Z"
+  },
+  "delivery-b8d519a8767dacfaF": {
+    "result": "failed",
+    "reason": "Simulated failure for testability",
+    "dispatched_at": "2026-04-05T11:27:06.446925Z"
   }
 }
