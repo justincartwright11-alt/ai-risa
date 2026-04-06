@@ -1,5 +1,6 @@
 [
   {
+    "ack_state": "acked",
     "adapter_status": "ok",
     "bundle_emission_blockers": [],
     "bundle_emission_ready": true,
@@ -8,7 +9,20 @@
     "dependency_status": "ready",
     "dispatch_blockers": [],
     "dispatch_order": 1,
+    "dispatch_outcome": "simulated_success",
+    "dispatch_outcome_reasons": [],
     "dispatch_ready": true,
+    "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "dispatch_simulation_payload": {
+      "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+      "event_id": "ufc_300",
+      "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+      "queue_target": "queue_ufc_event_batch",
+      "queue_write_id": "queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+      "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1"
+    },
+    "dispatch_simulation_status": "ready",
+    "dispatch_simulation_target": "simulated_dispatch",
     "divisions": [
       "Lightweight",
       "Welterweight"
@@ -61,6 +75,8 @@
     "handoff_ready": true,
     "included_in_handoff": true,
     "ledger_included": true,
+    "ledger_record_id": "ledger_dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "ledger_recorded": true,
     "ledger_summary": {
       "blocked_records": 2,
       "bundles": 1,
@@ -78,12 +94,22 @@
     ],
     "queue_bundle_position": 1,
     "queue_bundle_size": 1,
+    "queue_consume_eligible": true,
+    "queue_consume_reasons": [],
+    "queue_consume_status": "eligible",
     "queue_emission_preview": {
       "dry_run_only": true,
       "payload_id": "handoff_ufc_300_UFC_API_v1",
       "queue_target": "queue_ufc_event_batch"
     },
+    "queue_sink_target": "local_sink",
     "queue_target": "queue_ufc_event_batch",
+    "queue_write_eligible": true,
+    "queue_write_id": "queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "queue_write_reasons": [],
+    "queue_write_status": "eligible",
+    "retry_class": "none",
+    "retry_eligible": false,
     "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
     "run_cycle_position": 1,
     "runner_mode": "event-batch",
@@ -111,6 +137,7 @@
     "venue": "T-Mobile Arena"
   },
   {
+    "ack_state": "not_applicable",
     "adapter_status": "ok",
     "bundle_emission_blockers": [
       "not staged"
@@ -123,7 +150,15 @@
       "not bundle emission ready"
     ],
     "dispatch_order": null,
+    "dispatch_outcome": "not_dispatched",
+    "dispatch_outcome_reasons": [
+      "not consume-eligible"
+    ],
     "dispatch_ready": false,
+    "dispatch_simulation_id": null,
+    "dispatch_simulation_payload": null,
+    "dispatch_simulation_status": null,
+    "dispatch_simulation_target": null,
     "divisions": [
       "Featherweight"
     ],
@@ -162,6 +197,8 @@
     "handoff_ready": false,
     "included_in_handoff": false,
     "ledger_included": false,
+    "ledger_record_id": null,
+    "ledger_recorded": false,
     "ledger_summary": {
       "blocked_records": 2,
       "bundles": 1,
@@ -181,8 +218,22 @@
     "queue_bundle_members": null,
     "queue_bundle_position": null,
     "queue_bundle_size": null,
+    "queue_consume_eligible": false,
+    "queue_consume_reasons": [
+      "not in sink"
+    ],
+    "queue_consume_status": "blocked",
     "queue_emission_preview": null,
+    "queue_sink_target": null,
     "queue_target": null,
+    "queue_write_eligible": false,
+    "queue_write_id": null,
+    "queue_write_reasons": [
+      "not execution-go"
+    ],
+    "queue_write_status": "blocked",
+    "retry_class": null,
+    "retry_eligible": false,
     "run_cycle_id": null,
     "run_cycle_position": null,
     "runner_mode": null,
@@ -197,6 +248,7 @@
     "venue": "unknown"
   },
   {
+    "ack_state": "not_applicable",
     "adapter_status": "incomplete",
     "bundle_emission_blockers": [
       "not staged"
@@ -209,7 +261,15 @@
       "not bundle emission ready"
     ],
     "dispatch_order": null,
+    "dispatch_outcome": "not_dispatched",
+    "dispatch_outcome_reasons": [
+      "not consume-eligible"
+    ],
     "dispatch_ready": false,
+    "dispatch_simulation_id": null,
+    "dispatch_simulation_payload": null,
+    "dispatch_simulation_status": null,
+    "dispatch_simulation_target": null,
     "divisions": [],
     "dry_run_only": true,
     "emission_manifest_entry": null,
@@ -247,6 +307,8 @@
     "handoff_ready": false,
     "included_in_handoff": false,
     "ledger_included": false,
+    "ledger_record_id": null,
+    "ledger_recorded": false,
     "ledger_summary": {
       "blocked_records": 2,
       "bundles": 1,
@@ -268,8 +330,22 @@
     "queue_bundle_members": null,
     "queue_bundle_position": null,
     "queue_bundle_size": null,
+    "queue_consume_eligible": false,
+    "queue_consume_reasons": [
+      "not in sink"
+    ],
+    "queue_consume_status": "blocked",
     "queue_emission_preview": null,
+    "queue_sink_target": null,
     "queue_target": null,
+    "queue_write_eligible": false,
+    "queue_write_id": null,
+    "queue_write_reasons": [
+      "not execution-go"
+    ],
+    "queue_write_status": "blocked",
+    "retry_class": null,
+    "retry_eligible": false,
     "run_cycle_id": null,
     "run_cycle_position": null,
     "runner_mode": null,

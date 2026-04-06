@@ -1,0 +1,12 @@
+[
+  {
+    "finalization_dispatch_id": "FDID-FQID-0001",
+    "attempt_number": 1,
+    "reconciled": true,
+    "dispatch_state_before": "dispatch",
+    "dispatch_state_after": "completed-success",
+    "delivery_state": "sent",
+    "result_code": "success",
+    "result_summary": "Finalization dispatch delivered to operator."
+  }
+]

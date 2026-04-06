@@ -1,0 +1,14 @@
+[
+  {
+    "reconciliation_action_id": "74f527575dc9a702",
+    "digest_dispatch_id": "5df8aeb533a9f97d",
+    "digest_delivery_outcome_id": "1d9cadf116db4439",
+    "digest_date": "2026-04-06",
+    "dispatch_target": "operator_email",
+    "attempt_number": 1,
+    "prior_dispatch_state": "ready",
+    "new_dispatch_state": "delivered",
+    "applied_at": "2026-04-06T01:40:32.927533Z",
+    "reconciliation_result": "applied"
+  }
+]

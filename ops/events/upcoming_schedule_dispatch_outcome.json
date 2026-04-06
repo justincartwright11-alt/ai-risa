@@ -1,0 +1,24 @@
+[
+  {
+    "ack_state": "acked",
+    "consume_position": 1,
+    "consumed_in_simulation": true,
+    "dispatch_consumer_outcome": "skipped",
+    "dispatch_outcome": "simulated_success",
+    "dispatch_simulation_id": "dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "dispatch_simulation_status": "simulated",
+    "dry_run_only": false,
+    "emission_manifest_id": "manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "event_id": "ufc_300",
+    "handoff_payload_id": "handoff_ufc_300_UFC_API_v1",
+    "ledger_record_id": "ledger_dispatch_sim_queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "queue_bundle_id": "bundle_queue_ufc_event_batch_1",
+    "queue_target": "queue_ufc_event_batch",
+    "queue_write_id": "queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "retry_class": "none",
+    "retry_eligible": false,
+    "run_cycle_id": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1",
+    "runner_stage_id": "runner_stage_handoff_ufc_300_UFC_API_v1",
+    "written_at_cycle": "run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1"
+  }
+]

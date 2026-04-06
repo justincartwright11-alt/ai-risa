@@ -1,0 +1,19 @@
+[
+  {
+    "finalization_dispatch_id": "FDID-FQID-0002",
+    "finalization_queue_item_id": "FQID-0002",
+    "dedupe_key": "dedupe-0002",
+    "dispatch_state": "success",
+    "dispatch_target": "operator@example.com",
+    "dispatch_channel": "operator-ui",
+    "finalization_priority": "high",
+    "next_finalization_action": "operator-finalize",
+    "suppression_reason": null,
+    "delivery_state": "sent",
+    "result_code": "success",
+    "result_summary": "Dispatched to operator",
+    "attempt_number": 1,
+    "attempted_at": "2026-04-06T00:00:00Z",
+    "completed_at": "2026-04-06T00:00:00Z"
+  }
+]

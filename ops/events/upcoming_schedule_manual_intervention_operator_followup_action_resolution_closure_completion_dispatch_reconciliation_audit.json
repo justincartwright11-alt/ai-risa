@@ -1,0 +1,12 @@
+[
+  {
+    "completion_dispatch_id": "ce1a1fd7885615bd477805ce2599693691e38c86f65e13b40abb0933059236c3",
+    "attempt_number": 1,
+    "dispatch_state_before": "dispatch",
+    "dispatch_state_after": "delivered",
+    "delivery_state": "sent",
+    "result_code": "250",
+    "result_summary": "Completion dispatch sent successfully.",
+    "reconciliation_reason": "sent → delivered"
+  }
+]

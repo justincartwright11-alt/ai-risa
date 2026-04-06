@@ -1,0 +1,13 @@
+# Upcoming Schedule Queue State Promotion
+
+Promotion run at: 2026-04-05T23:15:01.964878Z UTC
+
+Rows promoted: 1
+
+Promoted IDs: queue_write_run_cycle_manifest_bundle_queue_ufc_event_batch_1_handoff_ufc_300_UFC_API_v1
+
+Sink hash before: 5d097cdf14a94747b9027fd8eaf9274d6543bf37314eff31832c46c4f96e1f90
+Reconciled hash: ee726322959be4e5b458e6d398361914ec28f19db87879d7bc8a3e15eb3590c4
+Sink hash after: ee726322959be4e5b458e6d398361914ec28f19db87879d7bc8a3e15eb3590c4
+
+Promotion completed deterministically and idempotently.

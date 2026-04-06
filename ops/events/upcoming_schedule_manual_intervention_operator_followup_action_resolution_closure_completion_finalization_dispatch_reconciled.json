@@ -1,0 +1,13 @@
+[
+  {
+    "finalization_dispatch_id": "FDID-FQID-0001",
+    "finalization_queue_item_id": "FQID-0001",
+    "dedupe_key": "dedupe-0001",
+    "dispatch_state": "completed-success",
+    "dispatch_target": "operator@example.com",
+    "dispatch_channel": "operator-ui",
+    "finalization_priority": "high",
+    "next_finalization_action": "operator-finalize",
+    "suppression_reason": null
+  }
+]

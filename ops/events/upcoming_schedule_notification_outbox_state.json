@@ -1,0 +1,58 @@
+{
+  "notifications": [
+    {
+      "notification_id": "e80bc45748d00d63",
+      "incident_id": "a6ae7a7b-33f2-43ea-b085-20f913455f63",
+      "notification_type": "cleared",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T09:48:20.369199Z",
+      "reason": null,
+      "dedupe_key": "a6ae7a7b-33f2-43ea-b085-20f913455f63:cleared"
+    },
+    {
+      "notification_id": "c327e5a256e90667",
+      "incident_id": "b1b2b3b4-b5b6-b7b8-b9ba-bbbcbdbebfb0",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T09:48:49.797532Z",
+      "reason": "stale",
+      "dedupe_key": "b1b2b3b4-b5b6-b7b8-b9ba-bbbcbdbebfb0:opened"
+    },
+    {
+      "notification_id": "2a558e63c1f0e2cf",
+      "incident_id": "deadbeef-dead-beef-dead-beefdeadbeef",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T09:49:10.580458Z",
+      "reason": "failed",
+      "dedupe_key": "deadbeef-dead-beef-dead-beefdeadbeef:opened"
+    },
+    {
+      "notification_id": "e03f683c78faa659",
+      "incident_id": "deadbeef-dead-beef-dead-beefdeadbeef",
+      "notification_type": "cleared",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T09:49:18.463813Z",
+      "reason": null,
+      "dedupe_key": "deadbeef-dead-beef-dead-beefdeadbeef:cleared"
+    },
+    {
+      "notification_id": "28d3a7a23b953cad",
+      "incident_id": "db8d5b90-270a-46c1-9abd-0ce6d79baba2",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T12:45:01.583211Z",
+      "reason": "stale",
+      "dedupe_key": "db8d5b90-270a-46c1-9abd-0ce6d79baba2:opened"
+    },
+    {
+      "notification_id": "7ceea49ba8c386b7",
+      "incident_id": "8c4d9f7f-80f8-4999-b5ad-4e47f4050720",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-05T23:15:02.153970Z",
+      "reason": "failed",
+      "dedupe_key": "8c4d9f7f-80f8-4999-b5ad-4e47f4050720:opened"
+    }
+  ]
+}

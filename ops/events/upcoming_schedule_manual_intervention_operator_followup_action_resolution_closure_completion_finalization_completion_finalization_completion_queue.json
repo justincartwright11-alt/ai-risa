@@ -1,0 +1,14 @@
+[
+  {
+    "completion_queue_item_id": "CQID-0001",
+    "finalization_queue_item_id": "FQID-0002",
+    "finalization_dispatch_id": "FDID-FQID-0002",
+    "dispatch_target": "operator@example.com",
+    "delivery_state": "sent",
+    "completion_state": "ready",
+    "completion_priority": "high",
+    "next_completion_action": "operator-complete",
+    "completion_reason": "Delivery succeeded and reconciliation complete.",
+    "dedupe_key": "dedupe-0002"
+  }
+]

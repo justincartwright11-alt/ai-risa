@@ -1,3 +1,157 @@
+# v66.1: queue-write eligibility and local sink helpers
+def assess_queue_write_eligibility(records):
+    for rec in records:
+        if rec.get("execution_go"):
+            rec["queue_write_eligible"] = True
+            rec["queue_write_status"] = "eligible"
+            rec["queue_write_reasons"] = []
+            rec["queue_write_id"] = build_queue_write_id(rec)
+            rec["queue_sink_target"] = build_queue_sink_target(rec)
+        else:
+            rec["queue_write_eligible"] = False
+            rec["queue_write_status"] = "blocked"
+            rec["queue_write_reasons"] = ["not execution-go"]
+            rec["queue_write_id"] = None
+            rec["queue_sink_target"] = None
+
+def build_queue_write_id(record):
+    # Deterministic queue write ID based on run_cycle_id
+    if record.get("run_cycle_id"):
+        return f"queue_write_{record['run_cycle_id']}"
+    return None
+
+def build_queue_sink_target(record):
+    # Deterministic sink target (could be extended in future)
+    return "local_sink"
+
+# v66.3: dispatch outcome ledger helpers
+def assess_dispatch_outcome(records):
+    for rec in records:
+        if rec.get("queue_consume_eligible"):
+            rec["dispatch_outcome"] = "simulated_success"
+            rec["dispatch_outcome_reasons"] = []
+            rec["retry_class"] = assign_retry_class(rec)
+            rec["retry_eligible"] = rec["retry_class"] in ("retryable", "deferred")
+            rec["ack_state"] = assign_ack_state(rec)
+            rec["ledger_recorded"] = True
+            rec["ledger_record_id"] = build_ledger_record_id(rec)
+        else:
+            rec["dispatch_outcome"] = "not_dispatched"
+            rec["dispatch_outcome_reasons"] = ["not consume-eligible"]
+            rec["retry_class"] = None
+            rec["retry_eligible"] = False
+            rec["ack_state"] = "not_applicable"
+            rec["ledger_recorded"] = False
+            rec["ledger_record_id"] = None
+
+def assign_retry_class(rec):
+    # Deterministic retry class assignment based on simulated outcome
+    if rec.get("dispatch_outcome") == "simulated_success":
+        return "none"
+    if rec.get("queue_consume_status") == "blocked":
+        return "deferred"
+    return "terminal"
+
+def assign_ack_state(rec):
+    # Deterministic ack state based on outcome
+    if rec.get("dispatch_outcome") == "simulated_success":
+        return "acked"
+    if rec.get("queue_consume_status") == "blocked":
+        return "withheld"
+    return "not_applicable"
+
+def build_ledger_record_id(rec):
+    # Deterministic ledger record ID for outcome-logged entries
+    if rec.get("queue_consume_eligible"):
+        return f"ledger_{rec['dispatch_simulation_id']}"
+    return None
+
+# v66.2: queue-consumer simulation helpers
+def assess_queue_consume_eligibility(records, sink_entries):
+    sink_ids = {entry["queue_write_id"] for entry in sink_entries}
+    for rec in records:
+        if rec.get("queue_write_id") in sink_ids:
+            rec["queue_consume_eligible"] = True
+            rec["queue_consume_status"] = "eligible"
+            rec["queue_consume_reasons"] = []
+            rec["dispatch_simulation_id"] = build_dispatch_simulation_id(rec)
+            rec["dispatch_simulation_status"] = "ready"
+            rec["dispatch_simulation_target"] = build_dispatch_simulation_target(rec)
+            rec["dispatch_simulation_payload"] = build_dispatch_simulation_payload(rec)
+        else:
+            rec["queue_consume_eligible"] = False
+            rec["queue_consume_status"] = "blocked"
+            rec["queue_consume_reasons"] = ["not in sink"]
+            rec["dispatch_simulation_id"] = None
+            rec["dispatch_simulation_status"] = None
+            rec["dispatch_simulation_target"] = None
+            rec["dispatch_simulation_payload"] = None
+
+def build_dispatch_simulation_id(record):
+    # Deterministic simulation ID based on queue_write_id
+    if record.get("queue_write_id"):
+        return f"dispatch_sim_{record['queue_write_id']}"
+    return None
+
+def build_dispatch_simulation_target(record):
+    # Deterministic simulation target (could be extended in future)
+    return "simulated_dispatch"
+
+def build_dispatch_simulation_payload(record):
+    # Deterministic payload based on sink-approved entry
+    return {
+        "event_id": record["event_id"],
+        "handoff_payload_id": record["handoff_payload_id"],
+        "queue_write_id": record["queue_write_id"],
+        "run_cycle_id": record["run_cycle_id"],
+        "queue_target": record["queue_target"],
+        "dispatch_simulation_id": build_dispatch_simulation_id(record),
+    }
+
+def simulate_queue_consumption(sink_entries):
+    # Add consumption-side fields to sink entries, stable order by queue_write_id
+    for i, entry in enumerate(sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")):
+        entry["consumed_in_simulation"] = True
+        entry["consume_position"] = i+1
+        entry["dispatch_simulation_id"] = f"dispatch_sim_{entry['queue_write_id']}"
+        entry["dispatch_simulation_status"] = "simulated"
+    return sink_entries
+
+def write_local_queue_sink(path, records):
+    # Only execution-go records, stable order by queue_write_id
+    sink_entries = []
+    for rec in records:
+        if rec.get("queue_write_eligible"):
+            entry = {
+                "queue_write_id": rec["queue_write_id"],
+                "event_id": rec["event_id"],
+                "handoff_payload_id": rec["handoff_payload_id"],
+                "runner_stage_id": rec["runner_stage_id"],
+                "queue_bundle_id": rec["queue_bundle_id"],
+                "emission_manifest_id": rec["emission_manifest_id"],
+                "run_cycle_id": rec["run_cycle_id"],
+                "queue_target": rec["queue_target"],
+                "dry_run_only": False,
+                "written_at_cycle": rec["run_cycle_id"],
+            }
+            # v66.3: outcome, retry, ack, ledger fields for simulated consumed entries
+            if rec.get("queue_consume_eligible"):
+                entry["dispatch_outcome"] = rec["dispatch_outcome"]
+                entry["retry_class"] = rec["retry_class"]
+                entry["retry_eligible"] = rec["retry_eligible"]
+                entry["ack_state"] = rec["ack_state"]
+                entry["ledger_record_id"] = rec["ledger_record_id"]
+            else:
+                entry["dispatch_outcome"] = "not_dispatched"
+                entry["retry_class"] = None
+                entry["retry_eligible"] = False
+                entry["ack_state"] = "not_applicable"
+                entry["ledger_record_id"] = None
+            sink_entries.append(entry)
+    sink_entries = sorted(sink_entries, key=lambda e: e["queue_write_id"] or "")
+    # v66.2: simulate queue consumption
+    sink_entries = simulate_queue_consumption(sink_entries)
+    path.write_text(json.dumps(sink_entries, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 # v65.9: execution-decision helpers
 def assess_execution_decision(records):
     # Only ledger_included records can be go; others are no-go
@@ -449,6 +603,21 @@ def normalize_events(events):
     gate_summary = build_execution_gate_summary(normalized)
     for rec in normalized:
         rec["execution_gate_summary"] = gate_summary
+    # v66.1: queue-write eligibility
+    assess_queue_write_eligibility(normalized)
+    # v66.2: queue-consumer simulation
+    sink_path = Path("ops/events/upcoming_schedule_queue_sink.json")
+    if sink_path.exists():
+        with sink_path.open("r", encoding="utf-8") as f:
+            try:
+                sink_entries = json.load(f)
+            except Exception:
+                sink_entries = []
+    else:
+        sink_entries = []
+    assess_queue_consume_eligibility(normalized, sink_entries)
+    # v66.3: dispatch outcome ledger
+    assess_dispatch_outcome(normalized)
     return normalized
 
 def write_json(path, records):
@@ -512,40 +681,73 @@ def write_markdown(path, records):
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = [
-        "# Upcoming Schedule Execution Decision Gate",
+        "# Upcoming Schedule Dispatch Outcome Ledger",
         "",
-        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate logic.",
+        "This deterministic output is based on embedded source fixtures, adapter logic, dependency readiness, batch handoff packaging, runner/queue dry-run staging, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, queue-consumer simulation, and dispatch outcome ledger logic.",
         "",
-        "## Adapter Coverage",
-        f"- UFC: {len([r for r in records if r['source_name']=='UFC_API'])} event(s)",
-        f"- PFL: {len([r for r in records if r['source_name']=='PFL_FEED'])} event(s)",
-        f"- ONE: {len([r for r in records if r['source_name']=='ONE_CHAMPIONSHIP'])} event(s)",
+        f"## Total Sink Entries: {sum(1 for r in records if r['queue_write_eligible'])}",
+        f"## Consume-Eligible: {sum(1 for r in records if r.get('queue_consume_eligible'))}",
+        f"## Consume-Blocked: {sum(1 for r in records if not r.get('queue_consume_eligible'))}",
+        f"## Simulated Dispatch-Ready: {sum(1 for r in records if r.get('dispatch_simulation_status')=='ready')}",
+        f"## Withheld: {sum(1 for r in records if r.get('queue_consume_status')=='blocked')}",
+        f"## Simulated Dispatch Outcome: {sum(1 for r in records if r.get('dispatch_outcome')=='simulated_success')}",
+        f"## Not Dispatched: {sum(1 for r in records if r.get('dispatch_outcome')=='not_dispatched')}",
         "",
-        f"## Total Records: {len(records)}",
-        f"## Ledger Included: {sum(1 for r in records if r['ledger_included'])}",
-        f"## Go: {sum(1 for r in records if r['execution_decision']=='go')}",
-        f"## Conditional: {sum(1 for r in records if r['execution_decision']=='conditional')}",
-        f"## No-Go: {sum(1 for r in records if r['execution_decision']=='no_go')}",
-        f"## Gate Level Distribution: open={sum(1 for r in records if r['execution_gate_level']=='open')}, conditional={sum(1 for r in records if r['execution_gate_level']=='conditional')}, blocked={sum(1 for r in records if r['execution_gate_level']=='blocked')}",
-        "",
-        "## Blocked Reason Summary",
+        "## Acknowledgement State Summary",
     ]
-    # Blocked reason summary
+    ack_counts = {}
+    for rec in records:
+        ack = rec.get("ack_state")
+        if ack:
+            ack_counts.setdefault(ack, 0)
+            ack_counts[ack] += 1
+    for ack, count in sorted(ack_counts.items()):
+        lines.append(f"- {ack}: {count}")
+    lines.extend([
+        "",
+        "## Retry Class Distribution",
+    ])
+    retry_counts = {}
+    for rec in records:
+        rc = rec.get("retry_class")
+        if rc:
+            retry_counts.setdefault(rc, 0)
+            retry_counts[rc] += 1
+    for rc, count in sorted(retry_counts.items()):
+        lines.append(f"- {rc}: {count}")
+    lines.extend([
+        "",
+        "## Ledger Record Summary",
+    ])
+    ledger_counts = {True: 0, False: 0}
+    for rec in records:
+        ledger_counts[rec.get("ledger_recorded", False)] += 1
+    lines.append(f"- Recorded: {ledger_counts[True]}")
+    lines.append(f"- Not Recorded: {ledger_counts[False]}")
+    lines.extend([
+        "",
+        "## Dispatch Target Summary",
+    ])
+    target_counts = {}
+    for rec in records:
+        tgt = rec.get("dispatch_simulation_target")
+        if tgt:
+            target_counts.setdefault(tgt, 0)
+            target_counts[tgt] += 1
+    for tgt, count in sorted(target_counts.items()):
+        lines.append(f"- {tgt}: {count}")
+    lines.extend([
+        "",
+        "## Consume Blocker Summary",
+    ])
     reason_counts = {}
     for rec in records:
-        for reason in rec["execution_decision_reasons"]:
+        for reason in rec.get("queue_consume_reasons", []):
             reason_counts.setdefault(reason, 0)
             reason_counts[reason] += 1
     for reason, count in sorted(reason_counts.items()):
         lines.append(f"- {reason}: {count}")
     lines.extend([
-        "",
-        "## Final Cycle Decision Summary",
-        f"- Go: {sum(1 for r in records if r['execution_go'])}",
-        f"- Blocked: {sum(1 for r in records if r['execution_blocked'])}",
-        f"- Open: {sum(1 for r in records if r['execution_gate_level']=='open')}",
-        f"- Conditional: {sum(1 for r in records if r['execution_gate_level']=='conditional')}",
-        f"- Blocked: {sum(1 for r in records if r['execution_gate_level']=='blocked')}",
         "",
         "## Normalized Events",
         "",
@@ -555,12 +757,12 @@ def write_markdown(path, records):
         lines.append(
             f"- **ID:** {rec['event_id']} | **Date:** {rec['date']} | **Promotion:** {rec['promotion']} | "
             f"**Venue:** {rec['venue']} | **Sport:** {rec['sport']} | **Divisions:** {divisions} | "
-            f"**Source:** {rec['source_name']} | **Adapter Status:** {rec['adapter_status']} | **Complete:** {rec['complete']} | "
-            f"**Run Cycle ID:** {rec['run_cycle_id']} | **Run Cycle Position:** {rec['run_cycle_position']} | "
-            f"**Execution Gate Status:** {rec['execution_gate_status']} | **Ledger Included:** {rec['ledger_included']} | "
-            f"**Execution Decision:** {rec['execution_decision']} | **Execution Go:** {rec['execution_go']} | **Execution Blocked:** {rec['execution_blocked']} | "
-            f"**Execution Gate Level:** {rec['execution_gate_level']} | **Execution Decision Reasons:** {rec['execution_decision_reasons']} | "
-            f"**Ledger Summary:** {rec['ledger_summary']} | **Execution Gate Summary:** {rec['execution_gate_summary']}"
+            f"**Queue Write Eligible:** {rec['queue_write_eligible']} | **Queue Consume Eligible:** {rec.get('queue_consume_eligible')} | "
+            f"**Queue Consume Status:** {rec.get('queue_consume_status')} | **Dispatch Simulation ID:** {rec.get('dispatch_simulation_id')} | "
+            f"**Dispatch Simulation Status:** {rec.get('dispatch_simulation_status')} | **Dispatch Simulation Target:** {rec.get('dispatch_simulation_target')} | "
+            f"**Dispatch Simulation Payload:** {rec.get('dispatch_simulation_payload')} | "
+            f"**Dispatch Outcome:** {rec.get('dispatch_outcome')} | **Retry Class:** {rec.get('retry_class')} | **Retry Eligible:** {rec.get('retry_eligible')} | "
+            f"**Ack State:** {rec.get('ack_state')} | **Ledger Recorded:** {rec.get('ledger_recorded')} | **Ledger Record ID:** {rec.get('ledger_record_id')}"
         )
         if rec["missing_fields"]:
             lines.append(f"  - Missing: {', '.join(rec['missing_fields'])}")
@@ -570,7 +772,7 @@ def write_markdown(path, records):
             lines.append("  - Excluded from handoff: not handoff-ready")
     lines.extend([
         "",
-        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, and execution decision gate format.",
+        "This file defines the normalization contract, adapter coverage, dependency readiness, batch handoff packaging, runner staging, queue emission dry-run, queue-bundle planning, emission manifest sequencing, run-cycle ledger, execution decision gate, local queue writing, queue-consumer simulation, and dispatch outcome ledger format.",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
@@ -586,6 +788,7 @@ def main():
     normalized = normalize_events(adapted)
     write_json(out_dir / "upcoming_schedule_auto_discovery.json", normalized)
     write_markdown(out_dir / "upcoming_schedule_auto_discovery.md", normalized)
+    write_local_queue_sink(out_dir / "upcoming_schedule_queue_sink.json", normalized)
 
 if __name__ == "__main__":
     main()

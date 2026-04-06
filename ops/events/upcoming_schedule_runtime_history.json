@@ -1,0 +1,108 @@
+{
+  "history": [
+    {
+      "run_id": "2026-04-05T10:42:38.843484Z:scheduled",
+      "invoked_at": "2026-04-05T10:42:38.843484Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "success",
+      "alerting_status": "success",
+      "heartbeat_health": "healthy",
+      "lock_status": "success",
+      "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
+      "terminal_status": "success"
+    },
+    {
+      "run_id": "2026-04-05T12:45:01.137857Z:scheduled",
+      "invoked_at": "2026-04-05T12:45:01.137857Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "success",
+      "alerting_status": "success",
+      "heartbeat_health": "healthy",
+      "lock_status": "success",
+      "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
+      "terminal_status": "success"
+    },
+    {
+      "run_id": "2026-04-05T12:45:01.621585Z:scheduled",
+      "invoked_at": "2026-04-05T12:45:01.621585Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "stale",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
+    },
+    {
+      "run_id": "2026-04-05T23:15:01.664293Z:scheduled",
+      "invoked_at": "2026-04-05T23:15:01.664293Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "success",
+      "alerting_status": "success",
+      "heartbeat_health": "healthy",
+      "lock_status": "success",
+      "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
+      "terminal_status": "success"
+    },
+    {
+      "run_id": "2026-04-05T23:15:01.664590Z:scheduled",
+      "invoked_at": "2026-04-05T23:15:01.664590Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "fail (code 1)",
+      "alerting_status": "skipped (lock guard failed)",
+      "heartbeat_health": "failed",
+      "lock_status": "fail (code 1)",
+      "notification_summary": "N/A",
+      "terminal_status": "fail (code 1)"
+    },
+    {
+      "run_id": "2026-04-05T23:30:01.667026Z:scheduled",
+      "invoked_at": "2026-04-05T23:30:01.667026Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "healthy",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
+    },
+    {
+      "run_id": "2026-04-05T23:45:01.686751Z:scheduled",
+      "invoked_at": "2026-04-05T23:45:01.686751Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "healthy",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
+    },
+    {
+      "run_id": "2026-04-05T23:45:01.688230Z:scheduled",
+      "invoked_at": "2026-04-05T23:45:01.688230Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "healthy",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
+    }
+  ]
+}

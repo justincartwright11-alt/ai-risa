@@ -1,0 +1,14 @@
+[
+  {
+    "closure_queue_item_id": "81d8d9149e211d00275b039c2c944c26ba1e79632aecb5e6a1fecb1795c8954a",
+    "resolution_queue_item_id": "Q123",
+    "resolution_dispatch_id": "D456",
+    "dispatch_target": "operator:alpha",
+    "delivery_state": "delivered-success",
+    "closure_state": "completed-success",
+    "closure_priority": "high",
+    "next_closure_action": "close",
+    "closure_reason": "resolution delivered and reconciled",
+    "dedupe_key": "alpha-2026-04-06-01"
+  }
+]

@@ -1,0 +1,216 @@
+"""
+build_upcoming_schedule_escalation_email_dead_letter_notification_dispatcher.py
+
+v69.9: Deterministic dispatcher for escalation email dead-letter notification outbox
+- Reads notification outbox and state
+- Dispatches pending notifications
+- Records delivery results (sent/failed/skipped)
+- Emits delivery ledger, Markdown report, and state for rerun dedupe
+"""
+import json
+from pathlib import Path
+from datetime import datetime
+
+OUTBOX_JSON_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_outbox.json")
+OUTBOX_STATE_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_outbox_state.json")
+DELIVERY_JSON_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_delivery.json")
+DELIVERY_MD_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_delivery.md")
+DELIVERY_STATE_PATH = Path("ops/events/upcoming_schedule_escalation_email_dead_letter_notification_delivery_state.json")
+
+
+def load_json(path, default=None):
+    if path.exists():
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return default
+
+def save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+def main():
+    outbox = load_json(OUTBOX_JSON_PATH, [])
+    outbox_state = load_json(OUTBOX_STATE_PATH, {"notifications": {}})
+    delivery = load_json(DELIVERY_JSON_PATH, [])
+    delivery_state = load_json(DELIVERY_STATE_PATH, {"delivered": {}})
+    now = datetime.utcnow().isoformat() + "Z"
+    # Index for dedupe
+    delivered_by_id = {d["notification_id"]: d for d in delivery}
+    delivered_state = dict(delivery_state.get("delivered", {}))
+    results = []
+    for n in outbox:
+        notification_id = n["notification_id"]
+        status = delivered_state.get(notification_id, {}).get("result")
+        # Only dispatch if not already sent/skipped/failed
+        if status == "sent":
+            continue
+        # Simulate deterministic dispatch logic
+        if notification_id.endswith("F"):
+            result = "failed"
+            reason = "Simulated failure for testability"
+        elif notification_id.endswith("S"):
+            result = "skipped"
+            reason = "Simulated skip for testability"
+        else:
+            result = "sent"
+            reason = "Notification delivered"
+        record = {
+            "notification_id": notification_id,
+            "dead_letter_id": n["dead_letter_id"],
+            "delivery_id": n["delivery_id"],
+            "notification_type": n["notification_type"],
+            "notification_status": n["notification_status"],
+            "result": result,
+            "reason": reason,
+            "dispatched_at": now,
+            "terminal_reason": n["terminal_reason"],
+            "escalation_level": n.get("escalation_level"),
+            "dedupe_key": n["dedupe_key"]
+        }
+        results.append(record)
+        delivered_state[notification_id] = {
+            "result": result,
+            "reason": reason,
+            "dispatched_at": now
+        }
+    # Save delivery artifacts
+    save_json(DELIVERY_JSON_PATH, results)
+    save_json(DELIVERY_STATE_PATH, {"delivered": delivered_state, "generated_at": now})
+    # Markdown report
+    with open(DELIVERY_MD_PATH, "w", encoding="utf-8") as f:
+        f.write("# Escalation Email Dead-Letter Notification Delivery Report\n\n")
+        for r in results:
+            f.write(f"- Notification: {r['notification_id']} | DeadLetter: {r['dead_letter_id']} | Delivery: {r['delivery_id']} | Type: {r['notification_type']} | Result: {r['result']} | Reason: {r['reason']} | Level: {r['escalation_level']} | Dispatched: {r['dispatched_at']}\n")
+
+if __name__ == "__main__":
+    main()
+    # v70.3: Integrate routing policy before email delivery
+    import subprocess
+    import sys
+    routing_policy_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_routing_policy.py")
+    try:
+        subprocess.run([sys.executable, routing_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email routing policy failed: {e}")
+    # v70.1: Real email transport for dead-letter notifications (now routing-aware)
+    email_adapter_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_adapter.py")
+    try:
+        subprocess.run([sys.executable, email_adapter_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email adapter failed: {e}")
+
+    # v70.5: Integrate delivery-history ledger after delivery state is finalized
+    delivery_history_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_delivery_history_ledger.py")
+    try:
+        subprocess.run([sys.executable, delivery_history_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email delivery-history ledger failed: {e}")
+
+
+    # v70.8: Integrate retry-policy engine after delivery-history ledger
+    retry_policy_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_policy.py")
+    try:
+        subprocess.run([sys.executable, retry_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email retry-policy engine failed: {e}")
+
+
+    # v71.0: Integrate retry dispatcher after retry-policy is finalized
+    retry_dispatcher_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_dispatcher.py")
+    try:
+        subprocess.run([sys.executable, retry_dispatcher_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email retry dispatcher failed: {e}")
+
+
+    # v71.2: Integrate retry-history ledger after retry-dispatcher is finalized
+    retry_history_ledger_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_history_ledger.py")
+    try:
+        subprocess.run([sys.executable, retry_history_ledger_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email retry-history ledger failed: {e}")
+
+    # v71.4: Integrate dead-letter ledger after retry-history ledger is finalized
+    dead_letter_ledger_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_email_retry_exhaustion_dead_letter.py")
+    try:
+        subprocess.run([sys.executable, dead_letter_ledger_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email retry-exhaustion dead-letter ledger failed: {e}")
+
+    # v71.5: Emit deterministic runtime summary/report for dead-letter path
+    runtime_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, runtime_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Dead-letter notification email runtime summary failed: {e}")
+
+    # v71.6: Emit deterministic manual intervention queue for terminal dead-letter notification emails
+    manual_intervention_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_queue.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention queue generation failed: {e}")
+
+    # v71.7: Emit deterministic runtime summary/report for manual intervention queue
+    manual_intervention_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention runtime summary failed: {e}")
+
+    # v71.8: Emit deterministic assignment policy for manual intervention queue
+    manual_intervention_assignment_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_assignment_policy.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_assignment_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention assignment policy failed: {e}")
+
+    # v71.9: Emit deterministic runtime summary/report for manual intervention assignment
+    manual_intervention_assignment_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_assignment_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_assignment_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention assignment runtime summary failed: {e}")
+
+    # v72.0: Emit deterministic SLA/aging policy for manual intervention queue
+    manual_intervention_sla_policy_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_sla_policy.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_sla_policy_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention SLA policy failed: {e}")
+
+    # v72.1: Emit deterministic runtime summary/report for manual intervention SLA path
+    manual_intervention_sla_runtime_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_sla_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_sla_runtime_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention SLA runtime summary failed: {e}")
+
+    # v72.2: Emit deterministic acknowledgement-state for manual intervention queue
+    manual_intervention_acknowledgement_state_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_acknowledgement_state.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_acknowledgement_state_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention acknowledgement-state failed: {e}")
+
+    # v72.3: Emit deterministic runtime summary/report for manual intervention acknowledgement path
+    manual_intervention_acknowledgement_runtime_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_acknowledgement_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_acknowledgement_runtime_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention acknowledgement runtime summary failed: {e}")
+
+    # v72.4: Emit deterministic resolution-state for manual intervention queue
+    manual_intervention_resolution_state_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_resolution_state.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_resolution_state_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention resolution-state failed: {e}")
+
+    # v72.6: Emit deterministic runtime summary/report for manual intervention resolution path
+    manual_intervention_resolution_runtime_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_resolution_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_resolution_runtime_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention resolution runtime summary failed: {e}")

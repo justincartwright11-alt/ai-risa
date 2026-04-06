@@ -1,0 +1,17 @@
+[
+  {
+    "reconciliation_action_id": "78c905556c58aa83",
+    "resolution_case_id": "RES-b5565150eed50446",
+    "retry_execution_outcome_id": "bc43928b7a0a8e5d",
+    "retry_execution_id": "e60bd32bac9b98f5",
+    "attempt_number": 1,
+    "prior_resolution_state": "resolved_retry_requested",
+    "new_resolution_state": "resolved_no_retry",
+    "prior_retry_state": "eligible",
+    "new_retry_state": "executed",
+    "prior_closure_state": "open",
+    "new_closure_state": "open",
+    "applied_at": "2026-04-06T01:21:28.549654Z",
+    "reconciliation_result": "applied"
+  }
+]
