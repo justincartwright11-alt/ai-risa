@@ -200,3 +200,17 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, manual_intervention_acknowledgement_runtime_summary_script], check=True)
     except Exception as e:
         print(f"[WARN] Manual intervention acknowledgement runtime summary failed: {e}")
+
+    # v72.4: Emit deterministic resolution-state for manual intervention queue
+    manual_intervention_resolution_state_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_resolution_state.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_resolution_state_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention resolution-state failed: {e}")
+
+    # v72.6: Emit deterministic runtime summary/report for manual intervention resolution path
+    manual_intervention_resolution_runtime_summary_script = str(Path(__file__).parent / "build_upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_resolution_runtime_summary.py")
+    try:
+        subprocess.run([sys.executable, manual_intervention_resolution_runtime_summary_script], check=True)
+    except Exception as e:
+        print(f"[WARN] Manual intervention resolution runtime summary failed: {e}")
