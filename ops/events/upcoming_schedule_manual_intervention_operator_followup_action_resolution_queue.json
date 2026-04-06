@@ -1,0 +1,15 @@
+[
+  {
+    "resolution_queue_item_id": "cabd4dc9c2c797b1",
+    "followup_action_id": "demo_unresolved_1",
+    "followup_dispatch_id": "demo_dispatch_unresolved_1",
+    "dispatch_target": "demo_target_unresolved_1",
+    "delivery_state": "unresolved",
+    "result_summary": "Demo unresolved summary",
+    "resolution_state": "unresolved",
+    "resolution_priority": "low",
+    "next_resolution_action": "investigate",
+    "resolution_reason": "unresolved delivery requires operator resolution",
+    "dedupe_key": "demo_unresolved_1|demo_target_unresolved_1|unresolved"
+  }
+]
