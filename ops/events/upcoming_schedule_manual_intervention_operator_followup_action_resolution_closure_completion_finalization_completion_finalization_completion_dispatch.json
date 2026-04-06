@@ -1,0 +1,13 @@
+[
+  {
+    "completion_dispatch_id": "CDID-CQID-0001",
+    "completion_queue_item_id": "CQID-0001",
+    "dedupe_key": "dedupe-0002",
+    "dispatch_state": "dispatch",
+    "dispatch_target": "operator@example.com",
+    "dispatch_channel": "operator-ui",
+    "completion_priority": "high",
+    "next_completion_action": "operator-complete",
+    "suppression_reason": null
+  }
+]
