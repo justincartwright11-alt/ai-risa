@@ -1,0 +1,15 @@
+{
+  "total_queued": 1,
+  "total_dispatched": 1,
+  "total_outcomes": 1,
+  "total_reconciled": 1,
+  "total_audits": 1,
+  "by_delivery_state": {
+    "sent": 1
+  },
+  "by_dispatch_state": {
+    "delivered": 1
+  },
+  "outstanding_closure_items": 0,
+  "outstanding_items": []
+}
