@@ -1,0 +1,19 @@
+[
+  {
+    "retry_execution_outcome_id": "bc43928b7a0a8e5d",
+    "retry_execution_id": "e60bd32bac9b98f5",
+    "resolution_case_id": "RES-b5565150eed50446",
+    "dedupe_key": "RES-b5565150eed50446|retry_requeue|smtp://mail.example.com/queue/evt-002|1",
+    "execution_state": "settled",
+    "result_state": "success",
+    "result_code": "250",
+    "result_summary": "Message delivered successfully.",
+    "attempt_number": 1,
+    "attempted_at": "2026-04-06T00:35:55.665577Z",
+    "completed_at": "2026-04-06T01:10:00.000000Z",
+    "followup_action": null,
+    "reopen_required": false,
+    "created_at": "2026-04-06T00:33:23.335436Z",
+    "updated_at": "2026-04-06T01:10:00.000000Z"
+  }
+]
