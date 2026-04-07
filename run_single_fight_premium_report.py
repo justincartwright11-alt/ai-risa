@@ -1,4 +1,12 @@
-﻿def _peek_conf(src):
+﻿def _prediction_payload(prediction_record) -> dict:
+    if hasattr(prediction_record, "to_json_dict"):
+        payload = prediction_record.to_json_dict()
+    elif hasattr(prediction_record, "model_dump"):
+        payload = prediction_record.model_dump(mode="python")
+    else:
+        payload = dict(prediction_record)
+    return _json_safe(payload)
+def _peek_conf(src):
     if src is None:
         return None
     if isinstance(src, dict):
@@ -154,6 +162,7 @@ def main():
     stoppage_sensitivity = getattr(args, "sensitivity", 1.0)
 
 
+
     prediction_record = build_prediction_record(
         legacy_prediction=engine_output,
         matchup_record=matchup_record,
@@ -169,64 +178,15 @@ def main():
         # Use defaults for calibration_version and fighter_prior_version
     )
 
-    pipeline_result = engine_output.get("pipeline_result", {}) if isinstance(engine_output, dict) else {}
+    output_payload = _prediction_payload(prediction_record)
 
-    output_payload = (
-        prediction_record.model_dump()
-        if hasattr(prediction_record, "model_dump")
-        else json.loads(prediction_record.json())
-    )
-
-    source_dicts = [
-        output_payload if isinstance(output_payload, dict) else {},
-        pipeline_result if isinstance(pipeline_result, dict) else {},
-        engine_output if isinstance(engine_output, dict) else {},
-    ]
-
-    for key in ("confidence", "predicted_winner_id", "method", "round"):
-        if output_payload.get(key) is None:
-            for src in source_dicts[1:]:
-                value = src.get(key)
-                if value is not None:
-                    output_payload[key] = value
-                    break
-
-    output_payload = _json_safe(output_payload)
-
-    if output_payload is None:
-        raise RuntimeError("output_payload was not built before JSON serialization")
-
-    # Recursively normalize output_payload for JSON serialization
-    output_payload = _json_safe(output_payload)
-
-    # Write output file first
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(output_payload, f, ensure_ascii=False, indent=2)
     print(f"[INFO] Wrote prediction to {args.output}")
 
     # Append to prediction ledger (live capture)
     try:
-        # Convert prediction_record to dict if needed
-        if hasattr(prediction_record, 'model_dump'):
-            record_dict = prediction_record.model_dump()
-        elif hasattr(prediction_record, 'dict'):
-            record_dict = prediction_record.dict()
-        elif isinstance(prediction_record, dict):
-            record_dict = prediction_record
-        else:
-            raise TypeError("PredictionRecord is not serializable to dict for ledger append.")
-        # Convert any datetime values to ISO strings for JSON serialization
-        def convert_datetimes(obj):
-            if isinstance(obj, dict):
-                return {k: convert_datetimes(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [convert_datetimes(v) for v in obj]
-            elif hasattr(obj, 'isoformat') and callable(obj.isoformat):
-                return obj.isoformat()
-            else:
-                return obj
-        record_dict = convert_datetimes(record_dict)
-        append_prediction_record(record_dict, r'C:\Users\jusin\ai_risa_data\ledger\prediction_ledger.jsonl')
+        append_prediction_record(dict(output_payload), r'C:\Users\jusin\ai_risa_data\ledger\prediction_ledger.jsonl')
         print(f"[INFO] Appended prediction to prediction_ledger.jsonl")
     except Exception as e:
         print(f"[WARNING] Prediction ledger append failed: {e}")

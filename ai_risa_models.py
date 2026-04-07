@@ -275,7 +275,14 @@ def apply_model_updates(calibration_report: dict) -> dict:
     return state
 import tempfile
 def write_prediction_record(prediction_payload: dict) -> str:
-    # Deterministically return the prediction record (no file write)
+    # Accepts a PredictionRecord or dict, always returns the canonical record object
+    if hasattr(prediction_payload, "to_json_dict"):
+        payload = prediction_payload.to_json_dict()
+    elif hasattr(prediction_payload, "model_dump"):
+        payload = prediction_payload.model_dump(mode="python")
+    else:
+        payload = dict(prediction_payload)
+    # Existing file-write logic would go here (if any)
     print("[TRACE] write_prediction_record:DEPRECATED - no file write performed", file=sys.stderr)
     return prediction_payload
 # --- Phase 6: Batch Automation ---
