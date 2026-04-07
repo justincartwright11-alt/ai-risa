@@ -1,0 +1,17 @@
+{
+  "name": "Tariq Osaro",
+  "country": "Netherlands",
+  "weight_class": "Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 193,
+  "reach_cm": 200,
+  "dob": "1995-09-15",
+  "record": {
+    "wins": 25,
+    "losses": 3,
+    "draws": 1,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

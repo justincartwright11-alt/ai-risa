@@ -1,0 +1,12 @@
+{
+  "matchup_id": "fighter_tariq_osaro_vs_fighter_nico_horta",
+  "fighter_a_id": "fighter_tariq_osaro",
+  "fighter_b_id": "fighter_nico_horta",
+  "event_id": "glory_107_2026_04_26",
+  "event_name": "GLORY 107: Wisse vs. Kwasi",
+  "event_date": "2026-04-26",
+  "weight_class": "heavyweight",
+  "scheduled_rounds": 3,
+  "fight_order": 2,
+  "title_fight": false
+}

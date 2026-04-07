@@ -1,0 +1,17 @@
+{
+  "name": "Iuri Fernandes",
+  "country": "Brazil",
+  "weight_class": "Light Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 188,
+  "reach_cm": 193,
+  "dob": "1993-03-14",
+  "record": {
+    "wins": 18,
+    "losses": 5,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

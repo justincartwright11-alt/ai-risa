@@ -1,0 +1,17 @@
+{
+  "name": "Mohamed Touchassie",
+  "country": "Netherlands",
+  "weight_class": "Light Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 188,
+  "reach_cm": 192,
+  "dob": "2001-07-20",
+  "record": {
+    "wins": 15,
+    "losses": 0,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

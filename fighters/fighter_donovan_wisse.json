@@ -1,0 +1,17 @@
+{
+  "name": "Donovan Wisse",
+  "country": "Suriname",
+  "weight_class": "Middleweight",
+  "stance": "Orthodox",
+  "height_cm": 185,
+  "reach_cm": 190,
+  "dob": "1997-10-18",
+  "record": {
+    "wins": 19,
+    "losses": 1,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

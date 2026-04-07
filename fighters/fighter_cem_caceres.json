@@ -1,0 +1,17 @@
+{
+  "name": "Cem Caceres",
+  "country": "Germany",
+  "weight_class": "Light Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 188,
+  "reach_cm": 192,
+  "dob": "1996-02-11",
+  "record": {
+    "wins": 14,
+    "losses": 3,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

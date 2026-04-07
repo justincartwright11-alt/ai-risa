@@ -1,0 +1,17 @@
+{
+  "name": "Nico Horta",
+  "country": "Portugal",
+  "weight_class": "Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 190,
+  "reach_cm": 195,
+  "dob": "1994-06-22",
+  "record": {
+    "wins": 15,
+    "losses": 4,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

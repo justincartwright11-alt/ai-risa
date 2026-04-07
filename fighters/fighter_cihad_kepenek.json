@@ -1,0 +1,17 @@
+{
+  "name": "Cihad Kepenek",
+  "country": "Turkey",
+  "weight_class": "Light Heavyweight",
+  "stance": "Orthodox",
+  "height_cm": 190,
+  "reach_cm": 195,
+  "dob": "1990-06-04",
+  "record": {
+    "wins": 25,
+    "losses": 6,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}
