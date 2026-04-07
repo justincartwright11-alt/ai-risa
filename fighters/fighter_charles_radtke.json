@@ -1,0 +1,20 @@
+{
+  "name": "Charles Radtke",
+  "nickname": "",
+  "country": "USA",
+  "weight_class": "Welterweight",
+  "stance": "Orthodox",
+  "height_cm": 180,
+  "reach_cm": 185,
+  "dob": "1990-10-20",
+  "record": {
+    "wins": 9,
+    "losses": 3,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Striker",
+  "style_secondary": "BJJ",
+  "notable_wins": [],
+  "organization": "UFC"
+}

@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_johnny_walker",
+  "name": "Johnny Walker",
+  "nickname": "",
+  "birth_date": "1992-03-30",
+  "nationality": "Brazil",
+  "height_cm": 198,
+  "reach_cm": 208,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 22, "losses": 9, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

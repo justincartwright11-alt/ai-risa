@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_curtis_blaydes",
+  "name": "Curtis Blaydes",
+  "nickname": "Razor",
+  "birth_date": "1991-02-18",
+  "nationality": "USA",
+  "height_cm": 193,
+  "reach_cm": 203,
+  "stance": "orthodox",
+  "weight_class": "heavyweight",
+  "record": {"wins": 19, "losses": 5, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

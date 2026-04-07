@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_aaron_pico",
+  "name": "Aaron Pico",
+  "nickname": "",
+  "birth_date": "1996-09-23",
+  "nationality": "USA",
+  "height_cm": 173,
+  "reach_cm": 180,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 13, "losses": 5, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

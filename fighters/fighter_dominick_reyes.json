@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_dominick_reyes",
+  "name": "Dominick Reyes",
+  "nickname": "The Devastator",
+  "birth_date": "1989-12-26",
+  "nationality": "USA",
+  "height_cm": 193,
+  "reach_cm": 193,
+  "stance": "southpaw",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 15, "losses": 5, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

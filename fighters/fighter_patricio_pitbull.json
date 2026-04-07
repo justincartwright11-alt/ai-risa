@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_patricio_pitbull",
+  "name": "Patricio Pitbull",
+  "nickname": "Pitbull",
+  "birth_date": "1987-07-07",
+  "nationality": "Brazil",
+  "height_cm": 166,
+  "reach_cm": 165,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 37, "losses": 8, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

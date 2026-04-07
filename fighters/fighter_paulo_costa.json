@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_paulo_costa",
+  "name": "Paulo Costa",
+  "nickname": "The Eraser",
+  "birth_date": "1991-04-21",
+  "nationality": "Brazil",
+  "height_cm": 185,
+  "reach_cm": 185,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 15, "losses": 4, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

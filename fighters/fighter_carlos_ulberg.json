@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_carlos_ulberg",
+  "name": "Carlos Ulberg",
+  "nickname": "Black Jag",
+  "birth_date": "1991-11-17",
+  "nationality": "New Zealand",
+  "height_cm": 193,
+  "reach_cm": 193,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 14, "losses": 1, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

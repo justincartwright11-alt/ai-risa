@@ -1,0 +1,20 @@
+{
+  "name": "Tatiana Suarez",
+  "nickname": "",
+  "country": "USA",
+  "weight_class": "Strawweight",
+  "stance": "Orthodox",
+  "height_cm": 165,
+  "reach_cm": 165,
+  "dob": "1990-12-19",
+  "record": {
+    "wins": 10,
+    "losses": 0,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Wrestling",
+  "style_secondary": "BJJ",
+  "notable_wins": ["Carla Esparza", "Alexa Grasso"],
+  "organization": "UFC"
+}

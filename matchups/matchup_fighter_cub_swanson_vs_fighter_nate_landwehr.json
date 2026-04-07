@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_cub_swanson_vs_fighter_nate_landwehr",
+  "fighter_a_id": "fighter_cub_swanson",
+  "fighter_b_id": "fighter_nate_landwehr",
+  "event_id": "ufc_327_2026_04_12",
+  "event_name": "UFC 327: Procházka vs. Ulberg",
+  "event_date": "2026-04-12",
+  "weight_class": "featherweight",
+  "scheduled_rounds": 3,
+  "fight_order": 5
+}

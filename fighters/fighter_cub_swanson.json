@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_cub_swanson",
+  "name": "Cub Swanson",
+  "nickname": "Killer Cub",
+  "birth_date": "1983-11-02",
+  "nationality": "USA",
+  "height_cm": 173,
+  "reach_cm": 178,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 30, "losses": 14, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

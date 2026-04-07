@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_kevin_holland",
+  "name": "Kevin Holland",
+  "nickname": "Trailblazer",
+  "birth_date": "1992-11-05",
+  "nationality": "USA",
+  "height_cm": 191,
+  "reach_cm": 206,
+  "stance": "orthodox",
+  "weight_class": "welterweight",
+  "record": {"wins": 28, "losses": 15, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}
