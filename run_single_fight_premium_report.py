@@ -98,6 +98,33 @@ def main():
     fight["fighter_a_profile"] = fighter_a_profile
     fight["fighter_b_profile"] = fighter_b_profile
 
+    import os
+    def _resolve_profile_path(path_value, fighter_id, fighters_dir):
+        if isinstance(path_value, str) and path_value.strip():
+            return path_value
+        if isinstance(fighter_id, str) and fighter_id.strip():
+            candidate = os.path.join(fighters_dir, f"{fighter_id}.json")
+            if os.path.exists(candidate):
+                return candidate
+        raise FileNotFoundError(
+            f"Missing fighter profile path for fighter_id={fighter_id!r}. "
+            f"Checked explicit path={path_value!r} and derived path in {fighters_dir!r}."
+        )
+
+    fighters_dir = r"C:\Users\jusin\ai_risa_data\fighters"
+    fighter_a_profile_path = _resolve_profile_path(
+        fighter_a_profile.get("profile_path") if isinstance(fighter_a_profile, dict) else None,
+        fighter_a_id,
+        fighters_dir,
+    )
+    fighter_b_profile_path = _resolve_profile_path(
+        fighter_b_profile.get("profile_path") if isinstance(fighter_b_profile, dict) else None,
+        fighter_b_id,
+        fighters_dir,
+    )
+    assert isinstance(fighter_a_profile_path, str) and fighter_a_profile_path.strip(), "fighter_a_profile_path must be a non-empty string"
+    assert isinstance(fighter_b_profile_path, str) and fighter_b_profile_path.strip(), "fighter_b_profile_path must be a non-empty string"
+
 
     engine_output = engine_adapter(
         fight,
