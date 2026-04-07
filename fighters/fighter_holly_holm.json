@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_holly_holm",
+  "name": "Holly Holm",
+  "nickname": "The Preacher's Daughter",
+  "birth_date": "1981-10-17",
+  "nationality": "United States",
+  "height_cm": 173,
+  "reach_cm": 175,
+  "stance": "southpaw",
+  "weight_class": "women's bantamweight",
+  "record": {"wins": 15, "losses": 7, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

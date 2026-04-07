@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_kayla_harrison",
+  "name": "Kayla Harrison",
+  "nickname": "",
+  "birth_date": "1990-07-02",
+  "nationality": "United States",
+  "height_cm": 173,
+  "reach_cm": 175,
+  "stance": "orthodox",
+  "weight_class": "women's bantamweight",
+  "record": {"wins": 17, "losses": 1, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

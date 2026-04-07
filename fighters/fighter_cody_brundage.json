@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_cody_brundage",
+  "name": "Cody Brundage",
+  "nickname": "",
+  "birth_date": "1994-05-16",
+  "nationality": "United States",
+  "height_cm": 185,
+  "reach_cm": 185,
+  "stance": "orthodox",
+  "weight_class": "middleweight",
+  "record": {"wins": 10, "losses": 6, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

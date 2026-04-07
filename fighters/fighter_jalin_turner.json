@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_jalin_turner",
+  "name": "Jalin Turner",
+  "nickname": "The Tarantula",
+  "birth_date": "1995-05-18",
+  "nationality": "United States",
+  "height_cm": 191,
+  "reach_cm": 196,
+  "stance": "southpaw",
+  "weight_class": "lightweight",
+  "record": {"wins": 14, "losses": 8, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

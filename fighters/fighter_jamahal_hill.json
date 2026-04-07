@@ -1,0 +1,18 @@
+{
+  "fighter_id": "fighter_jamahal_hill",
+  "name": "Jamahal Hill",
+  "nickname": "Sweet Dreams",
+  "birth_date": "1991-05-19",
+  "nationality": "United States",
+  "height_cm": 193,
+  "reach_cm": 201,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {
+    "wins": 12,
+    "losses": 1,
+    "draws": 0,
+    "no_contest": 1
+  },
+  "promotion": "UFC"
+}

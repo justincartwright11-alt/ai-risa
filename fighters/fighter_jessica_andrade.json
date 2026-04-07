@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_jessica_andrade",
+  "name": "Jéssica Andrade",
+  "nickname": "Bate Estaca",
+  "birth_date": "1991-09-25",
+  "nationality": "Brazil",
+  "height_cm": 156,
+  "reach_cm": 157,
+  "stance": "orthodox",
+  "weight_class": "women's strawweight",
+  "record": {"wins": 26, "losses": 12, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

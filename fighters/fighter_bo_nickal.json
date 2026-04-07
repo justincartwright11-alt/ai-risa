@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_bo_nickal",
+  "name": "Bo Nickal",
+  "nickname": "",
+  "birth_date": "1996-01-14",
+  "nationality": "United States",
+  "height_cm": 185,
+  "reach_cm": 193,
+  "stance": "orthodox",
+  "weight_class": "middleweight",
+  "record": {"wins": 6, "losses": 0, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

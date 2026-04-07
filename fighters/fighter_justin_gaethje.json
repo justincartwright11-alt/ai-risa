@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_justin_gaethje",
+  "name": "Justin Gaethje",
+  "nickname": "The Highlight",
+  "birth_date": "1988-11-14",
+  "nationality": "United States",
+  "height_cm": 180,
+  "reach_cm": 177,
+  "stance": "orthodox",
+  "weight_class": "lightweight",
+  "record": {"wins": 25, "losses": 5, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_sodiq_yusuff",
+  "name": "Sodiq Yusuff",
+  "nickname": "Super",
+  "birth_date": "1993-05-19",
+  "nationality": "Nigeria",
+  "height_cm": 175,
+  "reach_cm": 180,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 13, "losses": 4, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}
