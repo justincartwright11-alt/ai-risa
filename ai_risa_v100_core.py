@@ -34,13 +34,28 @@ def _build_explanation_layer(signal_bundle):
     risk_factors = []
     what_could_flip_the_fight = []
 
-    # Aggregate edge
+    # Aggregate edge calibration: suppress tactical edge for dead-even or narrow fights
+    narrow_gap_band = 0.01
     if abs(agg_edge) < 1e-6 and all(abs(x) < 0.05 for x in [power_edge, conditioning_edge, mental_edge_val, control_edge, finish_pressure, reversal_pressure, volatility]):
         # Flat or non-informative signal bundle: emit only a cautious confidence explanation
         confidence_explanation = (
             "Confidence is low because the executed-path signal bundle shows little meaningful separation and no stable tactical edge is clearly separating the matchup."
         )
         # key_tactical_edges, risk_factors, what_could_flip_the_fight remain empty
+    elif abs(agg_edge) < narrow_gap_band:
+        # Suppress winner-side tactical edge for true dead-even or ultra-narrow fights only
+        # No key_tactical_edges emitted
+        if volatility > 0.05:
+            risk_factors.append("High volatility: winner signal is unstable")
+        else:
+            risk_factors.append("Winner signal is narrow; volatility is low")
+        if flip_pressure > 0.05:
+            what_could_flip_the_fight.append(f"If {loser} surges, fight could flip (flip pressure {flip_pressure:.2f})")
+        else:
+            what_could_flip_the_fight.append("Any small swing in model signal could reverse the outcome")
+        confidence_explanation = (
+            f"Confidence is low: model signal separation is extremely narrow (gap {abs(agg_edge):.2f})."
+        )
     elif abs(agg_edge) < 0.05:
         key_tactical_edges.append(f"Aggregate model signal slightly favors {winner} (gap {abs(agg_edge):.2f})")
         # Add tactical edges if present
