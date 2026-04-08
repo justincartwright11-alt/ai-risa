@@ -645,14 +645,25 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     finish_share_a = stoppages_a / total_sims if total_sims > 0 else 0.0
     finish_share_b = stoppages_b / total_sims if total_sims > 0 else 0.0
     finish_pressure = finish_share_a - finish_share_b
-    # Control/initiative edge: normalized difference if available, else neutral
-    total_control = control_a + control_b
-    if total_control != 0:
-        control_share_a = control_a / total_control
-        control_share_b = control_b / total_control
-        control_edge = control_share_a - control_share_b
-    else:
+    # Control/initiative edge: signed bounded ratio with activity damping
+    raw_diff = control_a - control_b
+    activity = abs(control_a) + abs(control_b)
+    control_floor = 0.5  # fixed for this branch
+    if activity <= 1e-9:
         control_edge = 0.0
+    else:
+        base_edge = raw_diff / activity  # bounded to [-1, 1]
+        activity_weight = min(1.0, activity / control_floor)
+        control_edge = base_edge * activity_weight
+
+    # Debug print: control/initiative raw and normalized values
+    print("[CONTROL_DEBUG] control_a=", control_a, file=sys.stderr)
+    print("[CONTROL_DEBUG] control_b=", control_b, file=sys.stderr)
+    print("[CONTROL_DEBUG] raw_diff=", raw_diff, file=sys.stderr)
+    print("[CONTROL_DEBUG] activity=", activity, file=sys.stderr)
+    print("[CONTROL_DEBUG] base_edge=", base_edge if activity > 1e-9 else 0.0, file=sys.stderr)
+    print("[CONTROL_DEBUG] activity_weight=", activity_weight if activity > 1e-9 else 0.0, file=sys.stderr)
+    print("[CONTROL_DEBUG] control_or_initiative_edge=", control_edge, file=sys.stderr)
     # Flip pressure: how much would the loser need to gain to flip?
     opponent_side_flip_pressure = abs(aggregate_edge)
 
