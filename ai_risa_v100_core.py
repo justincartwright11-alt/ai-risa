@@ -472,6 +472,7 @@ def _infer_method_and_round(prob_gap, power_edge, conditioning_edge, mental_edge
     return "Decision", "mid"
 
 def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styleB=None, fighterA_name=None, fighterB_name=None, confidence_scale=1.0, stoppage_sensitivity=1.0, late_fatigue_bias=1.0, judge_decision_bias=1.0):
+    # ...existing code...
     # --- Consolidated safe-default initialization block (must be first lines of function) ---
     # --- Canonical ID extraction block ---
     matchup_id = None
@@ -897,25 +898,60 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
 
     print(f"[RESULT_TRACE] wins_a={wins_a} wins_b={wins_b} draws={draws}", flush=True)
 
-    if not selected_method:
-        selected_method = "Decision"
-    if not selected_round:
-        selected_round = "full"
 
-    # --- Ensure result_dict is always defined ---
-    if 'result_dict' not in locals() or result_dict is None:
-        result_dict = {}
-    if result_dict.get('confidence') is None:
-        # Prefer real signal if available, else fallback
-        if wins_a > 0 and wins_b == 0:
-            result_dict['confidence'] = 1.0
-        elif wins_b > 0 and wins_a == 0:
-            result_dict['confidence'] = 1.0
-        elif wins_a == wins_b and wins_a > 0:
-            result_dict['confidence'] = 0.5
+    # --- sparse-case finalization guard: place immediately before result_dict headline assignments ---
+    debug_metrics = debug_metrics if isinstance(debug_metrics, dict) else {}
+
+    predicted_winner_id_v = locals().get("predicted_winner_id")
+    confidence_v = locals().get("confidence")
+    selected_method_v = locals().get("selected_method")
+    selected_round_v = locals().get("selected_round")
+
+    wins_a_v = locals().get("wins_a", 0)
+    wins_b_v = locals().get("wins_b", 0)
+    draws_v = locals().get("draws", 0)
+
+    fighter_a_id_v = locals().get("fighter_a_id")
+    fighter_b_id_v = locals().get("fighter_b_id")
+    win_signal_a_v = locals().get("win_signal_a", 0.0)
+    win_signal_b_v = locals().get("win_signal_b", 0.0)
+
+    required_missing = any(
+        v is None for v in (
+            predicted_winner_id_v,
+            confidence_v,
+            selected_method_v,
+            selected_round_v,
+        )
+    )
+
+    zero_tally_case = (wins_a_v == 0 and wins_b_v == 0 and draws_v == 0)
+
+    if zero_tally_case or required_missing:
+        debug_metrics["fallback_triggered"] = True
+        debug_metrics["fallback_reason"] = (
+            "zero_tallies" if zero_tally_case else "missing_required_fields"
+        )
+
+        if predicted_winner_id_v is None:
+            if fighter_a_id_v is not None and fighter_b_id_v is not None:
+                predicted_winner_id_v = (
+                    fighter_a_id_v if win_signal_a_v >= win_signal_b_v else fighter_b_id_v
+                )
+
+        # Confidence fallback: always float in [0.0, 1.0]
+        if confidence_v is None:
+            signal_gap = abs(float(win_signal_a_v) - float(win_signal_b_v))
+            confidence_v = max(0.5, min(1.0, 0.5 + signal_gap))
         else:
-            signal_conf = abs(float(win_signal_a) - float(win_signal_b)) if 'win_signal_a' in locals() and 'win_signal_b' in locals() else None
-            result_dict['confidence'] = signal_conf if signal_conf and signal_conf > 0.0 else 0.01
+            confidence_v = float(confidence_v)
+            confidence_v = max(0.0, min(1.0, confidence_v))
+
+        if selected_method_v is None:
+            selected_method_v = "Decision"
+
+        if selected_round_v is None:
+            selected_round_v = "full"
 
     # --- TRACE 1: After simulation loop ---
     print(
@@ -924,11 +960,27 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         file=sys.stderr,
     )
     sys.stderr.flush()
-    result_dict["predicted_winner_id"] = predicted_winner_id
-    print(f"[TRACE] result_dict['predicted_winner_id'] set: {predicted_winner_id} (is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
-    result_dict["method"] = selected_method
-    result_dict["round"] = selected_round
+    result_dict["predicted_winner_id"] = predicted_winner_id_v
+    result_dict["confidence"] = float(confidence_v)
+    print(f"[TRACE] result_dict['predicted_winner_id'] set: {predicted_winner_id_v} (is_id: {str(predicted_winner_id_v).startswith('fighter_')})", flush=True)
+    result_dict["method"] = selected_method_v
+    result_dict["round"] = selected_round_v
     result_dict["input_config"] = {"simulation_count": requested_total_sims}
+    result_dict["debug_metrics"] = debug_metrics
+
+    # --- TRACE 1: After simulation loop ---
+    print(
+        f"[TRACE] canonical_tallies wins_a={wins_a} wins_b={wins_b} draws={draws} "
+        f"stoppages_a={stoppages_a} stoppages_b={stoppages_b}",
+        file=sys.stderr,
+    )
+    sys.stderr.flush()
+    result_dict["predicted_winner_id"] = predicted_winner_id_v
+    print(f"[TRACE] result_dict['predicted_winner_id'] set: {predicted_winner_id_v} (is_id: {str(predicted_winner_id_v).startswith('fighter_')})", flush=True)
+    result_dict["method"] = selected_method_v
+    result_dict["round"] = selected_round_v
+    result_dict["input_config"] = {"simulation_count": requested_total_sims}
+    result_dict["debug_metrics"] = debug_metrics
 
     # --- Inject explanation layer for premium report depth ---
 
