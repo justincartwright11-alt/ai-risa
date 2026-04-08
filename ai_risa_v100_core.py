@@ -410,14 +410,16 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         b_power * 0.12
     )
 
+
+    # --- Begin: Per-simulation finish risk and control/initiative with heavyweight sensitivity ---
+    finish_risk_a = 0.0
+    finish_risk_b = 0.0
     for sim_idx in range(num_sims):
         if sim_idx < 3:
             print(f"[SIM_TRACE] sim={sim_idx} START", file=sys.stderr)
-        # --- OUTER SIMULATION LOOP HARD SAFETY BREAK ---
         if sim_idx > 1000:
             print(f"[BOUNDARY] OUTER_LOOP_HARD_BREAK sim_idx={sim_idx}", file=sys.stderr)
             break
-        # Patch: define style_mod_a and style_mod_b per simulation
         if styleA and styleB:
             style_mod_a = _style_mod(styleA, styleB)
             style_mod_b = _style_mod(styleB, styleA)
@@ -425,12 +427,9 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
             style_mod_a = {"control": 0.0}
             style_mod_b = {"control": 0.0}
 
-        # --- Minimal per-simulation variation patch ---
-        # Use win_signal_a/b as base, add small bounded noise
         noise_scale = 0.05 + 0.10 * (abs(a_power - b_power) + abs(a_cond - b_cond) + abs(a_mental - b_mental))
         sim_score_a = win_signal_a + random.uniform(-noise_scale, noise_scale)
         sim_score_b = win_signal_b + random.uniform(-noise_scale, noise_scale)
-        # Winner
         if sim_score_a > sim_score_b:
             wins_a += 1
             winner_label = "Win_A"
@@ -441,21 +440,31 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
             draws += 1
             winner_label = None
 
-        # Per-sim control/initiative: style_mod control plus small noise
         control_a += style_mod_a.get("control", 0.0) + random.uniform(-0.01, 0.01)
         control_b += style_mod_b.get("control", 0.0) + random.uniform(-0.01, 0.01)
 
-        # Per-sim stoppage: use power/conditioning/mental as proxy for finish pressure
-        stoppage_chance_a = max(0.0, a_power * 0.25 + a_cond * 0.10 + a_mental * 0.10)
-        stoppage_chance_b = max(0.0, b_power * 0.25 + b_cond * 0.10 + b_mental * 0.10)
-        # Add small noise to stoppage chance
-        stoppage_a = random.random() < (stoppage_chance_a * 0.15 + 0.01)
-        stoppage_b = random.random() < (stoppage_chance_b * 0.15 + 0.01)
+        # Heavyweight sensitivity: boost power and lower finish threshold for HW
+        is_heavyweight = (fighterA.get("weight_class", "").lower() == "heavyweight" and fighterB.get("weight_class", "").lower() == "heavyweight")
+        power_weight = 0.35 if is_heavyweight else 0.25
+        cond_weight = 0.10
+        mental_weight = 0.10
+        finish_scale = 0.22 if is_heavyweight else 0.15
+        finish_bias = 0.03 if is_heavyweight else 0.01
+
+        # Per-sim finish risk (not just binary stoppage)
+        sim_finish_risk_a = max(0.0, a_power * power_weight + a_cond * cond_weight + a_mental * mental_weight)
+        sim_finish_risk_b = max(0.0, b_power * power_weight + b_cond * cond_weight + b_mental * mental_weight)
+        finish_risk_a += sim_finish_risk_a * finish_scale + finish_bias
+        finish_risk_b += sim_finish_risk_b * finish_scale + finish_bias
+
+        # Stoppage tally for legacy compatibility
+        stoppage_a = random.random() < (sim_finish_risk_a * finish_scale + finish_bias)
+        stoppage_b = random.random() < (sim_finish_risk_b * finish_scale + finish_bias)
         if winner_label == "Win_A" and stoppage_a:
             stoppages_a += 1
         elif winner_label == "Win_B" and stoppage_b:
             stoppages_b += 1
-        # --- END minimal per-simulation variation patch ---
+    # --- End: Per-simulation finish risk and control/initiative with heavyweight sensitivity ---
 
     # POST-LOOP: after all simulations
     print("[BOUNDARY] after outer simulation loop", file=sys.stderr)
@@ -640,11 +649,10 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     volatility = 1.0 - float(result_dict.get("confidence", 0.0))
     # Reversal pressure: how close is the loser to flipping the outcome?
     reversal_pressure = min(win_share_a, win_share_b)
-    # Finish pressure: use normalized stoppage share difference
-    total_stoppages = stoppages_a + stoppages_b
-    finish_share_a = stoppages_a / total_sims if total_sims > 0 else 0.0
-    finish_share_b = stoppages_b / total_sims if total_sims > 0 else 0.0
-    finish_pressure = finish_share_a - finish_share_b
+    # Finish pressure: use per-simulation finish risk, heavyweight-sensitive
+    avg_finish_risk_a = finish_risk_a / num_sims if num_sims > 0 else 0.0
+    avg_finish_risk_b = finish_risk_b / num_sims if num_sims > 0 else 0.0
+    finish_pressure = avg_finish_risk_a - avg_finish_risk_b
     # Control/initiative edge: signed bounded ratio with activity damping
     raw_diff = control_a - control_b
     activity = abs(control_a) + abs(control_b)
