@@ -63,8 +63,9 @@ def _build_explanation_layer(signal_bundle):
     # Insert finish_threat and tactical_volatility for welterweight calibration or lightweight
     if finish_threat:
         risk_factors.append(finish_threat)
-        if is_della_vs_prates:
-            what_could_flip_the_fight.append("A single clean shot from Prates could flip the fight instantly")
+        if is_della_vs_prates and is_welterweight:
+            if "A single clean shot from Prates could flip the fight instantly" not in what_could_flip_the_fight:
+                what_could_flip_the_fight.append("A single clean shot from Prates could flip the fight instantly")
         else:
             what_could_flip_the_fight.append("A sudden finish could flip the fight if the power side lands cleanly")
     if tactical_volatility:
