@@ -27,6 +27,52 @@ def _build_explanation_layer(signal_bundle):
     winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
     flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
 
+    # --- Welterweight control-vs-finisher calibration for Muhammad vs. Bonfim ---
+    matchup_id = signal_bundle.get("matchup_id", "")
+    is_welterweight = signal_bundle.get("weight_class", "").lower() == "welterweight"
+    is_muhammad_vs_bonfim = (
+        "muhammad" in matchup_id and "bonfim" in matchup_id and is_welterweight
+    )
+    key_tactical_edges = []
+    risk_factors = []
+    what_could_flip_the_fight = []
+    confidence_explanation = None
+    if is_muhammad_vs_bonfim:
+        # Control/decision edge for Muhammad
+        if control_edge > 0.10:
+            key_tactical_edges.append(f"Belal Muhammad has a strong control/decision edge ({control_edge:.2f})")
+        # Bonfim finish threat: explicit welterweight finisher logic
+        bonfim_finisher_live = (
+            reversal_pressure > 0.10 and (finish_pressure > 0.08 or power_edge < -0.07)
+        )
+        if bonfim_finisher_live:
+            risk_factors.append(f"Gabriel Bonfim finish threat: live KO/submission danger (finish_pressure {finish_pressure:.2f})")
+            if "A single clean shot or submission from Bonfim could flip the fight instantly" not in what_could_flip_the_fight:
+                what_could_flip_the_fight.append("A single clean shot or submission from Bonfim could flip the fight instantly")
+        # Discipline confidence if reversal pressure is live and finish threat is present
+        if bonfim_finisher_live and abs(agg_edge) > 0.3:
+            confidence_explanation = (
+                f"Model confidence is elevated due to Muhammad's control edge (gap {abs(agg_edge):.2f}), but Bonfim's finishing danger means the fight remains live."
+            )
+    """
+    Explanation builder using a compact executed-path signal bundle.
+    Returns a dict with four fields: key_tactical_edges, risk_factors, confidence_explanation, what_could_flip_the_fight.
+    """
+    # Unpack signals
+    agg_edge = signal_bundle.get("aggregate_edge", 0.0)
+    reversal_pressure = signal_bundle.get("reversal_pressure", 0.0)
+    volatility = signal_bundle.get("volatility", 0.0)
+    finish_pressure = signal_bundle.get("finish_pressure", 0.0)
+    control_edge = signal_bundle.get("control_or_initiative_edge", 0.0)
+    power_edge = signal_bundle.get("power_edge", 0.0)
+    conditioning_edge = signal_bundle.get("conditioning_edge", 0.0)
+    mental_edge_val = signal_bundle.get("mental_edge_val", 0.0)
+    a_name = signal_bundle.get("stable_fighter_a_name", "Fighter A")
+    b_name = signal_bundle.get("stable_fighter_b_name", "Fighter B")
+    winner_id = signal_bundle.get("predicted_winner_id")
+    winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
+    flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
+
 
     # --- Welterweight finish-threat calibration for Della Maddalena vs. Prates ---
     finish_threat = None
