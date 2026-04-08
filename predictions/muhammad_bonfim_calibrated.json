@@ -7,7 +7,7 @@
   "prediction_family_id": "matchup_fighter_belal_muhammad_vs_fighter_gabriel_bonfim",
   "matchup_id": "matchup_fighter_belal_muhammad_vs_fighter_gabriel_bonfim",
   "workflow_type": "single_fight",
-  "prediction_timestamp": "2026-04-08T13:48:41.376145+00:00",
+  "prediction_timestamp": "2026-04-08T14:13:59.934511+00:00",
   "fighter_a_id": "fighter_belal_muhammad",
   "fighter_b_id": "fighter_gabriel_bonfim",
   "predicted_winner_id": "fighter_belal_muhammad",
@@ -35,14 +35,14 @@
   "artifact_paths": [],
   "status": "predicted",
   "key_tactical_edges": [
-    "Aggregate model signal favors fighter_belal_muhammad (gap 0.51)",
-    "fighter_belal_muhammad has a control/initiative edge (0.57)"
+    "Aggregate model signal favors fighter_belal_muhammad (gap 0.52)",
+    "fighter_belal_muhammad has a control/initiative edge (1.00)"
   ],
   "risk_factors": [
     "fighter_gabriel_bonfim has live reversal pressure (0.24)",
     "Volatility is high: fight could swing"
   ],
-  "confidence_explanation": "Model confidence is proportional to the aggregate signal gap (gap 0.51).",
+  "confidence_explanation": "Model confidence is proportional to the aggregate signal gap (gap 0.52).",
   "what_could_flip_the_fight": [
     "If fighter_gabriel_bonfim closes the aggregate signal gap, fight could flip"
   ]

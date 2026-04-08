@@ -7,7 +7,7 @@
   "prediction_family_id": "matchup_fighter_song_yadong_vs_fighter_deiveson_figueiredo",
   "matchup_id": "matchup_fighter_song_yadong_vs_fighter_deiveson_figueiredo",
   "workflow_type": "single_fight",
-  "prediction_timestamp": "2026-04-08T13:48:22.111502+00:00",
+  "prediction_timestamp": "2026-04-08T14:13:57.817175+00:00",
   "fighter_a_id": "fighter_song_yadong",
   "fighter_b_id": "fighter_deiveson_figueiredo",
   "predicted_winner_id": "fighter_song_yadong",
@@ -34,9 +34,7 @@
   "debug_metrics": {},
   "artifact_paths": [],
   "status": "predicted",
-  "key_tactical_edges": [
-    "Song Yadong has a visible control/initiative edge (0.30)"
-  ],
+  "key_tactical_edges": [],
   "risk_factors": [
     "Deiveson Figueiredo's aging-adjusted reversal danger is live: speed and instability could flip the fight if Song loses focus",
     "Speed/instability risk is high: Figueiredo's volatility is not just generic, it's aging-driven and opportunistic"

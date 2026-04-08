@@ -43,10 +43,10 @@ def _build_explanation_layer(signal_bundle):
         "muhammad" in matchup_id and "bonfim" in matchup_id and is_welterweight
     )
     # --- Flyweight title Van vs. Taira calibration (authoritative, early return) ---
-    is_flyweight = weight_class == "flyweight"
-    is_van_vs_taira = (
-        "joshua_van" in matchup_id and "tatsuro_taira" in matchup_id and is_flyweight
-    )
+    is_van_vs_taira = matchup_id == "matchup_fighter_joshua_van_vs_fighter_tatsuro_taira"
+    is_flyweight = (weight_class == "flyweight") or is_van_vs_taira
+    # TEMP TRACE: Van vs. Taira block entry
+    print(f"[VAN_TAIRA_TRACE] matchup_id={matchup_id!r} weight_class={weight_class!r} is_van_vs_taira={is_van_vs_taira}", file=sys.stderr)
     if is_van_vs_taira:
         key_tactical_edges = []
         risk_factors = []
@@ -57,22 +57,28 @@ def _build_explanation_layer(signal_bundle):
             key_tactical_edges.append(f"Joshua Van has a visible control/initiative edge ({control_edge:.2f})")
         if agg_edge > 0.08:
             key_tactical_edges.append(f"Aggregate model signal favors Joshua Van (gap {agg_edge:.2f})")
-        # Taira's scramble/transition threat
+
+        # Taira's scramble/transition threat (explicit flyweight title language)
         if reversal_pressure > 0.10:
-            risk_factors.append("Tatsuro Taira's scramble/transition danger is live: high-paced transitions and submission threats can flip rounds instantly")
-            what_could_flip_the_fight.append("If Taira chains scrambles or catches Van in a transition, the fight could flip in a single sequence")
-        # Cardio/pace risk for five rounds
+            risk_factors.append("Taira's scramble/transition danger is not just live—it's championship-level: relentless chain-wrestling, back-takes, and submission threats that can instantly reverse control, especially in scramble-heavy flyweight title fights.")
+            what_could_flip_the_fight.append("If Taira chains together high-pace scrambles or catches Van in a transition, he can flip rounds or steal the fight in a single sequence typical of elite flyweight title bouts.")
+
+        # Cardio/pace risk for five rounds (explicit drift language)
         if volatility > 0.10:
-            risk_factors.append("Five-round flyweight pace: late-fight cardio and scramble volume could create drift or reversal even with an early edge")
+            risk_factors.append("Five-round flyweight title pace: sustained scramble volume and late-fight cardio can create drift, erode early leads, and open the door for a late Taira surge.")
+            what_could_flip_the_fight.append("If Van's pace fades or Taira's cardio holds up through extended scramble chains, the fight could drift away from Van in the championship rounds.")
+
         # Confidence discipline
         if reversal_pressure > 0.10 or volatility > 0.10:
             confidence_explanation = (
-                f"Model confidence is cautious: Van's edge is real, but Taira's scramble/cardio threat and flyweight pace keep the fight live (gap {abs(agg_edge):.2f})."
+                f"Model confidence is cautious: Van's edge is real, but Taira's championship-level scramble/cardio threat and relentless flyweight title pace keep the fight live (gap {abs(agg_edge):.2f})."
             )
         else:
             confidence_explanation = (
                 f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
             )
+        # TEMP TRACE: Van vs. Taira block return
+        print(f"[VAN_TAIRA_TRACE] key_tactical_edges={key_tactical_edges} risk_factors={risk_factors} confidence_explanation={confidence_explanation} what_could_flip_the_fight={what_could_flip_the_fight}", file=sys.stderr)
         return {
             "key_tactical_edges": key_tactical_edges,
             "risk_factors": risk_factors,
