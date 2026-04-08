@@ -91,6 +91,41 @@ def _build_explanation_layer(signal_bundle):
     what_could_flip_the_fight = []
     confidence_explanation = None
 
+    # --- Featherweight Allen vs. Costa attrition-vs-finisher calibration (authoritative, early return) ---
+    is_allen_vs_costa = matchup_id == "matchup_fighter_arnold_allen_vs_fighter_melquizael_costa" and weight_class == "featherweight"
+    if is_allen_vs_costa:
+        key_tactical_edges = []
+        risk_factors = []
+        what_could_flip_the_fight = []
+        confidence_explanation = None
+        # Allen's attritional control/decision equity
+        if control_edge > 0.08:
+            key_tactical_edges.append(f"Arnold Allen has a visible control/decision edge ({control_edge:.2f})")
+        if agg_edge > 0.08:
+            key_tactical_edges.append(f"Aggregate model signal favors Arnold Allen (gap {agg_edge:.2f})")
+        # Costa's live finish danger
+        finisher_live = finish_pressure > 0.10 or power_edge < -0.07
+        if finisher_live:
+            risk_factors.append(f"Melquizael Costa finish threat: live KO/submission danger (finish_pressure {finish_pressure:.2f})")
+            what_could_flip_the_fight.append("If Costa lands clean or forces a finishing sequence, Allen’s attritional edge can disappear instantly.")
+        # Volatility: surface if present
+        if volatility > 0.10:
+            risk_factors.append("Volatility is high: fight could swing suddenly if Costa finds a finish.")
+        # Confidence discipline: keep cautious if finisher is live
+        if finisher_live:
+            confidence_explanation = (
+                f"Model confidence is disciplined: Allen's edge is real, but Costa's live finishing danger keeps the fight in play (gap {abs(agg_edge):.2f})."
+            )
+        else:
+            confidence_explanation = (
+                f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
+            )
+        return {
+            "key_tactical_edges": key_tactical_edges,
+            "risk_factors": risk_factors,
+            "confidence_explanation": confidence_explanation,
+            "what_could_flip_the_fight": what_could_flip_the_fight,
+        }
 
     # --- Bantamweight Song vs. Figueiredo calibration (authoritative, early return) ---
     if is_song_vs_figueiredo:
