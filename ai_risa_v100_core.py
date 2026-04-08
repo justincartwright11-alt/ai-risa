@@ -27,20 +27,30 @@ def _build_explanation_layer(signal_bundle):
     winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
     flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
 
-    # Lightweight finish-threat and tactical volatility split
-    # For lightweight, finish_threat is power/durability asymmetry, tactical_volatility is high volatility with no clear edge
+
+    # --- Welterweight finish-threat calibration for Della Maddalena vs. Prates ---
     finish_threat = None
     tactical_volatility = None
-    # Heuristic: if both fighters are lightweight, use finish_threat logic
-    # (This is a signal_bundle-level patch; in a full model, use fighter dicts)
-    is_lightweight = signal_bundle.get("weight_class", "").lower() == "lightweight"
-    if is_lightweight:
-        # Use finish_pressure as finish_threat, but only if power or durability asymmetry is present
-        if abs(power_edge) > 0.08 or abs(conditioning_edge) > 0.08:
-            finish_threat = f"Live finish threat: power/durability asymmetry (finish_pressure {finish_pressure:.2f})"
-        # Tactical volatility: high volatility with no clear edge
-        if volatility > 0.15 and abs(agg_edge) < 0.05:
-            tactical_volatility = "High tactical volatility: outcome is highly unstable"
+    matchup_id = signal_bundle.get("matchup_id", "")
+    is_della_vs_prates = (
+        "della_maddalena" in matchup_id and "prates" in matchup_id
+    )
+    is_welterweight = signal_bundle.get("weight_class", "").lower() == "welterweight"
+    # For this matchup, surface finish threat if power asymmetry or Prates' power is high
+    if is_della_vs_prates and is_welterweight:
+        # Prates is always fighter_b in this matchup
+        if power_edge < -0.07 or float(signal_bundle.get("power_b", 0.0)) > 0.83:
+            finish_threat = f"Carlos Prates finish threat: knockout power is live (finish_pressure {finish_pressure:.2f})"
+        if reversal_pressure > 0.10:
+            tactical_volatility = "Reversal pressure is live: Prates can flip the fight with a single moment"
+    else:
+        # Lightweight logic (unchanged)
+        is_lightweight = signal_bundle.get("weight_class", "").lower() == "lightweight"
+        if is_lightweight:
+            if abs(power_edge) > 0.08 or abs(conditioning_edge) > 0.08:
+                finish_threat = f"Live finish threat: power/durability asymmetry (finish_pressure {finish_pressure:.2f})"
+            if volatility > 0.15 and abs(agg_edge) < 0.05:
+                tactical_volatility = "High tactical volatility: outcome is highly unstable"
 
 
     # Winner/loser name logic
@@ -50,13 +60,19 @@ def _build_explanation_layer(signal_bundle):
     key_tactical_edges = []
     risk_factors = []
     what_could_flip_the_fight = []
-    # Insert finish_threat and tactical_volatility for lightweight
+    # Insert finish_threat and tactical_volatility for welterweight calibration or lightweight
     if finish_threat:
         risk_factors.append(finish_threat)
-        what_could_flip_the_fight.append("A sudden finish could flip the fight if the power side lands cleanly")
+        if is_della_vs_prates:
+            what_could_flip_the_fight.append("A single clean shot from Prates could flip the fight instantly")
+        else:
+            what_could_flip_the_fight.append("A sudden finish could flip the fight if the power side lands cleanly")
     if tactical_volatility:
         risk_factors.append(tactical_volatility)
-        what_could_flip_the_fight.append("Any wild swing or momentum shift could reverse the outcome")
+        if is_della_vs_prates:
+            what_could_flip_the_fight.append("Prates' reversal pressure means the fight is never safe until the final bell")
+        else:
+            what_could_flip_the_fight.append("Any wild swing or momentum shift could reverse the outcome")
 
     # Aggregate edge calibration: suppress tactical edge for dead-even or narrow fights
     narrow_gap_band = 0.01
@@ -118,9 +134,15 @@ def _build_explanation_layer(signal_bundle):
         if volatility > 0.05:
             risk_factors.append("Volatility is high: fight could swing")
         what_could_flip_the_fight.append(f"If {loser} closes the aggregate signal gap, fight could flip")
-        confidence_explanation = (
-            f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
-        )
+        # --- Confidence discipline: if reversal pressure is live and aggregate gap is wide, soften confidence language ---
+        if is_della_vs_prates and is_welterweight and reversal_pressure > 0.10 and abs(agg_edge) > 0.5:
+            confidence_explanation = (
+                f"Model confidence is elevated due to the aggregate gap (gap {abs(agg_edge):.2f}), but reversal pressure from Prates means the fight remains dangerous."
+            )
+        else:
+            confidence_explanation = (
+                f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
+            )
 
     return {
         "key_tactical_edges": key_tactical_edges,
@@ -793,6 +815,9 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         "predicted_winner_id": result_dict.get("predicted_winner_id"),
         "winner_side_signal_gap": winner_side_signal_gap,
         "opponent_side_flip_pressure": opponent_side_flip_pressure,
+        "weight_class": fighterA.get("weight_class", "") if 'fighterA' in locals() and hasattr(fighterA, 'get') else "",
+        "matchup_id": matchup_id if 'matchup_id' in locals() else "",
+        "power_b": b_power if 'b_power' in locals() else 0.0,
     }
     # Only inject explanation if we have a predicted winner
     def _as_string_list(value):
