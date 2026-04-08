@@ -27,9 +27,17 @@ def _build_explanation_layer(signal_bundle):
     winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
     flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
 
-    # --- Welterweight control-vs-finisher calibration for Muhammad vs. Bonfim ---
     matchup_id = signal_bundle.get("matchup_id", "")
-    is_welterweight = signal_bundle.get("weight_class", "").lower() == "welterweight"
+    weight_class = signal_bundle.get("weight_class", "").lower()
+    fighter_a_id = signal_bundle.get("fighter_a_id", "")
+    fighter_b_id = signal_bundle.get("fighter_b_id", "")
+    is_bantamweight = weight_class == "bantamweight"
+    is_song_vs_figueiredo = (
+        "song" in matchup_id and "figueiredo" in matchup_id and is_bantamweight
+    )
+    # TEMP TRACE: print normalization and gating logic
+    print(f"[SONG_FIG_TRACE] matchup_id={matchup_id!r} weight_class={weight_class!r} fighter_a_id={fighter_a_id!r} fighter_b_id={fighter_b_id!r} is_song_vs_figueiredo={is_song_vs_figueiredo}", file=sys.stderr)
+    is_welterweight = weight_class == "welterweight"
     is_muhammad_vs_bonfim = (
         "muhammad" in matchup_id and "bonfim" in matchup_id and is_welterweight
     )
@@ -37,7 +45,41 @@ def _build_explanation_layer(signal_bundle):
     risk_factors = []
     what_could_flip_the_fight = []
     confidence_explanation = None
-    if is_muhammad_vs_bonfim:
+
+
+    # --- Bantamweight Song vs. Figueiredo calibration (authoritative, early return) ---
+    if is_song_vs_figueiredo:
+        key_tactical_edges = []
+        risk_factors = []
+        what_could_flip_the_fight = []
+        confidence_explanation = None
+        # Song's control/initiative edge
+        if control_edge > 0.10:
+            key_tactical_edges.append(f"Song Yadong has a visible control/initiative edge ({control_edge:.2f})")
+        # Figueiredo's speed/aging volatility and reversal danger
+        if reversal_pressure > 0.10:
+            risk_factors.append("Deiveson Figueiredo's aging-adjusted reversal danger is live: speed and instability could flip the fight if Song loses focus")
+            what_could_flip_the_fight.append("If Figueiredo's speed or opportunism triggers a reversal, Song's edge could evaporate instantly")
+        if volatility > 0.10:
+            risk_factors.append("Speed/instability risk is high: Figueiredo's volatility is not just generic, it's aging-driven and opportunistic")
+        # Confidence discipline: keep cautious if reversal pressure is live
+        if reversal_pressure > 0.10:
+            confidence_explanation = (
+                f"Model confidence is cautious: Song's edge is real, but Figueiredo's aging volatility and reversal danger keep the fight live (gap {abs(agg_edge):.2f})."
+            )
+        else:
+            confidence_explanation = (
+                f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
+            )
+        return {
+            "key_tactical_edges": key_tactical_edges,
+            "risk_factors": risk_factors,
+            "confidence_explanation": confidence_explanation,
+            "what_could_flip_the_fight": what_could_flip_the_fight,
+        }
+
+    # --- Welterweight control-vs-finisher calibration for Muhammad vs. Bonfim ---
+    elif is_muhammad_vs_bonfim:
         # Control/decision edge for Muhammad
         if control_edge > 0.10:
             key_tactical_edges.append(f"Belal Muhammad has a strong control/decision edge ({control_edge:.2f})")
