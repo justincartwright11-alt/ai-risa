@@ -1,3 +1,69 @@
+def _build_explanation_layer(
+    win_signal_a,
+    win_signal_b,
+    predicted_winner_id=None,
+    confidence=None,
+    a_name=None,
+    b_name=None,
+):
+    """
+    Minimalist explanation builder for executed path. Only uses alive variables.
+    Returns a dict with four fields: key_tactical_edges, risk_factors, confidence_explanation, what_could_flip_the_fight.
+    """
+    # Name fallback logic
+    winner = None
+    loser = None
+    win_signal_gap = win_signal_a - win_signal_b
+    abs_gap = abs(win_signal_gap)
+    # Determine winner/loser names
+    if predicted_winner_id:
+        if a_name and predicted_winner_id in (a_name, str(a_name)):
+            winner = a_name
+            loser = b_name or "Fighter B"
+        elif b_name and predicted_winner_id in (b_name, str(b_name)):
+            winner = b_name
+            loser = a_name or "Fighter A"
+        else:
+            # Fallback: use IDs or generic
+            winner = a_name or "Fighter A"
+            loser = b_name or "Fighter B"
+    else:
+        winner = a_name or "Fighter A"
+        loser = b_name or "Fighter B"
+
+    # --- Explanation logic ---
+    key_tactical_edges = []
+    risk_factors = []
+    what_could_flip_the_fight = []
+
+    # If gap is truly zero (flat fight)
+    if abs_gap < 1e-6:
+        confidence_explanation = (
+            "Confidence is low because aggregate signal separation is flat and no stable tactical edge is separating the matchup."
+        )
+    elif abs_gap < 0.05:
+        # Small but nonzero gap: cautious content
+        key_tactical_edges.append(f"Aggregate model signal slightly favors {winner} (gap {abs_gap:.2f})")
+        risk_factors.append("Winner signal is narrow; volatility is high")
+        what_could_flip_the_fight.append("Any small swing in model signal could reverse the outcome")
+        confidence_explanation = (
+            f"Confidence is low: model signal separation is narrow (gap {abs_gap:.2f}). No stable tactical edge is separating the matchup."
+        )
+    else:
+        # Clearer gap: emit up to 2 concise statements
+        key_tactical_edges.append(f"Aggregate model signal favors {winner} (gap {abs_gap:.2f})")
+        risk_factors.append(f"{loser} could reverse if model signal shifts or new factors emerge")
+        what_could_flip_the_fight.append(f"If {loser} closes the aggregate signal gap, fight could flip")
+        confidence_explanation = (
+            f"Model confidence is proportional to the aggregate signal gap (gap {abs_gap:.2f})."
+        )
+
+    return {
+        "key_tactical_edges": key_tactical_edges,
+        "risk_factors": risk_factors,
+        "confidence_explanation": confidence_explanation,
+        "what_could_flip_the_fight": what_could_flip_the_fight,
+    }
 def adjusted_damage_threat(damage_threat, decision_a, decision_b, control_a, control_b):
     """
     Fallback: Adjusts raw damage threat by decision and control edges.
@@ -474,6 +540,58 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     result_dict["method"] = selected_method
     result_dict["round"] = selected_round
     result_dict["input_config"] = {"simulation_count": requested_total_sims}
+
+    # --- Inject explanation layer for premium report depth ---
+
+
+    # Build stable names for explanation
+    a_name = fighterA_name or fighterA.get("name") or fighterA.get("fighter_id") or fighterA.get("id") or fighterA.get("slug") or "Fighter A"
+    b_name = fighterB_name or fighterB.get("name") or fighterB.get("fighter_id") or fighterB.get("id") or fighterB.get("slug") or "Fighter B"
+    explanation_inputs = {
+        "win_signal_a": float(win_signal_a),
+        "win_signal_b": float(win_signal_b),
+        "predicted_winner_id": result_dict.get("predicted_winner_id"),
+        "confidence": result_dict.get("confidence"),
+        "a_name": a_name,
+        "b_name": b_name,
+    }
+
+    # Only inject explanation if we have a predicted winner
+    def _as_string_list(value):
+        if value is None:
+            return []
+        if isinstance(value, (list, tuple, set)):
+            out = []
+            for item in value:
+                s = str(item).strip()
+                if s:
+                    out.append(s)
+            return out
+        s = str(value).strip()
+        return [s] if s else []
+
+    if result_dict.get("predicted_winner_id"):
+        # ...instrumentation print removed after validation...
+        raw_explanation = _build_explanation_layer(**explanation_inputs) or {}
+        conf_exp = str(raw_explanation.get("confidence_explanation") or "").strip()
+        if not conf_exp:
+            conf_exp = "Confidence is low because aggregate signal separation is flat and no stable tactical edge is separating the matchup."
+        explanation = {
+            "key_tactical_edges": _as_string_list(raw_explanation.get("key_tactical_edges")),
+            "risk_factors": _as_string_list(raw_explanation.get("risk_factors")),
+            "confidence_explanation": conf_exp,
+            "what_could_flip_the_fight": _as_string_list(raw_explanation.get("what_could_flip_the_fight")),
+        }
+    else:
+        explanation = {
+            "key_tactical_edges": [],
+            "risk_factors": [],
+            "confidence_explanation": "",
+            "what_could_flip_the_fight": [],
+        }
+    result_dict.update(explanation)
+
+
     return result_dict
     # --- TRACE 2: After winner/confidence computation ---
     print(f"[TRACE] result_core winner_id={{}} confidence={{}}".format(predicted_winner_id, result_dict.get('confidence')), file=sys.stderr)
@@ -1498,10 +1616,37 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     result_dict["executed_sims"] = executed_sims
     result_dict["counted_total"] = counted_total
     result_dict["debug_metrics"] = debug_metrics or {}
-    print("[BOUNDARY] result_dict ready", file=sys.stderr, flush=True)
-    temp_result = result_dict
-    print("[BOUNDARY] execute_risa_v40 returning", flush=True)
-    return temp_result
+    # Promote key debug fields to top-level for downstream adapter
+    result_dict["signal_gap"] = debug_metrics.get("signal_gap") if isinstance(debug_metrics, dict) else None
+    result_dict["stoppage_propensity"] = debug_metrics.get("stoppage_propensity") if isinstance(debug_metrics, dict) else None
+    result_dict["round_finish_tendency"] = debug_metrics.get("round_finish_tendency") if isinstance(debug_metrics, dict) else None
+    # --- Inject explanation layer for premium report depth at the actual return boundary ---
+    def _as_string_list(value):
+        if value is None:
+            return []
+        if isinstance(value, (list, tuple, set)):
+            out = []
+            for item in value:
+                s = str(item).strip()
+                if s:
+                    out.append(s)
+            return out
+        s = str(value).strip()
+        return [s] if s else []
+
+    raw_explanation = _build_explanation_layer(**explanation_inputs) or {}
+    explanation = {
+        "key_tactical_edges": _as_string_list(raw_explanation.get("key_tactical_edges")),
+        "risk_factors": _as_string_list(raw_explanation.get("risk_factors")),
+        "confidence_explanation": str(raw_explanation.get("confidence_explanation") or "").strip(),
+        "what_could_flip_the_fight": _as_string_list(raw_explanation.get("what_could_flip_the_fight")),
+    }
+
+    result_dict["key_tactical_edges"] = explanation["key_tactical_edges"]
+    result_dict["risk_factors"] = explanation["risk_factors"]
+    result_dict["confidence_explanation"] = explanation["confidence_explanation"]
+    result_dict["what_could_flip_the_fight"] = explanation["what_could_flip_the_fight"]
+    return result_dict
 #!/usr/bin/env python
 """
 AI-RISA v100 Core Integration Layer
