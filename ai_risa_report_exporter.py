@@ -5,6 +5,9 @@ Exports the render-ready report to Markdown or JSON. PDF support can be added la
 import json
 from ai_risa_report_renderer import render_markdown
 
+from ai_risa_report_renderer import render_markdown, _resolve_visual_slot
+from report_render_assets import VISUAL_SLOT_CONFIG
+
 def export_report(report_payload, out_path, fmt="md"):
     if fmt == "md":
         md = render_markdown(report_payload)
@@ -58,10 +61,19 @@ def export_report(report_payload, out_path, fmt="md"):
             else:
                 story.append(Paragraph("(No data)", styles["CustomBody"]))
             story.append(Spacer(1, 0.1*inch))
-        # Visual slots
+        # Visual slots (preserve order, always render placeholder or asset)
         story.append(Paragraph("Visual Dashboard", styles["CustomHeading"]))
-        for slot, slot_info in report_payload.get("visual_slots", {}).items():
-            story.append(Paragraph(f"{slot_info['title']}: {slot_info.get('fallback','No data')}", styles["CustomBody"]))
+        visual_slots = report_payload.get("visual_slots", {})
+        for slot_id in VISUAL_SLOT_CONFIG:
+            slot_payload = visual_slots.get(slot_id, {})
+            slot = _resolve_visual_slot(slot_id, slot_payload)
+            if slot["status"] == "asset":
+                para = f"{slot['title']}: [See asset: {slot['asset_path']}]"
+                if slot['caption']:
+                    para += f"<br/><i>Caption: {slot['caption']}</i>"
+                story.append(Paragraph(para, styles["CustomBody"]))
+            else:
+                story.append(Paragraph(f"{slot['title']}: {slot['fallback_text']}", styles["CustomBody"]))
         # Footer (simple)
         story.append(Spacer(1, 0.2*inch))
         story.append(Paragraph(theme["footer_text"], styles["CustomBody"]))

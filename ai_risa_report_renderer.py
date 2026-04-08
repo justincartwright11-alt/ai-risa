@@ -3,6 +3,31 @@
 Consumes the adapter payload and builds a render-ready document model for output.
 """
 
+
+from report_render_assets import VISUAL_SLOT_CONFIG
+
+def _resolve_visual_slot(slot_id, slot_payload=None):
+    cfg = VISUAL_SLOT_CONFIG.get(slot_id, {})
+    # slot_payload can be None or a dict with asset_path/caption
+    if slot_payload and slot_payload.get("asset_path"):
+        return {
+            "id": slot_id,
+            "title": cfg.get("title", slot_id.title()),
+            "status": "asset",
+            "asset_path": slot_payload["asset_path"],
+            "fallback_text": cfg.get("fallback_text"),
+            "caption": slot_payload.get("caption"),
+        }
+    else:
+        return {
+            "id": slot_id,
+            "title": cfg.get("title", slot_id.title()),
+            "status": "placeholder",
+            "asset_path": None,
+            "fallback_text": cfg.get("fallback_text"),
+            "caption": cfg.get("caption"),
+        }
+
 def render_markdown(report_payload):
     lines = []
     # Metadata/packaging
@@ -30,8 +55,17 @@ def render_markdown(report_payload):
         else:
             lines.append("_(No data)_")
         lines.append("")
-    # Visual slots
+    # Visual slots (preserve order, always render placeholder or asset)
     lines.append("## Visual Dashboard\n")
-    for slot, slot_info in report_payload.get("visual_slots", {}).items():
-        lines.append(f"**{slot_info['title']}:** {slot_info.get('fallback','No data')}")
+    visual_slots = report_payload.get("visual_slots", {})
+    for slot_id in VISUAL_SLOT_CONFIG:
+        slot_payload = visual_slots.get(slot_id, {})
+        slot = _resolve_visual_slot(slot_id, slot_payload)
+        if slot["status"] == "asset":
+            line = f"**{slot['title']}:** [See asset: {slot['asset_path']}]"
+            if slot['caption']:
+                line += f"  \n_Caption: {slot['caption']}_"
+            lines.append(line)
+        else:
+            lines.append(f"**{slot['title']}:** {slot['fallback_text']}")
     return "\n".join(lines)
