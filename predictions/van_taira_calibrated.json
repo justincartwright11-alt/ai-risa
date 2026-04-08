@@ -1,0 +1,48 @@
+{
+  "signal_gap": null,
+  "stoppage_propensity": null,
+  "round_finish_tendency": null,
+  "schema_version": "prediction_record_v1",
+  "prediction_id": "fighter_joshua_van_vs_fighter_tatsuro_taira__s1.0",
+  "prediction_family_id": "fighter_joshua_van_vs_fighter_tatsuro_taira",
+  "matchup_id": "fighter_joshua_van_vs_fighter_tatsuro_taira",
+  "workflow_type": "single_fight",
+  "prediction_timestamp": "2026-04-08T13:48:03.855517+00:00",
+  "fighter_a_id": "fighter_joshua_van",
+  "fighter_b_id": "fighter_tatsuro_taira",
+  "predicted_winner_id": "fighter_joshua_van",
+  "confidence": 0.01,
+  "method": "Decision",
+  "round": "full",
+  "model_version": "unknown",
+  "calibration_version": "calibration_v1.0.0",
+  "fighter_prior_version": "fighter_priors_v1.0.0",
+  "input_config": {
+    "stoppage_sensitivity": 1.0,
+    "simulation_count": 1000,
+    "source_matchup_file": "matchup_fighter_joshua_van_vs_fighter_tatsuro_taira",
+    "extras": {}
+  },
+  "profile_sources": {
+    "fighter_a_profile_path": "unknown_profile_path",
+    "fighter_b_profile_path": "unknown_profile_path"
+  },
+  "profile_hashes": {
+    "fighter_a_hash": null,
+    "fighter_b_hash": null
+  },
+  "debug_metrics": {},
+  "artifact_paths": [],
+  "status": "predicted",
+  "key_tactical_edges": [
+    "Aggregate model signal favors fighter_joshua_van (gap 0.49)"
+  ],
+  "risk_factors": [
+    "fighter_tatsuro_taira has live reversal pressure (0.26)",
+    "Volatility is high: fight could swing"
+  ],
+  "confidence_explanation": "Model confidence is proportional to the aggregate signal gap (gap 0.49).",
+  "what_could_flip_the_fight": [
+    "If fighter_tatsuro_taira closes the aggregate signal gap, fight could flip"
+  ]
+}
