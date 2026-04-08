@@ -1,3 +1,4 @@
+import sys
 from collections import Counter
 def _safe_get(dct, *keys, default=0.5):
     cur = dct
@@ -26,6 +27,22 @@ def _build_explanation_layer(signal_bundle):
     winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
     flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
 
+    # Lightweight finish-threat and tactical volatility split
+    # For lightweight, finish_threat is power/durability asymmetry, tactical_volatility is high volatility with no clear edge
+    finish_threat = None
+    tactical_volatility = None
+    # Heuristic: if both fighters are lightweight, use finish_threat logic
+    # (This is a signal_bundle-level patch; in a full model, use fighter dicts)
+    is_lightweight = signal_bundle.get("weight_class", "").lower() == "lightweight"
+    if is_lightweight:
+        # Use finish_pressure as finish_threat, but only if power or durability asymmetry is present
+        if abs(power_edge) > 0.08 or abs(conditioning_edge) > 0.08:
+            finish_threat = f"Live finish threat: power/durability asymmetry (finish_pressure {finish_pressure:.2f})"
+        # Tactical volatility: high volatility with no clear edge
+        if volatility > 0.15 and abs(agg_edge) < 0.05:
+            tactical_volatility = "High tactical volatility: outcome is highly unstable"
+
+
     # Winner/loser name logic
     winner = a_name if agg_edge >= 0 else b_name
     loser = b_name if agg_edge >= 0 else a_name
@@ -33,6 +50,13 @@ def _build_explanation_layer(signal_bundle):
     key_tactical_edges = []
     risk_factors = []
     what_could_flip_the_fight = []
+    # Insert finish_threat and tactical_volatility for lightweight
+    if finish_threat:
+        risk_factors.append(finish_threat)
+        what_could_flip_the_fight.append("A sudden finish could flip the fight if the power side lands cleanly")
+    if tactical_volatility:
+        risk_factors.append(tactical_volatility)
+        what_could_flip_the_fight.append("Any wild swing or momentum shift could reverse the outcome")
 
     # Aggregate edge calibration: suppress tactical edge for dead-even or narrow fights
     narrow_gap_band = 0.01
@@ -257,8 +281,74 @@ def _infer_method_and_round(prob_gap, power_edge, conditioning_edge, mental_edge
     return "Decision", "mid"
 
 def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styleB=None, fighterA_name=None, fighterB_name=None, confidence_scale=1.0, stoppage_sensitivity=1.0, late_fatigue_bias=1.0, judge_decision_bias=1.0):
-    import sys
-    print("[BOUNDARY] entered execute_risa_v40", file=sys.stderr, flush=True)
+    # --- Consolidated safe-default initialization block (must be first lines of function) ---
+    # --- Canonical ID extraction block ---
+    matchup_id = None
+    raw_a_id = None
+    raw_b_id = None
+    # Try to extract matchup_id from fighterA/fighterB or sys.argv
+    if hasattr(fighterA, 'get') and 'matchup_id' in fighterA:
+        matchup_id = fighterA.get('matchup_id')
+    elif hasattr(fighterB, 'get') and 'matchup_id' in fighterB:
+        matchup_id = fighterB.get('matchup_id')
+    else:
+        # Try to extract from sys.argv if present
+        import sys
+        for arg in sys.argv:
+            if arg.startswith('matchup_fighter_'):
+                matchup_id = arg
+                break
+
+    # Extract raw_a_id and raw_b_id from fighter dicts if present
+    if hasattr(fighterA, 'get'):
+        for key in ('fighter_id', 'id', 'slug'):
+            if fighterA.get(key):
+                raw_a_id = fighterA.get(key)
+                break
+    if hasattr(fighterB, 'get'):
+        for key in ('fighter_id', 'id', 'slug'):
+            if fighterB.get(key):
+                raw_b_id = fighterB.get(key)
+                break
+
+    # Fallback: try to parse from matchup_id if not found
+    def _canonicalize_id(raw_id, fallback, matchup_id=None, which=None):
+        if isinstance(raw_id, str) and raw_id.startswith('fighter_') and raw_id not in ('fighter_a', 'fighter_b'):
+            return raw_id
+        if isinstance(matchup_id, str) and which in ('a', 'b'):
+            slug = matchup_id
+            if slug.startswith('matchup_'):
+                slug = slug[len('matchup_'):]
+            parts = slug.split('_vs_')
+            if len(parts) == 2:
+                left = parts[0]
+                right = parts[1]
+                if which == 'a':
+                    return left if left.startswith('fighter_') else f'fighter_{left}'
+                if which == 'b':
+                    return right if right.startswith('fighter_') else f'fighter_{right}'
+        return fallback
+
+    fighter_a_id = _canonicalize_id(raw_a_id, 'fighter_a', matchup_id, 'a')
+    fighter_b_id = _canonicalize_id(raw_b_id, 'fighter_b', matchup_id, 'b')
+    # --- End canonical ID extraction block ---
+    a_name = "Fighter A"
+    b_name = "Fighter B"
+    result_dict = {}
+    aggregate_edge = 0.0
+    winner_side_signal_gap = 0.0
+    finish_pressure = 0.0
+    control_or_initiative_edge = 0.0
+    reversal_pressure = 0.0
+    volatility = 0.0
+    opponent_side_flip_pressure = 0.0
+    power_edge = 0.0
+    conditioning_edge = 0.0
+    mental_edge_val = 0.0
+    a_energy = 0.0
+    b_energy = 0.0
+    a_decision = 0.0
+    b_decision = 0.0
     # Robust fighter ID extraction
     fighter_a_id = None
     fighter_b_id = None
@@ -286,32 +376,23 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         return fallback
 
     # Extract matchup_id from config, result_dict, prediction_id, or sys.argv
-    matchup_id = None
-    if 'input_config' in locals() and isinstance(input_config, dict):
-        matchup_id = input_config.get('source_matchup_file') or input_config.get('matchup_id')
-    if not matchup_id and 'result_dict' in locals() and isinstance(result_dict, dict):
-        matchup_id = result_dict.get('matchup_id')
-    if not matchup_id and 'prediction_id' in locals():
-        if isinstance(prediction_id, str) and prediction_id.startswith('fighter_'):
-            matchup_id = prediction_id.split('__')[0]
-    if not matchup_id:
-        import sys
-        for i, arg in enumerate(sys.argv):
-            if arg == '--matchup' and i+1 < len(sys.argv):
-                candidate = sys.argv[i+1]
-                if candidate.startswith('matchup_fighter_'):
-                    matchup_id = candidate
-                    break
-
-    # Use fighter dicts and canonicalize
-    raw_a_id = None
-    raw_b_id = None
-    if isinstance(fighterA, dict):
-        for key in ("fighter_id", "id", "slug"):
-            val = fighterA.get(key)
-            if isinstance(val, str):
-                raw_a_id = val
-                break
+        weight_class = (fighterA.get("weight_class") or fighterB.get("weight_class") or "").lower()
+        signal_bundle = {
+            "aggregate_edge": aggregate_edge,
+            "reversal_pressure": reversal_pressure,
+            "volatility": volatility,
+            "finish_pressure": finish_pressure,
+            "control_or_initiative_edge": control_or_initiative_edge,
+            "stable_fighter_a_name": a_name,
+            "stable_fighter_b_name": b_name,
+            "predicted_winner_id": result_dict.get("predicted_winner_id"),
+            "winner_side_signal_gap": winner_side_signal_gap,
+            "opponent_side_flip_pressure": opponent_side_flip_pressure,
+            "weight_class": weight_class,
+            "power_edge": power_edge,
+            "conditioning_edge": conditioning_edge,
+            "mental_edge_val": mental_edge_val,
+        }
     if isinstance(fighterB, dict):
         for key in ("fighter_id", "id", "slug"):
             val = fighterB.get(key)
@@ -392,12 +473,12 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         _safe_get(fighterA, "biomechanics", "efficiency") * 0.24 +
         (0.45 * _safe_get(fighterA, "biomechanics", "efficiency") + 0.30 * _safe_get(fighterA, "conditioning", "recovery") + 0.25 * _safe_get(fighterA, "conditioning", "stamina")) * 0.16
     )
-    b_energy = (
-        _safe_get(fighterB, "conditioning", "stamina") * 0.34 +
-        _safe_get(fighterB, "conditioning", "recovery") * 0.26 +
-        _safe_get(fighterB, "biomechanics", "efficiency") * 0.24 +
-        (0.45 * _safe_get(fighterB, "biomechanics", "efficiency") + 0.30 * _safe_get(fighterB, "conditioning", "recovery") + 0.25 * _safe_get(fighterB, "conditioning", "stamina")) * 0.16
-    )
+    # Use finish_pressure as finish_threat, but only if power or durability asymmetry is present (lower threshold)
+    if abs(power_edge) > 0.05 or abs(conditioning_edge) > 0.05:
+        finish_threat = f"Live finish threat: power/durability asymmetry (finish_pressure {finish_pressure:.2f})"
+    # Tactical volatility: high volatility with no clear edge
+    if volatility > 0.15 and abs(agg_edge) < 0.05:
+        tactical_volatility = "High tactical volatility: outcome is highly unstable"
     a_mental = (
         _safe_get(fighterA, "mental", "composure") * 0.50 +
         _safe_get(fighterA, "mental", "discipline") * 0.26 +
@@ -548,59 +629,69 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     power_edge = a_power - b_power
     conditioning_edge = a_cond - b_cond
     mental_edge_val = a_mental - b_mental
-    # --- BEGIN INNER FIGHT PROGRESSION LOOP (GUARDED) ---
-    max_steps_per_sim = 10000
-    step_count = 0
-    forced_decision = False
-    fight_over = False
-    round_num = 1
-    max_rounds = 12
-    winner_label = None
-    while True:
-        step_count += 1
-        # --- HARD SAFETY BREAK: terminate after 100 steps for all sims ---
-        if step_count > 100:
-            forced_decision = True
-            fight_over = True
-            break
-        if step_count > max_steps_per_sim:
-            forced_decision = True
-            fight_over = True
-            break
-        if round_num >= max_rounds:
-            fight_over = True
-            break
-        # Placeholder: advance fight state here
-        # For now, just end the fight immediately for safety
-        fight_over = True
-        break
-        # --- END INNER FIGHT PROGRESSION LOOP ---
 
-        # After the inner loop, enforce a winner and method if needed
-        # --- ISOLATION PATCH: Minimal fallback for winner/method/round ---
-        selected_method = "Decision"
-        selected_round = "full"
-        if win_signal_a >= win_signal_b:
-            winner_label = "Win_A"
+    # --- Begin: Per-simulation finish risk and control/initiative with heavyweight sensitivity ---
+    finish_risk_a = 0.0
+    finish_risk_b = 0.0
+    for sim_idx in range(num_sims):
+        if sim_idx < 3:
+            print(f"[SIM_TRACE] sim={sim_idx} START", file=sys.stderr)
+        if sim_idx > 1000:
+            print(f"[BOUNDARY] OUTER_LOOP_HARD_BREAK sim_idx={sim_idx}", file=sys.stderr)
+            break
+        if styleA and styleB:
+            style_mod_a = _style_mod(styleA, styleB)
+            style_mod_b = _style_mod(styleB, styleA)
         else:
-            winner_label = "Win_B"
+            style_mod_a = {"control": 0.0}
+            style_mod_b = {"control": 0.0}
 
-        # Tally immediately after each simulation
-        if winner_label == "Win_A":
+        noise_scale = 0.05 + 0.10 * (abs(a_power - b_power) + abs(a_cond - b_cond) + abs(a_mental - b_mental))
+        sim_score_a = win_signal_a + random.uniform(-noise_scale, noise_scale)
+        sim_score_b = win_signal_b + random.uniform(-noise_scale, noise_scale)
+        if sim_score_a > sim_score_b:
             wins_a += 1
-        elif winner_label == "Win_B":
+            winner_label = "Win_A"
+        elif sim_score_b > sim_score_a:
             wins_b += 1
+            winner_label = "Win_B"
         else:
             draws += 1
-        print("[BOUNDARY] after per-sim tally", flush=True)
+            winner_label = None
 
-        # No per-sim trace for this patch
+        control_a += style_mod_a.get("control", 0.0) + random.uniform(-0.01, 0.01)
+        control_b += style_mod_b.get("control", 0.0) + random.uniform(-0.01, 0.01)
+
+        # Heavyweight sensitivity: boost power and lower finish threshold for HW
+        is_heavyweight = (fighterA.get("weight_class", "").lower() == "heavyweight" and fighterB.get("weight_class", "").lower() == "heavyweight")
+        power_weight = 0.35 if is_heavyweight else 0.25
+        cond_weight = 0.10
+        mental_weight = 0.10
+        finish_scale = 0.22 if is_heavyweight else 0.15
+        finish_bias = 0.03 if is_heavyweight else 0.01
+
+        # Per-sim finish risk (not just binary stoppage)
+        sim_finish_risk_a = max(0.0, a_power * power_weight + a_cond * cond_weight + a_mental * mental_weight)
+        sim_finish_risk_b = max(0.0, b_power * power_weight + b_cond * cond_weight + b_mental * mental_weight)
+        finish_risk_a += sim_finish_risk_a * finish_scale + finish_bias
+        finish_risk_b += sim_finish_risk_b * finish_scale + finish_bias
+
+        # Stoppage tally for legacy compatibility
+        stoppage_a = random.random() < (sim_finish_risk_a * finish_scale + finish_bias)
+        stoppage_b = random.random() < (sim_finish_risk_b * finish_scale + finish_bias)
+        if winner_label == "Win_A" and stoppage_a:
+            stoppages_a += 1
+        elif winner_label == "Win_B" and stoppage_b:
+            stoppages_b += 1
+    # --- End: Per-simulation finish risk and control/initiative with heavyweight sensitivity ---
+
     # --- Compact final tally line ---
     print(f"[RESULT_TRACE] wins_a={wins_a} wins_b={wins_b} draws={draws} unknown={unknown}", flush=True)
     fallback_triggered = fallback_triggered if 'fallback_triggered' in locals() else False
     fallback_reason = fallback_reason if 'fallback_reason' in locals() else None
     # ...existing code...
-    # --- Guarantee winner fallback if still unset before any reference ---
+
+    # --- Guarantee winner fallback if still unset before any reference (always canonical ID) ---
     if not predicted_winner_id:
         if wins_a > wins_b:
             predicted_winner_id = fighter_a_id
@@ -609,8 +700,9 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
             predicted_winner_id = fighter_b_id
             print(f"[TRACE] predicted_winner_id assigned (wins_b > wins_a): {predicted_winner_id} (source: fighter_b_id, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
         else:
-            predicted_winner_id = fighter_a_id if win_signal_a >= win_signal_b else fighter_b_id
-            print(f"[TRACE] predicted_winner_id assigned (fallback): {predicted_winner_id} (source: {'fighter_a_id' if win_signal_a >= win_signal_b else 'fighter_b_id'}, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
+            agg_edge = float(win_signal_a) - float(win_signal_b)
+            predicted_winner_id = fighter_a_id if agg_edge >= 0 else fighter_b_id
+            print(f"[TRACE] predicted_winner_id assigned (fallback canonical): {predicted_winner_id} (source: {'fighter_a_id' if agg_edge >= 0 else 'fighter_b_id'}, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
 
     print(f"[RESULT_TRACE] wins_a={wins_a} wins_b={wins_b} draws={draws}", flush=True)
 
@@ -747,7 +839,6 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         result_dict["predicted_winner_id"] = canonical_id
 
     # Debug print: explanation fields at return
-    import sys
     print("[DEBUG] execute_risa_v40 return explanation fields:", file=sys.stderr)
     print(f"  key_tactical_edges: {result_dict.get('key_tactical_edges')}", file=sys.stderr)
     print(f"  risk_factors: {result_dict.get('risk_factors')}", file=sys.stderr)
