@@ -1,61 +1,86 @@
-def _build_explanation_layer(
-    win_signal_a,
-    win_signal_b,
-    predicted_winner_id=None,
-    confidence=None,
-    a_name=None,
-    b_name=None,
-):
+from collections import Counter
+def _safe_get(dct, *keys, default=0.5):
+    cur = dct
+    for k in keys:
+        if not isinstance(cur, dict) or k not in cur:
+            return default
+        cur = cur[k]
+    return cur
+def _build_explanation_layer(signal_bundle):
     """
-    Minimalist explanation builder for executed path. Only uses alive variables.
+    Explanation builder using a compact executed-path signal bundle.
     Returns a dict with four fields: key_tactical_edges, risk_factors, confidence_explanation, what_could_flip_the_fight.
     """
-    # Name fallback logic
-    winner = None
-    loser = None
-    win_signal_gap = win_signal_a - win_signal_b
-    abs_gap = abs(win_signal_gap)
-    # Determine winner/loser names
-    if predicted_winner_id:
-        if a_name and predicted_winner_id in (a_name, str(a_name)):
-            winner = a_name
-            loser = b_name or "Fighter B"
-        elif b_name and predicted_winner_id in (b_name, str(b_name)):
-            winner = b_name
-            loser = a_name or "Fighter A"
-        else:
-            # Fallback: use IDs or generic
-            winner = a_name or "Fighter A"
-            loser = b_name or "Fighter B"
-    else:
-        winner = a_name or "Fighter A"
-        loser = b_name or "Fighter B"
+    # Unpack signals
+    agg_edge = signal_bundle.get("aggregate_edge", 0.0)
+    reversal_pressure = signal_bundle.get("reversal_pressure", 0.0)
+    volatility = signal_bundle.get("volatility", 0.0)
+    finish_pressure = signal_bundle.get("finish_pressure", 0.0)
+    control_edge = signal_bundle.get("control_or_initiative_edge", 0.0)
+    power_edge = signal_bundle.get("power_edge", 0.0)
+    conditioning_edge = signal_bundle.get("conditioning_edge", 0.0)
+    mental_edge_val = signal_bundle.get("mental_edge_val", 0.0)
+    a_name = signal_bundle.get("stable_fighter_a_name", "Fighter A")
+    b_name = signal_bundle.get("stable_fighter_b_name", "Fighter B")
+    winner_id = signal_bundle.get("predicted_winner_id")
+    winner_gap = signal_bundle.get("winner_side_signal_gap", 0.0)
+    flip_pressure = signal_bundle.get("opponent_side_flip_pressure", 0.0)
 
-    # --- Explanation logic ---
+    # Winner/loser name logic
+    winner = a_name if agg_edge >= 0 else b_name
+    loser = b_name if agg_edge >= 0 else a_name
+
     key_tactical_edges = []
     risk_factors = []
     what_could_flip_the_fight = []
 
-    # If gap is truly zero (flat fight)
-    if abs_gap < 1e-6:
+    # Aggregate edge
+    if abs(agg_edge) < 1e-6 and all(abs(x) < 0.05 for x in [power_edge, conditioning_edge, mental_edge_val, control_edge, finish_pressure, reversal_pressure, volatility]):
+        # Flat or non-informative signal bundle: emit only a cautious confidence explanation
         confidence_explanation = (
-            "Confidence is low because aggregate signal separation is flat and no stable tactical edge is separating the matchup."
+            "Confidence is low because the executed-path signal bundle shows little meaningful separation and no stable tactical edge is clearly separating the matchup."
         )
-    elif abs_gap < 0.05:
-        # Small but nonzero gap: cautious content
-        key_tactical_edges.append(f"Aggregate model signal slightly favors {winner} (gap {abs_gap:.2f})")
-        risk_factors.append("Winner signal is narrow; volatility is high")
-        what_could_flip_the_fight.append("Any small swing in model signal could reverse the outcome")
+        # key_tactical_edges, risk_factors, what_could_flip_the_fight remain empty
+    elif abs(agg_edge) < 0.05:
+        key_tactical_edges.append(f"Aggregate model signal slightly favors {winner} (gap {abs(agg_edge):.2f})")
+        # Add tactical edges if present
+        if abs(power_edge) > 0.05:
+            key_tactical_edges.append(f"{winner} has a power edge ({power_edge:.2f})")
+        if abs(conditioning_edge) > 0.05:
+            key_tactical_edges.append(f"{winner} has a conditioning edge ({conditioning_edge:.2f})")
+        if abs(mental_edge_val) > 0.05:
+            key_tactical_edges.append(f"{winner} has a mental edge ({mental_edge_val:.2f})")
+        if volatility > 0.05:
+            risk_factors.append("High volatility: winner signal is unstable")
+        else:
+            risk_factors.append("Winner signal is narrow; volatility is low")
+        if flip_pressure > 0.05:
+            what_could_flip_the_fight.append(f"If {loser} surges, fight could flip (flip pressure {flip_pressure:.2f})")
+        else:
+            what_could_flip_the_fight.append("Any small swing in model signal could reverse the outcome")
         confidence_explanation = (
-            f"Confidence is low: model signal separation is narrow (gap {abs_gap:.2f}). No stable tactical edge is separating the matchup."
+            f"Confidence is low: model signal separation is narrow (gap {abs(agg_edge):.2f})."
         )
     else:
-        # Clearer gap: emit up to 2 concise statements
-        key_tactical_edges.append(f"Aggregate model signal favors {winner} (gap {abs_gap:.2f})")
-        risk_factors.append(f"{loser} could reverse if model signal shifts or new factors emerge")
+        key_tactical_edges.append(f"Aggregate model signal favors {winner} (gap {abs(agg_edge):.2f})")
+        # Add tactical edges if present
+        if abs(power_edge) > 0.05:
+            key_tactical_edges.append(f"{winner} has a power edge ({power_edge:.2f})")
+        if abs(conditioning_edge) > 0.05:
+            key_tactical_edges.append(f"{winner} has a conditioning edge ({conditioning_edge:.2f})")
+        if abs(mental_edge_val) > 0.05:
+            key_tactical_edges.append(f"{winner} has a mental edge ({mental_edge_val:.2f})")
+        if control_edge > 0.05:
+            key_tactical_edges.append(f"{winner} has a control/initiative edge ({control_edge:.2f})")
+        if finish_pressure > 0.05:
+            key_tactical_edges.append(f"{winner} has finish pressure ({finish_pressure:.2f})")
+        if reversal_pressure > 0.05:
+            risk_factors.append(f"{loser} has live reversal pressure ({reversal_pressure:.2f})")
+        if volatility > 0.05:
+            risk_factors.append("Volatility is high: fight could swing")
         what_could_flip_the_fight.append(f"If {loser} closes the aggregate signal gap, fight could flip")
         confidence_explanation = (
-            f"Model confidence is proportional to the aggregate signal gap (gap {abs_gap:.2f})."
+            f"Model confidence is proportional to the aggregate signal gap (gap {abs(agg_edge):.2f})."
         )
 
     return {
@@ -64,39 +89,7 @@ def _build_explanation_layer(
         "confidence_explanation": confidence_explanation,
         "what_could_flip_the_fight": what_could_flip_the_fight,
     }
-def adjusted_damage_threat(damage_threat, decision_a, decision_b, control_a, control_b):
-    """
-    Fallback: Adjusts raw damage threat by decision and control edges.
-    - If decision_a > decision_b, boost damage threat slightly.
-    - If control_a > control_b, boost further.
-    - Clamp result to [0, 1.2].
-    """
-    base = float(damage_threat)
-    decision_mod = 1.0 + 0.07 * (decision_a - decision_b)
-    control_mod = 1.0 + 0.05 * (control_a - control_b)
-    result = base * decision_mod * control_mod
-    return max(0.0, min(1.2, result))
 
-PATCH_CHECK_MARKER = "PATCH_CHECK_v100_core_live"
-with open(r"C:\Users\jusin\style_debug.log", "a", encoding="utf-8") as f:
-    f.write(f"FILE_ID | {__file__}\n")
-    f.flush()
-# === AI-RISA v40 Engine Adapter ===
-DIAG_MAX_SIMS = 5  # Patch: ensure always defined for runaway sim check
-import random
-from collections import Counter
-import sys
-
-def _safe_get(dct, *keys, default=0.5):
-    cur = dct
-    for k in keys:
-        if not isinstance(cur, dict) or k not in cur:
-            return default
-        cur = cur[k]
-    return cur
-
-def _clamp(x, lo=0.0, hi=1.0):
-    return max(lo, min(hi, x))
 
 def _style_mod(style_a, style_b):
     style_matrix = {
@@ -205,64 +198,6 @@ def _style_mod(style_a, style_b):
     #         f.write(f"STYLE_LOOKUP | ({style_a}, {style_b}) -> {result}\n")
     return result
 
-def _fighter_strength(f, own_style=None, opp_style=None):
-    biomech = (
-        _safe_get(f, "biomechanics", "power") * 0.22 +
-        _safe_get(f, "biomechanics", "speed") * 0.18 +
-        _safe_get(f, "biomechanics", "efficiency") * 0.20 +
-        _safe_get(f, "biomechanics", "balance") * 0.20 +
-        _safe_get(f, "biomechanics", "explosiveness") * 0.20
-    )
-
-    offense = (
-        _safe_get(f, "offense", "volume") * 0.20 +
-        _safe_get(f, "offense", "accuracy") * 0.30 +
-        _safe_get(f, "offense", "shot_selection") * 0.25 +
-        _safe_get(f, "offense", "combination_depth") * 0.25
-    )
-
-    defense = (
-        _safe_get(f, "defense", "head_movement") * 0.22 +
-        _safe_get(f, "defense", "guard") * 0.22 +
-        _safe_get(f, "defense", "footwork") * 0.28 +
-        _safe_get(f, "defense", "reaction") * 0.28
-    )
-
-    ring_iq = (
-        _safe_get(f, "ring_iq", "decision_speed") * 0.25 +
-        _safe_get(f, "ring_iq", "adaptability") * 0.27 +
-        _safe_get(f, "ring_iq", "pattern_recognition") * 0.25 +
-        _safe_get(f, "ring_iq", "risk_management") * 0.23
-    )
-
-    conditioning = (
-        _safe_get(f, "conditioning", "stamina") * 0.28 +
-        _safe_get(f, "conditioning", "recovery") * 0.22 +
-        _safe_get(f, "conditioning", "durability") * 0.25 +
-        _safe_get(f, "conditioning", "damage_resistance") * 0.25
-    )
-
-    mental = (
-        _safe_get(f, "mental", "composure") * 0.28 +
-        _safe_get(f, "mental", "discipline") * 0.28 +
-        (1.0 - _safe_get(f, "mental", "panic_threshold", default=0.3)) * 0.18 +
-        _safe_get(f, "mental", "resilience") * 0.26
-    )
-
-    base = (
-        biomech * 0.22 +
-        offense * 0.20 +
-        defense * 0.18 +
-        ring_iq * 0.20 +
-        conditioning * 0.12 +
-        mental * 0.08
-    )
-
-    mod = _style_mod(own_style, opp_style)
-    base *= mod["offense"]
-
-    return _clamp(base, 0.0, 1.2)
-
 
 def _infer_method_and_round(prob_gap, power_edge, conditioning_edge, mental_edge, stoppage_sensitivity=1.0, debug_metrics=None):
     print(f"[TRACE] infer_method entry stoppage_sensitivity={stoppage_sensitivity}", file=sys.stderr)
@@ -307,26 +242,69 @@ def _infer_method_and_round(prob_gap, power_edge, conditioning_edge, mental_edge
     return "Decision", "mid"
 
 def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styleB=None, fighterA_name=None, fighterB_name=None, confidence_scale=1.0, stoppage_sensitivity=1.0, late_fatigue_bias=1.0, judge_decision_bias=1.0):
+    import sys
     print("[BOUNDARY] entered execute_risa_v40", file=sys.stderr, flush=True)
     # Robust fighter ID extraction
     fighter_a_id = None
     fighter_b_id = None
+    def _canonicalize_id(raw_id, fallback, matchup_id=None, which=None):
+        # Accept if already canonical and not just fallback
+        if isinstance(raw_id, str) and raw_id.startswith("fighter_") and raw_id not in ("fighter_a", "fighter_b"):
+            return raw_id
+        # Try to parse from matchup_id
+        if isinstance(matchup_id, str) and which in ("a", "b"):
+            # Remove 'matchup_' prefix if present
+            slug = matchup_id
+            if slug.startswith("matchup_"):
+                slug = slug[len("matchup_"):]
+            # Split on '_vs_'
+            parts = slug.split("_vs_")
+            if len(parts) == 2:
+                left = parts[0]
+                right = parts[1]
+                if which == "a":
+                    # If left already starts with 'fighter_', use as is, else prepend
+                    return left if left.startswith("fighter_") else f"fighter_{left}"
+                if which == "b":
+                    return right if right.startswith("fighter_") else f"fighter_{right}"
+        # Fallback
+        return fallback
+
+    # Extract matchup_id from config, result_dict, prediction_id, or sys.argv
+    matchup_id = None
+    if 'input_config' in locals() and isinstance(input_config, dict):
+        matchup_id = input_config.get('source_matchup_file') or input_config.get('matchup_id')
+    if not matchup_id and 'result_dict' in locals() and isinstance(result_dict, dict):
+        matchup_id = result_dict.get('matchup_id')
+    if not matchup_id and 'prediction_id' in locals():
+        if isinstance(prediction_id, str) and prediction_id.startswith('fighter_'):
+            matchup_id = prediction_id.split('__')[0]
+    if not matchup_id:
+        import sys
+        for i, arg in enumerate(sys.argv):
+            if arg == '--matchup' and i+1 < len(sys.argv):
+                candidate = sys.argv[i+1]
+                if candidate.startswith('matchup_fighter_'):
+                    matchup_id = candidate
+                    break
+
+    # Use fighter dicts and canonicalize
+    raw_a_id = None
+    raw_b_id = None
     if isinstance(fighterA, dict):
-        fighter_a_id = (
-            fighterA.get("fighter_id")
-            or fighterA.get("id")
-            or fighterA.get("slug")
-            or fighterA.get("name")
-        )
+        for key in ("fighter_id", "id", "slug"):
+            val = fighterA.get(key)
+            if isinstance(val, str):
+                raw_a_id = val
+                break
     if isinstance(fighterB, dict):
-        fighter_b_id = (
-            fighterB.get("fighter_id")
-            or fighterB.get("id")
-            or fighterB.get("slug")
-            or fighterB.get("name")
-        )
-    fighter_a_id = fighter_a_id or "fighter_a"
-    fighter_b_id = fighter_b_id or "fighter_b"
+        for key in ("fighter_id", "id", "slug"):
+            val = fighterB.get(key)
+            if isinstance(val, str):
+                raw_b_id = val
+                break
+    fighter_a_id = _canonicalize_id(raw_a_id, "fighter_a", matchup_id, "a")
+    fighter_b_id = _canonicalize_id(raw_b_id, "fighter_b", matchup_id, "b")
     prob_gap = 0.0
     selected_method = None
     selected_round = None
@@ -349,6 +327,21 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         _safe_get(fighterA, "mental", "resilience") * 0.16 +
         (1.0 - _safe_get(fighterA, "mental", "panic_threshold", default=0.3)) * 0.08
     )
+    b_mental = (
+        _safe_get(fighterB, "mental", "composure") * 0.50 +
+        _safe_get(fighterB, "mental", "discipline") * 0.26 +
+        _safe_get(fighterB, "mental", "resilience") * 0.16 +
+        (1.0 - _safe_get(fighterB, "mental", "panic_threshold", default=0.3)) * 0.08
+    )
+    power_edge = a_power - b_power
+    conditioning_edge = a_cond - b_cond
+    mental_edge_val = a_mental - b_mental
+    a_mental = (
+        _safe_get(fighterA, "mental", "composure") * 0.50 +
+        _safe_get(fighterA, "mental", "discipline") * 0.26 +
+        _safe_get(fighterA, "mental", "resilience") * 0.16 +
+        (1.0 - _safe_get(fighterA, "mental", "panic_threshold", default=0.3)) * 0.08
+    )
     print("[BOUNDARY] after a_mental", flush=True)
     round_bands = Counter()
     wins_a = 0
@@ -357,18 +350,73 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     stoppages_b = 0
     draws = 0
     unknown = 0
+    # New: control/initiative accumulators (if available)
+    control_a = 0.0
+    control_b = 0.0
     DIAG_MAX_SIMS = 5  # Patch: ensure always defined for runaway sim check
     max_steps_per_sim = 10000
-    for sim_idx in range(num_sims):
+    import random
+    # Precompute per-fighter base signals for simulation
+    _a1 = _safe_get(fighterA, "ring_iq", "decision_speed") * 0.30
+    _a2 = _safe_get(fighterA, "ring_iq", "adaptability") * 0.30
+    a_decision = (
+        _a1 +
+        _a2 +
+        _safe_get(fighterA, "ring_iq", "pattern_recognition") * 0.25 +
+        _safe_get(fighterA, "ring_iq", "risk_management") * 0.15
+    )
+    b_decision = (
+        _safe_get(fighterB, "ring_iq", "decision_speed") * 0.30 +
+        _safe_get(fighterB, "ring_iq", "adaptability") * 0.30 +
+        _safe_get(fighterB, "ring_iq", "pattern_recognition") * 0.25 +
+        _safe_get(fighterB, "ring_iq", "risk_management") * 0.15
+    )
+    a_energy = (
+        _safe_get(fighterA, "conditioning", "stamina") * 0.34 +
+        _safe_get(fighterA, "conditioning", "recovery") * 0.26 +
+        _safe_get(fighterA, "biomechanics", "efficiency") * 0.24 +
+        (0.45 * _safe_get(fighterA, "biomechanics", "efficiency") + 0.30 * _safe_get(fighterA, "conditioning", "recovery") + 0.25 * _safe_get(fighterA, "conditioning", "stamina")) * 0.16
+    )
+    b_energy = (
+        _safe_get(fighterB, "conditioning", "stamina") * 0.34 +
+        _safe_get(fighterB, "conditioning", "recovery") * 0.26 +
+        _safe_get(fighterB, "biomechanics", "efficiency") * 0.24 +
+        (0.45 * _safe_get(fighterB, "biomechanics", "efficiency") + 0.30 * _safe_get(fighterB, "conditioning", "recovery") + 0.25 * _safe_get(fighterB, "conditioning", "stamina")) * 0.16
+    )
+    a_mental = (
+        _safe_get(fighterA, "mental", "composure") * 0.50 +
+        _safe_get(fighterA, "mental", "discipline") * 0.26 +
+        _safe_get(fighterA, "mental", "resilience") * 0.16 +
+        (1.0 - _safe_get(fighterA, "mental", "panic_threshold", default=0.3)) * 0.08
+    )
+    b_mental = (
+        _safe_get(fighterB, "mental", "composure") * 0.50 +
+        _safe_get(fighterB, "mental", "discipline") * 0.26 +
+        _safe_get(fighterB, "mental", "resilience") * 0.16 +
+        (1.0 - _safe_get(fighterB, "mental", "panic_threshold", default=0.3)) * 0.08
+    )
+    win_signal_a = (
+        a_decision * 0.32 +
+        a_energy * 0.22 +
+        a_mental * 0.16 +
+        (style_mod_a.get("control", 0.0) if 'style_mod_a' in locals() else 0.0) * 0.18 +
+        a_power * 0.12
+    )
+    win_signal_b = (
+        b_decision * 0.32 +
+        b_energy * 0.22 +
+        b_mental * 0.16 +
+        (style_mod_b.get("control", 0.0) if 'style_mod_b' in locals() else 0.0) * 0.18 +
+        b_power * 0.12
+    )
 
+    for sim_idx in range(num_sims):
         if sim_idx < 3:
             print(f"[SIM_TRACE] sim={sim_idx} START", file=sys.stderr)
-
         # --- OUTER SIMULATION LOOP HARD SAFETY BREAK ---
         if sim_idx > 1000:
             print(f"[BOUNDARY] OUTER_LOOP_HARD_BREAK sim_idx={sim_idx}", file=sys.stderr)
             break
-
         # Patch: define style_mod_a and style_mod_b per simulation
         if styleA and styleB:
             style_mod_a = _style_mod(styleA, styleB)
@@ -377,7 +425,37 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
             style_mod_a = {"control": 0.0}
             style_mod_b = {"control": 0.0}
 
-    # ...end of for sim_idx in range(num_sims): loop...
+        # --- Minimal per-simulation variation patch ---
+        # Use win_signal_a/b as base, add small bounded noise
+        noise_scale = 0.05 + 0.10 * (abs(a_power - b_power) + abs(a_cond - b_cond) + abs(a_mental - b_mental))
+        sim_score_a = win_signal_a + random.uniform(-noise_scale, noise_scale)
+        sim_score_b = win_signal_b + random.uniform(-noise_scale, noise_scale)
+        # Winner
+        if sim_score_a > sim_score_b:
+            wins_a += 1
+            winner_label = "Win_A"
+        elif sim_score_b > sim_score_a:
+            wins_b += 1
+            winner_label = "Win_B"
+        else:
+            draws += 1
+            winner_label = None
+
+        # Per-sim control/initiative: style_mod control plus small noise
+        control_a += style_mod_a.get("control", 0.0) + random.uniform(-0.01, 0.01)
+        control_b += style_mod_b.get("control", 0.0) + random.uniform(-0.01, 0.01)
+
+        # Per-sim stoppage: use power/conditioning/mental as proxy for finish pressure
+        stoppage_chance_a = max(0.0, a_power * 0.25 + a_cond * 0.10 + a_mental * 0.10)
+        stoppage_chance_b = max(0.0, b_power * 0.25 + b_cond * 0.10 + b_mental * 0.10)
+        # Add small noise to stoppage chance
+        stoppage_a = random.random() < (stoppage_chance_a * 0.15 + 0.01)
+        stoppage_b = random.random() < (stoppage_chance_b * 0.15 + 0.01)
+        if winner_label == "Win_A" and stoppage_a:
+            stoppages_a += 1
+        elif winner_label == "Win_B" and stoppage_b:
+            stoppages_b += 1
+        # --- END minimal per-simulation variation patch ---
 
     # POST-LOOP: after all simulations
     print("[BOUNDARY] after outer simulation loop", file=sys.stderr)
@@ -502,10 +580,13 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     if not predicted_winner_id:
         if wins_a > wins_b:
             predicted_winner_id = fighter_a_id
+            print(f"[TRACE] predicted_winner_id assigned (wins_a > wins_b): {predicted_winner_id} (source: fighter_a_id, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
         elif wins_b > wins_a:
             predicted_winner_id = fighter_b_id
+            print(f"[TRACE] predicted_winner_id assigned (wins_b > wins_a): {predicted_winner_id} (source: fighter_b_id, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
         else:
             predicted_winner_id = fighter_a_id if win_signal_a >= win_signal_b else fighter_b_id
+            print(f"[TRACE] predicted_winner_id assigned (fallback): {predicted_winner_id} (source: {'fighter_a_id' if win_signal_a >= win_signal_b else 'fighter_b_id'}, is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
 
     print(f"[RESULT_TRACE] wins_a={wins_a} wins_b={wins_b} draws={draws}", flush=True)
 
@@ -537,6 +618,7 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     )
     sys.stderr.flush()
     result_dict["predicted_winner_id"] = predicted_winner_id
+    print(f"[TRACE] result_dict['predicted_winner_id'] set: {predicted_winner_id} (is_id: {str(predicted_winner_id).startswith('fighter_')})", flush=True)
     result_dict["method"] = selected_method
     result_dict["round"] = selected_round
     result_dict["input_config"] = {"simulation_count": requested_total_sims}
@@ -547,15 +629,45 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
     # Build stable names for explanation
     a_name = fighterA_name or fighterA.get("name") or fighterA.get("fighter_id") or fighterA.get("id") or fighterA.get("slug") or "Fighter A"
     b_name = fighterB_name or fighterB.get("name") or fighterB.get("fighter_id") or fighterB.get("id") or fighterB.get("slug") or "Fighter B"
-    explanation_inputs = {
-        "win_signal_a": float(win_signal_a),
-        "win_signal_b": float(win_signal_b),
-        "predicted_winner_id": result_dict.get("predicted_winner_id"),
-        "confidence": result_dict.get("confidence"),
-        "a_name": a_name,
-        "b_name": b_name,
-    }
 
+    # --- Build executed-path signal bundle using simulation aggregates ---
+    total_sims = wins_a + wins_b + draws if (wins_a + wins_b + draws) > 0 else 1
+    win_share_a = wins_a / total_sims
+    win_share_b = wins_b / total_sims
+    aggregate_edge = win_share_a - win_share_b
+    winner_side_signal_gap = abs(aggregate_edge)
+    # For volatility, use the absolute difference and confidence
+    volatility = 1.0 - float(result_dict.get("confidence", 0.0))
+    # Reversal pressure: how close is the loser to flipping the outcome?
+    reversal_pressure = min(win_share_a, win_share_b)
+    # Finish pressure: use normalized stoppage share difference
+    total_stoppages = stoppages_a + stoppages_b
+    finish_share_a = stoppages_a / total_sims if total_sims > 0 else 0.0
+    finish_share_b = stoppages_b / total_sims if total_sims > 0 else 0.0
+    finish_pressure = finish_share_a - finish_share_b
+    # Control/initiative edge: normalized difference if available, else neutral
+    total_control = control_a + control_b
+    if total_control != 0:
+        control_share_a = control_a / total_control
+        control_share_b = control_b / total_control
+        control_edge = control_share_a - control_share_b
+    else:
+        control_edge = 0.0
+    # Flip pressure: how much would the loser need to gain to flip?
+    opponent_side_flip_pressure = abs(aggregate_edge)
+
+    signal_bundle = {
+        "aggregate_edge": aggregate_edge,
+        "reversal_pressure": reversal_pressure,
+        "volatility": volatility,
+        "finish_pressure": finish_pressure,
+        "control_or_initiative_edge": control_edge,
+        "stable_fighter_a_name": a_name,
+        "stable_fighter_b_name": b_name,
+        "predicted_winner_id": result_dict.get("predicted_winner_id"),
+        "winner_side_signal_gap": winner_side_signal_gap,
+        "opponent_side_flip_pressure": opponent_side_flip_pressure,
+    }
     # Only inject explanation if we have a predicted winner
     def _as_string_list(value):
         if value is None:
@@ -571,8 +683,7 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
         return [s] if s else []
 
     if result_dict.get("predicted_winner_id"):
-        # ...instrumentation print removed after validation...
-        raw_explanation = _build_explanation_layer(**explanation_inputs) or {}
+        raw_explanation = _build_explanation_layer(signal_bundle) or {}
         conf_exp = str(raw_explanation.get("confidence_explanation") or "").strip()
         if not conf_exp:
             conf_exp = "Confidence is low because aggregate signal separation is flat and no stable tactical edge is separating the matchup."
@@ -589,9 +700,25 @@ def execute_risa_v40(requested_total_sims, fighterA, fighterB, styleA=None, styl
             "confidence_explanation": "",
             "what_could_flip_the_fight": [],
         }
-    result_dict.update(explanation)
+    # Fix: ensure explanation fields are not overwritten by later code
+    result_dict["key_tactical_edges"] = explanation["key_tactical_edges"]
+    result_dict["risk_factors"] = explanation["risk_factors"]
+    result_dict["confidence_explanation"] = explanation["confidence_explanation"]
+    result_dict["what_could_flip_the_fight"] = explanation["what_could_flip_the_fight"]
 
+    # --- Guard: ensure predicted_winner_id is always a canonical fighter ID ---
+    if not str(result_dict.get("predicted_winner_id", "")).startswith("fighter_"):
+        agg_edge = float(win_signal_a) - float(win_signal_b)
+        canonical_id = fighter_a_id if agg_edge >= 0 else fighter_b_id
+        result_dict["predicted_winner_id"] = canonical_id
 
+    # Debug print: explanation fields at return
+    import sys
+    print("[DEBUG] execute_risa_v40 return explanation fields:", file=sys.stderr)
+    print(f"  key_tactical_edges: {result_dict.get('key_tactical_edges')}", file=sys.stderr)
+    print(f"  risk_factors: {result_dict.get('risk_factors')}", file=sys.stderr)
+    print(f"  confidence_explanation: {result_dict.get('confidence_explanation')}", file=sys.stderr)
+    print(f"  what_could_flip_the_fight: {result_dict.get('what_could_flip_the_fight')}", file=sys.stderr)
     return result_dict
     # --- TRACE 2: After winner/confidence computation ---
     print(f"[TRACE] result_core winner_id={{}} confidence={{}}".format(predicted_winner_id, result_dict.get('confidence')), file=sys.stderr)
