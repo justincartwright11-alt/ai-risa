@@ -1,0 +1,41 @@
+# GitHub Actions Workflow for Serialization Protection
+
+name: Serialization Contract Protection
+
+on:
+  pull_request:
+    branches:
+      - v100.2-accuracy-ledger-and-calibration
+
+jobs:
+  serialization-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+      - name: Run regression tests
+        run: py -3.10 -m pytest tests/test_prediction_record_regression.py
+      - name: Compile ai_risa_prediction_adapter.py
+        run: py -3.10 -m py_compile ai_risa_prediction_adapter.py
+      - name: Compile run_single_fight_premium_report.py
+        run: py -3.10 -m py_compile run_single_fight_premium_report.py
+      - name: Run sparse-case report 1
+        run: py -3.10 run_single_fight_premium_report.py ... # fill with actual args
+      - name: Run sparse-case report 2
+        run: py -3.10 run_single_fight_premium_report.py ... # fill with actual args
+      - name: Run sparse-case report 3
+        run: py -3.10 run_single_fight_premium_report.py ... # fill with actual args
+      - name: Build accuracy ledger
+        run: py -3.10 build_accuracy_ledger.py
+      - name: Score accuracy ledger
+        run: py -3.10 score_accuracy_ledger.py
+      - name: Run stoppage bias audit
+        run: py -3.10 stoppage_bias_audit.py
