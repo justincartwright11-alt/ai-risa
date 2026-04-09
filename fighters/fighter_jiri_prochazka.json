@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_jiri_prochazka",
+  "name": "Jiří Procházka",
+  "nickname": "Denisa",
+  "birth_date": "1992-10-14",
+  "nationality": "Czechia",
+  "height_cm": 191,
+  "reach_cm": 193,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 30, "losses": 4, "draws": 1, "no_contest": 0},
+  "promotion": "UFC"
+}

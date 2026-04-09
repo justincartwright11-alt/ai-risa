@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_zhang_weili",
+  "name": "Zhang Weili",
+  "nickname": "Magnum",
+  "birth_date": "1989-08-13",
+  "nationality": "China",
+  "height_cm": 163,
+  "reach_cm": 161,
+  "stance": "switch",
+  "weight_class": "women's strawweight",
+  "record": {"wins": 25, "losses": 3, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_yan_xiaonan",
+  "name": "Yan Xiaonan",
+  "nickname": "Fury",
+  "birth_date": "1989-06-16",
+  "nationality": "China",
+  "height_cm": 165,
+  "reach_cm": 160,
+  "stance": "orthodox",
+  "weight_class": "women's strawweight",
+  "record": {"wins": 18, "losses": 4, "draws": 0, "no_contest": 1},
+  "promotion": "UFC"
+}

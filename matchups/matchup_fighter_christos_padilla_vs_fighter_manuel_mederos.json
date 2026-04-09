@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_christos_padilla_vs_fighter_manuel_mederos",
+  "fighter_a_id": "fighter_christos_padilla",
+  "fighter_b_id": "fighter_manuel_mederos",
+  "event_id": "ufc_327_2026_04_12",
+  "event_name": "UFC 327: Procházka vs. Ulberg",
+  "event_date": "2026-04-12",
+  "weight_class": "lightweight",
+  "scheduled_rounds": 3,
+  "fight_order": 10
+}

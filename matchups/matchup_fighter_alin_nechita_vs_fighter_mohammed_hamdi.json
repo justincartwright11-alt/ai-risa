@@ -1,0 +1,12 @@
+{
+  "matchup_id": "fighter_alin_nechita_vs_fighter_mohammed_hamdi",
+  "fighter_a_id": "fighter_alin_nechita",
+  "fighter_b_id": "fighter_mohammed_hamdi",
+  "event_id": "glory_107_2026_04_26",
+  "event_name": "GLORY 107: Wisse vs. Kwasi",
+  "event_date": "2026-04-26",
+  "weight_class": "Featherweight",
+  "scheduled_rounds": 3,
+  "fight_order": 6,
+  "title_fight": false
+}

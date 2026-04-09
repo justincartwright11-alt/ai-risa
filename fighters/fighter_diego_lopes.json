@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_diego_lopes",
+  "name": "Diego Lopes",
+  "nickname": "",
+  "birth_date": "1994-12-30",
+  "nationality": "Brazil",
+  "height_cm": 180,
+  "reach_cm": 183,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 24, "losses": 6, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

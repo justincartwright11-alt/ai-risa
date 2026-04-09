@@ -1,0 +1,14 @@
+{
+  "event": "UFC 327: Adesanya vs. Du Plessis",
+  "date": "2026-04-11",
+  "venue": "T-Mobile Arena, Las Vegas, NV",
+  "watch": "ESPN+ PPV",
+  "description": "UFC Middleweight Championship main event.",
+  "bouts": [
+    {
+      "fighters": ["Israel Adesanya", "Dricus Du Plessis"],
+      "weight_class": "Middleweight",
+      "main_event": true
+    }
+  ]
+}

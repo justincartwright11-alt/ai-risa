@@ -1,0 +1,17 @@
+{
+  "name": "Chico Kwasi",
+  "country": "Netherlands",
+  "weight_class": "Middleweight",
+  "stance": "Orthodox",
+  "height_cm": 183,
+  "reach_cm": 188,
+  "dob": "1995-03-12",
+  "record": {
+    "wins": 19,
+    "losses": 4,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Kickboxing",
+  "organization": "GLORY"
+}

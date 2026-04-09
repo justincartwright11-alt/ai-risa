@@ -1,0 +1,15 @@
+{
+  "event_name": "GLORY 107: Wisse vs. Kwasi",
+  "date": "2026-04-26",
+  "venue": "RTM Stage, Rotterdam",
+  "promotion": "GLORY Kickboxing",
+  "bouts": [
+    {
+      "order": 1,
+      "weight_class": "Middleweight",
+      "title_fight": true,
+      "fighters": ["Donovan Wisse", "Chico Kwasi"]
+    }
+    // ...other bouts to be added one at a time after validation
+  ]
+}

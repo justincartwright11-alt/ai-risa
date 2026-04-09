@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_alex_pereira",
+  "name": "Alex Pereira",
+  "nickname": "Poatan",
+  "birth_date": "1987-07-07",
+  "nationality": "Brazil",
+  "height_cm": 193,
+  "reach_cm": 200,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 10, "losses": 2, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

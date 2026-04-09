@@ -1,0 +1,20 @@
+{
+  "name": "Vicente Luque",
+  "nickname": "The Silent Assassin",
+  "country": "Brazil",
+  "weight_class": "Welterweight",
+  "stance": "Orthodox",
+  "height_cm": 180,
+  "reach_cm": 191,
+  "dob": "1991-11-27",
+  "record": {
+    "wins": 22,
+    "losses": 9,
+    "draws": 1,
+    "no_contest": 0
+  },
+  "style_primary": "Striker",
+  "style_secondary": "BJJ",
+  "notable_wins": ["Tyron Woodley", "Michael Chiesa"],
+  "organization": "UFC"
+}

@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_king_green_vs_fighter_jim_miller",
+  "fighter_a_id": "fighter_king_green",
+  "fighter_b_id": "fighter_jim_miller",
+  "event_id": "ufc_300_2024_04_13",
+  "event_name": "UFC 300: Pereira vs. Hill",
+  "event_date": "2024-04-13",
+  "weight_class": "lightweight",
+  "scheduled_rounds": 3,
+  "fight_order": 12
+}

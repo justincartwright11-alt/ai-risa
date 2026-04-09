@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_alex_pereira_vs_fighter_jamahal_hill",
+  "fighter_a_id": "fighter_alex_pereira",
+  "fighter_b_id": "fighter_jamahal_hill",
+  "event_id": "ufc_300_2024_04_13",
+  "event_name": "UFC 300: Pereira vs. Hill",
+  "event_date": "2024-04-13",
+  "weight_class": "light heavyweight",
+  "scheduled_rounds": 5,
+  "fight_order": 1
+}

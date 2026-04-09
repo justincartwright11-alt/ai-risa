@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_randy_brown",
+  "name": "Randy Brown",
+  "nickname": "Rudeboy",
+  "birth_date": "1990-07-08",
+  "nationality": "Jamaica",
+  "height_cm": 191,
+  "reach_cm": 198,
+  "stance": "orthodox",
+  "weight_class": "welterweight",
+  "record": {"wins": 20, "losses": 7, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

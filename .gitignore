@@ -137,3 +137,5 @@ runs/*
 *_stderr.log
 *_stdout.log
 *.tmp
+
+deliveries/

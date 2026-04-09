@@ -1,0 +1,20 @@
+{
+  "name": "Christos Padilla",
+  "nickname": "",
+  "country": "USA",
+  "weight_class": "Lightweight",
+  "stance": "Orthodox",
+  "height_cm": 175,
+  "reach_cm": 178,
+  "dob": "1994-05-10",
+  "record": {
+    "wins": 13,
+    "losses": 6,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Striker",
+  "style_secondary": "Wrestling",
+  "notable_wins": [],
+  "organization": "UFC"
+}

@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_tatiana_suarez_vs_fighter_lupita_godinez",
+  "fighter_a_id": "fighter_tatiana_suarez",
+  "fighter_b_id": "fighter_lupita_godinez",
+  "event_id": "ufc_327_2026_04_12",
+  "event_name": "UFC 327: Procházka vs. Ulberg",
+  "event_date": "2026-04-12",
+  "weight_class": "strawweight",
+  "scheduled_rounds": 3,
+  "fight_order": 9
+}

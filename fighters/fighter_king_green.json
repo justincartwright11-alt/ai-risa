@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_king_green",
+  "name": "Bobby Green",
+  "nickname": "King",
+  "birth_date": "1986-09-09",
+  "nationality": "United States",
+  "height_cm": 178,
+  "reach_cm": 180,
+  "stance": "orthodox",
+  "weight_class": "lightweight",
+  "record": {"wins": 32, "losses": 15, "draws": 1, "no_contest": 1},
+  "promotion": "UFC"
+}

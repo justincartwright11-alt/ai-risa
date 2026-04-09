@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_mateusz_gamrot_vs_fighter_esteban_ribovics",
+  "fighter_a_id": "fighter_mateusz_gamrot",
+  "fighter_b_id": "fighter_esteban_ribovics",
+  "event_id": "ufc_327_2026_04_12",
+  "event_name": "UFC 327: Procházka vs. Ulberg",
+  "event_date": "2026-04-12",
+  "weight_class": "lightweight",
+  "scheduled_rounds": 3,
+  "fight_order": 8
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Francisco Prado",
+  "nickname": "",
+  "country": "Argentina",
+  "weight_class": "Lightweight",
+  "stance": "Orthodox",
+  "height_cm": 180,
+  "reach_cm": 185,
+  "dob": "2002-06-22",
+  "record": {
+    "wins": 12,
+    "losses": 2,
+    "draws": 0,
+    "no_contest": 0
+  },
+  "style_primary": "Striker",
+  "style_secondary": "BJJ",
+  "notable_wins": ["Jamie Mullarkey"],
+  "organization": "UFC"
+}

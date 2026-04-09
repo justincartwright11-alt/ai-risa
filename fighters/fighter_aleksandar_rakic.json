@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_aleksandar_rakic",
+  "name": "Aleksandar Rakić",
+  "nickname": "Rocket",
+  "birth_date": "1992-02-08",
+  "nationality": "Serbia",
+  "height_cm": 193,
+  "reach_cm": 198,
+  "stance": "orthodox",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 14, "losses": 4, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

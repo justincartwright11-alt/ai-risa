@@ -1,0 +1,21 @@
+{
+  "event": "UFC 327: Procházka vs. Ulberg",
+  "date": "2026-04-12",
+  "venue": "Kaseya Center, Miami, FL",
+  "watch": "CBS/Paramount+",
+  "description": "UFC 327 official event card.",
+  "bouts": [
+    {"fighters": ["Jiri Prochazka", "Carlos Ulberg"], "weight_class": "Light Heavyweight", "main_event": true},
+    {"fighters": ["Azamat Murzakanov", "Paulo Costa"], "weight_class": "Light Heavyweight"},
+    {"fighters": ["Curtis Blaydes", "Jay Hokit"], "weight_class": "Heavyweight"},
+    {"fighters": ["Dominick Reyes", "Johnny Walker"], "weight_class": "Light Heavyweight"},
+    {"fighters": ["Cub Swanson", "Nate Landwehr"], "weight_class": "Featherweight"},
+    {"fighters": ["Patricio Pitbull", "Aaron Pico"], "weight_class": "Featherweight"},
+    {"fighters": ["Kevin Holland", "Randy Brown"], "weight_class": "Welterweight"},
+    {"fighters": ["Mateusz Gamrot", "Esteban Ribovics"], "weight_class": "Lightweight"},
+    {"fighters": ["Tatiana Suarez", "Lupita Godinez"], "weight_class": "Strawweight"},
+    {"fighters": ["Christos Padilla", "Manuel Mederos"], "weight_class": "Lightweight"},
+    {"fighters": ["Kelvin Gastelum", "Vicente Luque"], "weight_class": "Welterweight"},
+    {"fighters": ["Charles Radtke", "Francisco Prado"], "weight_class": "Welterweight"}
+  ]
+}

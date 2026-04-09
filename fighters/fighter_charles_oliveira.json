@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_charles_oliveira",
+  "name": "Charles Oliveira",
+  "nickname": "Do Bronx",
+  "birth_date": "1989-10-17",
+  "nationality": "Brazil",
+  "height_cm": 178,
+  "reach_cm": 188,
+  "stance": "orthodox",
+  "weight_class": "lightweight",
+  "record": {"wins": 34, "losses": 10, "draws": 0, "no_contest": 1},
+  "promotion": "UFC"
+}

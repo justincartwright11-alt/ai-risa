@@ -1,0 +1,22 @@
+{
+  "event": "UFC 300: Pereira vs. Hill",
+  "date": "2024-04-13",
+  "venue": "T-Mobile Arena, Las Vegas, NV",
+  "watch": "ESPN+ PPV",
+  "description": "Historic UFC 300 event.",
+  "bouts": [
+    {"fighters": ["Alex Pereira", "Jamahal Hill"], "weight_class": "Light Heavyweight", "main_event": true},
+    {"fighters": ["Zhang Weili", "Yan Xiaonan"], "weight_class": "Women's Strawweight"},
+    {"fighters": ["Justin Gaethje", "Max Holloway"], "weight_class": "Lightweight"},
+    {"fighters": ["Charles Oliveira", "Arman Tsarukyan"], "weight_class": "Lightweight"},
+    {"fighters": ["Bo Nickal", "Cody Brundage"], "weight_class": "Middleweight"},
+    {"fighters": ["Jiri Prochazka", "Aleksandar Rakic"], "weight_class": "Light Heavyweight"},
+    {"fighters": ["Calvin Kattar", "Aljamain Sterling"], "weight_class": "Featherweight"},
+    {"fighters": ["Holly Holm", "Kayla Harrison"], "weight_class": "Women's Bantamweight"},
+    {"fighters": ["Sodiq Yusuff", "Diego Lopes"], "weight_class": "Featherweight"},
+    {"fighters": ["Jalin Turner", "Renato Moicano"], "weight_class": "Lightweight"},
+    {"fighters": ["Jessica Andrade", "Marina Rodriguez"], "weight_class": "Women's Strawweight"},
+    {"fighters": ["King Green", "Jim Miller"], "weight_class": "Lightweight"},
+    {"fighters": ["Deiveson Figueiredo", "Cody Garbrandt"], "weight_class": "Bantamweight"}
+  ]
+}

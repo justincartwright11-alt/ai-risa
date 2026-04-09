@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_arman_tsarukyan",
+  "name": "Arman Tsarukyan",
+  "nickname": "Ahalkalakets",
+  "birth_date": "1996-10-11",
+  "nationality": "Armenia",
+  "height_cm": 170,
+  "reach_cm": 180,
+  "stance": "orthodox",
+  "weight_class": "lightweight",
+  "record": {"wins": 22, "losses": 3, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

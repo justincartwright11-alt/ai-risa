@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_jiri_prochazka_vs_fighter_carlos_ulberg",
+  "fighter_a_id": "fighter_jiri_prochazka",
+  "fighter_b_id": "fighter_carlos_ulberg",
+  "event_id": "ufc_327_2026_04_12",
+  "event_name": "UFC 327: Procházka vs. Ulberg",
+  "event_date": "2026-04-12",
+  "weight_class": "light heavyweight",
+  "scheduled_rounds": 5,
+  "fight_order": 1
+}

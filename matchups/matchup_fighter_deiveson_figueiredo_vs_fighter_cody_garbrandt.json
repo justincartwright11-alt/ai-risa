@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_deiveson_figueiredo_vs_fighter_cody_garbrandt",
+  "fighter_a_id": "fighter_deiveson_figueiredo",
+  "fighter_b_id": "fighter_cody_garbrandt",
+  "event_id": "ufc_300_2024_04_13",
+  "event_name": "UFC 300: Pereira vs. Hill",
+  "event_date": "2024-04-13",
+  "weight_class": "bantamweight",
+  "scheduled_rounds": 3,
+  "fight_order": 13
+}

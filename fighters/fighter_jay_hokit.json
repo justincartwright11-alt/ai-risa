@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_jay_hokit",
+  "name": "Jay Hokit",
+  "nickname": "",
+  "birth_date": "1994-01-01",
+  "nationality": "USA",
+  "height_cm": 185,
+  "reach_cm": 188,
+  "stance": "orthodox",
+  "weight_class": "heavyweight",
+  "record": {"wins": 8, "losses": 0, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

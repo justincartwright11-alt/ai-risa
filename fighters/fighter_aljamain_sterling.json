@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_aljamain_sterling",
+  "name": "Aljamain Sterling",
+  "nickname": "Funk Master",
+  "birth_date": "1989-07-31",
+  "nationality": "United States",
+  "height_cm": 170,
+  "reach_cm": 180,
+  "stance": "orthodox",
+  "weight_class": "featherweight",
+  "record": {"wins": 24, "losses": 4, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

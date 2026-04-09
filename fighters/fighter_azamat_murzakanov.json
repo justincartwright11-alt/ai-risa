@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_azamat_murzakanov",
+  "name": "Azamat Murzakanov",
+  "nickname": "The Professional",
+  "birth_date": "1989-04-05",
+  "nationality": "Russia",
+  "height_cm": 180,
+  "reach_cm": 188,
+  "stance": "southpaw",
+  "weight_class": "light heavyweight",
+  "record": {"wins": 16, "losses": 0, "draws": 0, "no_contest": 0},
+  "promotion": "UFC"
+}

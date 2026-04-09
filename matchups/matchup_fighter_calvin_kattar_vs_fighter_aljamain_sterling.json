@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_calvin_kattar_vs_fighter_aljamain_sterling",
+  "fighter_a_id": "fighter_calvin_kattar",
+  "fighter_b_id": "fighter_aljamain_sterling",
+  "event_id": "ufc_300_2024_04_13",
+  "event_name": "UFC 300: Pereira vs. Hill",
+  "event_date": "2024-04-13",
+  "weight_class": "featherweight",
+  "scheduled_rounds": 3,
+  "fight_order": 7
+}

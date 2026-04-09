@@ -1,0 +1,11 @@
+{
+  "matchup_id": "fighter_charles_oliveira_vs_fighter_arman_tsarukyan",
+  "fighter_a_id": "fighter_charles_oliveira",
+  "fighter_b_id": "fighter_arman_tsarukyan",
+  "event_id": "ufc_300_2024_04_13",
+  "event_name": "UFC 300: Pereira vs. Hill",
+  "event_date": "2024-04-13",
+  "weight_class": "lightweight",
+  "scheduled_rounds": 3,
+  "fight_order": 4
+}

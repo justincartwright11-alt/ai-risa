@@ -1,0 +1,13 @@
+{
+  "fighter_id": "fighter_deiveson_figueiredo",
+  "name": "Deiveson Figueiredo",
+  "nickname": "Deus da Guerra",
+  "birth_date": "1987-12-18",
+  "nationality": "Brazil",
+  "height_cm": 165,
+  "reach_cm": 173,
+  "stance": "orthodox",
+  "weight_class": "bantamweight",
+  "record": {"wins": 23, "losses": 3, "draws": 1, "no_contest": 1},
+  "promotion": "UFC"
+}

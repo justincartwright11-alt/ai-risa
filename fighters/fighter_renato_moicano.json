@@ -1,11 +1,13 @@
 {
   "fighter_id": "fighter_renato_moicano",
   "name": "Renato Moicano",
-  "weight_class": "Lightweight",
-  "stance": "Orthodox",
-  "record": "",
-  "dimensions": "",
-  "recent_form": "",
-  "style_tendencies": "Technical striker, strong grappling",
-  "notable_factors": "Durable, high fight IQ"
+  "nickname": "Moicano",
+  "birth_date": "1989-05-21",
+  "nationality": "Brazil",
+  "height_cm": 180,
+  "reach_cm": 183,
+  "stance": "orthodox",
+  "weight_class": "lightweight",
+  "record": {"wins": 18, "losses": 5, "draws": 1, "no_contest": 0},
+  "promotion": "UFC"
 }
