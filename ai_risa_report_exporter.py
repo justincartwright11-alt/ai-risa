@@ -5,10 +5,14 @@ Exports the render-ready report to Markdown or JSON. PDF support can be added la
 import json
 from ai_risa_report_renderer import render_markdown
 
+
 from ai_risa_report_renderer import render_markdown, _resolve_visual_slot
 from report_render_assets import VISUAL_SLOT_CONFIG
+from report_visual_asset_producer import build_visual_manifest, get_fixture_id, get_manifest_path
 
 def export_report(report_payload, out_path, fmt="md"):
+    # Build or update the visual manifest and assets for this report
+    build_visual_manifest(report_payload)
     if fmt == "md":
         md = render_markdown(report_payload)
         with open(out_path, "w", encoding="utf-8") as f:

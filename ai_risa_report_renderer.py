@@ -5,18 +5,39 @@ Consumes the adapter payload and builds a render-ready document model for output
 
 
 from report_render_assets import VISUAL_SLOT_CONFIG
+import os
+import json
+from report_visual_asset_producer import get_fixture_id, get_manifest_path
 
 def _resolve_visual_slot(slot_id, slot_payload=None):
     cfg = VISUAL_SLOT_CONFIG.get(slot_id, {})
-    # slot_payload can be None or a dict with asset_path/caption
-    if slot_payload and slot_payload.get("asset_path"):
+    # Try to resolve asset from manifest (presentation-side only)
+    slot_info = None
+    try:
+        # Use fixture id from payload
+        fixture_id = get_fixture_id(slot_payload or {}) if slot_payload else None
+        if not fixture_id:
+            # Try to get from parent context (report_payload)
+            import inspect
+            frame = inspect.currentframe().f_back
+            report_payload = frame.f_locals.get('report_payload')
+            fixture_id = get_fixture_id(report_payload) if report_payload else None
+        if fixture_id:
+            manifest_path = get_manifest_path(fixture_id)
+            if os.path.exists(manifest_path):
+                with open(manifest_path, "r", encoding="utf-8") as f:
+                    manifest = json.load(f)
+                slot_info = manifest.get(slot_id)
+    except Exception:
+        slot_info = None
+    if slot_info and slot_info.get("asset_path"):
         return {
             "id": slot_id,
             "title": cfg.get("title", slot_id.title()),
             "status": "asset",
-            "asset_path": slot_payload["asset_path"],
+            "asset_path": slot_info["asset_path"],
             "fallback_text": cfg.get("fallback_text"),
-            "caption": slot_payload.get("caption"),
+            "caption": slot_info.get("caption"),
         }
     else:
         return {
