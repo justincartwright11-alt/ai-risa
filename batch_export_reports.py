@@ -55,7 +55,14 @@ FIXTURES = [
 ]
 
 def batch_export():
+    print(f"[DIAG] batch_export_reports.py: Resolved {len(FIXTURES)} fixtures.")
+    if not FIXTURES:
+        print("[FAIL] No fixtures found for export. Check input file paths and CI checkout.")
+        raise SystemExit(2)
     for fixture_path in FIXTURES:
+        if not os.path.exists(fixture_path):
+            print(f"[FAIL] Fixture input file missing: {fixture_path}")
+            raise SystemExit(2)
         with open(fixture_path, "r", encoding="utf-8") as f:
             engine_output = json.load(f)
         report = map_engine_output_to_report(engine_output)
@@ -101,6 +108,11 @@ def batch_export():
         zip_path = os.path.join(os.path.dirname(out_dir), f"{fixture_slug}.zip")
         write_checksums(out_dir, manifest, zip_path)
         print(f"Checksums written to {os.path.join(out_dir, 'checksums.txt')}")
+
+        # Assert output dir contains files
+        if not any(os.scandir(out_dir)):
+            print(f"[FAIL] No files written to output dir: {out_dir}")
+            raise SystemExit(2)
 
 if __name__ == "__main__":
     batch_export()

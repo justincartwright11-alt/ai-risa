@@ -47,6 +47,12 @@ else:
 # Step 4: Batch export
 run_step(BATCH_EXPORT_CMD, "Batch export")
 
+# After batch export, check if any files exist under deliveries/v100-template-standardized
+output_root = Path("deliveries") / "v100-template-standardized"
+if not output_root.exists() or not any(output_root.rglob("*")):
+    print(f"[FAIL] No report artifacts were generated under {output_root}")
+    sys.exit(2)
+
 # Step 5: Per-report packaging and checksums are handled by batch_export_reports.py
 
 # Step 6: Verify bundles and checksums
