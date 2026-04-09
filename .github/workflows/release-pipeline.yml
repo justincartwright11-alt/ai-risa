@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - v100-release-ci-integration
+      - v100.1-release-hardening
   pull_request:
     branches:
       - v100-release-ci-integration
+      - v100.1-release-hardening
 
 jobs:
   release-pipeline:
