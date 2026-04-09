@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - v100-release-ci-integration
+      - v100.1-release-hardening
   pull_request:
     branches:
       - v100-release-ci-integration
+      - v100.1-release-hardening
 
 jobs:
   release-pipeline:
@@ -26,6 +28,12 @@ jobs:
           pip install -r requirements.txt || true
           python -m pip install matplotlib
           python -m pip install reportlab
+
+
+      - name: Run release smoke export
+        run: |
+          cd ${{ github.workspace }}
+          python batch_export_reports.py --smoke
 
       - name: Run release pipeline
         run: |

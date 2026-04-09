@@ -7,7 +7,7 @@ import json
 import glob
 from ai_risa_report_output_adapter import map_engine_output_to_report
 from ai_risa_report_exporter import export_report
-from report_delivery_config import make_report_filename, get_report_output_dir, get_manifest_filename
+from report_delivery_config import make_report_filename, get_report_output_dir, get_manifest_filename, get_validated_output_path
 from package_report_outputs import zip_fixture_bundle
 import hashlib
 
@@ -59,30 +59,54 @@ FIXTURES = sorted({
 })
 
 def batch_export():
-    print(f"[DIAG] batch_export_reports.py: Resolved {len(FIXTURES)} fixtures.")
-    if not FIXTURES:
-        print("[FAIL] No fixtures found for export. Check input file paths and CI checkout.")
-        raise SystemExit(2)
-    for fixture_path in FIXTURES:
-        if not os.path.exists(fixture_path):
-            print(f"[FAIL] Fixture input file missing: {fixture_path}")
+    def validate_fixtures(fixture_paths):
+        required_fields = ["predicted_winner_id", "confidence", "method", "round"]
+        if not fixture_paths:
+            print("[FAIL] No fixtures found for export. Check input file paths and CI checkout.")
             raise SystemExit(2)
-        with open(fixture_path, "r", encoding="utf-8") as f:
-            engine_output = json.load(f)
+        valid_fixtures = []
+        for fixture_path in fixture_paths:
+            if not os.path.exists(fixture_path):
+                print(f"[FAIL] Fixture input file missing: {fixture_path}")
+                raise SystemExit(2)
+            try:
+                with open(fixture_path, "r", encoding="utf-8") as f:
+                    engine_output = json.load(f)
+            except Exception as e:
+                print(f"[FAIL] Could not read or parse JSON: {fixture_path}\n  {e}")
+                raise SystemExit(2)
+            missing = [k for k in required_fields if k not in engine_output]
+            if missing:
+                print(f"[FAIL] Fixture missing required fields {missing}: {fixture_path}")
+                raise SystemExit(2)
+            valid_fixtures.append((fixture_path, engine_output))
+        return valid_fixtures
+
+    import sys
+    smoke = "--smoke" in sys.argv
+    print(f"[DIAG] batch_export_reports.py: Resolved {len(FIXTURES)} fixtures.")
+    valid_fixtures = validate_fixtures(FIXTURES)
+    if smoke:
+        valid_fixtures = valid_fixtures[:1]
+        if not valid_fixtures:
+            print("[FAIL] No valid fixtures for smoke export.")
+            raise SystemExit(2)
+        print(f"[SMOKE] Exporting only: {valid_fixtures[0][0]}")
+    for fixture_path, engine_output in valid_fixtures:
         report = map_engine_output_to_report(engine_output)
         fixture_slug = engine_output.get("prediction_id") or os.path.splitext(os.path.basename(fixture_path))[0]
         report_type = report["packaging"].get("report_type", "Report")
         out_dir = get_report_output_dir(fixture_slug)
         os.makedirs(out_dir, exist_ok=True)
         # Export JSON
-        json_name = make_report_filename(fixture_slug, report_type, "json")
-        export_report(report, os.path.join(out_dir, json_name), fmt="json")
+        json_path = get_validated_output_path(fixture_slug, report_type, "json")
+        export_report(report, json_path, fmt="json")
         # Export Markdown
-        md_name = make_report_filename(fixture_slug, report_type, "md")
-        export_report(report, os.path.join(out_dir, md_name), fmt="md")
+        md_path = get_validated_output_path(fixture_slug, report_type, "md")
+        export_report(report, md_path, fmt="md")
         # Export PDF
-        pdf_name = make_report_filename(fixture_slug, report_type, "pdf")
-        export_report(report, os.path.join(out_dir, pdf_name), fmt="pdf")
+        pdf_path = get_validated_output_path(fixture_slug, report_type, "pdf")
+        export_report(report, pdf_path, fmt="pdf")
 
         # Write manifest with explicit artifact inventory
         manifest = {
@@ -92,9 +116,9 @@ def batch_export():
             "export_timestamp": __import__("datetime").datetime.utcnow().isoformat(),
             "source_prediction_file": os.path.abspath(fixture_path),
             "outputs": {
-                "json": json_name,
-                "markdown": md_name,
-                "pdf": pdf_name,
+                "json": os.path.basename(json_path),
+                "markdown": os.path.basename(md_path),
+                "pdf": os.path.basename(pdf_path),
             },
             "assets_folder": os.path.join(out_dir, "assets"),
         }
