@@ -32,10 +32,19 @@ jobs:
           cd ${{ github.workspace }}
           python release_reports.py
 
+      - name: Diagnostic: List delivery outputs
+        shell: pwsh
+        run: |
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "--- Recursive listing of deliveries root ---"
+          Get-ChildItem -Recurse deliveries -ErrorAction SilentlyContinue | Format-List
+          Write-Host "--- Recursive listing of all .pdf/.md/.json/.zip ---"
+          Get-ChildItem -Recurse . -Include *.pdf,*.md,*.json,*.zip -ErrorAction SilentlyContinue | Format-List
+
       - name: Upload release artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: deliveries
-          path: deliveries/
+          path: deliveries/v100-template-standardized/
           if-no-files-found: warn
