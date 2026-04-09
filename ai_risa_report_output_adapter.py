@@ -101,4 +101,30 @@ def map_engine_output_to_report(engine_output):
     method_dist = engine_output.get("method_distribution")
     if isinstance(method_dist, dict) and method_dist:
         report["method_distribution"] = method_dist
+
+    # Radar metrics: fixed schema, only if all present and normalized
+    radar_metric_keys = [
+        ("control", "Control"),
+        ("aggression", "Aggression"),
+        ("defense", "Defense"),
+        ("cardio", "Cardio"),
+        ("durability", "Durability"),
+        ("adaptability", "Adaptability"),
+    ]
+    # Try to get from engine_output (presentation-safe fields only)
+    radar_values = []
+    all_present = True
+    for key, _ in radar_metric_keys:
+        val = engine_output.get(key)
+        if val is None or not isinstance(val, (int, float)):
+            all_present = False
+            break
+        radar_values.append(float(val))
+    if all_present and len(radar_values) == 6:
+        report["radar_metrics"] = {
+            "labels": [label for _, label in radar_metric_keys],
+            "values": radar_values,
+            "scale_min": 0.0,
+            "scale_max": 1.0,
+        }
     return report

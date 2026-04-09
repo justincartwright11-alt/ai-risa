@@ -54,16 +54,54 @@ def produce_method_chart(report_payload):
     plt.close(fig)
     return asset_path
 
+
+def produce_radar_chart(report_payload):
+    """Generate radar chart PNG if radar_metrics is available. Returns asset_path or None."""
+    fixture_id = get_fixture_id(report_payload)
+    asset_path = get_asset_path(fixture_id, "radar")
+    radar = report_payload.get("radar_metrics")
+    if not radar or not isinstance(radar, dict):
+        return None
+    labels = radar.get("labels")
+    values = radar.get("values")
+    scale_min = radar.get("scale_min", 0.0)
+    scale_max = radar.get("scale_max", 1.0)
+    if not labels or not values or len(labels) != 6 or len(values) != 6:
+        return None
+    import numpy as np
+    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+    values = list(values) + [values[0]]
+    angles += [angles[0]]
+    fig, ax = plt.subplots(figsize=(16, 9), subplot_kw=dict(polar=True), dpi=100)
+    ax.plot(angles, values, color="#2a3a5e", linewidth=2)
+    ax.fill(angles, values, color="#2a3a5e", alpha=0.25)
+    ax.set_yticks(np.linspace(scale_min, scale_max, 5))
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(labels, fontsize=18)
+    ax.set_title("Fighter Attribute Radar", fontsize=24, pad=24)
+    ax.set_ylim(scale_min, scale_max)
+    fig.tight_layout()
+    fig.patch.set_facecolor('white')
+    plt.savefig(asset_path, format="png", dpi=100, bbox_inches='tight', facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return asset_path
+
 def build_visual_manifest(report_payload):
     """Build and write the per-fixture manifest for all visual slots."""
     fixture_id = get_fixture_id(report_payload)
     manifest = {}
-    # Only method_chart for now
+    # method_chart
     method_chart_path = produce_method_chart(report_payload)
     if method_chart_path:
         manifest["method_chart"] = {"asset_path": method_chart_path, "caption": "Method of victory distribution"}
+    # radar
+    radar_chart_path = produce_radar_chart(report_payload)
+    if radar_chart_path:
+        manifest["radar"] = {"asset_path": radar_chart_path, "caption": "Fighter attribute radar"}
+    else:
+        manifest["radar"] = None
     # Other slots remain empty (placeholders)
-    for slot in ["radar", "heat_map", "control_shift"]:
+    for slot in ["heat_map", "control_shift"]:
         manifest[slot] = None
     # Write manifest
     manifest_path = get_manifest_path(fixture_id)
