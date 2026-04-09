@@ -47,4 +47,4 @@ jobs:
         with:
           name: deliveries
           path: deliveries/v100-template-standardized/
-(no trailing blank line)
+          if-no-files-found: warn
