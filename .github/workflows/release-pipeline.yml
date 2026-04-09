@@ -32,7 +32,7 @@ jobs:
           cd ${{ github.workspace }}
           python release_reports.py
 
-      - name: Diagnostic: List delivery outputs
+      - name: "Diagnostic: List delivery outputs"
         shell: pwsh
         run: |
           Write-Host "Current directory: $(Get-Location)"
