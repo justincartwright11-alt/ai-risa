@@ -5,13 +5,14 @@ from ai_risa_report_output_adapter import map_engine_output_to_report
 from ai_risa_report_renderer import _resolve_visual_slot, render_markdown
 from report_render_assets import VISUAL_SLOT_CONFIG
 
-# Fixture paths
+# Fixture root (default to frozen fixtures for CI)
+fixture_root = sys.argv[1] if len(sys.argv) > 1 else "fixtures/predictions_frozen"
 FIXTURES = [
-    "predictions/van_taira_baseline.json",
-    "predictions/volkov_cortes_baseline.json",
-    "predictions/volkov_cortes_sens2.json",
-    "predictions/muhammad_bonfim_baseline.json",
-    "predictions/muhammad_bonfim_sens2.json",
+    os.path.join(fixture_root, "van_taira_baseline.json"),
+    os.path.join(fixture_root, "volkov_cortes_baseline.json"),
+    os.path.join(fixture_root, "volkov_cortes_sens2.json"),
+    os.path.join(fixture_root, "muhammad_bonfim_baseline.json"),
+    os.path.join(fixture_root, "muhammad_bonfim_sens2.json"),
 ]
 
 # Engine contract fields
