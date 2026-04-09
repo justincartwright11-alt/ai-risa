@@ -10,7 +10,7 @@ on:
 
 jobs:
   release-pipeline:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,7 +26,9 @@ jobs:
           pip install -r requirements.txt || true
 
       - name: Run release pipeline
-        run: python release_reports.py
+        run: |
+          cd ${{ github.workspace }}
+          python release_reports.py
 
       - name: Upload release artifacts
         if: always()
