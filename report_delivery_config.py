@@ -19,8 +19,7 @@ def get_today_str():
 # Filename template
 # Example: fighter_joshua_van_vs_fighter_tatsuro_taira__Premium_Fight_Intelligence_Brief__v100-template-standardized.json
 def make_report_filename(fixture_slug, report_type, ext):
-    safe_type = report_type.replace(" ", "_")
-    return f"{fixture_slug}__{safe_type}__{REPORT_VERSION}.{ext}"
+    return f"report.{ext}"
 
 # Bundle folder layout
 def get_report_output_dir(fixture_slug):
