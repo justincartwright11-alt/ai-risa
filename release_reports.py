@@ -17,6 +17,7 @@ REGRESSION_CMD = ["python", "run_regression_tests.py"]  # If exists
 EXPORT_SMOKE_CMD = ["python", "export_smoke_test.py"]   # If exists
 BATCH_EXPORT_CMD = ["python", "batch_export_reports.py"]
 DELIVERY_ROOT = Path("deliveries")
+FROZEN_FIXTURE_PATH = Path("fixtures/predictions_frozen/")
 
 # Utility to run a command and fail fast
 def run_step(cmd, desc):
