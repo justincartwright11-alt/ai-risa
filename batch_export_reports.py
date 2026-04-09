@@ -4,6 +4,7 @@ Batch export runner for standardized report pipeline.
 """
 import os
 import json
+import glob
 from ai_risa_report_output_adapter import map_engine_output_to_report
 from ai_risa_report_exporter import export_report
 from report_delivery_config import make_report_filename, get_report_output_dir, get_manifest_filename
@@ -45,14 +46,17 @@ def write_checksums(out_dir, manifest, zip_path):
                 f.write(f"{os.path.basename(file)}: {sha256sum(file)}\n")
     return checksum_path
 
-# List of fixtures to export
-FIXTURES = [
-    "predictions/van_taira_baseline.json",
-    "predictions/volkov_cortes_baseline.json",
-    "predictions/volkov_cortes_sens2.json",
-    "predictions/muhammad_bonfim_baseline.json",
-    "predictions/muhammad_bonfim_sens2.json",
+# Deterministic fixture discovery from committed repo contents
+FIXTURE_GLOBS = [
+    "predictions/*_baseline.json",
+    "predictions/*_sens2.json",
 ]
+
+FIXTURES = sorted({
+    path.replace("\\", "/")
+    for pattern in FIXTURE_GLOBS
+    for path in glob.glob(pattern)
+})
 
 def batch_export():
     print(f"[DIAG] batch_export_reports.py: Resolved {len(FIXTURES)} fixtures.")
