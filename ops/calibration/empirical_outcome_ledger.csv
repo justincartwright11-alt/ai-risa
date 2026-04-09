@@ -1,0 +1,16 @@
+fight_id,provenance,source_status,actual_winner,actual_method,actual_round,predicted_winner,predicted_method,predicted_round,confidence,hit_winner,hit_method
+alexey_shendrik_vs_reda_kham,predictions/alexey_shendrik_vs_reda_kham_prediction.json,matched_normalized,alexey_shendrik,Decision,6,Alexey Shendrik,Decision,,60.0,True,True
+alfonso_franklin_vs_jhonoven_ureña,predictions/alfonso_franklin_vs_jhonoven_ureña_prediction.json,matched_normalized,jhonoven_ureña,KO,5,Alfonso Franklin,Decision,,55.0,False,False
+bentley_vs_saavedra,predictions/bentley_vs_saavedra_prediction.json,matched_normalized,bentley,Decision,10,Endry Saavedra,Decision/late TKO,,60.0,False,True
+don_madge_vs_tba,predictions/don_madge_vs_tba_prediction.json,matched_normalized,don_madge,TKO,1,Don Madge,Decision,,55.0,True,False
+garan_croft_vs_marco_simmonds,predictions/garan_croft_vs_marco_simmonds_prediction.json,matched_normalized,garan_croft,Decision,8,Garan Croft,Decision,,60.0,True,True
+goodman_vs_ruiz,predictions/goodman_vs_ruiz_prediction.json,matched_normalized,goodman,Decision,12,Sam Goodman,KO/TKO likely,,70.0,False,False
+ioan_croft_vs_novak_radulovic,predictions/ioan_croft_vs_novak_radulovic_prediction.json,matched_normalized,ioan_croft,TKO,4,Ioan Croft,Decision,,60.0,True,False
+israel_adesanya_vs_dricus_du_plessis,predictions/israel_adesanya_vs_dricus_du_plessis_prediction.json,matched_normalized,dricus_du_plessis,TKO,2,Israel Adesanya,Decision,,55.0,False,False
+jordan_thompson_vs_david_spilmont,predictions/jordan_thompson_vs_david_spilmont_prediction.json,matched_normalized,jordan_thompson,TKO,2,Jordan Thompson,Decision,,60.0,True,False
+lauren_price_vs_stephanie_pineiro_aquino,predictions/lauren_price_vs_stephanie_pineiro_aquino_prediction.json,matched_normalized,lauren_price,Decision,10,Lauren Price,Decision,,60.0,True,True
+pat_brown_vs_vasil_ducar,predictions/pat_brown_vs_vasil_ducar_prediction.json,matched_normalized,vasil_ducar,Decision,8,Pat Brown,Decision,,60.0,False,True
+riley_vs_masternak,predictions/riley_vs_masternak_prediction.json,matched_normalized,riley,TKO,8,Viddal Riley,KO/TKO likely,,70.0,False,True
+sergio_pettis_vs_mitch_mckee,predictions/sergio_pettis_vs_mitch_mckee_prediction.json,matched_normalized,sergio_pettis,Decision,3,Sergio Pettis,Decision,,58.0,True,True
+tim_tszyu_vs_denis_nurja,predictions/tim_tszyu_vs_denis_nurja_prediction.json,matched_normalized,tim_tszyu,KO,1,Tim Tszyu,Decision,,60.0,True,False
+wilder_vs_chisora,predictions/wilder_vs_chisora_prediction.json,matched_normalized,wilder,KO,3,Deontay Wilder,KO/TKO likely,,70.0,False,True
