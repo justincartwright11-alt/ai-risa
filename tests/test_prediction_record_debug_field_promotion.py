@@ -30,11 +30,11 @@ def test_build_prediction_record_promotes_debug_fields_with_fallback():
         prediction_timestamp=datetime.now(timezone.utc),
         fighter_a_profile_path="C:/Users/jusin/ai_risa_data/fighters/fighter_israel_adesanya.json",
         fighter_b_profile_path="C:/Users/jusin/ai_risa_data/fighters/fighter_joe_pyfer.json",
-        fighter_a_name="Israel Adesanya",
-        fighter_b_name="Joe Pyfer",
         stoppage_sensitivity=1.0,
         source_matchup_file="single_fight_cli",
         simulation_count=1,
+        calibration_version="unknown",
+        fighter_prior_version="unknown",
     )
 
     assert isinstance(record, PredictionRecord)
@@ -65,11 +65,11 @@ def test_build_prediction_record_prefers_top_level_values_when_present():
         prediction_timestamp=datetime.now(timezone.utc),
         fighter_a_profile_path="C:/Users/jusin/ai_risa_data/fighters/fighter_israel_adesanya.json",
         fighter_b_profile_path="C:/Users/jusin/ai_risa_data/fighters/fighter_joe_pyfer.json",
-        fighter_a_name="Israel Adesanya",
-        fighter_b_name="Joe Pyfer",
         stoppage_sensitivity=1.0,
         source_matchup_file="single_fight_cli",
         simulation_count=1,
+        calibration_version="unknown",
+        fighter_prior_version="unknown",
     )
 
     assert isinstance(record, PredictionRecord)

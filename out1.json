@@ -1,0 +1,41 @@
+{
+  "signal_gap": 0.19999999999999996,
+  "stoppage_propensity": 0.38,
+  "round_finish_tendency": 0.2,
+  "schema_version": "prediction_record_v1",
+  "prediction_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer__s1.0",
+  "prediction_family_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "workflow_type": "single_fight",
+  "prediction_timestamp": "2026-04-09T11:05:55.914847Z",
+  "fighter_a_id": "fighter_ricky_simon",
+  "fighter_b_id": "fighter_adrian_yanez",
+  "predicted_winner_id": "fighter_ricky_simon",
+  "confidence": 0.6,
+  "method": "Decision",
+  "round": "full",
+  "model_version": "unknown",
+  "calibration_version": "unknown",
+  "fighter_prior_version": "unknown",
+  "input_config": {
+    "stoppage_sensitivity": 1.0,
+    "simulation_count": 1,
+    "source_matchup_file": "simon_yanez_amplified",
+    "extras": {}
+  },
+  "profile_sources": {
+    "fighter_a_profile_path": "C:/Users/jusin/ai_risa_data/fighters/fighter_ricky_simon.json",
+    "fighter_b_profile_path": "C:/Users/jusin/ai_risa_data/fighters/fighter_adrian_yanez.json"
+  },
+  "profile_hashes": {
+    "fighter_a_hash": null,
+    "fighter_b_hash": null
+  },
+  "debug_metrics": {
+    "signal_gap": 0.19999999999999996,
+    "stoppage_propensity": 0.38,
+    "round_finish_tendency": 0.2
+  },
+  "artifact_paths": [],
+  "status": "predicted"
+}

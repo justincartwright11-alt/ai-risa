@@ -170,26 +170,26 @@ def main():
         prediction_timestamp=prediction_timestamp,
         fighter_a_profile_path=fighter_a_profile_path,
         fighter_b_profile_path=fighter_b_profile_path,
-        fighter_a_name=fighter_a_name,
-        fighter_b_name=fighter_b_name,
         stoppage_sensitivity=stoppage_sensitivity,
-        source_matchup_file=source_matchup_file,
         simulation_count=args.sims,
-        # Use defaults for calibration_version and fighter_prior_version
+        source_matchup_file=source_matchup_file,
+        calibration_version="unknown",
+        fighter_prior_version="unknown",
     )
 
-    output_payload = _prediction_payload(prediction_record)
-
+    # Write only PredictionRecord, never dict
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(output_payload, f, ensure_ascii=False, indent=2)
+        json.dump(prediction_record.to_json_dict(), f, ensure_ascii=False, indent=2)
     print(f"[INFO] Wrote prediction to {args.output}")
 
     # Append to prediction ledger (live capture)
     try:
-        append_prediction_record(dict(output_payload), r'C:\Users\jusin\ai_risa_data\ledger\prediction_ledger.jsonl')
+        append_prediction_record(prediction_record, r'C:\Users\jusin\ai_risa_data\ledger\prediction_ledger.jsonl')
         print(f"[INFO] Appended prediction to prediction_ledger.jsonl")
     except Exception as e:
         print(f"[WARNING] Prediction ledger append failed: {e}")
+
+    return prediction_record
 
 if __name__ == "__main__":
     main()

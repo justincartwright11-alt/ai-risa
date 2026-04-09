@@ -17,11 +17,11 @@ def minimal_context():
         prediction_timestamp=datetime(2026, 4, 7, 0, 0, 0),
         fighter_a_profile_path="a.json",
         fighter_b_profile_path="b.json",
-        fighter_a_name="A",
-        fighter_b_name="B",
         stoppage_sensitivity=1.0,
         source_matchup_file="test.json",
         simulation_count=1,
+        calibration_version="unknown",
+        fighter_prior_version="unknown",
     )
 
 @pytest.mark.parametrize(

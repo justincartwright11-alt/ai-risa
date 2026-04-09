@@ -1,23 +1,31 @@
 # --- Adapter mapping: build_prediction_record ---
+
 from datetime import datetime
 from ai_risa_prediction_schema import PredictionRecord, WorkflowType, InputConfig, ProfileSources, ProfileHashes
 
 def build_prediction_record(
-    legacy_prediction: dict,
-    matchup_record: dict,
-    workflow_type: str,
-    prediction_timestamp: datetime,
-    fighter_a_profile_path: str,
-    fighter_b_profile_path: str,
-    fighter_a_name: str,
-    fighter_b_name: str,
-    stoppage_sensitivity: float,
-    source_matchup_file: str,
-    simulation_count: int = 1000,
-    calibration_version: str = "calibration_v1.0.0",
-    fighter_prior_version: str = "fighter_priors_v1.0.0",
-) -> 'PredictionRecord':
-    # Normalized mapping pass
+    legacy_prediction,
+    matchup_record,
+    workflow_type,
+    prediction_timestamp,
+    stoppage_sensitivity,
+    simulation_count,
+    source_matchup_file,
+    fighter_a_profile_path,
+    fighter_b_profile_path,
+    calibration_version,
+    fighter_prior_version,
+):
+    # If already a PredictionRecord, return as-is
+    if isinstance(legacy_prediction, PredictionRecord):
+        return legacy_prediction
+    # If input is a dict, validate and promote
+    if not isinstance(legacy_prediction, dict):
+        raise TypeError("build_prediction_record expects a dict or PredictionRecord")
+    # Normalize calibration_version and fighter_prior_version to sentinel if falsey
+    calibration_version = calibration_version or "unknown"
+    fighter_prior_version = fighter_prior_version or "unknown"
+    # Normalized mapping pass (existing logic)
     engine_result = legacy_prediction
     result_dict = legacy_prediction.get("pipeline_result", {}) if isinstance(legacy_prediction.get("pipeline_result"), dict) else {}
     debug_metrics = engine_result.get("debug_metrics") or {}
@@ -72,7 +80,7 @@ def build_prediction_record(
     if not fighter_b_profile_path:
         fighter_b_profile_path = "unknown_profile_path"
 
-    return PredictionRecord(
+    record = PredictionRecord(
         schema_version="prediction_record_v1",
         prediction_id=prediction_id,
         prediction_family_id=prediction_family_id,
@@ -106,6 +114,16 @@ def build_prediction_record(
         stoppage_propensity=stoppage_propensity,
         round_finish_tendency=round_finish_tendency,
     )
+    # Fail fast if required top-level fields are missing
+    required_fields = ["signal_gap", "stoppage_propensity", "round_finish_tendency"]
+    for field in required_fields:
+        if getattr(record, field, None) is None:
+            raise ValueError(f"Missing required signal field: {field}")
+    if not getattr(record.profile_sources, "fighter_a_profile_path", None):
+        raise ValueError("Missing fighter_a_profile_path in profile_sources")
+    if not getattr(record.profile_sources, "fighter_b_profile_path", None):
+        raise ValueError("Missing fighter_b_profile_path in profile_sources")
+    return record
 # Promoted field mapping contract
 # final field              primary source                        fallback source                        default
 # predicted_winner_id      engine_result["predicted_winner_id"]   result_dict["predicted_winner_id"]     None
