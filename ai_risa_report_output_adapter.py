@@ -89,10 +89,16 @@ def map_engine_output_to_report(engine_output):
         "generated_utc": None,
     }
 
-    return {
+    # Add method_distribution to the top-level payload if present and valid
+    report = {
         "metadata": metadata,
         "headline": headline,
         "sections": sections,
         "visual_slots": visual_slots,
         "packaging": packaging,
     }
+    # Only promote method_distribution if it exists and is a dict
+    method_dist = engine_output.get("method_distribution")
+    if isinstance(method_dist, dict) and method_dist:
+        report["method_distribution"] = method_dist
+    return report
