@@ -27,6 +27,12 @@ jobs:
           python -m pip install matplotlib
           python -m pip install reportlab
 
+
+      - name: Run release smoke export
+        run: |
+          cd ${{ github.workspace }}
+          python batch_export_reports.py --smoke
+
       - name: Run release pipeline
         run: |
           cd ${{ github.workspace }}

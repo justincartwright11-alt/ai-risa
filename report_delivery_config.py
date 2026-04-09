@@ -1,3 +1,17 @@
+# Conservative Windows path length limit
+MAX_SAFE_WINDOWS_PATH = 220
+
+def assert_safe_output_path(path):
+    normalized = os.path.abspath(path)
+    if len(normalized) > MAX_SAFE_WINDOWS_PATH:
+        raise ValueError(f"Output path too long ({len(normalized)}): {normalized}")
+
+def get_validated_output_path(fixture_slug, report_type, ext):
+    out_dir = get_report_output_dir(fixture_slug)
+    filename = make_report_filename(fixture_slug, report_type, ext)
+    full_path = os.path.join(out_dir, filename)
+    assert_safe_output_path(full_path)
+    return full_path
 # report_delivery_config.py
 """
 Delivery and packaging configuration for standardized report outputs.
