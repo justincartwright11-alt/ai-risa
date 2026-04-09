@@ -35,11 +35,20 @@ def batch_export():
         # Export PDF
         pdf_name = make_report_filename(fixture_slug, report_type, "pdf")
         export_report(report, os.path.join(out_dir, pdf_name), fmt="pdf")
-        # Write manifest
+
+        # Write manifest with explicit artifact inventory
         manifest = {
             "fixture": fixture_slug,
             "report_type": report_type,
-            "outputs": [json_name, md_name, pdf_name],
+            "version": report["packaging"].get("version", "unknown"),
+            "export_timestamp": __import__("datetime").datetime.utcnow().isoformat(),
+            "source_prediction_file": os.path.abspath(fixture_path),
+            "outputs": {
+                "json": json_name,
+                "markdown": md_name,
+                "pdf": pdf_name,
+            },
+            "assets_folder": os.path.join(out_dir, "assets"),
         }
         with open(os.path.join(out_dir, get_manifest_filename()), "w", encoding="utf-8") as mf:
             json.dump(manifest, mf, indent=2)
