@@ -1299,6 +1299,32 @@
       "lock_status": "success",
       "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
       "terminal_status": "success"
+    },
+    {
+      "run_id": "2026-04-10T00:45:01.273580Z:scheduled",
+      "invoked_at": "2026-04-10T00:45:01.273580Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "healthy",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
+    },
+    {
+      "run_id": "2026-04-10T01:00:01.297020Z:scheduled",
+      "invoked_at": "2026-04-10T01:00:01.297020Z",
+      "invocation_source": "scheduled",
+      "due_decision": false,
+      "cycle_invoked": false,
+      "cycle_status": null,
+      "alerting_status": "N/A",
+      "heartbeat_health": "healthy",
+      "lock_status": "not-invoked",
+      "notification_summary": "N/A",
+      "terminal_status": "not-invoked"
     }
   ]
 }

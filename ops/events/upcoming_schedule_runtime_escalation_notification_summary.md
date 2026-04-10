@@ -1,11 +1,11 @@
 # Runtime + Escalation Notification Summary
 
-- timestamp: 2026-04-10T00:30:01.235231Z
-- due: True
-- cycle_result: success
-- alerting_result: success
-- escalation_policy_result: success
-- escalation_notification_outbox_result: success
-- escalation_notification_dispatch_result: success
-- escalation_notification_delivery_json: ops\events\upcoming_schedule_escalation_notification_delivery.json
-- escalation_notification_delivery_md: ops\events\upcoming_schedule_escalation_notification_delivery.md
+- timestamp: 2026-04-10T01:00:01.297020Z
+- due: False
+- cycle_result: None
+- alerting_result: None
+- escalation_policy_result: fail (code 1)
+- escalation_notification_outbox_result: skipped (not due or prior failure)
+- escalation_notification_dispatch_result: skipped (not due or prior failure)
+- escalation_notification_delivery_json: None
+- escalation_notification_delivery_md: None
