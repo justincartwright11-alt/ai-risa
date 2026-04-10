@@ -1,0 +1,110 @@
+[
+  {
+    "fight_id": "aboubakar_jbalia_vs_cherif_diatta",
+    "fighter_a": "aboubakar_jbalia",
+    "fighter_b": "cherif_diatta",
+    "prediction_file": "predictions\\aboubakar_jbalia_vs_cherif_diatta_prediction.json"
+  },
+  {
+    "fight_id": "aokuso_vs_hao_ho",
+    "fighter_a": "aokuso",
+    "fighter_b": "hao_ho",
+    "prediction_file": "predictions\\aokuso_vs_hao_ho_prediction.json"
+  },
+  {
+    "fight_id": "foxtrot_fighter_vs_golf_fighter",
+    "fighter_a": "foxtrot_fighter",
+    "fighter_b": "golf_fighter",
+    "prediction_file": "predictions\\foxtrot_fighter_vs_golf_fighter_prediction.json"
+  },
+  {
+    "fight_id": "harris_vs_ignatius",
+    "fighter_a": "harris",
+    "fighter_b": "ignatius",
+    "prediction_file": "predictions\\harris_vs_ignatius_prediction.json"
+  },
+  {
+    "fight_id": "isaiah_badato_vs_retsu_sashida",
+    "fighter_a": "isaiah_badato",
+    "fighter_b": "retsu_sashida",
+    "prediction_file": "predictions\\isaiah_badato_vs_retsu_sashida_prediction.json"
+  },
+  {
+    "fight_id": "isannuea_sor_sasiwat_vs_khunpon_aekmuangnon",
+    "fighter_a": "isannuea_sor_sasiwat",
+    "fighter_b": "khunpon_aekmuangnon",
+    "prediction_file": "predictions\\isannuea_sor_sasiwat_vs_khunpon_aekmuangnon_prediction.json"
+  },
+  {
+    "fight_id": "josh_blenkiron_vs_robbie_colman",
+    "fighter_a": "josh_blenkiron",
+    "fighter_b": "robbie_colman",
+    "prediction_file": "predictions\\josh_blenkiron_vs_robbie_colman_prediction.json"
+  },
+  {
+    "fight_id": "kane_shepherd_vs_tba",
+    "fighter_a": "kane_shepherd",
+    "fighter_b": "tba",
+    "prediction_file": "predictions\\kane_shepherd_vs_tba_prediction.json"
+  },
+  {
+    "fight_id": "kyran_jones_vs_tba",
+    "fighter_a": "kyran_jones",
+    "fighter_b": "tba",
+    "prediction_file": "predictions\\kyran_jones_vs_tba_prediction.json"
+  },
+  {
+    "fight_id": "payakrut_suajantokmuaythai_vs_ikko_ota",
+    "fighter_a": "payakrut_suajantokmuaythai",
+    "fighter_b": "ikko_ota",
+    "prediction_file": "predictions\\payakrut_suajantokmuaythai_vs_ikko_ota_prediction.json"
+  },
+  {
+    "fight_id": "rhys_edwards_vs_tba",
+    "fighter_a": "rhys_edwards",
+    "fighter_b": "tba",
+    "prediction_file": "predictions\\rhys_edwards_vs_tba_prediction.json"
+  },
+  {
+    "fight_id": "tomyamkoong_bhumjaithai_vs_bejenuta_maximus",
+    "fighter_a": "tomyamkoong_bhumjaithai",
+    "fighter_b": "bejenuta_maximus",
+    "prediction_file": "predictions\\tomyamkoong_bhumjaithai_vs_bejenuta_maximus_prediction.json"
+  },
+  {
+    "fight_id": "tszyu_vs_nurja",
+    "fighter_a": "tszyu",
+    "fighter_b": "nurja",
+    "prediction_file": "predictions\\tszyu_vs_nurja_prediction.json"
+  },
+  {
+    "fight_id": "william_crolla_vs_glenn_byrne",
+    "fighter_a": "william_crolla",
+    "fighter_b": "glenn_byrne",
+    "prediction_file": "predictions\\william_crolla_vs_glenn_byrne_prediction.json"
+  },
+  {
+    "fight_id": "abdul_rakhman_yakhyaev_vs_brendson_ribeiro",
+    "fighter_a": "abdul_rakhman_yakhyaev",
+    "fighter_b": "brendson_ribeiro",
+    "prediction_file": "predictions\\pred_abdul_rakhman_yakhyaev_vs_brendson_ribeiro.json"
+  },
+  {
+    "fight_id": "ethyn_ewing_vs_rafael_estevam",
+    "fighter_a": "ethyn_ewing",
+    "fighter_b": "rafael_estevam",
+    "prediction_file": "predictions\\pred_ethyn_ewing_vs_rafael_estevam.json"
+  },
+  {
+    "fight_id": "renato_moicano_vs_chris_duncan",
+    "fighter_a": "renato_moicano",
+    "fighter_b": "chris_duncan",
+    "prediction_file": "predictions\\pred_renato_moicano_vs_chris_duncan.json"
+  },
+  {
+    "fight_id": "virna_jandiroba_vs_tabatha_ricci",
+    "fighter_a": "virna_jandiroba",
+    "fighter_b": "tabatha_ricci",
+    "prediction_file": "predictions\\pred_virna_jandiroba_vs_tabatha_ricci.json"
+  }
+]

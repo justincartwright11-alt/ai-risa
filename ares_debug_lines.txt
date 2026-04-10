@@ -1,13 +1,93 @@
-[ARES AUDIT] Total anchors with 'Fight Card': 6
-[ARES AUDIT] Anchor 1: text='Fight Card ' href='?competition=3303'
-[ARES AUDIT] Anchor 2: text='Fight Card ' href='?competition=3293'
-[ARES AUDIT] Anchor 3: text='Fight Card ' href='?competition=3297'
-[ARES AUDIT] Anchor 4: text='Fight Card ' href='?competition=3364'
-[ARES AUDIT] Anchor 5: text='Fight Card ' href='?competition=3278'
-[ARES AUDIT] Anchor 6: text='Fight Card ' href='?competition=3368'
-[ARES AUDIT] All DD/MM/YYYY matches: ['03/04/2026', '10/04/2026', '06/06/2026', '25/09/2026', '31/10/2026', '07/11/2026']
-[ARES AUDIT] All event titles: ['ARES 39', 'ARES 39', 'ARES 40', 'ARES Paris Juin', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']
-[ARES AUDIT] Using nearest-preceding fallback for 6 anchors
-[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3303'
-[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3293'
-[ARES RETAINED] event_name='ARES 39' date_raw='03/04/2026' date_normalized='2026-04-03' detail_url='https://www.aresfighting.com/events/?competition=3297'
+{
+  "signal_gap": 0.19999999999999996,
+  "stoppage_propensity": 0.198,
+  "round_finish_tendency": 0.172,
+  "schema_version": "prediction_record_v1",
+  "prediction_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer__s1.0",
+  "prediction_family_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "workflow_type": "single_fight",
+  "prediction_timestamp": "2026-04-09T15:06:36.428126Z",
+  "fighter_a_id": "fighter_alfonso_franklin",
+  "fighter_b_id": "fighter_joe_pyfer",
+  "predicted_winner_id": "fighter_alfonso_franklin",
+  "confidence": 0.6,
+  "method": "Decision",
+  "round": "full",
+  "model_version": "unknown",
+  "calibration_version": "unknown",
+  "fighter_prior_version": "unknown",
+  "input_config": {
+    "stoppage_sensitivity": 1.0,
+    "simulation_count": 1,
+    "source_matchup_file": "alfonso_franklin_vs_joe_pyfer",
+    "extras": {}
+  },
+  "profile_sources": {
+    "fighter_a_profile_path": "C:/ai_risa_data/fighters\\alfonso_franklin.json",
+    "fighter_b_profile_path": "C:/ai_risa_data/fighters\\fighter_joe_pyfer.json"
+  },
+  "profile_hashes": {
+    "fighter_a_hash": null,
+    "fighter_b_hash": null
+  },
+  "debug_metrics": {
+    "signal_gap": 0.19999999999999996,
+    "winner_confidence": 0.6,
+    "stoppage_propensity": 0.22,
+    "round_finish_tendency": 0.2,
+    "diag_damage_score": 0.4,
+    "diag_fatigue_failure_score": 0.0,
+    "diag_collapse_trigger_score": 0.0,
+    "diag_pace_degradation_score": 0.3,
+    "diag_dominance_control_score": 0.0,
+    "diag_stoppage_evidence_composite": 0.175,
+    "diag_stoppage_path": "mixed_weak",
+    "diag_stoppage_decision_margin": 0.56,
+    "diag_early_finish_signal": 0.0,
+    "diag_late_finish_signal": 0.0,
+    "trace_damage_inputs": {
+      "raw": "Striker",
+      "final": 0.4
+    },
+    "trace_fatigue_inputs": {
+      "raw": null,
+      "final": 0.0
+    },
+    "trace_collapse_inputs": {
+      "raw": null,
+      "final": 0.0
+    },
+    "trace_pace_inputs": {
+      "raw": "Striker",
+      "final": 0.3
+    },
+    "trace_dominance_inputs": {
+      "raw": "Striker",
+      "final": 0.0
+    },
+    "trace_damage_source_fields": {
+      "style": "Striker",
+      "stance": "Orthodox"
+    },
+    "trace_fatigue_source_fields": {
+      "missing": true
+    },
+    "trace_collapse_source_fields": {
+      "missing": true
+    },
+    "trace_pace_source_fields": {
+      "style": "Striker"
+    },
+    "trace_dominance_source_fields": {
+      "style": "Striker",
+      "missing": true
+    },
+    "trace_missing_source_fields": [],
+    "trace_stoppage_formula_path": "convergence = (damage + collapse + fatigue + pace_degradation) / 4.0",
+    "trace_fallback_used": false,
+    "trace_default_zero_reason": null
+  },
+  "artifact_paths": [],
+  "status": "predicted"
+}

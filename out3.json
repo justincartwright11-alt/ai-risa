@@ -1,13 +1,13 @@
 {
   "signal_gap": 0.19999999999999996,
-  "stoppage_propensity": 0.38,
-  "round_finish_tendency": 0.2,
+  "stoppage_propensity": 0.198,
+  "round_finish_tendency": 0.172,
   "schema_version": "prediction_record_v1",
   "prediction_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer__s1.0",
   "prediction_family_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
   "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
   "workflow_type": "single_fight",
-  "prediction_timestamp": "2026-04-09T11:07:36.021928Z",
+  "prediction_timestamp": "2026-04-09T13:48:48.852121Z",
   "fighter_a_id": "fighter_bubba_jenkins",
   "fighter_b_id": "fighter_gabriel_braga",
   "predicted_winner_id": "fighter_bubba_jenkins",
@@ -33,8 +33,19 @@
   },
   "debug_metrics": {
     "signal_gap": 0.19999999999999996,
-    "stoppage_propensity": 0.38,
-    "round_finish_tendency": 0.2
+    "winner_confidence": 0.6,
+    "stoppage_propensity": 0.22,
+    "round_finish_tendency": 0.2,
+    "diag_damage_score": 0.0,
+    "diag_fatigue_failure_score": 0.0,
+    "diag_collapse_trigger_score": 0.0,
+    "diag_pace_degradation_score": 0.0,
+    "diag_dominance_control_score": 0.0,
+    "diag_stoppage_evidence_composite": 0.0,
+    "diag_stoppage_path": "mixed_weak",
+    "diag_stoppage_decision_margin": 0.56,
+    "diag_early_finish_signal": 0.0,
+    "diag_late_finish_signal": 0.0
   },
   "artifact_paths": [],
   "status": "predicted"

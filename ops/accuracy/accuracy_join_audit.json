@@ -1,0 +1,122 @@
+[
+  {
+    "manual_actual_fight_id": "alexey_shendrik_vs_reda_kham",
+    "manual_actual_canonical": "alexey_shendrik_vs_reda_kham",
+    "matched_ledger_fight_id": "alexey_shendrik_vs_reda_kham_prediction",
+    "matched_ledger_canonical": "alexey_shendrik_vs_reda_kham",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "alfonso_franklin_vs_jhonoven_ureña",
+    "manual_actual_canonical": "alfonso_franklin_vs_jhonoven_ureña",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "bentley_vs_saavedra",
+    "manual_actual_canonical": "bentley_vs_saavedra",
+    "matched_ledger_fight_id": "bentley_vs_saavedra_prediction",
+    "matched_ledger_canonical": "bentley_vs_saavedra",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "don_madge_vs_tba",
+    "manual_actual_canonical": "don_madge_vs_tba",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "garan_croft_vs_marco_simmonds",
+    "manual_actual_canonical": "garan_croft_vs_marco_simmonds",
+    "matched_ledger_fight_id": "garan_croft_vs_marco_simmonds_prediction",
+    "matched_ledger_canonical": "garan_croft_vs_marco_simmonds",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "goodman_vs_ruiz",
+    "manual_actual_canonical": "goodman_vs_ruiz",
+    "matched_ledger_fight_id": "goodman_vs_ruiz_prediction",
+    "matched_ledger_canonical": "goodman_vs_ruiz",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "ioan_croft_vs_novak_radulovic",
+    "manual_actual_canonical": "ioan_croft_vs_novak_radulovic",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "israel_adesanya_vs_dricus_du_plessis",
+    "manual_actual_canonical": "israel_adesanya_vs_dricus_du_plessis",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "jordan_thompson_vs_david_spilmont",
+    "manual_actual_canonical": "jordan_thompson_vs_david_spilmont",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "lauren_price_vs_stephanie_pineiro_aquino",
+    "manual_actual_canonical": "lauren_price_vs_stephanie_pineiro_aquino",
+    "matched_ledger_fight_id": "lauren_price_vs_stephanie_pineiro_aquino_prediction",
+    "matched_ledger_canonical": "lauren_price_vs_stephanie_pineiro_aquino",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "pat_brown_vs_vasil_ducar",
+    "manual_actual_canonical": "pat_brown_vs_vasil_ducar",
+    "matched_ledger_fight_id": "pat_brown_vs_vasil_ducar_prediction",
+    "matched_ledger_canonical": "pat_brown_vs_vasil_ducar",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "riley_vs_masternak",
+    "manual_actual_canonical": "riley_vs_masternak",
+    "matched_ledger_fight_id": "riley_vs_masternak_prediction",
+    "matched_ledger_canonical": "riley_vs_masternak",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "sergio_pettis_vs_mitch_mckee",
+    "manual_actual_canonical": "sergio_pettis_vs_mitch_mckee",
+    "matched_ledger_fight_id": "sergio_pettis_vs_mitch_mckee_prediction",
+    "matched_ledger_canonical": "sergio_pettis_vs_mitch_mckee",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  },
+  {
+    "manual_actual_fight_id": "tim_tszyu_vs_denis_nurja",
+    "manual_actual_canonical": "tim_tszyu_vs_denis_nurja",
+    "matched_ledger_fight_id": null,
+    "matched_ledger_canonical": null,
+    "join_status": "not_scored",
+    "reason": "not_scored"
+  },
+  {
+    "manual_actual_fight_id": "wilder_vs_chisora",
+    "manual_actual_canonical": "wilder_vs_chisora",
+    "matched_ledger_fight_id": "wilder_vs_chisora_prediction",
+    "matched_ledger_canonical": "wilder_vs_chisora",
+    "join_status": "matched_normalized",
+    "reason": "matched"
+  }
+]

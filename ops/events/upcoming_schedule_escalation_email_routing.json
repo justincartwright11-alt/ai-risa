@@ -8,7 +8,7 @@
       "level1@example.com",
       "level2@example.com"
     ],
-    "routed_at": "2026-04-05T23:15:03.075972Z"
+    "routed_at": "2026-04-10T00:30:02.706832Z"
   },
   {
     "notification_id": "b8d519a8767dacfa",
@@ -19,6 +19,26 @@
       "level1@example.com",
       "level2@example.com"
     ],
-    "routed_at": "2026-04-05T23:15:03.075972Z"
+    "routed_at": "2026-04-10T00:30:02.706832Z"
+  },
+  {
+    "notification_id": "cd9cdeb4e3bfcafc",
+    "escalation_id": "d6a78f768b50c1a6",
+    "notification_type": "opened",
+    "escalation_level": "warning",
+    "recipients": [
+      "level2@example.com"
+    ],
+    "routed_at": "2026-04-10T00:30:02.706832Z"
+  },
+  {
+    "notification_id": "a8edb31df556e03e",
+    "escalation_id": "d6a78f768b50c1a6",
+    "notification_type": "cleared",
+    "escalation_level": "warning",
+    "recipients": [
+      "level2@example.com"
+    ],
+    "routed_at": "2026-04-10T00:30:02.706832Z"
   }
 ]

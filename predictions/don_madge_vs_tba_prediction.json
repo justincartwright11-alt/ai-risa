@@ -1,5 +1,155 @@
 {
-  "winner": "Don Madge",
+  "signal_gap": 0.19999999999999996,
+  "stoppage_propensity": 0.198,
+  "round_finish_tendency": 0.172,
+  "schema_version": "prediction_record_v1",
+  "prediction_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer__s1.0",
+  "prediction_family_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "matchup_id": "fighter_israel_adesanya_vs_fighter_joe_pyfer",
+  "workflow_type": "single_fight",
+  "prediction_timestamp": "2026-04-10T00:20:15.368997Z",
+  "fighter_a_id": "fighter_don_madge",
+  "fighter_b_id": "fighter_tba",
+  "predicted_winner_id": "fighter_don_madge",
+  "confidence": 0.6,
   "method": "Decision",
-  "confidence": 0.55
+  "round": "full",
+  "model_version": "unknown",
+  "calibration_version": "unknown",
+  "fighter_prior_version": "unknown",
+  "input_config": {
+    "stoppage_sensitivity": 1.0,
+    "simulation_count": 1,
+    "source_matchup_file": "don_madge_vs_tba",
+    "extras": {}
+  },
+  "profile_sources": {
+    "fighter_a_profile_path": "C:\\ai_risa_data\\fighters\\don_madge.json",
+    "fighter_b_profile_path": "C:\\ai_risa_data\\fighters\\tba.json"
+  },
+  "profile_hashes": {
+    "fighter_a_hash": null,
+    "fighter_b_hash": null
+  },
+  "debug_metrics": {
+    "signal_gap": 0.19999999999999996,
+    "winner_confidence": 0.6,
+    "stoppage_propensity": 0.22,
+    "round_finish_tendency": 0.2,
+    "diag_damage_score": 0.45,
+    "diag_fatigue_failure_score": 0.0,
+    "diag_collapse_trigger_score": 0.0,
+    "diag_pace_degradation_score": 0.3,
+    "diag_dominance_control_score": 0.0,
+    "diag_stoppage_evidence_composite": 0.15,
+    "diag_stoppage_convergence_bonus": 0.0,
+    "diag_stoppage_pre_threshold": 0.15,
+    "diag_stoppage_threshold_crossed": false,
+    "diag_stoppage_path": "mixed_weak",
+    "diag_stoppage_decision_margin": 0.56,
+    "diag_early_finish_signal": 0.0,
+    "diag_late_finish_signal": 0.0,
+    "trace_damage_inputs": {
+      "raw": "Striker",
+      "final": 0.45,
+      "weight": 0.3333333333333333
+    },
+    "trace_fatigue_inputs": {
+      "raw": null,
+      "final": 0.0,
+      "weight": 0.3333333333333333
+    },
+    "trace_collapse_inputs": {
+      "raw": null,
+      "final": 0.0,
+      "weight": 0.3333333333333333
+    },
+    "trace_pace_inputs": {
+      "raw": "Striker",
+      "final": 0.3
+    },
+    "trace_dominance_inputs": {
+      "raw": "Striker",
+      "final": 0.0
+    },
+    "trace_damage_source_fields": {
+      "style": "Striker",
+      "stance": "Southpaw"
+    },
+    "trace_fatigue_source_fields": {
+      "missing": true
+    },
+    "trace_collapse_source_fields": {
+      "missing": true
+    },
+    "trace_pace_source_fields": {
+      "style": "Striker"
+    },
+    "trace_dominance_source_fields": {
+      "style": "Striker",
+      "missing": true
+    },
+    "trace_missing_source_fields": [],
+    "trace_stoppage_formula_path": "base_stoppage = (damage + fatigue + collapse)/3; bonus if >=2 high; require >=2 high for stoppage; no global boost",
+    "trace_convergence_bonus": 0.0,
+    "trace_pre_threshold_stoppage": 0.15,
+    "trace_threshold_crossed": false,
+    "trace_fallback_used": false,
+    "trace_default_zero_reason": null,
+    "trace_fatigue_raw_fields": {},
+    "trace_fatigue_inverted_fields": {},
+    "trace_fatigue_weighted_components": {},
+    "trace_fatigue_pre_clamp": 0.0,
+    "trace_fatigue_final": 0.0,
+    "trace_collapse_raw_fields": {},
+    "trace_collapse_inverted_fields": {},
+    "trace_collapse_weighted_components": {},
+    "trace_collapse_pre_clamp": 0.0,
+    "trace_collapse_final": 0.0,
+    "trace_profile_keys_available": [
+      "division",
+      "name",
+      "notes",
+      "profile_path",
+      "sport",
+      "stance",
+      "style",
+      "team",
+      "trace_enrichment_merge_applied",
+      "trace_field_origins",
+      "trace_profile_keys_available",
+      "trace_stance_origin",
+      "trace_style_origin"
+    ],
+    "trace_fatigue_lookup_keys": [
+      "cardio_endurance",
+      "recovery_quality",
+      "output_decay",
+      "late_fight_fade",
+      "attrition_sensitivity"
+    ],
+    "trace_collapse_lookup_keys": [
+      "durability",
+      "knockdown_susceptibility",
+      "defensive_breakdown_tendency",
+      "panic_collapse_sensitivity",
+      "attrition_sensitivity"
+    ],
+    "trace_fatigue_lookup_misses": [
+      "cardio_endurance",
+      "recovery_quality",
+      "output_decay",
+      "late_fight_fade",
+      "attrition_sensitivity"
+    ],
+    "trace_collapse_lookup_misses": [
+      "durability",
+      "knockdown_susceptibility",
+      "defensive_breakdown_tendency",
+      "panic_collapse_sensitivity",
+      "attrition_sensitivity"
+    ]
+  },
+  "artifact_paths": [],
+  "status": "predicted"
 }

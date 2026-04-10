@@ -2,15 +2,15 @@
   "escalation_active": false,
   "escalation_reason": null,
   "escalation_level": null,
-  "escalation_id": null,
+  "escalation_id": "8891edbbb1a1ed96",
   "escalation_status": "none",
-  "opened_at": null,
-  "last_seen_at": "2026-04-05T23:15:02.918449Z",
+  "opened_at": "2026-04-09T08:00:02.856516Z",
+  "last_seen_at": "2026-04-10T00:30:02.536000Z",
   "cleared_at": null,
   "trigger_metrics": {
-    "consecutive_failed_runs": 1,
+    "consecutive_failed_runs": 0,
     "consecutive_stale_runs": 0,
-    "blocked_run_count": 1,
-    "incident_age_minutes": 0
+    "blocked_run_count": 0,
+    "incident_age_minutes": 60
   }
 }

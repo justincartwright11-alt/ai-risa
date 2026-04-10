@@ -1,3 +1,5 @@
+
+from typing import Optional
 import sys
 
 def _trace_record(label: str, payload=None) -> None:
@@ -276,15 +278,17 @@ def apply_model_updates(calibration_report: dict) -> dict:
 import tempfile
 def write_prediction_record(prediction_payload: dict) -> str:
     # Accepts a PredictionRecord or dict, always returns the canonical record object
-    if hasattr(prediction_payload, "to_json_dict"):
-        payload = prediction_payload.to_json_dict()
-    elif hasattr(prediction_payload, "model_dump"):
-        payload = prediction_payload.model_dump(mode="python")
+    from ai_risa_prediction_adapter import build_prediction_record
+    if isinstance(prediction_payload, PredictionRecord):
+        record = prediction_payload
     else:
-        payload = dict(prediction_payload)
-    # Existing file-write logic would go here (if any)
-    print("[TRACE] write_prediction_record:DEPRECATED - no file write performed", file=sys.stderr)
-    return prediction_payload
+        # You must provide the required args for build_prediction_record in your context
+        raise ValueError("write_prediction_record requires a PredictionRecord; dicts must be promoted upstream.")
+    # Example file write (add output_path as needed)
+    # with open(output_path, "w", encoding="utf-8") as f:
+    #     json.dump(record.to_json_dict(), f, indent=2, ensure_ascii=False)
+    print("[TRACE] write_prediction_record: contract-enforced", file=sys.stderr)
+    return record
 # --- Phase 6: Batch Automation ---
 
 def run_event_card_pipeline(event_id: str, fight_list: list, mode_set: list, engine, model_version_obj=None, export_pdf_fn=None, summary_manifest_path=None, model_state=None) -> dict:
@@ -402,14 +406,9 @@ def run_event_card_pipeline(event_id: str, fight_list: list, mode_set: list, eng
             prediction_record = generate_prediction_from_engine(matchup_id, engine_output, fighter_a_id=fighter_a_id, fighter_b_id=fighter_b_id, event_id=event_id)
             print(f"[TRACE] pipeline:prediction_record={prediction_record!r}", file=sys.stderr)
             sys.stderr.flush()
-            if not isinstance(prediction_record, dict):
-                raise TypeError(f"generate_prediction_from_engine must return dict, got {type(prediction_record).__name__}")
-            print(f"[TRACE] pre_validation_predicted_winner_id={prediction_record.get('predicted_winner_id') if isinstance(prediction_record, dict) else 'non-dict'}", file=sys.stderr)
-            sys.stderr.flush()
-            required = ["matchup_id", "fighter_a_id", "fighter_b_id", "predicted_winner_id"]
-            for field in required:
-                if not prediction_record.get(field):
-                    raise ValueError(f"Prediction record missing required field: {field} for {matchup_id}")
+            from ai_risa_prediction_adapter import build_prediction_record
+            if not isinstance(prediction_record, PredictionRecord):
+                raise TypeError(f"generate_prediction_from_engine must return PredictionRecord, got {type(prediction_record).__name__}")
             # If only one fight, write and return the record directly with trace
             if len(fight_list) == 1:
                 print(f"[TRACE] pipeline:pre_return prediction_record={prediction_record}", file=sys.stderr)
@@ -420,24 +419,7 @@ def run_event_card_pipeline(event_id: str, fight_list: list, mode_set: list, eng
                 print(f"[TRACE] pipeline:returning_batch={fight_results!r}", file=sys.stderr)
                 sys.stderr.flush()
                 fight_results[matchup_id]["prediction_record"] = prediction_record
-            for mode in mode_set:
-                prediction_payload = {
-                    # Use generate_prediction_from_engine to build the payload and propagate required fields
-                    **generate_prediction_from_engine(
-                        matchup_id,
-                        engine_output,
-                        fighter_a_id=fighter_a_id,
-                        fighter_b_id=fighter_b_id,
-                        event_id=event_id
-                    )
-                }
-                from ai_risa_models import _trace_record
-                _trace_record("generate_prediction_from_engine_payload", prediction_payload)
-                print(f"[TRACE] gen_pred:engine_result={engine_output!r}", file=sys.stderr)
-                print(f"[TRACE] gen_pred:prediction_payload={prediction_payload!r}", file=sys.stderr)
-                sys.stderr.flush()
-                # Return normalized prediction payload only, no file write
-                return prediction_payload
+            # Remove dict-based returns; enforce contract
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             pdf_path = export_pdf_fn(matchup_id, mode, output_path)
             fight_results[matchup_id]["pdfs"][mode] = pdf_path

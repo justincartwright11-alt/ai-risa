@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-04-05T23:45:01.688230Z",
+  "timestamp": "2026-04-10T00:30:01.235231Z",
   "health": "healthy",
-  "last_due_invocation": "2026-04-05T23:15:01.664293Z",
-  "last_not_due_invocation": "2026-04-05T23:45:01.688230Z",
-  "last_cycle_invoked": "2026-04-05T23:15:01.664293Z",
+  "last_due_invocation": "2026-04-10T00:30:01.235231Z",
+  "last_not_due_invocation": "2026-04-10T00:15:01.216177Z",
+  "last_cycle_invoked": "2026-04-10T00:30:01.235231Z",
   "last_cycle_result": "success",
-  "last_outcome": "not-due",
+  "last_outcome": "success",
   "stale": false,
   "failure": false,
   "invocation_source": "scheduled",
-  "due": false,
-  "cycle_invoked": false,
-  "cycle_result": null,
-  "next_run": "2026-04-06T00:15:01.664590Z"
+  "due": true,
+  "cycle_invoked": true,
+  "cycle_result": "success",
+  "next_run": "2026-04-10T01:30:01.235231Z"
 }

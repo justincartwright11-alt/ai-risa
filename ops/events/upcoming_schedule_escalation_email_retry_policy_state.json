@@ -1,4 +1,27 @@
 {
-  "policy": [],
-  "generated_at": "2026-04-05T23:15:03.218955Z"
+  "policy": [
+    {
+      "delivery_id": "delivery-cd9cdeb4e3bfcafc",
+      "notification_id": "cd9cdeb4e3bfcafc",
+      "status": "failed",
+      "attempts": 11,
+      "last_time": "2026-04-10T00:30:02.656699Z",
+      "eligible": false,
+      "terminal": true,
+      "next_eligible_time": null,
+      "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
+    },
+    {
+      "delivery_id": "delivery-a8edb31df556e03e",
+      "notification_id": "a8edb31df556e03e",
+      "status": "failed",
+      "attempts": 3,
+      "last_time": "2026-04-10T00:30:02.656699Z",
+      "eligible": false,
+      "terminal": true,
+      "next_eligible_time": null,
+      "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
+    }
+  ],
+  "generated_at": "2026-04-10T00:30:11.028165Z"
 }

@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "notification_id": "delivery-a8edb31df556e03e:opened",
+    "dead_letter_id": "delivery-a8edb31df556e03e",
+    "delivery_id": "delivery-a8edb31df556e03e",
+    "delivery_status": "sent",
+    "recipients": [],
+    "notification_type": "opened",
+    "attempt_count": 1,
+    "timestamp": "2026-04-10T00:30:11.317570Z",
+    "terminal_reason": "max attempts reached"
+  }
+]

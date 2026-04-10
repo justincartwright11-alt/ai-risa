@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "notification_id": "delivery-cd9cdeb4e3bfcafc:opened",
+    "dead_letter_id": "delivery-cd9cdeb4e3bfcafc",
+    "delivery_id": "delivery-cd9cdeb4e3bfcafc",
+    "notification_type": "opened",
+    "notification_status": "pending",
+    "created_at": "2026-04-09T10:00:07.715235Z",
+    "terminal_reason": "max attempts reached",
+    "escalation_level": null,
+    "dedupe_key": "delivery-cd9cdeb4e3bfcafc:opened"
+  },
+  {
+    "notification_id": "delivery-a8edb31df556e03e:opened",
+    "dead_letter_id": "delivery-a8edb31df556e03e",
+    "delivery_id": "delivery-a8edb31df556e03e",
+    "notification_type": "opened",
+    "notification_status": "pending",
+    "created_at": "2026-04-10T00:30:11.257041Z",
+    "terminal_reason": "max attempts reached",
+    "escalation_level": null,
+    "dedupe_key": "delivery-a8edb31df556e03e:opened"
+  }
+]

@@ -38,6 +38,21 @@ def build_prediction_record(
         engine_result.get("confidence"),
         result_dict.get("confidence"),
     )
+    # Conservative post-simulation confidence remap
+    def _calibration_remap_confidence(conf):
+        if conf is None:
+            return None
+        try:
+            val = float(conf)
+            # Never upscale 0-1 confidence to 0-100
+            if val > 1.0:
+                val = val / 100.0
+            # (Optional: apply any remap/compression in 0-1 space here)
+            # For now, just clamp to [0, 1]
+            return max(0.0, min(1.0, val))
+        except Exception:
+            return conf
+    confidence = _calibration_remap_confidence(confidence)
     method = _first_present(
         engine_result.get("method"),
         result_dict.get("selected_method"),
@@ -56,10 +71,46 @@ def build_prediction_record(
         engine_result.get("stoppage_propensity"),
         debug_metrics.get("stoppage_propensity"),
     )
+    # Conservative mid-band tuning for stoppage propensity
+    def _calibration_remap_stoppage(sp):
+        if sp is None:
+            return None
+        try:
+            val = float(sp)
+            # Tune mid-band: require cleaner separation for stoppage calls
+            if val < 0.18:
+                return round(val * 0.95, 4)  # Slightly compress low band
+            elif val < 0.32:
+                return round(0.17 + (val - 0.18) * 0.7, 4)  # Compress mid band
+            elif val < 0.5:
+                return round(0.26 + (val - 0.32) * 0.8, 4)  # Slightly compress upper-mid
+            else:
+                return round(val, 4)  # Elite finishers unchanged
+        except Exception:
+            return sp
+    stoppage_propensity = _calibration_remap_stoppage(stoppage_propensity)
     round_finish_tendency = _first_present(
         engine_result.get("round_finish_tendency"),
         debug_metrics.get("round_finish_tendency"),
     )
+    # Reduce early-finish volatility in round-finish tendency
+    def _calibration_remap_round_finish(rft):
+        if rft is None:
+            return None
+        try:
+            val = float(rft)
+            # Shift marginal early-finish toward later finish unless strong
+            if val < 0.18:
+                return round(val * 0.9, 4)  # Slightly compress very early
+            elif val < 0.32:
+                return round(0.16 + (val - 0.18) * 0.6, 4)  # Compress early-mid
+            elif val < 0.5:
+                return round(0.24 + (val - 0.32) * 0.8, 4)  # Slightly compress upper-mid
+            else:
+                return round(val, 4)  # Strong late-finish unchanged
+        except Exception:
+            return rft
+    round_finish_tendency = _calibration_remap_round_finish(round_finish_tendency)
 
     matchup_id = legacy_prediction.get("matchup_id")
     if not matchup_id:

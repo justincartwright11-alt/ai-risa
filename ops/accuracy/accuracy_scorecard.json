@@ -1,0 +1,38 @@
+{
+  "total": 31,
+  "scored": 10,
+  "winner_hits": 4,
+  "method_hits": 8,
+  "round_hits": 0,
+  "decision_total": 7,
+  "decision_hits": 6,
+  "stoppage_total": 3,
+  "stoppage_hits": 2,
+  "confidence_buckets": {
+    "60-69": 6,
+    "70-79": 3,
+    "50-59": 1
+  },
+  "confidence_bucket_hits": {
+    "60-69": 3,
+    "50-59": 1
+  },
+  "by_event_date": {
+    "UNKNOWN": {
+      "total": 9,
+      "winner_hits": 4
+    },
+    "2026-04-10": {
+      "total": 1,
+      "winner_hits": 0
+    }
+  },
+  "miss_patterns": {
+    "PRED:fighter_alfonso_franklin ACT:jhonoven_ureña": 1,
+    "PRED:Endry Saavedra ACT:bentley": 1,
+    "PRED:Sam Goodman ACT:goodman": 1,
+    "PRED:Pat Brown ACT:vasil_ducar": 1,
+    "PRED:Viddal Riley ACT:riley": 1,
+    "PRED:Deontay Wilder ACT:wilder": 1
+  }
+}

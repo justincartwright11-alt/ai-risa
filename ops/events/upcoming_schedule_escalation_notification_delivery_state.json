@@ -13,5 +13,15 @@
     "result": "failed",
     "reason": "Simulated failure for testability",
     "dispatched_at": "2026-04-05T11:27:06.446925Z"
+  },
+  "delivery-cd9cdeb4e3bfcafc": {
+    "result": "failed",
+    "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it",
+    "dispatched_at": "2026-04-10T00:30:02.656699Z"
+  },
+  "delivery-a8edb31df556e03e": {
+    "result": "failed",
+    "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it",
+    "dispatched_at": "2026-04-10T00:30:02.656699Z"
   }
 }

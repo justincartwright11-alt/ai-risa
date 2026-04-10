@@ -53,6 +53,51 @@
       "created_at": "2026-04-05T23:15:02.153970Z",
       "reason": "failed",
       "dedupe_key": "8c4d9f7f-80f8-4999-b5ad-4e47f4050720:opened"
+    },
+    {
+      "notification_id": "430b3ef88e7ee817",
+      "incident_id": "817958d9-406e-49eb-9033-abf624ed47cf",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-09T06:00:01.953284Z",
+      "reason": "stale",
+      "dedupe_key": "817958d9-406e-49eb-9033-abf624ed47cf:opened"
+    },
+    {
+      "notification_id": "89b20846eb30d3c3",
+      "incident_id": "817958d9-406e-49eb-9033-abf624ed47cf",
+      "notification_type": "cleared",
+      "notification_status": "pending",
+      "created_at": "2026-04-09T07:00:02.012648Z",
+      "reason": null,
+      "dedupe_key": "817958d9-406e-49eb-9033-abf624ed47cf:cleared"
+    },
+    {
+      "notification_id": "36cd998264d1ad5d",
+      "incident_id": "d3d7d4b8-915c-46a0-9e9e-b60333088c57",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-09T17:00:03.302209Z",
+      "reason": "failed",
+      "dedupe_key": "d3d7d4b8-915c-46a0-9e9e-b60333088c57:opened"
+    },
+    {
+      "notification_id": "c6161cfdac001a6a",
+      "incident_id": "97b90ea3-5611-4ec4-b572-50f64a29cbf1",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-09T22:27:55.361380Z",
+      "reason": "stale",
+      "dedupe_key": "97b90ea3-5611-4ec4-b572-50f64a29cbf1:opened"
+    },
+    {
+      "notification_id": "d39845e2aacfb5bb",
+      "incident_id": "1e1ee9de-b4a9-44a3-a7a7-a09ac3b5631e",
+      "notification_type": "opened",
+      "notification_status": "pending",
+      "created_at": "2026-04-09T23:30:01.681714Z",
+      "reason": "failed",
+      "dedupe_key": "1e1ee9de-b4a9-44a3-a7a7-a09ac3b5631e:opened"
     }
   ]
 }

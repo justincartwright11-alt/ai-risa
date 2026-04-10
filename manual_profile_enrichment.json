@@ -1,0 +1,68 @@
+{
+  "alfonso_franklin": {
+    "cardio_endurance": 0.7,
+    "recovery_quality": 0.6,
+    "output_decay": 0.5,
+    "late_fight_fade": 0.4,
+    "attrition_sensitivity": 0.3,
+    "durability": 0.8,
+    "knockdown_susceptibility": 0.2,
+    "defensive_breakdown_tendency": 0.3,
+    "panic_collapse_sensitivity": 0.2
+  },
+  "don_madge": {
+    "cardio_endurance": 0.8,
+    "recovery_quality": 0.7,
+    "output_decay": 0.3,
+    "late_fight_fade": 0.2,
+    "attrition_sensitivity": 0.2,
+    "durability": 0.85,
+    "knockdown_susceptibility": 0.1,
+    "defensive_breakdown_tendency": 0.2,
+    "panic_collapse_sensitivity": 0.1
+  },
+  "ioan_croft": {
+    "cardio_endurance": 0.6,
+    "recovery_quality": 0.5,
+    "output_decay": 0.6,
+    "late_fight_fade": 0.5,
+    "attrition_sensitivity": 0.4,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.3,
+    "defensive_breakdown_tendency": 0.4,
+    "panic_collapse_sensitivity": 0.3
+  },
+  "israel_adesanya": {
+    "cardio_endurance": 0.9,
+    "recovery_quality": 0.8,
+    "output_decay": 0.2,
+    "late_fight_fade": 0.1,
+    "attrition_sensitivity": 0.1,
+    "durability": 0.9,
+    "knockdown_susceptibility": 0.05,
+    "defensive_breakdown_tendency": 0.1,
+    "panic_collapse_sensitivity": 0.05
+  },
+  "jordan_thompson": {
+    "cardio_endurance": 0.5,
+    "recovery_quality": 0.4,
+    "output_decay": 0.7,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.5,
+    "durability": 0.6,
+    "knockdown_susceptibility": 0.4,
+    "defensive_breakdown_tendency": 0.5,
+    "panic_collapse_sensitivity": 0.4
+  },
+  "tim_tszyu": {
+    "cardio_endurance": 0.85,
+    "recovery_quality": 0.7,
+    "output_decay": 0.3,
+    "late_fight_fade": 0.2,
+    "attrition_sensitivity": 0.2,
+    "durability": 0.88,
+    "knockdown_susceptibility": 0.12,
+    "defensive_breakdown_tendency": 0.18,
+    "panic_collapse_sensitivity": 0.1
+  }
+}

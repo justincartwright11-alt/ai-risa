@@ -97,14 +97,47 @@ def main():
 
     # Load and inject fighter profiles
     from run_ufc_fn_adesanya_pyfer import load_fighter_profile, ID_TO_NAME
-    fighter_a_id = fight["fighter_a_id"]
-    fighter_b_id = fight["fighter_b_id"]
+    fighter_a_id = fight.get("fighter_a_id")
+    fighter_b_id = fight.get("fighter_b_id")
+
+    if not fighter_a_id or not fighter_b_id:
+        fighters = fight.get("fighters") or []
+        if len(fighters) < 2:
+            raise KeyError("Missing fighter_a_id/fighter_b_id and fighters array is incomplete")
+
+        def resolve_fighter_id(entry):
+            # If entry is a dict, prefer explicit ID fields
+            if isinstance(entry, dict):
+                for key in ("fighter_id", "id", "profile_id"):
+                    if entry.get(key):
+                        return entry[key]
+                name = entry.get("name") or entry.get("fighter_name")
+            else:
+                # If entry is a string, treat as name
+                name = entry
+            if not name:
+                raise KeyError("Cannot derive fighter id: missing name")
+            slug = (
+                name.lower()
+                .replace("'", "")
+                .replace(".", "")
+                .replace("-", "_")
+                .replace(" ", "_")
+            )
+            return f"fighter_{slug}"
+
+        fighter_a_id = fighter_a_id or resolve_fighter_id(fighters[0])
+        fighter_b_id = fighter_b_id or resolve_fighter_id(fighters[1])
+
     fighter_a_name = ID_TO_NAME.get(fighter_a_id, fighter_a_id)
     fighter_b_name = ID_TO_NAME.get(fighter_b_id, fighter_b_id)
     fighter_a_profile = load_fighter_profile(fighter_a_name)
     fighter_b_profile = load_fighter_profile(fighter_b_name)
     fight["fighter_a_profile"] = fighter_a_profile
     fight["fighter_b_profile"] = fighter_b_profile
+    # Ensure IDs are set on the matchup record for downstream use
+    fight["fighter_a_id"] = fighter_a_id
+    fight["fighter_b_id"] = fighter_b_id
 
     import os
     def _resolve_profile_path(path_value, fighter_id, fighters_dir):
@@ -163,6 +196,7 @@ def main():
 
 
 
+
     prediction_record = build_prediction_record(
         legacy_prediction=engine_output,
         matchup_record=matchup_record,
@@ -177,9 +211,14 @@ def main():
         fighter_prior_version="unknown",
     )
 
-    # Write only PredictionRecord, never dict
+    # --- Patch: Ensure debug_metrics is present in output ---
+    record_dict = prediction_record.to_json_dict()
+    if (not record_dict.get("debug_metrics")) and engine_output.get("debug_metrics"):
+        record_dict["debug_metrics"] = engine_output["debug_metrics"]
+    # Print for debug
+    print("[DEBUG] debug_metrics in output:", record_dict.get("debug_metrics"), file=sys.stderr)
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(prediction_record.to_json_dict(), f, ensure_ascii=False, indent=2)
+        json.dump(record_dict, f, ensure_ascii=False, indent=2)
     print(f"[INFO] Wrote prediction to {args.output}")
 
     # Append to prediction ledger (live capture)

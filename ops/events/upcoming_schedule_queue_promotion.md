@@ -1,6 +1,6 @@
 # Upcoming Schedule Queue State Promotion
 
-Promotion run at: 2026-04-05T23:15:01.964878Z UTC
+Promotion run at: 2026-04-10T00:30:01.587376Z UTC
 
 Rows promoted: 1
 

@@ -36,5 +36,33 @@
     "attempt_count": 1,
     "timestamp": "2026-04-05T12:05:00.000000Z",
     "reason": "Suppressed by escalation policy"
+  },
+  {
+    "notification_id": "a8edb31df556e03e",
+    "escalation_id": "d6a78f768b50c1a6",
+    "delivery_id": "delivery-a8edb31df556e03e",
+    "delivery_status": "failed",
+    "recipients": [
+      "level2@example.com"
+    ],
+    "escalation_level": "warning",
+    "notification_type": "cleared",
+    "attempt_count": 3,
+    "timestamp": "2026-04-10T00:30:02.656699Z",
+    "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
+  },
+  {
+    "notification_id": "cd9cdeb4e3bfcafc",
+    "escalation_id": "d6a78f768b50c1a6",
+    "delivery_id": "delivery-cd9cdeb4e3bfcafc",
+    "delivery_status": "failed",
+    "recipients": [
+      "level2@example.com"
+    ],
+    "escalation_level": "warning",
+    "notification_type": "opened",
+    "attempt_count": 11,
+    "timestamp": "2026-04-10T00:30:02.656699Z",
+    "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
   }
 ]

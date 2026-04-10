@@ -48,3 +48,43 @@
   Reason: failed
   Dedupe key: 8c4d9f7f-80f8-4999-b5ad-4e47f4050720:opened
 
+- Notification ID: 430b3ef88e7ee817
+  Incident ID: 817958d9-406e-49eb-9033-abf624ed47cf
+  Type: opened
+  Status: pending
+  Created at: 2026-04-09T06:00:01.953284Z
+  Reason: stale
+  Dedupe key: 817958d9-406e-49eb-9033-abf624ed47cf:opened
+
+- Notification ID: 89b20846eb30d3c3
+  Incident ID: 817958d9-406e-49eb-9033-abf624ed47cf
+  Type: cleared
+  Status: pending
+  Created at: 2026-04-09T07:00:02.012648Z
+  Reason: None
+  Dedupe key: 817958d9-406e-49eb-9033-abf624ed47cf:cleared
+
+- Notification ID: 36cd998264d1ad5d
+  Incident ID: d3d7d4b8-915c-46a0-9e9e-b60333088c57
+  Type: opened
+  Status: pending
+  Created at: 2026-04-09T17:00:03.302209Z
+  Reason: failed
+  Dedupe key: d3d7d4b8-915c-46a0-9e9e-b60333088c57:opened
+
+- Notification ID: c6161cfdac001a6a
+  Incident ID: 97b90ea3-5611-4ec4-b572-50f64a29cbf1
+  Type: opened
+  Status: pending
+  Created at: 2026-04-09T22:27:55.361380Z
+  Reason: stale
+  Dedupe key: 97b90ea3-5611-4ec4-b572-50f64a29cbf1:opened
+
+- Notification ID: d39845e2aacfb5bb
+  Incident ID: 1e1ee9de-b4a9-44a3-a7a7-a09ac3b5631e
+  Type: opened
+  Status: pending
+  Created at: 2026-04-09T23:30:01.681714Z
+  Reason: failed
+  Dedupe key: 1e1ee9de-b4a9-44a3-a7a7-a09ac3b5631e:opened
+

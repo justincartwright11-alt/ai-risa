@@ -1,0 +1,11 @@
+{
+  "event_id": "resolver_test_event_2026_04_01",
+  "bout_id": "resolver_test_event_2026_04_01_b01",
+  "fighter_1_id": "alpha_fighter",
+  "fighter_2_id": "bravo_fighter",
+  "matchup_id": "alpha_fighter_vs_bravo_fighter",
+  "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b01",
+  "winner": null,
+  "method": null,
+  "confidence": null
+}
