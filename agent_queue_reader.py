@@ -39,6 +39,37 @@ def normalize_row(row, required_fields):
     return norm
 
 class AgentQueueReader:
+    def mark_row_completed(self, filename, match_field, match_value, status_field="status", completed_value="completed"):
+        """
+        Mark the row in the given queue file where match_field == match_value as completed.
+        Returns True if successful, False and error message if not.
+        """
+        path = os.path.join(self.repo_root, filename)
+        if not os.path.exists(path):
+            return False, f"Queue file missing: {filename}"
+        try:
+            with open(path, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                fieldnames = reader.fieldnames
+        except Exception as e:
+            return False, f"Unreadable CSV in {filename}: {e}"
+        found = False
+        for row in rows:
+            if row.get(match_field) == match_value:
+                row[status_field] = completed_value
+                found = True
+                break
+        if not found:
+            return False, f"No matching row found for {match_field}={match_value} in {filename}"
+        try:
+            with open(path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+        except Exception as e:
+            return False, f"Failed to write CSV in {filename}: {e}"
+        return True, None
     def __init__(self, repo_root=None):
         self.repo_root = repo_root or os.path.dirname(os.path.abspath(__file__))
 

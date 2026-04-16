@@ -33,7 +33,39 @@ def main():
         if not supported:
             reporter.report_execute_blocked(plan)
             return
-        task_dispatcher.execute_task(plan, reporter)
+            if plan and plan.get("task") and plan["task"].get("queue") in [
+                "fixture_gap_queue_ranked.csv",
+                "fighter_gap_queue_ranked.csv",
+                "event_coverage_queue.csv",
+                "fixture_gap_queue.csv",
+                "fighter_gap_queue.csv"
+            ]:
+                result = dispatcher.execute_task(plan["task"])
+                print("[EXECUTE RESULT]", result)
+                # After successful execution, mark the queue row as completed
+                queue_file = plan["task"]["queue"]
+                item = plan["task"]["item"]
+                # Determine the match field for the queue
+                if "fixture_id" in item:
+                    match_field = "fixture_id"
+                    match_value = item["fixture_id"]
+                elif "fighter_id" in item:
+                    match_field = "fighter_id"
+                    match_value = item["fighter_id"]
+                elif "event_name" in item:
+                    match_field = "event_name"
+                    match_value = item["event_name"]
+                else:
+                    match_field = None
+                    match_value = None
+                if match_field and match_value:
+                    success, error = queue_reader.mark_row_completed(queue_file, match_field, match_value)
+                    if success:
+                        print(f"[QUEUE ACK] Marked {queue_file} row {match_field}={match_value} as completed.")
+                    else:
+                        print(f"[QUEUE ACK ERROR] {error}")
+                else:
+                    print(f"[QUEUE ACK ERROR] Could not determine match field for queue {queue_file}.")
     else:
         reporter.report_dry_run()
 
