@@ -1,0 +1,19 @@
+{
+  "fixture_id": "fighter_isaiah_badato_vs_fighter_retsu_sashida",
+  "recheck_status": "ok",
+  "source": "fixture_gap_queue.csv",
+  "task": {
+    "fixture_id": "fighter_isaiah_badato_vs_fighter_retsu_sashida",
+    "status": "fixture-gap",
+    "_raw": {
+      "fight_id": "fighter_isaiah_badato_vs_fighter_retsu_sashida",
+      "status": "fixture-gap",
+      "missing_fields": "Event name; Event date; Promotion; Weight class / bout class; Scheduled rounds; Confirmed fighter IDs / canonical matchup ID; Result-linking identifiers",
+      "source_targets": "Repo matchup files; Repo fighter files; Existing prediction artifacts; Internal event/result ledgers",
+      "validation_rule": "Fixture is complete only when: both fighters are unambiguously matched to the same bout; event/date/promotion are coherent; bout metadata is sufficient to regenerate the fight without fallback ambiguity; result-linking fields are present enough for later scoring.",
+      "next_action": "Gather missing fixture data",
+      "last_checked": "2026-04-13"
+    },
+    "task_type": "fixture_gap_recheck"
+  }
+}

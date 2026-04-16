@@ -1,0 +1,17 @@
+{
+  "event_name": "ONE Fight Night 42: Mann vs. Dzhabrailov",
+  "task_type": "event_decomposition",
+  "source_queue": "event_coverage_queue.csv",
+  "task": {
+    "event_name": "ONE Fight Night 42: Mann vs. Dzhabrailov",
+    "status": "queued",
+    "_raw": {
+      "event_name": "ONE Fight Night 42: Mann vs. Dzhabrailov",
+      "event_date": "2026-04-13",
+      "sport": "mixed_rules",
+      "ruleset": "mixed_rules",
+      "status": "queued"
+    },
+    "task_type": "event_decomposition"
+  }
+}

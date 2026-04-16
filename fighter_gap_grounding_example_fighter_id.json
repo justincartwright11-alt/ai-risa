@@ -1,0 +1,19 @@
+{
+  "fighter_id": "example_fighter_id",
+  "grounding_status": "ok",
+  "source": "fighter_gap_queue_ranked.csv",
+  "task": {
+    "fighter_id": "example_fighter_id",
+    "status": "fighter-gap",
+    "_raw": {
+      "status": "fighter-gap",
+      "fighter_id": "example_fighter_id",
+      "event_name": "Example Event",
+      "artifact_trail_exists": "yes",
+      "source": "official",
+      "coverage_status": "active",
+      "priority": "high"
+    },
+    "task_type": "fighter_gap_grounding"
+  }
+}
