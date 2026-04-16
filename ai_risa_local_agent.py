@@ -28,44 +28,34 @@ def main():
         if plan.get("blocked"):
             print("[ERROR] No executable task: Blocked state.")
             return
-        # Allow all supported bounded tasks (fixture_gap_recheck, fighter_gap_grounding, event_decomposition)
         supported = plan.get("task", {}).get("task_type") in ("fixture_gap_recheck", "fighter_gap_grounding", "event_decomposition")
         if not supported:
             reporter.report_execute_blocked(plan)
             return
-            if plan and plan.get("task") and plan["task"].get("queue") in [
-                "fixture_gap_queue_ranked.csv",
-                "fighter_gap_queue_ranked.csv",
-                "event_coverage_queue.csv",
-                "fixture_gap_queue.csv",
-                "fighter_gap_queue.csv"
-            ]:
-                result = dispatcher.execute_task(plan["task"])
-                print("[EXECUTE RESULT]", result)
-                # After successful execution, mark the queue row as completed
-                queue_file = plan["task"]["queue"]
-                item = plan["task"]["item"]
-                # Determine the match field for the queue
-                if "fixture_id" in item:
-                    match_field = "fixture_id"
-                    match_value = item["fixture_id"]
-                elif "fighter_id" in item:
-                    match_field = "fighter_id"
-                    match_value = item["fighter_id"]
-                elif "event_name" in item:
-                    match_field = "event_name"
-                    match_value = item["event_name"]
-                else:
-                    match_field = None
-                    match_value = None
-                if match_field and match_value:
-                    success, error = queue_reader.mark_row_completed(queue_file, match_field, match_value)
-                    if success:
-                        print(f"[QUEUE ACK] Marked {queue_file} row {match_field}={match_value} as completed.")
-                    else:
-                        print(f"[QUEUE ACK ERROR] {error}")
-                else:
-                    print(f"[QUEUE ACK ERROR] Could not determine match field for queue {queue_file}.")
+        # Minimal test hook: simulate failures via environment variables
+        simulate_artifact_fail = os.environ.get("AI_RISA_SIM_ARTIFACT_FAIL", "0") == "1"
+        simulate_queue_ack_fail = os.environ.get("AI_RISA_SIM_QUEUE_ACK_FAIL", "0") == "1"
+        def queue_ack_fn():
+            queue_file = plan["queue"]
+            item = plan["task"]
+            if "fixture_id" in item:
+                match_field = "fixture_id"
+                match_value = item["fixture_id"]
+            elif "fighter_id" in item:
+                match_field = "fighter_id"
+                match_value = item["fighter_id"]
+            elif "event_name" in item:
+                match_field = "event_name"
+                match_value = item["event_name"]
+            else:
+                match_field = None
+                match_value = None
+            if match_field and match_value:
+                return queue_reader.mark_row_completed(queue_file, match_field, match_value)
+            else:
+                return False, f"Could not determine match field for queue {queue_file}."
+        dispatcher = task_dispatcher
+        dispatcher.execute_task(plan, reporter, queue_ack_fn=queue_ack_fn, simulate_artifact_fail=simulate_artifact_fail, simulate_queue_ack_fail=simulate_queue_ack_fail)
     else:
         reporter.report_dry_run()
 

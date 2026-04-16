@@ -1,5 +1,28 @@
 
 class AgentReporter:
+    def report_execute_artifact_failure(self, artifact_name, plan=None, error=None):
+        print("[EXECUTE FAILURE]")
+        print(f"Artifact write failed: {artifact_name}")
+        if error:
+            print(f"Error: {error}")
+        if plan:
+            print(f"Task: {plan.get('task', {}).get('task_type', '?')}")
+            print(f"Queue: {plan.get('queue', '?')}")
+            print(f"Identifier: {plan.get('identifier', '?')}")
+        print("Validation result: artifact write failure (no queue row marked completed)")
+        print("Remaining risks: task not completed, queue row still active")
+
+    def report_execute_partial_success(self, artifact_name, plan=None, queue_ack_error=None):
+        print("[PARTIAL SUCCESS]")
+        print(f"Artifact written: {artifact_name}")
+        if plan:
+            print(f"Task: {plan.get('task', {}).get('task_type', '?')}")
+            print(f"Queue: {plan.get('queue', '?')}")
+            print(f"Identifier: {plan.get('identifier', '?')}")
+        if queue_ack_error:
+            print(f"Queue acknowledgment failed: {queue_ack_error}")
+        print("Validation result: artifact written, but queue row NOT marked completed")
+        print("Remaining risks: possible duplicate execution risk for this row")
     def report_plan(self, plan):
         print("=== AI-RISA Local Agent Plan ===")
         print(plan["plan"])

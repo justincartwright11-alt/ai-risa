@@ -117,9 +117,14 @@ class AgentTaskDispatcher:
             "blocked": False
         }
 
-    def execute_task(self, plan, reporter):
+    def execute_task(self, plan, reporter, queue_ack_fn=None, simulate_artifact_fail=False, simulate_queue_ack_fail=False):
         import os
         import json
+        # Always check env vars directly for simulation, in case caller fails to propagate
+        if os.environ.get("AI_RISA_SIM_ARTIFACT_FAIL", "0") == "1":
+            simulate_artifact_fail = True
+        if os.environ.get("AI_RISA_SIM_QUEUE_ACK_FAIL", "0") == "1":
+            simulate_queue_ack_fail = True
         task = plan.get("task", {}) or {}
         task_type = task.get("task_type")
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -156,10 +161,32 @@ class AgentTaskDispatcher:
             }
         else:
             reporter.report_execute_blocked(plan)
-            return
+            return {"result": "blocked"}
 
         artifact_path = os.path.join(base_dir, artifact_name)
-        with open(artifact_path, "w", encoding="utf-8") as f:
-            json.dump(artifact_content, f, indent=2)
+        # Simulate artifact failure if requested
+        if simulate_artifact_fail:
+            reporter.report_execute_artifact_failure(artifact_name, plan)
+            return {"result": "artifact_failure", "artifact": artifact_name}
+        try:
+            with open(artifact_path, "w", encoding="utf-8") as f:
+                json.dump(artifact_content, f, indent=2)
+        except Exception as e:
+            reporter.report_execute_artifact_failure(artifact_name, plan, error=str(e))
+            return {"result": "artifact_failure", "artifact": artifact_name, "error": str(e)}
 
-        reporter.report_execute_success([os.path.basename(artifact_path)])
+        # Simulate queue ack failure if requested
+        if simulate_queue_ack_fail:
+            queue_ack_success = False
+            queue_ack_error = "Simulated queue ack failure"
+        elif queue_ack_fn:
+            queue_ack_success, queue_ack_error = queue_ack_fn()
+        else:
+            queue_ack_success, queue_ack_error = True, None
+
+        if not queue_ack_success:
+            reporter.report_execute_partial_success(artifact_name, plan, queue_ack_error)
+            return {"result": "queue_ack_failure", "artifact": artifact_name, "queue_error": queue_ack_error}
+
+        reporter.report_execute_success([os.path.basename(artifact_path)], plan)
+        return {"result": "success", "artifact": artifact_name}
