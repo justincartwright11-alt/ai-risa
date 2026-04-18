@@ -1,14 +1,11 @@
 {
   "stage": "dependency_resolution",
   "status": "error",
-  "started_at": "2026-04-10T10:03:52.888161",
-  "finished_at": "2026-04-10T10:03:52.946919",
+  "started_at": "2026-04-18T13:03:28.222071",
+  "finished_at": "2026-04-18T13:03:28.236025",
   "counts": {
     "already_complete": 18,
     "skipped_tba": 5,
-    "fighter_1_stub_created": 29,
-    "fighter_2_stub_created": 30,
-    "matchup_stub_created": 30,
     "prediction_missing": 32,
     "insufficient_enrichment": 0,
     "processed_events": 15,
@@ -373,9 +370,6 @@
         "fighter_1": "Jordan Newman",
         "fighter_2": "Josh Silveira",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -385,9 +379,6 @@
         "fighter_1": "Raufeon Stots",
         "fighter_2": "Renat Khavalov",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -397,9 +388,6 @@
         "fighter_1": "Gabriel Braga",
         "fighter_2": "Cheyden Leialoha",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -409,9 +397,6 @@
         "fighter_1": "Viviane Araujo",
         "fighter_2": "Shanna Young",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -421,9 +406,6 @@
         "fighter_1": "Slim Trabelsi",
         "fighter_2": "Rodrigo Nascimento",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -469,9 +451,6 @@
         "fighter_1": "Alex Pereira",
         "fighter_2": "Jamahal Hill",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -481,9 +460,6 @@
         "fighter_1": "Zhang Weili",
         "fighter_2": "Yan Xiaonan",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -493,9 +469,6 @@
         "fighter_1": "Justin Gaethje",
         "fighter_2": "Max Holloway",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -505,9 +478,6 @@
         "fighter_1": "Charles Oliveira",
         "fighter_2": "Arman Tsarukyan",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -517,9 +487,6 @@
         "fighter_1": "Bo Nickal",
         "fighter_2": "Cody Brundage",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -529,9 +496,6 @@
         "fighter_1": "Jiri Prochazka",
         "fighter_2": "Aleksandar Rakic",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -541,9 +505,6 @@
         "fighter_1": "Calvin Kattar",
         "fighter_2": "Aljamain Sterling",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -553,9 +514,6 @@
         "fighter_1": "Holly Holm",
         "fighter_2": "Kayla Harrison",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -565,9 +523,6 @@
         "fighter_1": "Sodiq Yusuff",
         "fighter_2": "Diego Lopes",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -577,9 +532,6 @@
         "fighter_1": "Jalin Turner",
         "fighter_2": "Renato Moicano",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -589,9 +541,6 @@
         "fighter_1": "Jessica Andrade",
         "fighter_2": "Marina Rodriguez",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -601,9 +550,6 @@
         "fighter_1": "King Green",
         "fighter_2": "Jim Miller",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -613,9 +559,6 @@
         "fighter_1": "Deiveson Figueiredo",
         "fighter_2": "Cody Garbrandt",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -643,8 +586,6 @@
         "fighter_1": "Jiri Prochazka",
         "fighter_2": "Carlos Ulberg",
         "actions": [
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -654,9 +595,6 @@
         "fighter_1": "Azamat Murzakanov",
         "fighter_2": "Paulo Costa",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -666,9 +604,6 @@
         "fighter_1": "Curtis Blaydes",
         "fighter_2": "Jay Hokit",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -678,9 +613,6 @@
         "fighter_1": "Dominick Reyes",
         "fighter_2": "Johnny Walker",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -690,9 +622,6 @@
         "fighter_1": "Cub Swanson",
         "fighter_2": "Nate Landwehr",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -702,9 +631,6 @@
         "fighter_1": "Patricio Pitbull",
         "fighter_2": "Aaron Pico",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -714,9 +640,6 @@
         "fighter_1": "Kevin Holland",
         "fighter_2": "Randy Brown",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -726,9 +649,6 @@
         "fighter_1": "Mateusz Gamrot",
         "fighter_2": "Esteban Ribovics",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -738,9 +658,6 @@
         "fighter_1": "Tatiana Suarez",
         "fighter_2": "Lupita Godinez",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -750,9 +667,6 @@
         "fighter_1": "Christos Padilla",
         "fighter_2": "Manuel Mederos",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -762,9 +676,6 @@
         "fighter_1": "Kelvin Gastelum",
         "fighter_2": "Vicente Luque",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       },
@@ -774,9 +685,6 @@
         "fighter_1": "Charles Radtke",
         "fighter_2": "Francisco Prado",
         "actions": [
-          "fighter_1_stub_created",
-          "fighter_2_stub_created",
-          "matchup_stub_created",
           "prediction_missing"
         ]
       }

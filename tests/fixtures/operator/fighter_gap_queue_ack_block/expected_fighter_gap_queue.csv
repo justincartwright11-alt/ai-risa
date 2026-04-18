@@ -1,0 +1,2 @@
+fighter_id,status,retry_count,last_error
+fgap3,blocked,3,Simulated queue ack failure

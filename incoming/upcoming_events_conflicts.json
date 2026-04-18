@@ -1,1 +1,119 @@
-[]
+[
+  {
+    "kept": {
+      "promotion": "Boxing",
+      "event_name": "Ben Whittaker vs. Braian Suarez",
+      "date": "2026-04-18",
+      "city": null,
+      "region": "Liverpool",
+      "country": "United Kingdom",
+      "venue": "M&S Bank Arena Liverpool",
+      "bouts": [
+        "Ben Whittaker vs Braian Nahuel Suarez"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635140+00:00"
+    },
+    "dropped": {
+      "promotion": "Boxing",
+      "event_name": "Jonny Mansour vs. William King",
+      "date": "2026-04-18",
+      "city": null,
+      "region": "Oceanside",
+      "country": "California",
+      "venue": "Frontwave Arena",
+      "bouts": [
+        "Jonathan Mansour vs William King"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635186+00:00"
+    },
+    "reason": "fuzzy",
+    "promotion": "Boxing",
+    "event_name": "Jonny Mansour vs. William King",
+    "date": "2026-04-18",
+    "source_url": "https://www.boxingscene.com/schedule"
+  },
+  {
+    "kept": {
+      "promotion": "Boxing",
+      "event_name": "Lawrence Okolie vs. Tony Yoka",
+      "date": "2026-04-25",
+      "city": null,
+      "region": null,
+      "country": null,
+      "venue": null,
+      "bouts": [
+        "Lawrence Okolie vs Tony Yoka"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635237+00:00"
+    },
+    "dropped": {
+      "promotion": "Boxing",
+      "event_name": "Jarrell Miller vs. Lenier Pero",
+      "date": "2026-04-25",
+      "city": null,
+      "region": "Las Vegas",
+      "country": "Nevada",
+      "venue": "Fontainebleau Las Vegas",
+      "bouts": [
+        "Jarrell Miller vs Lenier Pero"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635263+00:00"
+    },
+    "reason": "fuzzy",
+    "promotion": "Boxing",
+    "event_name": "Jarrell Miller vs. Lenier Pero",
+    "date": "2026-04-25",
+    "source_url": "https://www.boxingscene.com/schedule"
+  },
+  {
+    "kept": {
+      "promotion": "Boxing",
+      "event_name": "Lawrence Okolie vs. Tony Yoka",
+      "date": "2026-04-25",
+      "city": null,
+      "region": null,
+      "country": null,
+      "venue": null,
+      "bouts": [
+        "Lawrence Okolie vs Tony Yoka"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635237+00:00"
+    },
+    "dropped": {
+      "promotion": "Boxing",
+      "event_name": "Julio Cesar Chavez Jr. vs. Jhon Caicedo",
+      "date": "2026-04-25",
+      "city": null,
+      "region": null,
+      "country": null,
+      "venue": null,
+      "bouts": [
+        "Julio Cesar Chavez Jr. vs Jhon Caicedo"
+      ],
+      "source_url": "https://www.boxingscene.com/schedule",
+      "source_type": "trusted_schedule_aggregator",
+      "source_confidence": 70,
+      "last_seen_at": "2026-04-18T03:03:25.635288+00:00"
+    },
+    "reason": "fuzzy",
+    "promotion": "Boxing",
+    "event_name": "Julio Cesar Chavez Jr. vs. Jhon Caicedo",
+    "date": "2026-04-25",
+    "source_url": "https://www.boxingscene.com/schedule"
+  }
+]

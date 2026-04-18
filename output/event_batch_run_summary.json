@@ -1,8 +1,8 @@
 {
   "stage": "batch",
   "status": "success",
-  "started_at": "2026-04-10T10:03:53.114745",
-  "finished_at": "2026-04-10T10:03:53.114745",
+  "started_at": "2026-04-18T13:03:28.420960",
+  "finished_at": "2026-04-18T13:03:28.420974",
   "counts": {
     "total_events": 21,
     "succeeded": 0,

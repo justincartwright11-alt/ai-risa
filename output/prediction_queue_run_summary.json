@@ -1,16 +1,177 @@
 {
   "stage": "prediction_queue_run",
   "status": "success",
-  "started_at": "2026-04-10T10:03:53.045637",
-  "finished_at": "2026-04-10T10:03:53.063640",
+  "started_at": "2026-04-18T13:03:28.351372",
+  "finished_at": "2026-04-18T13:03:28.353929",
   "counts": {
     "queued_bouts": 32,
-    "created_predictions": 32,
+    "created_predictions": 0,
     "skipped_missing_dependencies": 0,
-    "already_exists": 0,
+    "already_exists": 32,
     "failed": 0
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
+      "bout_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b02",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
+      "bout_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b03",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
+      "bout_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b04",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
+      "bout_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b05",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
+      "bout_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b06",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "resolver_test_event_2026_04_01",
+      "bout_id": "resolver_test_event_2026_04_01_b01",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "resolver_test_event_2026_04_01",
+      "bout_id": "resolver_test_event_2026_04_01_b02",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b01",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b02",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b03",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b04",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b05",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b06",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b07",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b08",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b09",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b10",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b11",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b12",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
+      "bout_id": "ufc_300:_pereira_vs._hill_2024_04_13_b13",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b01",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b02",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b03",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b04",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b05",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b06",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b07",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b08",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b09",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b10",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b11",
+      "type": "already_exists"
+    },
+    {
+      "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
+      "bout_id": "ufc_327:_procházka_vs._ulberg_2026_04_12_b12",
+      "type": "already_exists"
+    }
+  ],
   "errors": [],
   "artifacts": [
     "output\\prediction_queue_run_summary.csv",
@@ -58,7 +219,7 @@
         "matchup_id": "jordan_newman_vs_josh_silveira",
         "prediction_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11__pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b02",
         "prediction_file": "predictions\\pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_b02.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
@@ -68,7 +229,7 @@
         "matchup_id": "raufeon_stots_vs_renat_khavalov",
         "prediction_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11__pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b03",
         "prediction_file": "predictions\\pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_b03.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
@@ -78,7 +239,7 @@
         "matchup_id": "gabriel_braga_vs_cheyden_leialoha",
         "prediction_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11__pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b04",
         "prediction_file": "predictions\\pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_b04.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
@@ -88,7 +249,7 @@
         "matchup_id": "viviane_araujo_vs_shanna_young",
         "prediction_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11__pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b05",
         "prediction_file": "predictions\\pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_b05.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11",
@@ -98,7 +259,7 @@
         "matchup_id": "slim_trabelsi_vs_rodrigo_nascimento",
         "prediction_id": "pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11__pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b06",
         "prediction_file": "predictions\\pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_pfl_chicago_sergio_pettis_vs._mitch_mckee_2026_04_11_b06.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "resolver_test_event_2026_04_01",
@@ -108,7 +269,7 @@
         "matchup_id": "alpha_fighter_vs_bravo_fighter",
         "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b01",
         "prediction_file": "predictions\\resolver_test_event_2026_04_01_resolver_test_event_2026_04_01_b01.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "resolver_test_event_2026_04_01",
@@ -118,7 +279,7 @@
         "matchup_id": "charlie_fighter_vs_delta_fighter",
         "prediction_id": "resolver_test_event_2026_04_01__resolver_test_event_2026_04_01_b02",
         "prediction_file": "predictions\\resolver_test_event_2026_04_01_resolver_test_event_2026_04_01_b02.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -128,7 +289,7 @@
         "matchup_id": "alex_pereira_vs_jamahal_hill",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b01",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b01.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -138,7 +299,7 @@
         "matchup_id": "zhang_weili_vs_yan_xiaonan",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b02",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b02.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -148,7 +309,7 @@
         "matchup_id": "justin_gaethje_vs_max_holloway",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b03",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b03.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -158,7 +319,7 @@
         "matchup_id": "charles_oliveira_vs_arman_tsarukyan",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b04",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b04.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -168,7 +329,7 @@
         "matchup_id": "bo_nickal_vs_cody_brundage",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b05",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b05.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -178,7 +339,7 @@
         "matchup_id": "jiri_prochazka_vs_aleksandar_rakic",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b06",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b06.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -188,7 +349,7 @@
         "matchup_id": "calvin_kattar_vs_aljamain_sterling",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b07",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b07.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -198,7 +359,7 @@
         "matchup_id": "holly_holm_vs_kayla_harrison",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b08",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b08.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -208,7 +369,7 @@
         "matchup_id": "sodiq_yusuff_vs_diego_lopes",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b09",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b09.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -218,7 +379,7 @@
         "matchup_id": "jalin_turner_vs_renato_moicano",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b10",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b10.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -228,7 +389,7 @@
         "matchup_id": "jessica_andrade_vs_marina_rodriguez",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b11",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b11.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -238,7 +399,7 @@
         "matchup_id": "king_green_vs_jim_miller",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b12",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b12.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_300:_pereira_vs._hill_2024_04_13",
@@ -248,7 +409,7 @@
         "matchup_id": "deiveson_figueiredo_vs_cody_garbrandt",
         "prediction_id": "ufc_300:_pereira_vs._hill_2024_04_13__ufc_300:_pereira_vs._hill_2024_04_13_b13",
         "prediction_file": "predictions\\ufc_300_pereira_vs._hill_2024_04_13_ufc_300_pereira_vs._hill_2024_04_13_b13.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -258,7 +419,7 @@
         "matchup_id": "jiri_prochazka_vs_carlos_ulberg",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b01",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b01.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -268,7 +429,7 @@
         "matchup_id": "azamat_murzakanov_vs_paulo_costa",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b02",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b02.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -278,7 +439,7 @@
         "matchup_id": "curtis_blaydes_vs_jay_hokit",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b03",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b03.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -288,7 +449,7 @@
         "matchup_id": "dominick_reyes_vs_johnny_walker",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b04",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b04.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -298,7 +459,7 @@
         "matchup_id": "cub_swanson_vs_nate_landwehr",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b05",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b05.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -308,7 +469,7 @@
         "matchup_id": "patricio_pitbull_vs_aaron_pico",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b06",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b06.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -318,7 +479,7 @@
         "matchup_id": "kevin_holland_vs_randy_brown",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b07",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b07.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -328,7 +489,7 @@
         "matchup_id": "mateusz_gamrot_vs_esteban_ribovics",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b08",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b08.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -338,7 +499,7 @@
         "matchup_id": "tatiana_suarez_vs_lupita_godinez",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b09",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b09.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -348,7 +509,7 @@
         "matchup_id": "christos_padilla_vs_manuel_mederos",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b10",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b10.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -358,7 +519,7 @@
         "matchup_id": "kelvin_gastelum_vs_vicente_luque",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b11",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b11.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       },
       {
         "event_id": "ufc_327:_procházka_vs._ulberg_2026_04_12",
@@ -368,7 +529,7 @@
         "matchup_id": "charles_radtke_vs_francisco_prado",
         "prediction_id": "ufc_327:_procházka_vs._ulberg_2026_04_12__ufc_327:_procházka_vs._ulberg_2026_04_12_b12",
         "prediction_file": "predictions\\ufc_327_procházka_vs._ulberg_2026_04_12_ufc_327_procházka_vs._ulberg_2026_04_12_b12.json",
-        "outcome": "prediction_created"
+        "outcome": "prediction_already_exists"
       }
     ]
   }

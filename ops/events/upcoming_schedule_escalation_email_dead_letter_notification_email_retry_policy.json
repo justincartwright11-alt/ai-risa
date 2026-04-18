@@ -1,11 +1,1 @@
-[
-  {
-    "notification_id": "delivery-a8edb31df556e03e:opened",
-    "delivery_id": "delivery-a8edb31df556e03e",
-    "status": "sent",
-    "attempt_count": 1,
-    "last_attempt_time": "2026-04-10T00:30:11.317570",
-    "eligible": false,
-    "reason": "Already sent, never retry"
-  }
-]
+[]

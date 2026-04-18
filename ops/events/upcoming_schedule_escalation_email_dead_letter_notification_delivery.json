@@ -1,15 +1,1 @@
-[
-  {
-    "notification_id": "delivery-a8edb31df556e03e:opened",
-    "dead_letter_id": "delivery-a8edb31df556e03e",
-    "delivery_id": "delivery-a8edb31df556e03e",
-    "notification_type": "opened",
-    "notification_status": "pending",
-    "result": "sent",
-    "reason": "Notification delivered",
-    "dispatched_at": "2026-04-10T00:30:11.317570Z",
-    "terminal_reason": "max attempts reached",
-    "escalation_level": null,
-    "dedupe_key": "delivery-a8edb31df556e03e:opened"
-  }
-]
+[]

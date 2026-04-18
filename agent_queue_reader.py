@@ -1,3 +1,35 @@
+# Top-level, no indentation
+def update_row_by_index(queue_path, row_index, updates):
+    import csv
+    import os
+
+    if not os.path.exists(queue_path):
+        return False
+
+    with open(queue_path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        fieldnames = list(reader.fieldnames or [])
+        rows = list(reader)
+
+    if not fieldnames:
+        return False
+
+    for key in updates.keys():
+        if key not in fieldnames:
+            fieldnames.append(key)
+
+    if row_index < 0 or row_index >= len(rows):
+        return False
+
+    for key, value in updates.items():
+        rows[row_index][key] = value
+
+    with open(queue_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return True
 import csv
 import os
 
@@ -6,16 +38,17 @@ QUEUE_FILES = [
     "fixture_gap_queue.csv",
     "fixture_gap_queue_ranked.csv",
     "fighter_gap_queue.csv",
-    "fighter_gap_queue_ranked.csv"
+    "fighter_gap_queue_ranked.csv",
+    "event_batch_queue.csv",
 ]
-
 
 REQUIRED_FIELDS = {
     "event_coverage_queue.csv": ["event_name", "status"],
     "fixture_gap_queue.csv": ["fixture_id", "status"],
     "fixture_gap_queue_ranked.csv": ["fixture_id", "status"],
     "fighter_gap_queue.csv": ["fighter_id", "status"],
-    "fighter_gap_queue_ranked.csv": ["fighter_id", "status"]
+    "fighter_gap_queue_ranked.csv": ["fighter_id", "status"],
+    "event_batch_queue.csv": ["event_batch", "status"]
 }
 
 FIELD_ALIASES = {
@@ -79,14 +112,35 @@ class AgentQueueReader:
             return {"error": f"Queue file missing: {filename}", "rows": []}
         try:
             with open(path, newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-                fieldnames = reader.fieldnames
+                # Read first line for header normalization
+                first_line = f.readline()
+                # Remove BOM and strip whitespace from header
+                if first_line.startswith('\ufeff'):
+                    first_line = first_line.replace('\ufeff', '')
+                header = [h.strip() for h in first_line.strip().split(',')]
+                # Read rest of file
+                rest = f.read()
+            # Rewind and reparse with normalized header
+            import io
+            csv_content = ','.join(header) + '\n' + rest
+            f_io = io.StringIO(csv_content)
+            reader = csv.DictReader(f_io)
+            # Normalize fieldnames
+            fieldnames = [h.strip().lstrip('\ufeff') for h in reader.fieldnames] if reader.fieldnames else []
+            rows = []
+            for row in reader:
+                # Normalize row keys and values
+                norm_row = {str(k).strip().lstrip('\ufeff'): (str(v).strip() if v is not None else v) for k, v in row.items()}
+                # Ignore fully blank rows
+                if all((v is None or str(v).strip() == "") for v in norm_row.values()):
+                    continue
+                rows.append(norm_row)
         except Exception as e:
             return {"error": f"Unreadable CSV in {filename}: {e}", "rows": []}
         required_fields = REQUIRED_FIELDS.get(filename, [])
         norm_rows = []
         header_labels = set(fieldnames) if fieldnames else set()
+        # ...existing code...
         # Generalized robust shifted-row recovery for ranked queues with displaced header/data
         ranked_queue_schemas = {
             "fixture_gap_queue_ranked.csv": {
@@ -191,3 +245,51 @@ class AgentQueueReader:
         for qf in QUEUE_FILES:
             queues[qf] = self.read_queue(qf, debug=debug)
         return queues
+def update_row_fields(queue_path, match_field, match_value, updates):
+    import csv
+    import os
+
+    if not os.path.exists(queue_path):
+        return False
+
+    with open(queue_path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        fieldnames = list(reader.fieldnames or [])
+        rows = list(reader)
+
+    if not fieldnames:
+        return False
+
+    for key in updates.keys():
+        if key not in fieldnames:
+            fieldnames.append(key)
+
+    updated = False
+    normalized_match_value = str(match_value).strip()
+
+    for row in rows:
+        row_value = str(row.get(match_field, "")).strip()
+        if row_value == normalized_match_value:
+            for key, value in updates.items():
+                row[key] = value
+            updated = True
+            break
+
+    if not updated:
+        return False
+
+    with open(queue_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return True
+
+
+def mark_row_completed(queue_path, match_field, match_value):
+    return update_row_fields(
+        queue_path,
+        match_field,
+        match_value,
+        {"status": "completed"},
+    )

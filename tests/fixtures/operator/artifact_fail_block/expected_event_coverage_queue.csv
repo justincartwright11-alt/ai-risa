@@ -1,0 +1,2 @@
+event_name,status,retry_count,last_error
+artifact_fail,blocked,3,artifact_failure

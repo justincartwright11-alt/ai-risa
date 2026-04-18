@@ -5,10 +5,12 @@ class AgentTaskDispatcher:
         "fighter_gap_queue_ranked.csv",
         "fixture_gap_queue.csv",
         "fighter_gap_queue.csv",
-        "event_coverage_queue.csv"
+        "event_coverage_queue.csv",
+        "event_batch_queue.csv",
+        "event_batch_queue.csv",
+        "event_batch_queue.csv"
     ]
-    BLOCKED_STATUSES = ("completed", "frozen")
-
+    BLOCKED_STATUSES = ("completed", "frozen", "blocked")
 
     def select_next_task(self, queues, debug=False):
         candidates = []
@@ -21,15 +23,29 @@ class AgentTaskDispatcher:
             norm_row_count = 0
             for idx, item in enumerate(queue["rows"]):
                 norm_row_count += 1
-                ident = item.get("event_name") or item.get("fixture_id") or item.get("fighter_id") or "?"
-                status = (item.get("status") or "").strip().lower()
-                # Determine task type
+                row = item.get("_raw", item)
+                ident = (
+                    row.get("event_name")
+                    or row.get("fixture_id")
+                    or row.get("fighter_id")
+                    or row.get("event_batch")
+                    or "?"
+                )
+                status = (row.get("status") or "").strip().lower()
                 if key.startswith("fixture_gap"):
                     task_type = "fixture_gap_recheck"
                 elif key.startswith("event_coverage"):
                     task_type = "event_decomposition"
                 elif key.startswith("fighter_gap"):
-                    task_type = "fighter_gap_grounding"
+                    if (
+                        row.get("task_type") == "fighter_gap_real_grounding"
+                        or queue == "fighter_gap_queue.csv"
+                    ):
+                        task_type = "fighter_gap_real_grounding"
+                    else:
+                        task_type = "fighter_gap_grounding"
+                elif key.startswith("event_batch"):
+                    task_type = "event_batch_intake"
                 else:
                     task_type = "unknown"
                 active = status not in self.BLOCKED_STATUSES
@@ -46,46 +62,54 @@ class AgentTaskDispatcher:
                     "active": active,
                     "reason": reason,
                     "queue_precedence": self.PRIORITY.index(key),
-                    "internal_priority": item.get("priority", None),
+                    "internal_priority": row.get("priority", None),
                     "sort_tuple": sort_tuple,
-                    "entered_candidates": active
+                    "entered_candidates": active,
                 }
                 debug_rows.append(candidate_info)
                 if not active:
                     continue
-                candidates.append({
-                    "queue": key,
-                    "row": idx,
-                    "item": item,
-                    "priority": self.PRIORITY.index(key),
-                    "identifier": ident,
-                    "status": status,
-                    "task_type": task_type,
-                    "internal_priority": item.get("priority", None),
-                    "sort_tuple": sort_tuple
-                })
+                candidates.append(
+                    {
+                        "queue": key,
+                        "row": idx,
+                        "item": row,
+                        "priority": self.PRIORITY.index(key),
+                        "identifier": ident,
+                        "status": status,
+                        "task_type": task_type,
+                        "internal_priority": row.get("priority", None),
+                        "sort_tuple": sort_tuple,
+                    }
+                )
             debug_summary.append((key, raw_row_count, norm_row_count))
         if not candidates:
             return {
                 "blocked": True,
                 "reason": "No valid active tasks found in any queue.",
                 "explanations": explanations,
-                "task": None
+                "task": None,
             }
-        # Sort by explicit queue precedence, then row order
         candidates.sort(key=lambda c: (c["priority"], c["row"]))
         winner = candidates[0]
-        tie_count = sum(1 for c in candidates if c["queue"] == winner["queue"] and c["row"] != winner["row"])
-        why = f"Selected from {winner['queue']} (row {winner['row']+1}) by queue precedence."
+        tie_count = sum(
+            1
+            for c in candidates
+            if c["queue"] == winner["queue"] and c["row"] != winner["row"]
+        )
+        why = (
+            f"Selected from {winner['queue']} "
+            f"(row {winner['row'] + 1}) by queue precedence."
+        )
         if tie_count:
-            why += f" Broke tie by row order (row {winner['row']+1} chosen)."
+            why += f" Broke tie by row order (row {winner['row'] + 1} chosen)."
         return {
             "blocked": False,
             "queue": winner["queue"],
             "row": winner["row"],
             "item": winner["item"],
             "why": why,
-            "explanations": explanations
+            "explanations": explanations,
         }
 
     def plan_task(self, result):
@@ -94,33 +118,54 @@ class AgentTaskDispatcher:
                 "plan": "Blocked: " + result["reason"],
                 "why": result.get("explanations", []),
                 "task": None,
-                "blocked": True
+                "blocked": True,
             }
         item = result["item"]
+        row = item.get("_raw", item)
         queue = result["queue"]
-        ident = item.get("event_name") or item.get("fixture_id") or item.get("fighter_id") or "?"
-        # Determine task type
+        ident = (
+            row.get("event_name")
+            or row.get("fixture_id")
+            or row.get("fighter_id")
+            or row.get("event_batch")
+            or "?"
+        )
         if queue.startswith("fixture_gap"):
             task_type = "fixture_gap_recheck"
         elif queue.startswith("event_coverage"):
             task_type = "event_decomposition"
         elif queue.startswith("fighter_gap"):
-            task_type = "fighter_gap_grounding"
+            if (
+                row.get("task_type") == "fighter_gap_real_grounding"
+                or queue == "fighter_gap_queue.csv"
+            ):
+                task_type = "fighter_gap_real_grounding"
+            else:
+                task_type = "fighter_gap_grounding"
+        elif queue.startswith("event_batch"):
+            task_type = "event_batch_intake"
         else:
             task_type = "unknown"
         return {
             "plan": f"Next task from {queue}: {ident}",
             "why": [result["why"]] + result.get("explanations", []),
-            "task": dict(item, task_type=task_type),
+            "task": dict(row, task_type=task_type),
             "queue": queue,
             "identifier": ident,
-            "blocked": False
+            "row": result["row"],
+            "blocked": False,
         }
 
-    def execute_task(self, plan, reporter, queue_ack_fn=None, simulate_artifact_fail=False, simulate_queue_ack_fail=False):
+    def execute_task(
+        self,
+        plan,
+        reporter,
+        queue_ack_fn=None,
+        simulate_artifact_fail=False,
+        simulate_queue_ack_fail=False,
+    ):
         import os
-        import json
-        # Always check env vars directly for simulation, in case caller fails to propagate
+        from handlers import registry
         if os.environ.get("AI_RISA_SIM_ARTIFACT_FAIL", "0") == "1":
             simulate_artifact_fail = True
         if os.environ.get("AI_RISA_SIM_QUEUE_ACK_FAIL", "0") == "1":
@@ -128,65 +173,17 @@ class AgentTaskDispatcher:
         task = plan.get("task", {}) or {}
         task_type = task.get("task_type")
         base_dir = os.path.dirname(os.path.abspath(__file__))
-
-        def _safe_name(value):
-            return "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in str(value))
-
-        identifier = plan.get("identifier", "unknown")
-        safe_identifier = _safe_name(identifier)
-
-        if task_type == "fixture_gap_recheck":
-            artifact_name = f"fixture_gap_recheck_{safe_identifier}.json"
-            artifact_content = {
-                "fixture_id": identifier,
-                "task_type": task_type,
-                "source_queue": plan.get("queue"),
-                "task": task,
-            }
-        elif task_type == "fighter_gap_grounding":
-            artifact_name = f"fighter_gap_grounding_{safe_identifier}.json"
-            artifact_content = {
-                "fighter_id": identifier,
-                "task_type": task_type,
-                "source_queue": plan.get("queue"),
-                "task": task,
-            }
-        elif task_type == "event_decomposition":
-            artifact_name = f"event_decomposition_{safe_identifier}.json"
-            artifact_content = {
-                "event_name": identifier,
-                "task_type": task_type,
-                "source_queue": plan.get("queue"),
-                "task": task,
-            }
-        else:
-            reporter.report_execute_blocked(plan)
-            return {"result": "blocked"}
-
-        artifact_path = os.path.join(base_dir, artifact_name)
-        # Simulate artifact failure if requested
-        if simulate_artifact_fail:
-            reporter.report_execute_artifact_failure(artifact_name, plan)
-            return {"result": "artifact_failure", "artifact": artifact_name}
-        try:
-            with open(artifact_path, "w", encoding="utf-8") as f:
-                json.dump(artifact_content, f, indent=2)
-        except Exception as e:
-            reporter.report_execute_artifact_failure(artifact_name, plan, error=str(e))
-            return {"result": "artifact_failure", "artifact": artifact_name, "error": str(e)}
-
-        # Simulate queue ack failure if requested
-        if simulate_queue_ack_fail:
-            queue_ack_success = False
-            queue_ack_error = "Simulated queue ack failure"
-        elif queue_ack_fn:
-            queue_ack_success, queue_ack_error = queue_ack_fn()
-        else:
-            queue_ack_success, queue_ack_error = True, None
-
-        if not queue_ack_success:
-            reporter.report_execute_partial_success(artifact_name, plan, queue_ack_error)
-            return {"result": "queue_ack_failure", "artifact": artifact_name, "queue_error": queue_ack_error}
-
-        reporter.report_execute_success([os.path.basename(artifact_path)], plan)
-        return {"result": "success", "artifact": artifact_name}
+        # Delegate to handler registry for supported types
+        handler = registry.get_handler(task_type)
+        if handler is not None:
+            return handler.run(
+                plan,
+                reporter,
+                base_dir,
+                simulate_artifact_fail=simulate_artifact_fail,
+                simulate_queue_ack_fail=simulate_queue_ack_fail,
+                queue_ack_fn=queue_ack_fn,
+            )
+        # Fallback: legacy logic for other types
+        reporter.report_execute_blocked(plan)
+        return {"result": "blocked"}

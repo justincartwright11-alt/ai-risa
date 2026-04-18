@@ -1,12 +1,12 @@
 {
   "stage": "full_pipeline",
   "status": "warning",
-  "started_at": "2026-04-10T10:03:52.742548",
-  "finished_at": "2026-04-10T10:03:53.125763",
+  "started_at": "2026-04-18T13:00:02.693651",
+  "finished_at": "2026-04-18T13:03:28.434416",
   "counts": {
     "stage_total": 6,
-    "completed": 4,
-    "warnings": 2,
+    "completed": 5,
+    "warnings": 1,
     "failed": 0,
     "soft_skipped": 0,
     "stages_run": 6,
@@ -21,12 +21,6 @@
     "queue_excluded_insufficient_enrichment": 0
   },
   "warnings": [
-    {
-      "stage": "ingest",
-      "exit_code": 1,
-      "detail": "Traceback (most recent call last):\n  File \"C:\\ai_risa_data\\ingest_upcoming_events_sources.py\", line 131, in <module>\n    from bs4 import BeautifulSoup\nModuleNotFoundError: No module named 'bs4'",
-      "message": "Stage 'ingest' completed with warning (exit_code=1). Review detail for actionability."
-    },
     {
       "stage": "resolver",
       "type": "enrichment_diagnostic",
@@ -59,26 +53,26 @@
     "stages": [
       {
         "stage": "ingest",
-        "status": "warning",
-        "started_at": "2026-04-10T10:03:52.742548",
-        "finished_at": "2026-04-10T10:03:52.789200",
-        "exit_code": 1,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe ingest_upcoming_events_sources.py",
+        "status": "success",
+        "started_at": "2026-04-18T13:00:02.693730",
+        "finished_at": "2026-04-18T13:03:28.129143",
+        "exit_code": 0,
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe ingest_upcoming_events_sources.py",
         "summary_paths": [
           "incoming/upcoming_events_ingest_summary.json"
         ],
         "details": {
-          "stdout": "",
-          "stderr": "Traceback (most recent call last):\n  File \"C:\\ai_risa_data\\ingest_upcoming_events_sources.py\", line 131, in <module>\n    from bs4 import BeautifulSoup\nModuleNotFoundError: No module named 'bs4'\n"
+          "stdout": "[START] ingest_upcoming_events_sources.py\n[PATHS] Script directory: C:\\ai_risa_data\n[PATHS] Upcoming events: C:\\ai_risa_data\\incoming\\upcoming_events.json\n[PATHS] Conflicts: C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n[PATHS] Summary: C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[UFC ADAPTER] Starting UFC adapter at 2026-04-18T03:00:03.267961+00:00 for https://www.ufc.com/events\n[UFC FETCH] status_code=200 url=https://www.ufc.com/events content-type=text/html; charset=UTF-8 length=329442\n[UFC FETCH] First 1000 chars:\n\n\n\n\n\n\n<!DOCTYPE html>\n<html lang=\"en-aus\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<meta name=\"description\" content=\"Find the latest UFC event schedule, watch information, fight cards, start times, and broadcast details.\" />\n<meta name=\"keywords\" content=\"ufc, events, schedule\" />\n<link rel=\"canonical\" href=\"https://www.ufc.com/events\" />\n<meta name=\"referrer\" content=\"origin\" />\n<meta name=\"title\" content=\"UFC Fight Cards, Watch Times, Live Stats | UFC.com\" />\n<meta name=\"Generator\" content=\"Drupal 10 (https://www.drupal.org)\" />\n<meta name=\"MobileOptimized\" content=\"width\" />\n<meta name=\"HandheldFriendly\" content=\"true\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n<!-- PLACE THIS SECTION INSIDE OF YOUR HEAD TAGS -->\n\n<!-- Below is a recommended list of pre-connections, which allow the network to establish each connection quicker, speeding up response times and improving ad performance. -->\n\n<link rel=\"preconnect\" \n[UFC INDEX] Found 16 candidate event URLs.\n[UFC RETAINED] event_name='UFC Fight Night: Burns vs Malott | UFC Winnipeg' date='2026-04-18' url='https://www.ufc.com/event/ufc-fight-night-april-18-2026'\n[UFC RETAINED] event_name='UFC Fight Night: Sterling vs Zalal' date='2026-04-25' url='https://www.ufc.com/event/ufc-fight-night-april-25-2026'\n[UFC RETAINED] event_name='UFC Fight Night | Della Maddalena vs Prates' date='2026-05-02' url='https://www.ufc.com/event/ufc-fight-night-may-02-2026'\n[UFC DETAIL] attempted=12 records_built=11\n[UFC DEBUG] function return: len(records)=11\n[UFC DEBUG] function return: first3_records=[{'promotion': 'UFC', 'event_name': 'UFC Fight Night: Burns vs Malott | UFC Winnipeg', 'date': '2026-04-18', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-fight-night-april-18-2026', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-18T13:00:08.776811'}, {'promotion': 'UFC', 'event_name': 'UFC Fight Night: Sterling vs Zalal', 'date': '2026-04-25', 'city': 'Las Vegas', 'region': 'Nevada', 'country': 'United States', 'venue': 'Meta APEX', 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-fight-night-april-25-2026', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-18T13:00:12.018410'}, {'promotion': 'UFC', 'event_name': 'UFC Fight Night | Della Maddalena vs Prates', 'date': '2026-05-02', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://www.ufc.com/event/ufc-fight-night-may-02-2026', 'source_type': 'official_event_detail', 'source_confidence': 100, 'last_seen_at': '2026-04-18T13:00:15.443533'}]\n[UFC DEBUG] function return: diag_records_built=11 final_events=11\n[UFC ADAPTER] Final diagnostics: {'source': 'ufc', 'adapter_entry': '2026-04-18T03:00:03.267961+00:00', 'source_url': 'https://www.ufc.com/events', 'status': 'ok', 'fetch': {}, 'parse': {'candidate_links': 11}, 'detail': {'records_built': 11}, 'final_records': 11}\n[PFL ADAPTER] Starting PFL adapter at 2026-04-18T03:00:44.314842+00:00 for https://pflmma.com/events\n[PFL FETCH] status_code=200 url=https://pflmma.com/events content-type=text/html; charset=utf-8 length=574777\n[PFL FETCH] First 1000 chars:\n<!DOCTYPE html>\n<html>\n\n<head>\n    <!-- Required meta tags -->\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">\n\n            <title>Events</title>\n        <meta name=\"description\" content=\"Professional Fighters League (PFL) is a global powerhouse in MMA, and is the fastest-growing sports league worldwide. PFL hosts premium MMA events across the U.S., Europe, MENA, and Africa, with plann...\" />\n        <meta name=\"keywords\" content=\"PFL\" />\n    \n    \n    <!-- Favicon and touch icons -->\n    <link href=\"https://pflmma.com/favicons/apple-touch-icon.png\" rel=\"apple-touch-icon\" sizes=\"180x180\">\n    <link type=\"image/png\" href=\"https://pflmma.com/favicons/favicon-32x32.png\" rel=\"icon\" sizes=\"32x32\">\n    <link type=\"image/png\" href=\"https://pflmma.com/favicons/favicon-16x16.png\" rel=\"icon\" sizes=\"16x16\">\n    <link href=\"https://pflmma.com/favicons/site.webmanifest\" rel=\"manifest\">\n    <!-- Fonts -->\n    <link href=\"https://f\n[PFL ADAPTER] Fetch status: {'status_code': 200, 'url': 'https://pflmma.com/events', 'content_type': 'text/html; charset=utf-8', 'length': 574777, 'has_event_marker': True, 'body_head': '<!DOCTYPE html> <html>  <head>     <!-- Required meta tags -->     <meta charset=\"utf-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">              <title>Events</title>         <meta name=\"description\" content=\"Professional Fighters League (PFL) is a gl'}\n[PFL ADAPTER] Found 77 candidate event cards on index page.\n[PFL RETAINED] event_name='PFL Sioux Falls TICKETS' date_raw='Sat, May 2' date_normalized='2026-05-02' detail_url='https://pflmma.com/event/pfl-sioux-falls-2026'\n[PFL RETAINED] event_name='PFL Sioux Falls TICKETS' date_raw='Sat, May 2' date_normalized='2026-05-02' detail_url='https://pflmma.com/event/pfl-sioux-falls-2026'\n[PFL RETAINED] event_name='PFL Sioux Falls TICKETS' date_raw='Sat, May 2' date_normalized='2026-05-02' detail_url='https://pflmma.com/event/pfl-sioux-falls-2026'\n[PFL RETAINED] event_name='PFL Sioux Falls TICKETS' date_raw='Sat, May 2' date_normalized='2026-05-02' detail_url='https://pflmma.com/event/pfl-sioux-falls-2026'\n[PFL RETAINED] event_name='PFL Sioux Falls TICKETS' date_raw='Sat, May 2' date_normalized='2026-05-02' detail_url='https://pflmma.com/event/pfl-sioux-falls-2026'\n[PFL ADAPTER] Final diagnostics: {'source': 'pfl', 'adapter_entry': '2026-04-18T03:00:44.314842+00:00', 'source_url': 'https://pflmma.com/events', 'status': 'ok', 'fetch': {'status_code': 200, 'url': 'https://pflmma.com/events', 'content_type': 'text/html; charset=utf-8', 'length': 574777, 'has_event_marker': True, 'body_head': '<!DOCTYPE html> <html>  <head>     <!-- Required meta tags -->     <meta charset=\"utf-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">              <title>Events</title>         <meta name=\"description\" content=\"Professional Fighters League (PFL) is a gl'}, 'parse': {}, 'detail': {'attempted': 55, 'debug': [{'promotion': 'PFL', 'event_name': 'PFL Sioux Falls TICKETS', 'event_name_source': 'index_h3', 'date': '2026-05-02', 'date_source': 'index_h6_shortdate', 'date_raw': 'Sat, May 2', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-sioux-falls-2026', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-18T03:00:47.812523+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Sioux Falls TICKETS', 'event_name_source': 'index_h3', 'date': '2026-05-02', 'date_source': 'index_h6_shortdate', 'date_raw': 'Sat, May 2', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-sioux-falls-2026', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-18T03:00:50.952065+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Sioux Falls TICKETS', 'event_name_source': 'index_h3', 'date': '2026-05-02', 'date_source': 'index_h6_shortdate', 'date_raw': 'Sat, May 2', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-sioux-falls-2026', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-18T03:00:52.868908+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Sioux Falls TICKETS', 'event_name_source': 'index_h3', 'date': '2026-05-02', 'date_source': 'index_h6_shortdate', 'date_raw': 'Sat, May 2', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-sioux-falls-2026', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-18T03:00:55.486065+00:00'}, {'promotion': 'PFL', 'event_name': 'PFL Sioux Falls TICKETS', 'event_name_source': 'index_h3', 'date': '2026-05-02', 'date_source': 'index_h6_shortdate', 'date_raw': 'Sat, May 2', 'city': None, 'region': None, 'country': None, 'venue': None, 'bouts': [], 'source_url': 'https://pflmma.com/event/pfl-sioux-falls-2026', 'source_type': 'official_events_index', 'source_confidence': 95, 'last_seen_at': '2026-04-18T03:00:57.347684+00:00'}], 'records_built': 12}, 'final_records': 12}\n[INGEST] fail pfl: TypeError: cannot unpack non-iterable NoneType object\n[LFA RETAINED] event_name='LFA 231 – Trembley vs. Johns' date_raw='April 17' date_normalized='2026-04-17' detail_url='https://www.lfa.com/event/lfa-231-trembley-vs-johns' venue='LFA 231 – Trembley vs. Johns'\n[LFA RETAINED] event_name='LFA 232 – Visconde vs. Pintos' date_raw='May 15' date_normalized='2026-05-15' detail_url='https://www.lfa.com/event/lfa-232-visconde-vs-pintos' venue='LFA 232 – Visconde vs. Pintos'\n[LFA RETAINED] event_name='LFA 233 – Piersma vs. Camilo' date_raw='May 22' date_normalized='2026-05-22' detail_url='https://www.lfa.com/event/lfa-233-piersma-vs-camilo' venue='LFA 233 – Piersma vs. Camilo'\n[LFA RETAINED] event_name='LFA 234 – Fernando vs. Soares' date_raw='May 29' date_normalized='2026-05-29' detail_url='https://www.lfa.com/event/lfa-234-fernando-vs-soares' venue='LFA 234 – Fernando vs. Soares'\n[LFA ADAPTER] Final diagnostics: {'source': 'lfa', 'adapter_entry': '2026-04-18T03:03:09.208157+00:00', 'source_url': 'https://www.lfa.com/events/', 'status': 'ok', 'detail': {'attempted': 4, 'records_built': 4}, 'fetch_status_code': 200, 'fetch_length': 174679, 'final_records': 4}\n[ARES AUDIT] anchors=4 dates=4 collapsed_titles=4\n[ARES AUDIT] anchors=[<a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3297\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3364\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3278\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>, <a class=\"button rounded-button green-plain-button mt-3 no-trad\" href=\"?competition=3368\">Fight Card <i class=\"fa fa-arrow-circle-down\"></i></a>]\n[ARES AUDIT] dates=['06/06/2026', '25/09/2026', '31/10/2026', '07/11/2026']\n[ARES AUDIT] titles_raw=['ARES 41', 'ARES 41', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']\n[ARES AUDIT] titles=['ARES 41', 'ARES Paris Septembre', 'ARES Strasbourg', 'ARES Paris Novembre']\n[ARES AUDIT] Using strict zipped correlation: 4 events\n[ARES RETAINED] event_name='ARES 41' date_raw='06/06/2026' date_normalized='2026-06-06' detail_url='https://www.aresfighting.com/events/?competition=3297'\n[ARES RETAINED] event_name='ARES Paris Septembre' date_raw='25/09/2026' date_normalized='2026-09-25' detail_url='https://www.aresfighting.com/events/?competition=3364'\n[ARES RETAINED] event_name='ARES Strasbourg' date_raw='31/10/2026' date_normalized='2026-10-31' detail_url='https://www.aresfighting.com/events/?competition=3278'\n[BOXINGSCENE ADAPTER] Final diagnostics: {'source': 'boxingscene', 'adapter_entry': '2026-04-18T03:03:22.171845+00:00', 'source_url': 'https://www.boxingscene.com/schedule', 'status': 'ok', 'detail': {'attempted_nodes': 89, 'attempted': 13, 'records_built': 13, 'failure_reasons': {'no_candidate_nodes': 0, 'missing_date': 38, 'invalid_date': 0, 'missing_title': 0}, 'structured_candidates': 10, 'structured_records_built': 10, 'structured_failure_reasons': {'jsonld_invalid': 0, 'jsonld_missing_title': 0, 'jsonld_invalid_date': 0}, 'detail_pages_enriched': 2}, 'fetch_status_code': 200, 'fetch_length': 323244, 'final_records': 13}\n[DEDUP] Dropping (fuzzy) Boxing | Jonny Mansour vs. William King | 2026-04-18 | https://www.boxingscene.com/schedule\n[DEDUP] Dropping (fuzzy) Boxing | Jarrell Miller vs. Lenier Pero | 2026-04-25 | https://www.boxingscene.com/schedule\n[DEDUP] Dropping (fuzzy) Boxing | Julio Cesar Chavez Jr. vs. Jhon Caicedo | 2026-04-25 | https://www.boxingscene.com/schedule\n[WRITE] summary -> C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events_ingest_summary.json\n[WRITE] events -> C:\\ai_risa_data\\incoming\\upcoming_events.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events.json\n[WRITE] conflicts -> C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n[WRITE] C:\\ai_risa_data\\incoming\\upcoming_events_conflicts.json\n",
+          "stderr": "C:\\ai_risa_data\\ingest_upcoming_events_sources.py:168: DeprecationWarning: The 'text' argument to find()-type methods is deprecated. Use 'string' instead.\n  for el in soup.find_all(text=True):\nC:\\ai_risa_data\\ingest_upcoming_events_sources.py:174: DeprecationWarning: The 'text' argument to find()-type methods is deprecated. Use 'string' instead.\n  for el in soup.find_all(text=True):\n"
         }
       },
       {
         "stage": "schedule",
         "status": "success",
-        "started_at": "2026-04-10T10:03:52.791199",
-        "finished_at": "2026-04-10T10:03:52.840160",
+        "started_at": "2026-04-18T13:03:28.131141",
+        "finished_at": "2026-04-18T13:03:28.170863",
         "exit_code": 0,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe build_upcoming_schedule_auto.py --source C:/ai_risa_data/incoming/upcoming_events.json --schedule-out C:/ai_risa_data/schedules/upcoming_auto.json --events-dir C:/ai_risa_data/events --summary-json C:/ai_risa_data/output/upcoming_auto_summary.json --summary-csv C:/ai_risa_data/output/upcoming_auto_summary.csv --formats md docx pdf",
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe build_upcoming_schedule_auto.py --source C:/ai_risa_data/incoming/upcoming_events.json --schedule-out C:/ai_risa_data/schedules/upcoming_auto.json --events-dir C:/ai_risa_data/events --summary-json C:/ai_risa_data/output/upcoming_auto_summary.json --summary-csv C:/ai_risa_data/output/upcoming_auto_summary.csv --formats md docx pdf",
         "summary_paths": [
           "C:/ai_risa_data/output/upcoming_auto_summary.json",
           "C:/ai_risa_data/output/upcoming_auto_summary.csv",
@@ -92,10 +86,10 @@
       {
         "stage": "resolver",
         "status": "warning",
-        "started_at": "2026-04-10T10:03:52.842160",
-        "finished_at": "2026-04-10T10:03:52.952924",
+        "started_at": "2026-04-18T13:03:28.173583",
+        "finished_at": "2026-04-18T13:03:28.244476",
         "exit_code": 1,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe resolve_missing_dependencies_auto.py",
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe resolve_missing_dependencies_auto.py",
         "summary_paths": [
           "output/dependency_resolution_summary.json"
         ],
@@ -107,10 +101,10 @@
       {
         "stage": "queue_build",
         "status": "success",
-        "started_at": "2026-04-10T10:03:52.954921",
-        "finished_at": "2026-04-10T10:03:53.003633",
+        "started_at": "2026-04-18T13:03:28.246331",
+        "finished_at": "2026-04-18T13:03:28.302865",
         "exit_code": 0,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe build_prediction_queue_auto.py",
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe build_prediction_queue_auto.py",
         "summary_paths": [
           "output/prediction_queue.json",
           "output/prediction_queue_build_summary.json"
@@ -123,10 +117,10 @@
       {
         "stage": "queue_run",
         "status": "success",
-        "started_at": "2026-04-10T10:03:53.004633",
-        "finished_at": "2026-04-10T10:03:53.068644",
+        "started_at": "2026-04-18T13:03:28.305212",
+        "finished_at": "2026-04-18T13:03:28.360423",
         "exit_code": 0,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe run_prediction_queue_auto.py",
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe run_prediction_queue_auto.py",
         "summary_paths": [
           "output/prediction_queue_run_summary.json"
         ],
@@ -138,16 +132,16 @@
       {
         "stage": "batch",
         "status": "success",
-        "started_at": "2026-04-10T10:03:53.069641",
-        "finished_at": "2026-04-10T10:03:53.123763",
+        "started_at": "2026-04-18T13:03:28.362987",
+        "finished_at": "2026-04-18T13:03:28.432038",
         "exit_code": 0,
-        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.10-64\\python.exe run_event_batch_auto.py --schedule C:/ai_risa_data/schedules/upcoming_auto.json --formats md docx pdf",
+        "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe run_event_batch_auto.py --schedule C:/ai_risa_data/schedules/upcoming_auto.json --formats md docx pdf",
         "summary_paths": [
           "output/event_batch_run_summary.json"
         ],
         "details": {
           "stdout": "[BATCH SUMMARY]\nTotal events: 21\nSucceeded: 0\nFailed: 0\nWarnings: 0\nSkipped existing: 0\nSkipped metadata-only: 21\n",
-          "stderr": ""
+          "stderr": "C:\\ai_risa_data\\run_event_batch_auto.py:190: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  'generated_at': datetime.utcnow().isoformat() + 'Z',\n"
         }
       }
     ],
@@ -181,8 +175,8 @@
     },
     "skipped_items_exclusions": {
       "warning_type_counts": {
-        "unspecified": 2,
-        "enrichment_diagnostic": 1
+        "enrichment_diagnostic": 1,
+        "unspecified": 1
       },
       "enrichment_reason_rollup": {
         "resolver:skipped_tba": 5
@@ -191,7 +185,7 @@
     "warning_readability": {
       "informational_count": 0,
       "non_fatal_operational_count": 1,
-      "action_needed_count": 2,
+      "action_needed_count": 1,
       "informational_examples": [],
       "non_fatal_operational_examples": [
         {
@@ -205,13 +199,6 @@
       "action_needed_examples": [
         {
           "type": null,
-          "stage": "ingest",
-          "reason": null,
-          "count": null,
-          "message": "Stage 'ingest' completed with warning (exit_code=1). Review detail for actionability."
-        },
-        {
-          "type": null,
           "stage": "resolver",
           "reason": null,
           "count": null,
@@ -223,6 +210,6 @@
       "note": "Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits.",
       "warning_non_fatal": true
     },
-    "human_readable_summary_markdown": "# Executive Summary\n- Run Status: success\n- Stages Run: 6/6\n- Stages Soft-Skipped: 0\n\n# Analysis Coverage Snapshot\n- Executed Stages: ingest, schedule, resolver, queue_build, queue_run, batch\n- Soft-Skipped Stages: None\n\n# Skipped/Excluded Items Snapshot\n- Warning Types: {'unspecified': 2, 'enrichment_diagnostic': 1}\n- Enrichment Exclusions: {'resolver:skipped_tba': 5}\n\n# Warning Interpretation\n- Informational: 0\n- Non-Fatal Operational: 1\n- Action-Needed: 2\n- Interpretation: Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits.\n\n# Recommended Operator Action\n- Review stage errors and action-needed warnings first; then re-run bounded validation."
+    "human_readable_summary_markdown": "# Executive Summary\n- Run Status: success\n- Stages Run: 6/6\n- Stages Soft-Skipped: 0\n\n# Analysis Coverage Snapshot\n- Executed Stages: ingest, schedule, resolver, queue_build, queue_run, batch\n- Soft-Skipped Stages: None\n\n# Skipped/Excluded Items Snapshot\n- Warning Types: {'enrichment_diagnostic': 1, 'unspecified': 1}\n- Enrichment Exclusions: {'resolver:skipped_tba': 5}\n\n# Warning Interpretation\n- Informational: 0\n- Non-Fatal Operational: 1\n- Action-Needed: 1\n- Interpretation: Run completed with non-fatal warnings. Outputs are usable with documented coverage/exclusion limits.\n\n# Recommended Operator Action\n- Review stage errors and action-needed warnings first; then re-run bounded validation."
   }
 }

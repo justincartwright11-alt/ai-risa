@@ -47,8 +47,8 @@
     ],
     "escalation_level": "warning",
     "notification_type": "cleared",
-    "attempt_count": 3,
-    "timestamp": "2026-04-10T00:30:02.656699Z",
+    "attempt_count": 23,
+    "timestamp": "2026-04-18T11:45:03.379348Z",
     "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
   },
   {
@@ -61,8 +61,8 @@
     ],
     "escalation_level": "warning",
     "notification_type": "opened",
-    "attempt_count": 11,
-    "timestamp": "2026-04-10T00:30:02.656699Z",
+    "attempt_count": 31,
+    "timestamp": "2026-04-18T11:45:03.379348Z",
     "reason": "Email send failed: [WinError 10061] No connection could be made because the target machine actively refused it"
   }
 ]

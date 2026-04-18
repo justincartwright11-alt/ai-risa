@@ -1,0 +1,2 @@
+﻿event_name,event_date,sport,ruleset,status,retry_count,last_error
+example_event_1,2026-05-01,mixed_rules,mixed_rules,queued,1,artifact_fail_sim

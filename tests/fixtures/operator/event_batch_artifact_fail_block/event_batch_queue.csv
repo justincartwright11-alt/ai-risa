@@ -1,0 +1,2 @@
+event_batch,status,retry_count,last_error
+batch2,queued,0,

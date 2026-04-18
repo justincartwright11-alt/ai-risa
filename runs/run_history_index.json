@@ -48,5 +48,45 @@
         "mode":  "normal",
         "run_path":  "C:\\ai_risa_data\\runs\\2026-04-01_133755",
         "completed_at":  "2026-04-01T13:41:40.4622388+11:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-17_120002",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-17_120002\\launcher.log",
+        "started_at":  "2026-04-17T12:00:02.5608168+10:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-17_120002",
+        "completed_at":  "2026-04-17T12:00:02.5608168+10:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-17_130002",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-17_130002\\launcher.log",
+        "started_at":  "2026-04-17T13:03:24.7008715+10:00",
+        "status":  "success",
+        "mode":  "normal",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-17_130002",
+        "completed_at":  "2026-04-17T13:03:24.7022528+10:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-18_120002",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-18_120002\\launcher.log",
+        "started_at":  "2026-04-18T12:00:02.9282934+10:00",
+        "status":  "success",
+        "mode":  "dry-run",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-18_120002",
+        "completed_at":  "2026-04-18T12:00:02.9293044+10:00"
+    },
+    {
+        "exit_code":  0,
+        "timestamp":  "2026-04-18_130002",
+        "launcher_log":  "C:\\ai_risa_data\\runs\\2026-04-18_130002\\launcher.log",
+        "started_at":  "2026-04-18T13:03:28.4898247+10:00",
+        "status":  "success",
+        "mode":  "normal",
+        "run_path":  "C:\\ai_risa_data\\runs\\2026-04-18_130002",
+        "completed_at":  "2026-04-18T13:03:28.4908285+10:00"
     }
 ]

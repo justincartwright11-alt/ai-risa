@@ -7,9 +7,9 @@
       "escalation_id": "d6a78f768b50c1a6",
       "terminal_reason": "max attempts reached",
       "final_status": "failed",
-      "attempt_count": 11,
+      "attempt_count": 31,
       "last_attempt_at": null,
-      "dead_lettered_at": "2026-04-10T00:30:11.197559Z"
+      "dead_lettered_at": "2026-04-18T11:45:11.903867Z"
     },
     "delivery-a8edb31df556e03e": {
       "dead_letter_id": "delivery-a8edb31df556e03e",
@@ -18,10 +18,10 @@
       "escalation_id": "d6a78f768b50c1a6",
       "terminal_reason": "max attempts reached",
       "final_status": "failed",
-      "attempt_count": 3,
+      "attempt_count": 23,
       "last_attempt_at": null,
-      "dead_lettered_at": "2026-04-10T00:30:11.197559Z"
+      "dead_lettered_at": "2026-04-18T11:45:11.903867Z"
     }
   },
-  "generated_at": "2026-04-10T00:30:11.197559Z"
+  "generated_at": "2026-04-18T11:45:11.903867Z"
 }

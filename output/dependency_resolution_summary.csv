@@ -18,39 +18,39 @@ one_friday_fights_149_2026_04_03,one_friday_fights_149_2026_04_03_b03,Payakrut S
 one_friday_fights_149_2026_04_03,one_friday_fights_149_2026_04_03_b04,Isaiah Badato,Retsu Sashida,['already_complete']
 pfl_africa:_pretoria_2026_04_10,pfl_africa:_pretoria_2026_04_10_b01,Don Madge,TBA,['skipped_tba']
 pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b01,Sergio Pettis,Mitch McKee,['already_complete']
-pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b02,Jordan Newman,Josh Silveira,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b03,Raufeon Stots,Renat Khavalov,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b04,Gabriel Braga,Cheyden Leialoha,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b05,Viviane Araujo,Shanna Young,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b06,Slim Trabelsi,Rodrigo Nascimento,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
+pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b02,Jordan Newman,Josh Silveira,['prediction_missing']
+pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b03,Raufeon Stots,Renat Khavalov,['prediction_missing']
+pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b04,Gabriel Braga,Cheyden Leialoha,['prediction_missing']
+pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b05,Viviane Araujo,Shanna Young,['prediction_missing']
+pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11,pfl_chicago:_sergio_pettis_vs._mitch_mckee_2026_04_11_b06,Slim Trabelsi,Rodrigo Nascimento,['prediction_missing']
 resolver_test_event_2026_04_01,resolver_test_event_2026_04_01_b01,Alpha Fighter,Bravo Fighter,['prediction_missing']
 resolver_test_event_2026_04_01,resolver_test_event_2026_04_01_b02,Charlie Fighter,Delta Fighter,['prediction_missing']
 resolver_test_event_2026_04_01,resolver_test_event_2026_04_01_b03,TBA,Echo Fighter,['skipped_tba']
 resolver_test_event_2026_04_01,resolver_test_event_2026_04_01_b04,Foxtrot Fighter,Golf Fighter,['already_complete']
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b01,Alex Pereira,Jamahal Hill,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b02,Zhang Weili,Yan Xiaonan,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b03,Justin Gaethje,Max Holloway,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b04,Charles Oliveira,Arman Tsarukyan,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b05,Bo Nickal,Cody Brundage,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b06,Jiri Prochazka,Aleksandar Rakic,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b07,Calvin Kattar,Aljamain Sterling,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b08,Holly Holm,Kayla Harrison,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b09,Sodiq Yusuff,Diego Lopes,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b10,Jalin Turner,Renato Moicano,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b11,Jessica Andrade,Marina Rodriguez,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b12,King Green,Jim Miller,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b13,Deiveson Figueiredo,Cody Garbrandt,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b01,Alex Pereira,Jamahal Hill,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b02,Zhang Weili,Yan Xiaonan,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b03,Justin Gaethje,Max Holloway,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b04,Charles Oliveira,Arman Tsarukyan,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b05,Bo Nickal,Cody Brundage,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b06,Jiri Prochazka,Aleksandar Rakic,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b07,Calvin Kattar,Aljamain Sterling,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b08,Holly Holm,Kayla Harrison,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b09,Sodiq Yusuff,Diego Lopes,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b10,Jalin Turner,Renato Moicano,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b11,Jessica Andrade,Marina Rodriguez,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b12,King Green,Jim Miller,['prediction_missing']
+ufc_300:_pereira_vs._hill_2024_04_13,ufc_300:_pereira_vs._hill_2024_04_13_b13,Deiveson Figueiredo,Cody Garbrandt,['prediction_missing']
 ufc_327:_adesanya_vs._du_plessis_2026_04_11,ufc_327:_adesanya_vs._du_plessis_2026_04_11_b01,Israel Adesanya,Dricus Du Plessis,['already_complete']
 ufc_327:_adesanya_vs._du_plessis_2026_04_11,ufc_327:_adesanya_vs._du_plessis_2026_04_11_b01,Israel Adesanya,Dricus Du Plessis,['already_complete']
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b01,Jiri Prochazka,Carlos Ulberg,"['fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b02,Azamat Murzakanov,Paulo Costa,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b03,Curtis Blaydes,Jay Hokit,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b04,Dominick Reyes,Johnny Walker,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b05,Cub Swanson,Nate Landwehr,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b06,Patricio Pitbull,Aaron Pico,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b07,Kevin Holland,Randy Brown,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b08,Mateusz Gamrot,Esteban Ribovics,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b09,Tatiana Suarez,Lupita Godinez,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b10,Christos Padilla,Manuel Mederos,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b11,Kelvin Gastelum,Vicente Luque,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
-ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b12,Charles Radtke,Francisco Prado,"['fighter_1_stub_created', 'fighter_2_stub_created', 'matchup_stub_created', 'prediction_missing']"
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b01,Jiri Prochazka,Carlos Ulberg,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b02,Azamat Murzakanov,Paulo Costa,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b03,Curtis Blaydes,Jay Hokit,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b04,Dominick Reyes,Johnny Walker,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b05,Cub Swanson,Nate Landwehr,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b06,Patricio Pitbull,Aaron Pico,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b07,Kevin Holland,Randy Brown,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b08,Mateusz Gamrot,Esteban Ribovics,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b09,Tatiana Suarez,Lupita Godinez,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b10,Christos Padilla,Manuel Mederos,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b11,Kelvin Gastelum,Vicente Luque,['prediction_missing']
+ufc_327:_procházka_vs._ulberg_2026_04_12,ufc_327:_procházka_vs._ulberg_2026_04_12_b12,Charles Radtke,Francisco Prado,['prediction_missing']

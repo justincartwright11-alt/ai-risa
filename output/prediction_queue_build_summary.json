@@ -1,8 +1,8 @@
 {
   "stage": "prediction_queue_build",
   "status": "success",
-  "started_at": "2026-04-10T10:03:52.996631",
-  "finished_at": "2026-04-10T10:03:52.997631",
+  "started_at": "2026-04-18T13:03:28.294389",
+  "finished_at": "2026-04-18T13:03:28.296069",
   "counts": {
     "total_candidates_scanned": 55,
     "queued_bouts": 32,

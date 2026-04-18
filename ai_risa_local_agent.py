@@ -11,7 +11,7 @@ import os
 def main():
     parser = argparse.ArgumentParser(description="Local AI-RISA Operator Agent")
     parser.add_argument("--plan", action="store_true", help="Plan next action without executing")
-    parser.add_argument("--execute", action="store_true", help="Execute the next bounded task (fixture-gap recheck only)")
+    parser.add_argument("--execute", action="store_true", help="Execute the next bounded task (fixture-gap recheck, fighter-gap real grounding, or event decomposition)")
     args = parser.parse_args()
 
     queue_reader = AgentQueueReader()
@@ -21,14 +21,15 @@ def main():
     queues = queue_reader.read_all_queues(debug=True if args.plan or args.execute else False)
     next_task = task_dispatcher.select_next_task(queues, debug=True if args.plan or args.execute else False)
     plan = task_dispatcher.plan_task(next_task)
-
     reporter.report_plan(plan)
 
     if args.execute:
         if plan.get("blocked"):
             print("[ERROR] No executable task: Blocked state.")
             return
-        supported = plan.get("task", {}).get("task_type") in ("fixture_gap_recheck", "fighter_gap_grounding", "event_decomposition")
+        supported = plan.get("task", {}).get("task_type") in (
+            "fixture_gap_recheck", "fighter_gap_grounding", "fighter_gap_real_grounding", "event_decomposition", "event_batch_intake"
+        )
         if not supported:
             reporter.report_execute_blocked(plan)
             return
@@ -38,7 +39,10 @@ def main():
         def queue_ack_fn():
             queue_file = plan["queue"]
             item = plan["task"]
-            if "fixture_id" in item:
+            if queue_file == "event_batch_queue.csv" and "event_batch" in item:
+                match_field = "event_batch"
+                match_value = item["event_batch"]
+            elif "fixture_id" in item:
                 match_field = "fixture_id"
                 match_value = item["fixture_id"]
             elif "fighter_id" in item:

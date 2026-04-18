@@ -1,0 +1,2 @@
+event_batch,status,retry_count,last_error
+batch2,blocked,3,artifact_failure

@@ -5,7 +5,7 @@
   "escalation_id": "8891edbbb1a1ed96",
   "escalation_status": "none",
   "opened_at": "2026-04-09T08:00:02.856516Z",
-  "last_seen_at": "2026-04-10T00:30:02.536000Z",
+  "last_seen_at": "2026-04-18T11:45:03.282228Z",
   "cleared_at": null,
   "trigger_metrics": {
     "consecutive_failed_runs": 0,
