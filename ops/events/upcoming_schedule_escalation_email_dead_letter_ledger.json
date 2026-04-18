@@ -6,9 +6,9 @@
     "escalation_id": "d6a78f768b50c1a6",
     "terminal_reason": "max attempts reached",
     "final_status": "failed",
-    "attempt_count": 31,
+    "attempt_count": 33,
     "last_attempt_at": null,
-    "dead_lettered_at": "2026-04-18T11:45:11.903867Z"
+    "dead_lettered_at": "2026-04-18T13:45:11.669264Z"
   },
   {
     "dead_letter_id": "delivery-a8edb31df556e03e",
@@ -17,8 +17,8 @@
     "escalation_id": "d6a78f768b50c1a6",
     "terminal_reason": "max attempts reached",
     "final_status": "failed",
-    "attempt_count": 23,
+    "attempt_count": 25,
     "last_attempt_at": null,
-    "dead_lettered_at": "2026-04-18T11:45:11.903867Z"
+    "dead_lettered_at": "2026-04-18T13:45:11.669264Z"
   }
 ]

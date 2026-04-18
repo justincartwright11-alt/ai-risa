@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI-RISA Local Operator Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
+        .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+        h1 { text-align: center; }
+        .row { margin-bottom: 18px; }
+        label { font-weight: bold; }
+        select, input[type=text] { padding: 6px; width: 100%; margin-top: 6px; }
+        button { padding: 10px 18px; margin: 6px 0; border: none; border-radius: 4px; background: #0078d4; color: #fff; font-size: 16px; cursor: pointer; }
+        button:disabled { background: #aaa; }
+        .result, .activity { background: #f0f0f0; border-radius: 4px; padding: 12px; margin-top: 10px; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+        .actions button { flex: 1 1 180px; }
+        .status-card { background: #e6f7e6; border: 1px solid #b2e6b2; color: #1a661a; padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .error-card { background: #ffeaea; border: 1px solid #e6b2b2; color: #a61a1a; padding: 10px; border-radius: 4px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>AI-RISA Local Operator Dashboard</h1>
+    <div class="row">
+        <label for="request-shape">Acceptance Test Scenario (for Run Acceptance Test only)</label>
+        <select id="request-shape">
+            <option value="accepted">Accepted Path</option>
+            <option value="blocked">Blocked Path</option>
+            <option value="failed_precondition">Failed Precondition Path</option>
+        </select>
+    </div>
+    <div class="actions row">
+        <button onclick="runLocalAI()">Run Local AI</button>
+        <button onclick="runAcceptanceTest()">Run Acceptance Test</button>
+        <button onclick="openFile('queue')">Open Queue File</button>
+        <button onclick="openFile('log')">Open Live Release Log</button>
+        <button onclick="openFile('manifest')">Open Runtime Manifest</button>
+        <button onclick="openFile('go_no_go')">Open Go/No-Go Note</button>
+    </div>
+    <div id="status" class="status-card" style="display:none;"></div>
+    <div id="error" class="error-card" style="display:none;"></div>
+    <div class="row">
+        <label>Recent Activity / Results</label>
+        <div id="activity" class="activity"></div>
+    </div>
+</div>
+<script>
+function runLocalAI() {
+    clearMessages();
+    fetch('/run_local_ai', {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => handleResult(data, 'Run Local AI'))
+    .catch(e => showError(e));
+}
+function runAcceptanceTest() {
+    clearMessages();
+    fetch('/run_acceptance_test', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => handleResult(data, 'Run Acceptance Test'))
+    .catch(e => showError(e));
+}
+function openFile(type) {
+    clearMessages();
+    fetch('/open_file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: type })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            showError(data.error);
+        } else {
+            document.getElementById('status').style.display = '';
+            document.getElementById('status').innerText = data.status;
+        }
+    })
+    .catch(e => showError(e));
+}
+function handleResult(data, action) {
+    if (data.error) {
+        showError(data.error);
+        return;
+    }
+    let status = '';
+    if (data.returncode === 0) {
+        status = `${action} succeeded.`;
+    } else {
+        status = `${action} failed (code ${data.returncode}).`;
+    }
+    document.getElementById('status').style.display = '';
+    document.getElementById('status').innerText = status;
+    let activity = '';
+    if (data.stdout) activity += `STDOUT:\n${data.stdout}\n`;
+    if (data.stderr) activity += `STDERR:\n${data.stderr}\n`;
+    document.getElementById('activity').innerText = activity;
+}
+function showError(msg) {
+    document.getElementById('error').style.display = '';
+    document.getElementById('error').innerText = msg;
+}
+function clearMessages() {
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('activity').innerText = '';
+}
+</script>
+</body>
+</html>

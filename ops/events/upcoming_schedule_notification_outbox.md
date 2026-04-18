@@ -224,3 +224,11 @@
   Reason: None
   Dedupe key: dd02431d-44e6-4d28-813a-f54d5dccf07d:cleared
 
+- Notification ID: 71cf0203c07958a9
+  Incident ID: 2d5f8b5f-2bd2-4897-a302-aec48c007692
+  Type: opened
+  Status: pending
+  Created at: 2026-04-18T12:45:02.388523Z
+  Reason: failed
+  Dedupe key: 2d5f8b5f-2bd2-4897-a302-aec48c007692:opened
+

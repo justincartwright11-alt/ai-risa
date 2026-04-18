@@ -1,2 +1,5 @@
 ﻿event_name,event_date,sport,ruleset,status,retry_count,last_error
-example_event_1,2026-05-01,mixed_rules,mixed_rules,queued,1,artifact_fail_sim
+example_event_1,2026-05-01,mixed_rules,mixed_rules,blocked,3,No matching row found for event_name=example_event_1 in event_coverage_queue.csv
+event_name,event_date,sport,ruleset,status,retry_count,last_error
+song_vs_figueiredo,2026-05-30,mma,mma,queued,0,
+REAL_THING_HERE,YYYY-MM-DD,SPORT,RULESET,queued,0,

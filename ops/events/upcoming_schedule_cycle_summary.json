@@ -1,5 +1,5 @@
 {
-  "cycle_start": "2026-04-18T11:45:01.996875Z",
+  "cycle_start": "2026-04-18T13:45:02.019397Z",
   "stages": [
     {
       "stage": "discovery",
@@ -15,8 +15,8 @@
         "ops/events/upcoming_schedule_auto_discovery.json": "9a35a47d9929738e7b9ebf1aa757d2914bb37290d80d4c867cb7a7db7eafe871",
         "ops/events/upcoming_schedule_auto_discovery.md": "b5c48e4883763c347ae02a0617d5eca76734e782303aefd73938d32cc96d8001"
       },
-      "start_time": "2026-04-18T11:45:01.996911Z",
-      "end_time": "2026-04-18T11:45:02.051747Z"
+      "start_time": "2026-04-18T13:45:02.019427Z",
+      "end_time": "2026-04-18T13:45:02.073963Z"
     },
     {
       "stage": "dispatch_consumer",
@@ -30,8 +30,8 @@
       "hashes": {
         "ops/events/upcoming_schedule_dispatch_outcome.json": "7098518dc6903597a0b21acdd93705a69df416c23158e0f7ef619c8e48375a1e"
       },
-      "start_time": "2026-04-18T11:45:02.052665Z",
-      "end_time": "2026-04-18T11:45:02.091448Z"
+      "start_time": "2026-04-18T13:45:02.074589Z",
+      "end_time": "2026-04-18T13:45:02.113588Z"
     },
     {
       "stage": "reconciliation",
@@ -47,8 +47,8 @@
         "ops/events/upcoming_schedule_queue_sink_reconciled.json": "2b8eadd9ee8f67e3822daa56160785a7653cb02d9ea87db20b2daa2b48b415e1",
         "ops/events/upcoming_schedule_reconciliation_report.md": "1548e09b51069b09e072b38d79ef769e0acdad482dc472426b1d10370ba61963"
       },
-      "start_time": "2026-04-18T11:45:02.091811Z",
-      "end_time": "2026-04-18T11:45:02.131161Z"
+      "start_time": "2026-04-18T13:45:02.113854Z",
+      "end_time": "2026-04-18T13:45:02.154922Z"
     },
     {
       "stage": "promotion",
@@ -63,13 +63,13 @@
       ],
       "hashes": {
         "ops/events/upcoming_schedule_queue_sink.json": "b634642754224cbf0c1b0d10c981b12f55eee2c8757c2beaef2b6077fd36b681",
-        "ops/events/upcoming_schedule_queue_promotion.json": "5d97ddac22c261f16618b6ef7cab05b2d2d9702bef1658b4764c7d6c7efb0410",
-        "ops/events/upcoming_schedule_queue_promotion.md": "dab5d0fac52e866babb83155293c50ccba592ac1d4e591ea0a46d3f19dcca70c"
+        "ops/events/upcoming_schedule_queue_promotion.json": "742d980d4676e61bdd645184c904a7b2ae6a147f35783006a927ad4cf6fd9fe4",
+        "ops/events/upcoming_schedule_queue_promotion.md": "0fa2ed6db990b68b016fea2fe5bb3c17a127ac5ae3a3c9adc570d23f45e3fce2"
       },
-      "start_time": "2026-04-18T11:45:02.131649Z",
-      "end_time": "2026-04-18T11:45:02.181023Z"
+      "start_time": "2026-04-18T13:45:02.155298Z",
+      "end_time": "2026-04-18T13:45:02.201419Z"
     }
   ],
   "cycle_status": "success",
-  "cycle_end": "2026-04-18T11:45:02.181626Z"
+  "cycle_end": "2026-04-18T13:45:02.201862Z"
 }

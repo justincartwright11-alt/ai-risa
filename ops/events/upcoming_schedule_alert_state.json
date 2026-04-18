@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-04-18T11:45:02.287989Z",
-  "alert_active": false,
-  "alert_reason": null,
-  "incident_id": "dd02431d-44e6-4d28-813a-f54d5dccf07d",
-  "incident_status": "cleared",
-  "opened_at": "2026-04-18T10:45:02.243188Z",
-  "last_seen_at": "2026-04-18T11:45:02.287989Z",
-  "cleared_at": "2026-04-18T11:45:02.287989Z",
-  "heartbeat_health": "healthy",
-  "heartbeat_timestamp": "2026-04-18T11:30:01.841003Z"
+  "timestamp": "2026-04-18T13:45:02.298306Z",
+  "alert_active": true,
+  "alert_reason": "failed",
+  "incident_id": "2d5f8b5f-2bd2-4897-a302-aec48c007692",
+  "incident_status": "active",
+  "opened_at": "2026-04-18T12:45:02.332833Z",
+  "last_seen_at": "2026-04-18T13:45:02.298306Z",
+  "cleared_at": null,
+  "heartbeat_health": "failed",
+  "heartbeat_timestamp": "2026-04-18T13:45:01.926652Z"
 }
