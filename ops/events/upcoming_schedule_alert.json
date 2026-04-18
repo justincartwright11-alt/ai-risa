@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-04-18T13:45:02.298306Z",
+  "timestamp": "2026-04-18T23:00:02.357734Z",
   "alert_active": true,
   "alert_reason": "failed",
   "incident_id": "2d5f8b5f-2bd2-4897-a302-aec48c007692",
   "incident_status": "active",
   "opened_at": "2026-04-18T12:45:02.332833Z",
-  "last_seen_at": "2026-04-18T13:45:02.298306Z",
+  "last_seen_at": "2026-04-18T23:00:02.357734Z",
   "cleared_at": null,
   "heartbeat_health": "failed",
-  "heartbeat_timestamp": "2026-04-18T13:45:01.926652Z"
+  "heartbeat_timestamp": "2026-04-18T23:00:01.933128Z"
 }

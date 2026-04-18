@@ -1,16 +1,16 @@
 {
-  "escalation_active": false,
-  "escalation_reason": null,
-  "escalation_level": null,
-  "escalation_id": "8891edbbb1a1ed96",
-  "escalation_status": "none",
+  "escalation_active": true,
+  "escalation_reason": "incident_age",
+  "escalation_level": "warning",
+  "escalation_id": "d6a78f768b50c1a6",
+  "escalation_status": "opened",
   "opened_at": "2026-04-09T08:00:02.856516Z",
-  "last_seen_at": "2026-04-18T13:45:03.125252Z",
+  "last_seen_at": "2026-04-18T23:00:03.246928Z",
   "cleared_at": null,
   "trigger_metrics": {
     "consecutive_failed_runs": 0,
     "consecutive_stale_runs": 0,
     "blocked_run_count": 0,
-    "incident_age_minutes": 60
+    "incident_age_minutes": 615
   }
 }

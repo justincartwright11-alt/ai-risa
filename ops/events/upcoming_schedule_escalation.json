@@ -1,48 +1,48 @@
 {
   "escalation": {
-    "escalation_active": false,
-    "escalation_reason": null,
-    "escalation_level": null,
-    "escalation_id": "8891edbbb1a1ed96",
-    "escalation_status": "none",
+    "escalation_active": true,
+    "escalation_reason": "incident_age",
+    "escalation_level": "warning",
+    "escalation_id": "d6a78f768b50c1a6",
+    "escalation_status": "opened",
     "opened_at": "2026-04-09T08:00:02.856516Z",
-    "last_seen_at": "2026-04-18T13:45:03.125252Z",
+    "last_seen_at": "2026-04-18T23:00:03.246928Z",
     "cleared_at": null,
     "trigger_metrics": {
       "consecutive_failed_runs": 0,
       "consecutive_stale_runs": 0,
       "blocked_run_count": 0,
-      "incident_age_minutes": 60
+      "incident_age_minutes": 615
     }
   },
   "alert": {
-    "timestamp": "2026-04-18T13:45:02.298306Z",
+    "timestamp": "2026-04-18T23:00:02.357734Z",
     "alert_active": true,
     "alert_reason": "failed",
     "incident_id": "2d5f8b5f-2bd2-4897-a302-aec48c007692",
     "incident_status": "active",
     "opened_at": "2026-04-18T12:45:02.332833Z",
-    "last_seen_at": "2026-04-18T13:45:02.298306Z",
+    "last_seen_at": "2026-04-18T23:00:02.357734Z",
     "cleared_at": null,
     "heartbeat_health": "failed",
-    "heartbeat_timestamp": "2026-04-18T13:45:01.926652Z"
+    "heartbeat_timestamp": "2026-04-18T23:00:01.933128Z"
   },
   "alert_state": {
-    "timestamp": "2026-04-18T13:45:02.298306Z",
+    "timestamp": "2026-04-18T23:00:02.357734Z",
     "alert_active": true,
     "alert_reason": "failed",
     "incident_id": "2d5f8b5f-2bd2-4897-a302-aec48c007692",
     "incident_status": "active",
     "opened_at": "2026-04-18T12:45:02.332833Z",
-    "last_seen_at": "2026-04-18T13:45:02.298306Z",
+    "last_seen_at": "2026-04-18T23:00:02.357734Z",
     "cleared_at": null,
     "heartbeat_health": "failed",
-    "heartbeat_timestamp": "2026-04-18T13:45:01.926652Z"
+    "heartbeat_timestamp": "2026-04-18T23:00:01.933128Z"
   },
   "history_tail": [
     {
-      "run_id": "2026-04-18T13:00:01.915463Z:scheduled",
-      "invoked_at": "2026-04-18T13:00:01.915463Z",
+      "run_id": "2026-04-18T14:30:01.988558Z:scheduled",
+      "invoked_at": "2026-04-18T14:30:01.988558Z",
       "invocation_source": "scheduled",
       "due_decision": false,
       "cycle_invoked": false,
@@ -54,34 +54,8 @@
       "terminal_status": "not-invoked"
     },
     {
-      "run_id": "2026-04-18T13:15:01.905278Z:scheduled",
-      "invoked_at": "2026-04-18T13:15:01.905278Z",
-      "invocation_source": "scheduled",
-      "due_decision": false,
-      "cycle_invoked": false,
-      "cycle_status": null,
-      "alerting_status": "N/A",
-      "heartbeat_health": "healthy",
-      "lock_status": "not-invoked",
-      "notification_summary": "N/A",
-      "terminal_status": "not-invoked"
-    },
-    {
-      "run_id": "2026-04-18T13:30:01.908368Z:scheduled",
-      "invoked_at": "2026-04-18T13:30:01.908368Z",
-      "invocation_source": "scheduled",
-      "due_decision": false,
-      "cycle_invoked": false,
-      "cycle_status": null,
-      "alerting_status": "N/A",
-      "heartbeat_health": "healthy",
-      "lock_status": "not-invoked",
-      "notification_summary": "N/A",
-      "terminal_status": "not-invoked"
-    },
-    {
-      "run_id": "2026-04-18T13:45:01.926652Z:scheduled",
-      "invoked_at": "2026-04-18T13:45:01.926652Z",
+      "run_id": "2026-04-18T17:00:20.913545Z:scheduled",
+      "invoked_at": "2026-04-18T17:00:20.913545Z",
       "invocation_source": "scheduled",
       "due_decision": true,
       "cycle_invoked": true,
@@ -93,8 +67,34 @@
       "terminal_status": "fail (code 1)"
     },
     {
-      "run_id": "2026-04-18T13:45:01.926661Z:scheduled",
-      "invoked_at": "2026-04-18T13:45:01.926661Z",
+      "run_id": "2026-04-18T17:00:20.913627Z:scheduled",
+      "invoked_at": "2026-04-18T17:00:20.913627Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "success",
+      "alerting_status": "success",
+      "heartbeat_health": "healthy",
+      "lock_status": "success",
+      "notification_summary": "ops\\events\\upcoming_schedule_alerting_cycle_summary.json",
+      "terminal_status": "success"
+    },
+    {
+      "run_id": "2026-04-18T23:00:01.933128Z:scheduled",
+      "invoked_at": "2026-04-18T23:00:01.933128Z",
+      "invocation_source": "scheduled",
+      "due_decision": true,
+      "cycle_invoked": true,
+      "cycle_status": "fail (code 1)",
+      "alerting_status": "skipped (lock guard failed)",
+      "heartbeat_health": "failed",
+      "lock_status": "fail (code 1)",
+      "notification_summary": "N/A",
+      "terminal_status": "fail (code 1)"
+    },
+    {
+      "run_id": "2026-04-18T23:00:01.933547Z:scheduled",
+      "invoked_at": "2026-04-18T23:00:01.933547Z",
       "invocation_source": "scheduled",
       "due_decision": true,
       "cycle_invoked": true,

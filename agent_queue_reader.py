@@ -75,28 +75,40 @@ class AgentQueueReader:
     def mark_row_completed(self, filename, match_field, match_value, status_field="status", completed_value="completed"):
         """
         Mark the row in the given queue file where match_field == match_value as completed.
+        Handles BOM-prefixed headers and normalizes all fieldnames and row keys.
         Returns True if successful, False and error message if not.
         """
+        def _norm(val):
+            if val is None:
+                return ""
+            return str(val).strip().lstrip('\ufeff')
+        norm_match_field = _norm(match_field)
+        norm_match_value = _norm(match_value)
         path = os.path.join(self.repo_root, filename)
         if not os.path.exists(path):
             return False, f"Queue file missing: {filename}"
         try:
-            with open(path, newline='', encoding='utf-8') as f:
+            with open(path, newline='', encoding='utf-8-sig') as f:
                 reader = csv.DictReader(f)
-                rows = list(reader)
-                fieldnames = reader.fieldnames
+                # Normalize fieldnames to remove BOM and whitespace
+                fieldnames = [str(fn).strip().lstrip('\ufeff') for fn in reader.fieldnames] if reader.fieldnames else []
+                rows = []
+                for row in reader:
+                    norm_row = {str(k).strip().lstrip('\ufeff'): (str(v).strip() if v is not None else v) for k, v in row.items()}
+                    rows.append(norm_row)
         except Exception as e:
             return False, f"Unreadable CSV in {filename}: {e}"
         found = False
         for row in rows:
-            if row.get(match_field) == match_value:
+            row_val = _norm(row.get(norm_match_field))
+            if row_val == norm_match_value:
                 row[status_field] = completed_value
                 found = True
                 break
         if not found:
             return False, f"No matching row found for {match_field}={match_value} in {filename}"
         try:
-            with open(path, 'w', newline='', encoding='utf-8') as f:
+            with open(path, 'w', newline='', encoding='utf-8-sig') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(rows)

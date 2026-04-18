@@ -23,6 +23,7 @@ def main():
     plan = task_dispatcher.plan_task(next_task)
     reporter.report_plan(plan)
 
+    # (Diagnostics removed)
     if args.execute:
         if plan.get("blocked"):
             print("[ERROR] No executable task: Blocked state.")
@@ -33,7 +34,6 @@ def main():
         if not supported:
             reporter.report_execute_blocked(plan)
             return
-        # Minimal test hook: simulate failures via environment variables
         simulate_artifact_fail = os.environ.get("AI_RISA_SIM_ARTIFACT_FAIL", "0") == "1"
         simulate_queue_ack_fail = os.environ.get("AI_RISA_SIM_QUEUE_ACK_FAIL", "0") == "1"
         def queue_ack_fn():
