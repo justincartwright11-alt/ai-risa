@@ -1,0 +1,326 @@
+[
+  {
+    "role": "user",
+    "content": "please run Prochazka vs Ulberg now",
+    "timestamp": "2026-04-20T13:00:24.917476Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Running event prochazka_vs_ulberg_now.",
+    "timestamp": "2026-04-20T13:00:24.918058Z",
+    "action": "run_event",
+    "normalized_event": "prochazka_vs_ulberg_now",
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "run Song vs Figueiredo tonight",
+    "timestamp": "2026-04-20T13:00:24.919450Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Running event song_vs_figueiredo_tonight.",
+    "timestamp": "2026-04-20T13:00:24.920172Z",
+    "action": "run_event",
+    "normalized_event": "song_vs_figueiredo_tonight",
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "run something unclear",
+    "timestamp": "2026-04-20T13:00:24.922355Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Please clarify your command.",
+    "timestamp": "2026-04-20T13:00:24.923228Z",
+    "action": "clarify",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "validate system",
+    "timestamp": "2026-04-20T13:00:24.925174Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "System is valid.",
+    "timestamp": "2026-04-20T13:00:24.926075Z",
+    "action": "validate_system",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "run Song vs Figueiredo tonight",
+    "timestamp": "2026-04-20T13:00:26.484110Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Running event song_vs_figueiredo_tonight.",
+    "timestamp": "2026-04-20T13:00:26.485151Z",
+    "action": "run_event",
+    "normalized_event": "song_vs_figueiredo_tonight",
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show integrity",
+    "timestamp": "2026-04-20T13:01:28.167435Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Readiness: ready\nEndpoint health: healthy\nAlignment: aligned\nArtifact health: healthy\nLedger health: healthy\nBlocker health: clear\nStale surface: fresh\nRecommendation: System is ready. No action needed.",
+    "timestamp": "2026-04-20T13:01:28.168879Z",
+    "action": "show_integrity",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show drift",
+    "timestamp": "2026-04-20T13:01:33.765098Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Pressure band drift: []\nEscalation drift: []\nReview drift: []\nBriefing drift: []\nArtifact drift: []\nBlocker drift: []\nStale surface drift: []\nUrgent event delta: []\nRecommendation: No operator action required.",
+    "timestamp": "2026-04-20T13:01:33.766523Z",
+    "action": "show_drift",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show watchlist",
+    "timestamp": "2026-04-20T13:23:03.212785Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.213765Z",
+    "action": "unknown",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show digest",
+    "timestamp": "2026-04-20T13:23:03.250824Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.251645Z",
+    "action": "unknown",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show escalations",
+    "timestamp": "2026-04-20T13:23:03.293653Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.294554Z",
+    "action": "unknown",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show review queue",
+    "timestamp": "2026-04-20T13:23:03.335671Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.336491Z",
+    "action": "unknown",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show briefing",
+    "timestamp": "2026-04-20T13:23:03.377177Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.378025Z",
+    "action": "show_briefing",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show portfolio",
+    "timestamp": "2026-04-20T13:23:03.415562Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.416495Z",
+    "action": "show_portfolio",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show control summary",
+    "timestamp": "2026-04-20T13:23:03.454055Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "",
+    "timestamp": "2026-04-20T13:23:03.455264Z",
+    "action": "show_control_summary",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show integrity",
+    "timestamp": "2026-04-20T13:23:03.492633Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Readiness: ready\nEndpoint health: healthy\nAlignment: aligned\nArtifact health: healthy\nLedger health: healthy\nBlocker health: clear\nStale surface: fresh\nRecommendation: System is ready. No action needed.",
+    "timestamp": "2026-04-20T13:23:03.493736Z",
+    "action": "show_integrity",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show drift",
+    "timestamp": "2026-04-20T13:23:09.119307Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Pressure band drift: []\nEscalation drift: []\nReview drift: []\nBriefing drift: []\nArtifact drift: []\nBlocker drift: []\nStale surface drift: []\nUrgent event delta: []\nRecommendation: No operator action required.",
+    "timestamp": "2026-04-20T13:23:09.120280Z",
+    "action": "show_drift",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show forecast",
+    "timestamp": "2026-04-20T13:23:22.807751Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Status: stable\nProjected Risk Bands: None\nEarly Warning Items: None\nUrgent Event Forecast: None\nRecommendation: No operator action required.",
+    "timestamp": "2026-04-20T13:23:22.808740Z",
+    "action": "show_forecast",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "user",
+    "content": "show response matrix",
+    "timestamp": "2026-04-20T13:24:03.297683Z",
+    "action": "",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  },
+  {
+    "role": "assistant",
+    "content": "Matrix Status: quiet\nTop Issue: none\nWhy It Matters: No material risk detected.\nFirst Surface: portfolio\nSecond Surface: control-summary\nThird Surface: drift\nRecommendation: Monitor dashboard as usual.",
+    "timestamp": "2026-04-20T13:24:03.299756Z",
+    "action": "show_response_matrix",
+    "normalized_event": null,
+    "details": "",
+    "error": null
+  }
+]

@@ -1,0 +1,2 @@
+# Build 16: Briefing endpoints and contract tests added
+# briefing_utils.py, /api/briefing, /api/queue/event/<event_id>/briefing, test_event_briefing.py

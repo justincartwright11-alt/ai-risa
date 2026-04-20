@@ -1,0 +1,124 @@
+from flask import Flask, render_template, request, jsonify
+import sys
+from pathlib import Path
+import subprocess
+import os
+from datetime import datetime
+import uuid
+
+app = Flask(__name__)
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+QUEUE_FILE = PROJECT_ROOT / 'event_coverage_queue.csv'
+LIVE_LOG = PROJECT_ROOT / 'docs' / 'live_release_window_log.md'
+MANIFEST = PROJECT_ROOT / 'docs' / 'runtime_release_manifest.md'
+GO_NO_GO = PROJECT_ROOT / 'docs' / 'operator_release_go_no_go_note.md'
+
+from operator_dashboard.evidence_utils import aggregate_event_evidence
+from operator_dashboard.queue_utils import safe_read_queue, summarize_queue, get_queue_row
+from operator_dashboard.comparison_utils import get_event_comparison
+from operator_dashboard.status_utils import get_status
+import operator_dashboard.chat_actions as chat_actions
+from operator_dashboard.chat_history_utils import load_chat_history, append_chat_message
+from operator_dashboard.action_ledger_utils import append_ledger_entry, make_entry
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/status', methods=['GET'])
+def api_status():
+    try:
+        status = get_status()
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({
+            'ok': False,
+            'error': str(e),
+            'app_name': 'AI-RISA Local Operator Dashboard',
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        }), 500
+
+@app.route('/chat/send', methods=['POST'])
+def chat_send():
+    data = request.get_json()
+    message = data.get('message', '')
+    
+    # Check for malformed history test case: history should be a list if present
+    history = data.get('history')
+    if history is not None and not isinstance(history, list):
+         return jsonify({'error': 'Malformed history'}), 400
+         
+    parsed = chat_actions.parse_chat_command(message)
+    
+    # Use chat_actions to handle the command
+    result = chat_actions.handle_chat_action(parsed, str(PROJECT_ROOT))
+    
+    # Add to history
+    append_chat_message('user', message)
+    append_chat_message('assistant', result.get('response', ''), 
+                        action=result.get('action'), 
+                        normalized_event=result.get('normalized_event'))
+
+    # Ensure all contract fields are present
+    response_data = {
+        'ok': result.get('ok', result.get('success', False)),
+        'action': result.get('action', parsed.get('action', 'unknown')),
+        'response': result.get('response', ''),
+        'normalized_event': result.get('normalized_event', parsed.get('normalized_event')),
+        'details': result.get('details', ''),
+        'error': result.get('error'),
+        'timestamp': result.get('timestamp', datetime.utcnow().isoformat() + 'Z')
+    }
+    return jsonify(response_data)
+
+@app.route('/chat/history', methods=['GET'])
+def chat_history():
+    return jsonify(load_chat_history())
+
+@app.route('/api/queue/event/<event_id>/evidence', methods=['GET'])
+def api_event_evidence(event_id):
+    try:
+        evidence = aggregate_event_evidence(event_id)
+        return jsonify(evidence)
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+@app.route('/api/queue/event/<event_id>/comparison', methods=['GET'])
+def api_event_comparison(event_id):
+    try:
+        result = get_event_comparison(event_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'ok': False, 'event_id': event_id, 'errors': [str(e)]}), 500
+
+@app.route('/run_local_ai', methods=['POST'])
+def run_local_ai():
+    args = [sys.executable, str(PROJECT_ROOT / 'ai_risa_local_agent.py'), '--execute']
+    try:
+        result = subprocess.run(args, capture_output=True, text=True, check=False, cwd=str(PROJECT_ROOT))
+        return jsonify({'stdout': result.stdout, 'stderr': result.stderr, 'returncode': result.returncode})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+from operator_dashboard.portfolio_utils import aggregate_portfolio, aggregate_event_portfolio
+# Build 18: Portfolio endpoints
+@app.route('/api/portfolio', methods=['GET'])
+def api_portfolio():
+    try:
+        result = aggregate_portfolio()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+@app.route('/api/queue/event/<event_id>/portfolio', methods=['GET'])
+def api_event_portfolio(event_id):
+    try:
+        result = aggregate_event_portfolio(event_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'ok': False, 'event_id': event_id, 'errors': [str(e)]}), 500
+
