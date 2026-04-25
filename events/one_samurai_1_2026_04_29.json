@@ -1,0 +1,73 @@
+{
+  "event_id": "one_samurai_1_2026_04_29",
+  "event_name": "ONE SAMURAI 1",
+  "event_date": "2026-04-29",
+  "event_time_local": "3:30PM GMT+10",
+  "venue": "Ariake Arena",
+  "location": "Tokyo, Japan",
+  "source": {
+    "publisher": "ONE Championship",
+    "url": "https://www.onefc.com/events/one-samurai-1/",
+    "type": "official"
+  },
+  "bouts": [
+    {
+      "fighter_a": "Rodtang Jitmuangnon",
+      "fighter_b": "Takeru Segawa"
+    },
+    {
+      "fighter_a": "Yuya Wakamatsu",
+      "fighter_b": "Avazbek Kholmirzaev"
+    },
+    {
+      "fighter_a": "Jonathan Haggerty",
+      "fighter_b": "Yuki Yoza"
+    },
+    {
+      "fighter_a": "Ayaka Miura",
+      "fighter_b": "Chihiro Sawada"
+    },
+    {
+      "fighter_a": "Hiroki Akimoto",
+      "fighter_b": "Taimu Hisai"
+    },
+    {
+      "fighter_a": "Hiromi Wajima",
+      "fighter_b": "Ricardo Bravo"
+    },
+    {
+      "fighter_a": "Itsuki Hirata",
+      "fighter_b": "Ritu Phogat"
+    },
+    {
+      "fighter_a": "Tatsumitsu Wada",
+      "fighter_b": "Seiichiro Ito"
+    },
+    {
+      "fighter_a": "Keito Yamakita",
+      "fighter_b": "Ryohei Kurosawa"
+    },
+    {
+      "fighter_a": "Shimon Yoshinari",
+      "fighter_b": "Johan Ghazali"
+    },
+    {
+      "fighter_a": "Toma Kuroda",
+      "fighter_b": "Toki Tamaru"
+    },
+    {
+      "fighter_a": "Kanata Nagai",
+      "fighter_b": "Atsubo Kambe"
+    }
+  ],
+  "exclusions": {
+    "total_card_pairs_seen": 15,
+    "excluded_count": 3,
+    "excluded_reason": "not fully named two-fighter bouts",
+    "excluded_pairs": [
+      "Nadaka vs Songchainoi Kiatsongrit",
+      "Marat Grigorian vs Kaito",
+      "Hyu vs Taiki Naito"
+    ]
+  }
+}
