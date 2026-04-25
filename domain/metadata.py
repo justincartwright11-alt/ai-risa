@@ -1,3 +1,72 @@
+import json
+import os
+import re
+
+
+def _slugify_event_name(name):
+    if not isinstance(name, str):
+        return ""
+    slug = re.sub(r"[^a-z0-9]+", "_", name.strip().lower())
+    return re.sub(r"_+", "_", slug).strip("_")
+
+
+def _extract_bouts_from_event_json(event_payload):
+    if not isinstance(event_payload, dict):
+        return []
+    bout_keys = ["bouts", "fights", "card", "matchups"]
+    for key in bout_keys:
+        if isinstance(event_payload.get(key), list):
+            return event_payload.get(key)
+    for key in ["event", "details", "payload"]:
+        container = event_payload.get(key)
+        if isinstance(container, dict):
+            for bkey in bout_keys:
+                if isinstance(container.get(bkey), list):
+                    return container.get(bkey)
+    return []
+
+
+def _resolve_event_source_path(task):
+    # Highest-precedence: explicit source path in queue/task payload.
+    source_path = task.get("source_path")
+    if isinstance(source_path, str) and source_path.strip():
+        candidate = source_path.strip()
+        if os.path.exists(candidate):
+            return candidate
+
+    # Deterministic fallback: derive from event_name + event_date.
+    event_name = task.get("event_name")
+    event_date = task.get("event_date")
+    slug = _slugify_event_name(event_name)
+    if not slug:
+        return None
+
+    events_dir = "events"
+    if not os.path.isdir(events_dir):
+        return None
+
+    date_token = ""
+    if isinstance(event_date, str):
+        date_token = event_date.strip().replace("-", "_")
+
+    exact_name = f"{slug}_{date_token}.json" if date_token else f"{slug}.json"
+    exact_path = os.path.join(events_dir, exact_name)
+    if os.path.exists(exact_path):
+        return exact_path
+
+    # Safe fallback search limited to events/ directory.
+    candidates = []
+    for filename in os.listdir(events_dir):
+        if not filename.lower().endswith(".json"):
+            continue
+        base = filename[:-5].lower()
+        if slug in base and (not date_token or date_token in base):
+            candidates.append(os.path.join(events_dir, filename))
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
 def extract_bouts_from_payload(task):
     """
     Extract bouts from a variety of likely keys and nested containers in the event payload.
@@ -20,6 +89,16 @@ def extract_bouts_from_payload(task):
     for v in task.values():
         if isinstance(v, list):
             return v
+    source_path = _resolve_event_source_path(task)
+    if source_path:
+        try:
+            with open(source_path, "r", encoding="utf-8") as f:
+                event_payload = json.load(f)
+            bouts = _extract_bouts_from_event_json(event_payload)
+            if isinstance(bouts, list):
+                return bouts
+        except Exception:
+            return []
     return []
 
 def normalize_bout_candidate(bout, idx):
