@@ -1,0 +1,47 @@
+{
+  "event_name": "ONE SAMURAI 1",
+  "task_type": "event_decomposition",
+  "source_queue": "event_coverage_queue.csv",
+  "task": {
+    "event_name": "ONE SAMURAI 1",
+    "event_date": "2026-04-29",
+    "sport": "mixed_rules",
+    "ruleset": "mixed_rules",
+    "status": "QUEUED",
+    "retry_count": "0",
+    "last_error": "",
+    "task_type": "event_decomposition"
+  },
+  "decomposition_status": "incomplete",
+  "event_metadata": {
+    "event_name": "ONE SAMURAI 1",
+    "event_date": "2026-04-29",
+    "event_type": null,
+    "promotion": null,
+    "venue": null,
+    "location": null
+  },
+  "discovered_bout_slots": [],
+  "processing_summary": {
+    "input_bout_count": 0,
+    "input_bouts": 0,
+    "normalized_bout_count": 0,
+    "normalized_bouts": 0,
+    "invalid_bout_count": 0,
+    "bout_errors": [],
+    "title_fight_count": 0,
+    "weight_classes_seen": [],
+    "normalization_actions": [],
+    "event_fields": [
+      "event_date",
+      "event_name",
+      "event_type",
+      "location",
+      "promotion",
+      "venue"
+    ],
+    "status": "no_valid_bouts"
+  },
+  "version": "ai-risa-phase3",
+  "generated_at": "2026-04-25T13:04:49Z"
+}
