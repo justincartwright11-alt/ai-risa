@@ -1,0 +1,2954 @@
+{
+  "unknown_risky": {
+    "count": 133,
+    "items": [
+      {
+        "status": "M",
+        "path": "agent_queue_reader.py"
+      },
+      {
+        "status": "M",
+        "path": "docs/operator_runbook.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/operator_runtime_runbook.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/runtime_release_manifest.md"
+      },
+      {
+        "status": "M",
+        "path": "incoming/upcoming_events.json"
+      },
+      {
+        "status": "M",
+        "path": "incoming/upcoming_events_conflicts.json"
+      },
+      {
+        "status": "M",
+        "path": "incoming/upcoming_events_ingest_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_alert.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_alert.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_alert_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_alerting_cycle_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cadence_run.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cadence_run.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cadence_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cycle_lock_guard.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cycle_lock_guard.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cycle_report.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_cycle_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_ledger.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_ledger.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_ledger_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_delivery_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_retry_dispatch_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_retry_exhaustion_dead_letter_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_retry_history_ledger_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_retry_policy.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_email_retry_policy_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_acknowledgement_runtime_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_acknowledgement_runtime_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_assignment_runtime_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_assignment_runtime_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_runtime_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_runtime_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_sla_runtime_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_manual_intervention_sla_runtime_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_outbox_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_runtime_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_dead_letter_notification_runtime_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_delivery_history_ledger.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_delivery_history_ledger.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_retry_dispatch_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_retry_policy.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_retry_policy.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_retry_policy_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_routing.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_email_routing.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_notification_delivery.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_notification_delivery.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_notification_delivery_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_notification_outbox_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_escalation_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_heartbeat.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_heartbeat.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_delivery.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_delivery.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_delivery_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_outbox.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_outbox.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_notification_outbox_state.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_queue_promotion.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_queue_promotion.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_runtime_escalation_notification_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_runtime_escalation_notification_summary.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_runtime_history.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_runtime_history.md"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_scheduler_launch.json"
+      },
+      {
+        "status": "M",
+        "path": "ops/events/upcoming_schedule_scheduler_launch.md"
+      },
+      {
+        "status": "M",
+        "path": "output/dependency_resolution_summary.csv"
+      },
+      {
+        "status": "M",
+        "path": "output/dependency_resolution_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "output/dry_run/event_batch_run_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "output/event_batch_run_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "output/full_pipeline_run_summary.csv"
+      },
+      {
+        "status": "M",
+        "path": "output/full_pipeline_run_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "output/prediction_queue.csv"
+      },
+      {
+        "status": "M",
+        "path": "output/prediction_queue.json"
+      },
+      {
+        "status": "M",
+        "path": "output/prediction_queue_build_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "output/prediction_queue_run_summary.csv"
+      },
+      {
+        "status": "M",
+        "path": "output/prediction_queue_run_summary.json"
+      },
+      {
+        "status": "M",
+        "path": "report_render_assets.py"
+      },
+      {
+        "status": "M",
+        "path": "report_template_config.py"
+      },
+      {
+        "status": "M",
+        "path": "report_visual_asset_producer.py"
+      },
+      {
+        "status": "M",
+        "path": "runs/run_history_index.json"
+      },
+      {
+        "status": "??",
+        "path": "_content_outlier_audit_10.py"
+      },
+      {
+        "status": "??",
+        "path": "_content_path_probe.py"
+      },
+      {
+        "status": "??",
+        "path": "_content_quality_preexport.py"
+      },
+      {
+        "status": "??",
+        "path": "_content_quality_sample.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_control_debug_pdf.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_control_final_pdf.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_method_debug.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_pdf_images.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_pdf_images_final.py"
+      },
+      {
+        "status": "??",
+        "path": "_extract_radar_debug.py"
+      },
+      {
+        "status": "??",
+        "path": "_inspect_debug3_comparison_path.py"
+      },
+      {
+        "status": "??",
+        "path": "_line_refs.py"
+      },
+      {
+        "status": "??",
+        "path": "_live_stability_sweep.py"
+      },
+      {
+        "status": "??",
+        "path": "brand_assets/"
+      },
+      {
+        "status": "??",
+        "path": "check_branded_pack_v3.py"
+      },
+      {
+        "status": "??",
+        "path": "check_final.py"
+      },
+      {
+        "status": "??",
+        "path": "check_rc1.py"
+      },
+      {
+        "status": "??",
+        "path": "dashboard_live.html"
+      },
+      {
+        "status": "??",
+        "path": "docs/backlog_selection_checkpoint.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/backlog_status.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/digest_drift_forecast_requirements.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/new_fight_operator_runbook.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/new_fight_shift_handoff_one_page.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/panel_enhancements_completion_note.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/release_manifest.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/release_notes.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/release_validation_summary.md"
+      },
+      {
+        "status": "??",
+        "path": "get_anomalies.py"
+      },
+      {
+        "status": "??",
+        "path": "get_ids.py"
+      },
+      {
+        "status": "??",
+        "path": "\"matchups/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az.json\""
+      },
+      {
+        "status": "??",
+        "path": "predictions/glory_107_wisse_vs._kwasi_2026_04_26_glory_107_wisse_vs._kwasi_2026_04_26_b01.json"
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/Bahram Rajabzadeh_visual_manifest.json\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/Oleksandr Usyk_visual_manifest.json\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/Song Yadong_visual_manifest.json\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_control_shift.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_heat_map.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_method_chart.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_premium_metric_comparison.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_radar.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/alfonso_franklin_vs_jhonoven_ure\\303\\261a_visual_manifest.json\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_control_shift.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_heat_map.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_method_chart.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_premium_metric_comparison.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_radar.png\""
+      },
+      {
+        "status": "??",
+        "path": "\"report_assets/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_visual_manifest.json\""
+      },
+      {
+        "status": "??",
+        "path": "\"reports/alfonso_franklin_vs_jhonoven_ure\\303\\261a_premium_v4.pdf\""
+      },
+      {
+        "status": "??",
+        "path": "\"reports/nikita_tszyu_vs_\\303\\263scar_d\\303\\255az_premium_v4.pdf\""
+      },
+      {
+        "status": "??",
+        "path": "start_operator_dashboard.bat"
+      }
+    ]
+  },
+  "intentional_ai_risa_work": {
+    "count": 369,
+    "items": [
+      {
+        "status": "M",
+        "path": "ai_risa_report_exporter.py"
+      },
+      {
+        "status": "M",
+        "path": "ai_risa_report_output_adapter.py"
+      },
+      {
+        "status": "M",
+        "path": "fighters/alex_pereira.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/carlos_ulberg.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/charles_oliveira.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/deiveson_figueiredo.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/dricus_du_plessis.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_aljamain_sterling.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_carlos_ulberg.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_charles_oliveira.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_deiveson_figueiredo.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_jiri_prochazka.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/fighter_renato_moicano.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/israel_adesanya.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/jiri_prochazka.json"
+      },
+      {
+        "status": "M",
+        "path": "fighters/manual_profile_enrichment.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/renato_moicano.json"
+      },
+      {
+        "status": "D",
+        "path": "fighters/tim_tszyu.json"
+      },
+      {
+        "status": "M",
+        "path": "matchups/jiri_prochazka_vs_carlos_ulberg.json"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/README.md"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/action_ledger.jsonl"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/anomaly_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/app.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/briefing_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/chat_actions.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/chat_history.json"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/chat_history_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/comparison_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/control_summary_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/digest_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/drift_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/escalation_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/evidence_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/forecast_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/integrity_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/portfolio_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/queue_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/review_queue_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/safe_path_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/templates/index.html"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/test_chat_contract.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/test_control_summary.py"
+      },
+      {
+        "status": "D",
+        "path": "operator_dashboard/test_event_evidence_fixed.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/test_queue_actions.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/timeline_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "operator_dashboard/watchlist_utils.py"
+      },
+      {
+        "status": "M",
+        "path": "run_single_fight_premium_report.py"
+      },
+      {
+        "status": "M",
+        "path": "run_ufc_fn_adesanya_pyfer.py"
+      },
+      {
+        "status": "??",
+        "path": "ai_risa_report_output_adapter_new.py"
+      },
+      {
+        "status": "??",
+        "path": "fighters/anthony_joshua.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/bahram_rajabzadeh.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/canonical_fighter_enrichment.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/canonical_fighter_registry.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/chico_kwasi.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/donovan_wisse.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_alem_begic.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_alex_perez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_alexander_volkov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ali_sserunkuma.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_alice_ardelean.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_almeida.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_alonzo_menifield.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_andre_petroski.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_angela_hill.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_aoriqileng.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ariane_carnelossi.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_arnold_allen.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ateba_gautier.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_atsubo_kambe.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_avazbek_kholmirzaev.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ayaka_miura.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_baisangur_susurkaev.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_basem_mamdouh.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_batochir_batsaikhan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_belal_muhammad.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ben_woolliss.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_benardo_sopaj.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_beneil_dariush.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_benjamin_johnston.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_billy_elekana.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_brando_pericic.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_brendan_allen.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_bruno_silva.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_bryce_mitchell.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_cam_rowston.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_cameron_smotherman.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_carlo_bumina_ang.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_carlos_prates.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_chankrit_manop_gym.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_chelsea_chandler.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_chen_jiayi.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_chihiro_sawada.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_clayton_carpenter.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_cody_haddon.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_colby_thicknesse.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_daniel_barez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_daniel_santos.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_diogo_reis.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_djorden_santos.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_dom_mar_fan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_donking_yotharakmuaythai.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_dooho_choi.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_dricus_du_plessis.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_edgar_chairez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_edmen_shahbazyan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_eric_mcconico.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_eric_mcconico_premium_report.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_errol_spence_jr.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_fabio_henrique.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_fakhriddin_khasanov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_fares_ziam.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_felipe_lobo.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_frank_sanchez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_gabriel_bonfim.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_gerald_meerschaert.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_giorgia_pieropan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_grant_dawson.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_hamzah_sheeraz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_hiroki_akimoto.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_hiromi_wajima.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_imanol_rodriguez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_israel_adesanya.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_itsuki_hirata.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ivan_erslan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_iwo_baraniewski.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jack_catterall.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jack_della_maddalena.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jacob_malkoun.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jacqueline_cavalcanti.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jailton_almeida.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jake_matthews.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jakub_wiklacz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jamar_talley.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jaqueline_amorim.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jarrell_miller.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jeisla_chaves.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jeremiah_wells.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jeremy_stephens.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jesus_aguilar.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jingnan_xiong.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_joanderson_brito.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_joaquin_buckley.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_joel_alvarez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_johan_ghazali.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_johanna_persson.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jonathan_haggerty.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jonathan_micallef.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jordan_leavitt.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_jose_ochoa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_joselyne_edwards.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_joshua_van.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_juan_diaz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_junior_tafa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_kai_asakura.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_kanata_nagai.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_kati_mor_rajabhatkorat.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_keito_yamakita.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ketlen_souza.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ketlen_vieira.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_kevin_christian.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_khamzat_chimaev.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_klinphaka_por_thaisong.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_kody_steele.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_lamsing_t1_fight_academy.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_lenier_pero.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_loma_lookboonmee.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_louie_sutherland.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_luana_pinheiro.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_luis_dias_de_assis.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_luis_gurule.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_mai_soliman.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_malcolm_wellmaker.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_marat_grigorian.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_marco_tulio.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_marcus_mcghee.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_mariah_turner.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_martin_parra.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_martyna_dominczak.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_mateusz_rebecki.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_matt_schnell.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_melquizael_costa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_michael_kalyalya.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_miller.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_mizuki_hiruta.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_modestas_bukauskas.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_mohamed_mabrouk_yehya.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_muslim_salikhov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_nahyan_mohammed.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_nicolas_dalby.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_nicolle_caliari.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_nikita_tszyu.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_niko_aikonen.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_nontachai_jitmuangnon.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_norma_dumont.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_omar_hikal.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_oscar_diaz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ozzy_diaz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_panpadej_nf_looksuan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_pat_sabatini.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_pet_suanluangrodyok.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_petchtanong_petchfergus.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_petmuangsri_torfunfarm.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_petmuangthai_sor_naruemon.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_polyana_viana.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_priscila_cachoeira.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_quillan_salkilld.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_rei_tsuruya.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_reiji_takaki.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ricardo_bravo.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ricardo_sanchez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_richard_torrez_jr.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ritu_phogat.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_robert_bryczek.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_rodolfo_bellato.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_rodolfo_vieira.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_rodtang_jitmuangnon.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_roman_kopylov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_rory_turner.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ruslan_bolkvadze.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ryan_spann.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ryohei_kurosawa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ryuki_kawano.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_sean_brady.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_sean_strickland.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_seiichiro_ito.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_sergei_pavlovich.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_shakhram_giyasov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_shamil_gasanov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_shamil_gaziev.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_shauna_bannon.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_sheng_yi_hang.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_shimon_yoshinari.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_skye_nicolson.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_song_yadong.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_songchainoi_kiatsongrit.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_steve_erceg.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_sumudaerji.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tai_tuivasa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_taiki_naito.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_taimu_hisai.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_takeru_segawa.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tallison_teixeira.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tang_kai.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tatsumitsu_wada.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tatsuro_taira.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tessa_de_kom.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_themba_gorimbo.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_thoan_nguyen_thanh.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_thomas_gantt.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tim_elliott.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tim_tszyu.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_timmy_cuamba.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_toki_tamaru.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tom_nolan.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_toma_kuroda.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_trey_ogden.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_tuco_tokkos.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_ubaid_hussain.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_victor_henry.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_vince_morales.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_waldo_cortes_acosta.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_wes_schultz.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_william_gomis.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yaroslav_amosov.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yi_sak_lee.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yosuke_saruta.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_youssef_zalal.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yuki_takahashi.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yuki_yoza.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yuneisy_duben.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_yuya_wakamatsu.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_zalal.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/fighter_zhang_mingyang.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/gervonta_davis.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/magomed_ankalaev.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/oleksandr_usyk.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/rico_verhoeven.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/saul_alvarez.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/shakur_stevenson.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/terence_crawford.json"
+      },
+      {
+        "status": "??",
+        "path": "fighters/tyson_fury.json"
+      },
+      {
+        "status": "??",
+        "path": "generate_v4_premium_reports.py"
+      },
+      {
+        "status": "??",
+        "path": "matchups/alex_pereira_vs_johnny_walker.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/alex_pereira_vs_magomed_ankalaev.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/alex_pereira_vs_oleksandr_usyk.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/aljamain_sterling_vs_youssef_zalal.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/aljamain_sterling_vs_youssef_zalal_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/almeida_vs_ryan_spann.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/angela_hill_vs_luana_pinheiro.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/bahram_rajabzadeh_vs_donovan_wisse.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/bahram_rajabzadeh_vs_donovan_wisse_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/basem_mamdouh_vs_jamar_talley.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/canonical_matchup_registry.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/charles_oliveira_vs_renato_moicano.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/donovan_wisse_vs_chico_kwasi.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/frank_sanchez_vs_richard_torrez_jr.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/gervonta_davis_vs_shakur_stevenson.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/hamzah_sheeraz_vs_alem_begic.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/holly_holm_vs_kayla_harrison_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/jack_catterall_vs_shakhram_giyasov.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/jailton_almeida_vs_ryan_spann.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/jailton_almeida_vs_ryan_spann_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/jarrell_miller_vs_lenier_pero.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/jarrell_miller_vs_lenier_pero_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/johnny_walker_vs_oleksandr_usyk.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/kai_asakura_vs_cameron_smotherman.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/mizuki_hiruta_vs_mai_soliman.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/mohamed_mabrouk_yehya_vs_michael_kalyalya.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/muslim_salikhov_vs_jake_matthews.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/nikita_tszyu_vs_oscar_diaz.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/nikita_tszyu_vs_oscar_diaz_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/norma_dumont_vs_joselyne_edwards.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/norma_dumont_vs_joselyne_edwards_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/oleksandr_usyk_vs_rico_verhoeven.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/oleksandr_usyk_vs_rico_verhoeven_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/omar_hikal_vs_ali_sserunkuma.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/rodolfo_vieira_vs_eric_mcconico.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/rodolfo_vieira_vs_eric_mcconico_premium_report.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/rodolfo_vieira_vs_eric_mcconico_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/saul_alvarez_vs_terence_crawford.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/sergei_pavlovich_vs_tallison_teixeira.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/skye_nicolson_vs_mariah_turner.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/skye_nicolson_vs_mariah_turner_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/song_yadong_vs_deiveson_figueiredo.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/song_yadong_vs_deiveson_figueiredo_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/sumudaerji_vs_daniel_marcos.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/tim_tszyu_vs_denis_nurja_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/tim_tszyu_vs_errol_spence_jr..json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/tim_tszyu_vs_errol_spence_jr.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/tim_tszyu_vs_errol_spence_jr_premium_sections.json"
+      },
+      {
+        "status": "??",
+        "path": "matchups/tyson_fury_vs_anthony_joshua.json"
+      },
+      {
+        "status": "??",
+        "path": "migrate_canonical_fighter_registry.py"
+      },
+      {
+        "status": "??",
+        "path": "migrate_canonical_matchup_registry.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/anomaly_blocker_explanation_requirements.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/auto_intake_log.jsonl"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/calibration_review.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/canonical_fighter_db.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/canonical_matchup_db.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/fighter_auto_intake.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/file.jpe"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/freshness_utils.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/known_issues.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/matchup_operator.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/next_slices_plan.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/operator_feedback_intake_template.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/phase1_ops.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/post_release_triage.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/premium_sidecar_generator.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/queue_transparency_requirements.md"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/real_result_searcher.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/report_scoring.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_anomaly_blocker_explanation.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_anomaly_blocker_explanation_ui.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_canonical_fighter_db.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_canonical_matchup_resolution.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_chat_matchup_intake.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_chat_natural_language.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_event_evidence_fixed.retired.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_fighter_auto_intake.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_operator_matchup_workflow.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_phase1_ops.py"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_transparency.py"
+      },
+      {
+        "status": "??",
+        "path": "ops/apply_tier1_enrichment_to_canonical.py"
+      },
+      {
+        "status": "??",
+        "path": "ops/apply_tier1_intake_to_canonical.py"
+      },
+      {
+        "status": "??",
+        "path": "render_pdf_pages.py"
+      },
+      {
+        "status": "??",
+        "path": "render_rc1_pages.py"
+      },
+      {
+        "status": "??",
+        "path": "test_chat_parsing.py"
+      },
+      {
+        "status": "??",
+        "path": "verify_logic.py"
+      },
+      {
+        "status": "??",
+        "path": "verify_pdf.py"
+      }
+    ]
+  },
+  "runtime_event_intake_untouched": {
+    "count": 47,
+    "items": [
+      {
+        "status": "M",
+        "path": "event_coverage_queue.csv"
+      },
+      {
+        "status": "M",
+        "path": "event_decomposition_song_vs_figueiredo.json"
+      },
+      {
+        "status": "M",
+        "path": "events/glory_107_2026_04_26.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_glory_107_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_one_fight_night_43_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_one_friday_fights_149_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_one_friday_fights_151_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_one_samurai_1_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_pfl_chicago_2026_04_11_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_prochazka_vs_ulberg_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_song_vs_figueiredo_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_ufc_328_chimaev_vs_strickland_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_ufc_fight_night_allen_vs_costa_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_ufc_fight_night_della_maddalena_vs_prates_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_ufc_fight_night_muhammad_vs_bonfim_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/runtime_tier1_lane_ufc_fight_night_song_vs_figueiredo_freeze_2026_04_25.md"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ONE_Friday_Fights_151.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_glory_107.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_nikita_tszyu_vs_oscar_diaz.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_one_fight_night_43_tang_vs_gasanov.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_one_friday_fights_149.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_one_samurai_1.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_pfl_chicago_2026_04_11.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_prochazka_vs_ulberg.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_song_vs_figueiredo_tonight.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_the_inner_circle.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ufc_328_chimaev_vs_strickland.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ufc_fight_night_allen_vs_costa.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ufc_fight_night_della_maddalena_vs_prates.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ufc_fight_night_muhammad_vs_bonfim.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_ufc_fight_night_song_vs_figueiredo.json"
+      },
+      {
+        "status": "??",
+        "path": "event_decomposition_usyk_vs_rico.json"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_glory_107_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_one_fight_night_43_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_one_friday_fights_149_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_one_friday_fights_151_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_one_samurai_1_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_pfl_chicago_2026_04_11_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_prochazka_vs_ulberg_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_song_vs_figueiredo_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_tracking/"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_ufc_328_chimaev_vs_strickland_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_ufc_fight_night_allen_vs_costa_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_ufc_fight_night_della_maddalena_vs_prates_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_ufc_fight_night_muhammad_vs_bonfim_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_ufc_fight_night_song_vs_figueiredo_tier1.csv"
+      },
+      {
+        "status": "??",
+        "path": "ops/intake_usyk_vs_rico_tier1.csv"
+      }
+    ]
+  },
+  "generated_cache_log_temp": {
+    "count": 184,
+    "items": [
+      {
+        "status": "D",
+        "path": "reports/ares_fc_39_2026_04_03_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/boxing_cardiff_2026_04_04_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/boxing_queens_of_the_ring_london_2026_04_03_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/lfa_230_2026_04_03_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/pfl_africa_pretoria_2026_04_10_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/pfl_chicago_2026_04_11_full_prim_report.pdf"
+      },
+      {
+        "status": "D",
+        "path": "reports/ufc_327_2026_04_11_full_prim_report.pdf"
+      },
+      {
+        "status": "??",
+        "path": "debug_israel.txt"
+      },
+      {
+        "status": "??",
+        "path": "debug_jiri.txt"
+      },
+      {
+        "status": "??",
+        "path": "debug_stderr.txt"
+      },
+      {
+        "status": "??",
+        "path": "debug_stdout.txt"
+      },
+      {
+        "status": "??",
+        "path": "full_test_log.txt"
+      },
+      {
+        "status": "??",
+        "path": "operator_dashboard/test_event_evidence_fixed.retired.txt"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/alex_pereira_vs_magomed_ankalaev_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/aljamain_sterling_vs_youssef_zalal_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/bahram_rajabzadeh_vs_donovan_wisse_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/charles_oliveira_vs_renato_moicano_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_aboubakar_jbalia_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_bahram_rajabzadeh_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_ioan_croft_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_israel_adesanya_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_jiri_prochazka_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_oleksandr_usyk_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/fighter_song_yadong_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/gervonta_davis_vs_shakur_stevenson_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/israel_adesanya_vs_dricus_du_plessis_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jailton_almeida_vs_ryan_spann_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jailton_almeida_vs_ryan_spann_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jailton_almeida_vs_ryan_spann_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jailton_almeida_vs_ryan_spann_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jailton_almeida_vs_ryan_spann_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_radar_debug4.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jarrell_miller_vs_lenier_pero_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/jiri_prochazka_vs_carlos_ulberg_2025_01_01_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/nikita_tszyu_vs_oscar_diaz_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/norma_dumont_vs_joselyne_edwards_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/oleksandr_usyk_vs_rico_verhoeven_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_control_debug2/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_control_final/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_debug2/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_final/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_method_debug/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/pdf_extract_radar_debug/"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_premium_report_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/rodolfo_vieira_vs_eric_mcconico_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/saul_alvarez_vs_terence_crawford_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/skye_nicolson_vs_mariah_turner_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/song_yadong_vs_deiveson_figueiredo_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_denis_nurja_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_errol_spence_jr_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_errol_spence_jr_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_errol_spence_jr_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_errol_spence_jr_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tim_tszyu_vs_errol_spence_jr_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_control_shift.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_heat_map.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_method_chart.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_premium_metric_comparison.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_radar.png"
+      },
+      {
+        "status": "??",
+        "path": "report_assets/tyson_fury_vs_anthony_joshua_visual_manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "report_log_1.txt"
+      },
+      {
+        "status": "??",
+        "path": "report_log_2.txt"
+      },
+      {
+        "status": "??",
+        "path": "reports/alex_pereira_vs_magomed_ankalaev_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/alfonso_franklin_vs_jhonoven_urena_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/aljamain_sterling_vs_youssef_zalal_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/bahram_rajabzadeh_vs_donovan_wisse_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/gervonta_davis_vs_shakur_stevenson_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/israel_adesanya_vs_dricus_du_plessis_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/jarrell_miller_vs_lenier_pero_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/jiri_prochazka_vs_carlos_ulberg_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/nikita_tszyu_vs_oscar_diaz_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/norma_dumont_vs_joselyne_edwards_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/oleksandr_usyk_vs_rico_verhoeven_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/oleksandr_usyk_vs_rico_verhoeven_premium_v5.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/output_text.txt"
+      },
+      {
+        "status": "??",
+        "path": "reports/rodolfo_vieira_vs_eric_mcconico_premium_report_premium_v3.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/rodolfo_vieira_vs_eric_mcconico_premium_v3.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/rodolfo_vieira_vs_eric_mcconico_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/saul_alvarez_vs_terence_crawford_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/skye_nicolson_vs_mariah_turner_premium_global_fix.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/skye_nicolson_vs_mariah_turner_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/song_yadong_vs_deiveson_figueiredo_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/tim_tszyu_vs_denis_nurja_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/tim_tszyu_vs_errol_spence_jr_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "reports/tyson_fury_vs_anthony_joshua_premium_v4.pdf"
+      },
+      {
+        "status": "??",
+        "path": "result1.txt"
+      },
+      {
+        "status": "??",
+        "path": "result2.txt"
+      },
+      {
+        "status": "??",
+        "path": "result3.txt"
+      },
+      {
+        "status": "??",
+        "path": "result4.txt"
+      },
+      {
+        "status": "??",
+        "path": "result5.txt"
+      },
+      {
+        "status": "??",
+        "path": "results.log"
+      },
+      {
+        "status": "??",
+        "path": "results/"
+      },
+      {
+        "status": "??",
+        "path": "run_report_1.log"
+      },
+      {
+        "status": "??",
+        "path": "run_report_2.log"
+      },
+      {
+        "status": "??",
+        "path": "server_log.txt"
+      },
+      {
+        "status": "??",
+        "path": "test_err.txt"
+      },
+      {
+        "status": "??",
+        "path": "test_out.txt"
+      },
+      {
+        "status": "??",
+        "path": "test_results.txt"
+      },
+      {
+        "status": "??",
+        "path": "tmp/"
+      }
+    ]
+  }
+}
