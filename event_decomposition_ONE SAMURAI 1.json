@@ -12,7 +12,7 @@
     "last_error": "",
     "task_type": "event_decomposition"
   },
-  "decomposition_status": "incomplete",
+  "decomposition_status": "decomposed",
   "event_metadata": {
     "event_name": "ONE SAMURAI 1",
     "event_date": "2026-04-29",
@@ -21,17 +21,175 @@
     "venue": null,
     "location": null
   },
-  "discovered_bout_slots": [],
+  "discovered_bout_slots": [
+    {
+      "bout_index": 0,
+      "fighter_a": "Rodtang Jitmuangnon",
+      "fighter_b": "Takeru Segawa",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 1,
+      "fighter_a": "Yuya Wakamatsu",
+      "fighter_b": "Avazbek Kholmirzaev",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 2,
+      "fighter_a": "Jonathan Haggerty",
+      "fighter_b": "Yuki Yoza",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 3,
+      "fighter_a": "Ayaka Miura",
+      "fighter_b": "Chihiro Sawada",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 4,
+      "fighter_a": "Hiroki Akimoto",
+      "fighter_b": "Taimu Hisai",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 5,
+      "fighter_a": "Hiromi Wajima",
+      "fighter_b": "Ricardo Bravo",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 6,
+      "fighter_a": "Itsuki Hirata",
+      "fighter_b": "Ritu Phogat",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 7,
+      "fighter_a": "Tatsumitsu Wada",
+      "fighter_b": "Seiichiro Ito",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 8,
+      "fighter_a": "Keito Yamakita",
+      "fighter_b": "Ryohei Kurosawa",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 9,
+      "fighter_a": "Shimon Yoshinari",
+      "fighter_b": "Johan Ghazali",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 10,
+      "fighter_a": "Toma Kuroda",
+      "fighter_b": "Toki Tamaru",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    },
+    {
+      "bout_index": 11,
+      "fighter_a": "Kanata Nagai",
+      "fighter_b": "Atsubo Kambe",
+      "weight_class": null,
+      "scheduled_rounds": null,
+      "is_title_fight": null,
+      "normalization_notes": []
+    }
+  ],
   "processing_summary": {
-    "input_bout_count": 0,
-    "input_bouts": 0,
-    "normalized_bout_count": 0,
-    "normalized_bouts": 0,
+    "input_bout_count": 12,
+    "input_bouts": 12,
+    "normalized_bout_count": 12,
+    "normalized_bouts": 12,
     "invalid_bout_count": 0,
     "bout_errors": [],
     "title_fight_count": 0,
     "weight_classes_seen": [],
-    "normalization_actions": [],
+    "normalization_actions": [
+      {
+        "bout_index": 0,
+        "notes": []
+      },
+      {
+        "bout_index": 1,
+        "notes": []
+      },
+      {
+        "bout_index": 2,
+        "notes": []
+      },
+      {
+        "bout_index": 3,
+        "notes": []
+      },
+      {
+        "bout_index": 4,
+        "notes": []
+      },
+      {
+        "bout_index": 5,
+        "notes": []
+      },
+      {
+        "bout_index": 6,
+        "notes": []
+      },
+      {
+        "bout_index": 7,
+        "notes": []
+      },
+      {
+        "bout_index": 8,
+        "notes": []
+      },
+      {
+        "bout_index": 9,
+        "notes": []
+      },
+      {
+        "bout_index": 10,
+        "notes": []
+      },
+      {
+        "bout_index": 11,
+        "notes": []
+      }
+    ],
     "event_fields": [
       "event_date",
       "event_name",
@@ -40,8 +198,8 @@
       "promotion",
       "venue"
     ],
-    "status": "no_valid_bouts"
+    "status": "ok"
   },
   "version": "ai-risa-phase3",
-  "generated_at": "2026-04-25T13:04:49Z"
+  "generated_at": "2026-04-25T13:15:04Z"
 }

@@ -109,8 +109,16 @@ def normalize_bout_candidate(bout, idx):
     notes = []
     fighter_a = fighter_b = None
     if isinstance(bout, dict):
+        # Canonical event JSON shape
+        if "fighter_a" in bout and "fighter_b" in bout:
+            fighter_a = norm_str(bout.get("fighter_a"))
+            fighter_b = norm_str(bout.get("fighter_b"))
+        # Alternate keyed shape used by some pipelines
+        elif "fighter_1" in bout and "fighter_2" in bout:
+            fighter_a = norm_str(bout.get("fighter_1"))
+            fighter_b = norm_str(bout.get("fighter_2"))
         # Fighters as list
-        if "fighters" in bout and isinstance(bout["fighters"], list) and len(bout["fighters"]) == 2:
+        elif "fighters" in bout and isinstance(bout["fighters"], list) and len(bout["fighters"]) == 2:
             fighter_a = norm_str(bout["fighters"][0])
             fighter_b = norm_str(bout["fighters"][1])
         # Red/Blue corners
