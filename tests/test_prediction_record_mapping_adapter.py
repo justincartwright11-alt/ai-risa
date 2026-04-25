@@ -163,3 +163,38 @@ def test_build_prediction_record_emits_required_promoted_keys():
         "round_finish_tendency",
     ):
         assert key in payload
+
+
+def test_build_prediction_record_sparse_case_completes_required_fields():
+    context = minimal_context()
+    record = build_prediction_record(
+        legacy_prediction={
+            # Intentionally sparse/neutral-like payload from engine path.
+            "debug_metrics": {},
+        },
+        **context
+    )
+
+    payload = record.to_json_dict() if hasattr(record, "to_json_dict") else record.model_dump()
+
+    assert payload["predicted_winner_id"] in {"fighter_a", "fighter_b"}
+    assert payload["confidence"] is not None
+    assert payload["method"]
+    assert payload["round"]
+    assert payload["debug_metrics"] is not None
+    assert payload["signal_gap"] is not None
+    assert payload["stoppage_propensity"] is not None
+    assert payload["round_finish_tendency"] is not None
+
+    debug_metrics = payload["debug_metrics"]
+    assert debug_metrics["completion_mode"] == "sparse_fallback"
+    assert debug_metrics["winner_source"] == "fallback_matchup_fighter_a_id"
+    assert debug_metrics["fallback_fields"] == [
+        "predicted_winner_id",
+        "confidence",
+        "method",
+        "round",
+        "signal_gap",
+        "stoppage_propensity",
+        "round_finish_tendency",
+    ]

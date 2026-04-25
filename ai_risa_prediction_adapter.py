@@ -25,6 +25,9 @@ def build_prediction_record(
     # Normalize calibration_version and fighter_prior_version to sentinel if falsey
     calibration_version = calibration_version or "unknown"
     fighter_prior_version = fighter_prior_version or "unknown"
+
+    fallback_fields: list[str] = []
+    winner_fallback_used = False
     # Normalized mapping pass (existing logic)
     engine_result = legacy_prediction
     result_dict = legacy_prediction.get("pipeline_result", {}) if isinstance(legacy_prediction.get("pipeline_result"), dict) else {}
@@ -34,6 +37,11 @@ def build_prediction_record(
         engine_result.get("predicted_winner_id"),
         result_dict.get("predicted_winner_id"),
     )
+    if predicted_winner_id is None:
+        # Sparse fallback: always return a valid winner id within the matchup.
+        predicted_winner_id = matchup_record.get("fighter_a_id")
+        fallback_fields.append("predicted_winner_id")
+        winner_fallback_used = True
     confidence = _first_present(
         engine_result.get("confidence"),
         result_dict.get("confidence"),
@@ -53,16 +61,26 @@ def build_prediction_record(
         except Exception:
             return conf
     confidence = _calibration_remap_confidence(confidence)
+    if confidence is None:
+        # Sparse fallback: neutral confidence floor.
+        confidence = 0.5
+        fallback_fields.append("confidence")
     method = _first_present(
         engine_result.get("method"),
         result_dict.get("selected_method"),
         result_dict.get("method"),
     )
+    if not isinstance(method, str) or not method.strip():
+        method = "decision"
+        fallback_fields.append("method")
     round_value = _first_present(
         engine_result.get("round"),
         result_dict.get("selected_round"),
         result_dict.get("round"),
     )
+    if round_value in (None, ""):
+        round_value = 3
+        fallback_fields.append("round")
     signal_gap = _first_present(
         engine_result.get("signal_gap"),
         debug_metrics.get("signal_gap"),
@@ -111,6 +129,28 @@ def build_prediction_record(
         except Exception:
             return rft
     round_finish_tendency = _calibration_remap_round_finish(round_finish_tendency)
+
+    # Sparse fallback defaults: guarantee promoted fields are always populated.
+    if signal_gap is None:
+        signal_gap = 0.0
+        fallback_fields.append("signal_gap")
+    if stoppage_propensity is None:
+        stoppage_propensity = 0.0
+        fallback_fields.append("stoppage_propensity")
+    if round_finish_tendency is None:
+        round_finish_tendency = 0.0
+        fallback_fields.append("round_finish_tendency")
+
+    # Keep debug payload complete for downstream diagnostics/contract checks.
+    if not isinstance(debug_metrics, dict):
+        debug_metrics = {}
+    debug_metrics["completion_mode"] = "sparse_fallback" if fallback_fields else "pass_through"
+    debug_metrics["fallback_fields"] = fallback_fields
+    if winner_fallback_used:
+        debug_metrics["winner_source"] = "fallback_matchup_fighter_a_id"
+    debug_metrics.setdefault("signal_gap", signal_gap)
+    debug_metrics.setdefault("stoppage_propensity", stoppage_propensity)
+    debug_metrics.setdefault("round_finish_tendency", round_finish_tendency)
 
     matchup_id = legacy_prediction.get("matchup_id")
     if not matchup_id:
