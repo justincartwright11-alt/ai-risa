@@ -110,5 +110,27 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Confidence Calibration', resp.data)
         self.assertIn(b'/api/accuracy/confidence-calibration', resp.data)
 
+    def test_error_patterns_contract(self):
+        resp = self.client.get('/api/accuracy/error-patterns')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('has_data', data)
+        self.assertIn('total_misses', data)
+        self.assertIn('top_failure_patterns', data)
+        self.assertIn('miss_breakdowns', data)
+        bd = data['miss_breakdowns']
+        for key in ('by_signal_gap', 'by_confidence', 'by_method', 'by_round_range'):
+            self.assertIn(key, bd)
+            self.assertIsInstance(bd[key], list)
+        self.assertIsInstance(data['top_failure_patterns'], list)
+        self.assertIsInstance(data['total_misses'], int)
+
+    def test_failure_patterns_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Failure Patterns', resp.data)
+        self.assertIn(b'/api/accuracy/error-patterns', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

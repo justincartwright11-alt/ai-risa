@@ -985,6 +985,165 @@ def api_accuracy_confidence_calibration():
         return jsonify({"ok": False, "error": str(e), "has_data": False, "calibration": []}), 500
 
 
+def _classify_round_range(predicted_round):
+    """Classify predicted round into early/middle/late-full."""
+    if predicted_round is None:
+        return None
+    val = str(predicted_round).strip().lower()
+    if val in ("full", "decision", "n/a", ""):
+        return "late/full"
+    try:
+        n = int(val)
+        if n <= 2:
+            return "early (1–2)"
+        if n <= 4:
+            return "middle (3–4)"
+        return "late/full"
+    except ValueError:
+        return "late/full"
+
+
+def _build_error_patterns() -> dict:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+    ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+
+    # Only resolved misses
+    misses = [
+        r for r in ledger_records
+        if r.get("resolved_result") and r.get("hit_winner") is False
+    ]
+    total_misses = len(misses)
+
+    # --- By signal_gap bucket ---
+    SG_BUCKETS = [
+        ("0.00–0.10", 0.00, 0.10),
+        ("0.11–0.20", 0.11, 0.20),
+        ("0.21–0.30", 0.21, 0.30),
+        ("0.31+",     0.31, float("inf")),
+        ("unknown",   None, None),
+    ]
+    sg_counts = {label: 0 for label, _, _ in SG_BUCKETS}
+    for row in misses:
+        sg = _safe_float(row.get("signal_gap"))
+        if sg is None:
+            sg_counts["unknown"] += 1
+        else:
+            for label, lo, hi in SG_BUCKETS[:-1]:
+                if lo <= sg <= hi:
+                    sg_counts[label] += 1
+                    break
+
+    by_signal_gap = [
+        {"bucket": label, "miss_count": sg_counts[label]}
+        for label, _, _ in SG_BUCKETS
+        if sg_counts[label] > 0
+    ]
+
+    # --- By confidence bucket ---
+    CONF_BUCKETS = [
+        ("0.50–0.60", 0.50, 0.60),
+        ("0.61–0.70", 0.61, 0.70),
+        ("0.71–0.80", 0.71, 0.80),
+        ("0.81–0.90", 0.81, 0.90),
+        ("0.91–1.00", 0.91, 1.00),
+        ("unknown",   None, None),
+    ]
+    conf_counts = {label: 0 for label, _, _ in CONF_BUCKETS}
+    for row in misses:
+        conf = _safe_float(row.get("confidence"))
+        if conf is None:
+            conf_counts["unknown"] += 1
+            continue
+        if conf > 1.0:
+            conf /= 100.0
+        matched = False
+        for label, lo, hi in CONF_BUCKETS[:-1]:
+            if lo <= conf <= hi:
+                conf_counts[label] += 1
+                matched = True
+                break
+        if not matched:
+            conf_counts["unknown"] += 1
+
+    by_confidence = [
+        {"bucket": label, "miss_count": conf_counts[label]}
+        for label, _, _ in CONF_BUCKETS
+        if conf_counts[label] > 0
+    ]
+
+    # --- By predicted method ---
+    method_counts: dict = {}
+    for row in misses:
+        method = str(row.get("predicted_method") or "unknown").strip() or "unknown"
+        method_counts[method] = method_counts.get(method, 0) + 1
+
+    by_method = [
+        {"predicted_method": m, "miss_count": c}
+        for m, c in sorted(method_counts.items(), key=lambda x: -x[1])
+    ]
+
+    # --- By round range ---
+    rr_counts: dict = {}
+    for row in misses:
+        rr = _classify_round_range(row.get("predicted_round")) or "unknown"
+        rr_counts[rr] = rr_counts.get(rr, 0) + 1
+
+    by_round_range = [
+        {"round_range": rr, "miss_count": c}
+        for rr, c in sorted(rr_counts.items(), key=lambda x: -x[1])
+    ]
+
+    # --- Top failure patterns (cross-signal combinations) ---
+    pattern_counts: dict = {}
+    for row in misses:
+        sg = _safe_float(row.get("signal_gap"))
+        sg_label = "unknown"
+        if sg is not None:
+            for label, lo, hi in SG_BUCKETS[:-1]:
+                if lo <= sg <= hi:
+                    sg_label = label
+                    break
+        conf = _safe_float(row.get("confidence"))
+        conf_label = "unknown"
+        if conf is not None:
+            if conf > 1.0:
+                conf /= 100.0
+            for label, lo, hi in CONF_BUCKETS[:-1]:
+                if lo <= conf <= hi:
+                    conf_label = label
+                    break
+        method = str(row.get("predicted_method") or "unknown").strip() or "unknown"
+        key = f"signal_gap={sg_label} | conf={conf_label} | method={method}"
+        pattern_counts[key] = pattern_counts.get(key, 0) + 1
+
+    top_failure_patterns = [
+        {"pattern": pattern, "miss_count": count}
+        for pattern, count in sorted(pattern_counts.items(), key=lambda x: -x[1])
+    ]
+
+    return {
+        "ok": True,
+        "has_data": total_misses > 0,
+        "total_misses": total_misses,
+        "top_failure_patterns": top_failure_patterns,
+        "miss_breakdowns": {
+            "by_signal_gap": by_signal_gap,
+            "by_confidence": by_confidence,
+            "by_method": by_method,
+            "by_round_range": by_round_range,
+        },
+    }
+
+
+@app.route("/api/accuracy/error-patterns", methods=["GET"])
+def api_accuracy_error_patterns():
+    try:
+        return jsonify(_build_error_patterns())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "has_data": False, "total_misses": 0}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """

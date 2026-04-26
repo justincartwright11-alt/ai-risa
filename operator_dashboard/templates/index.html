@@ -773,6 +773,11 @@
                             <h4>Confidence Calibration</h4>
                             <div id="confidence-calibration-content" class="phase1-table-shell">Loading…</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="failure-patterns-panel">
+                            <div class="phase1-subtitle">Diagnostic Intelligence</div>
+                            <h4>Failure Patterns</h4>
+                            <div id="failure-patterns-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1660,6 +1665,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 await loadSignalGapBreakdown();
                 await loadMethodRoundBreakdown();
                 await loadConfidenceCalibration();
+                await loadFailurePatterns();
             }
 
             async function loadSignalGapBreakdown() {
@@ -1797,6 +1803,70 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                     </table>`;
                 } catch (e) {
                     container.innerHTML = '<span style="color:#a80000;">Failed to load confidence calibration.</span>';
+                }
+            }
+
+            async function loadFailurePatterns() {
+                const container = document.getElementById('failure-patterns-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/error-patterns');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No failure patterns available yet.</span>';
+                        return;
+                    }
+                    const bd = data.miss_breakdowns || {};
+
+                    const topRows = (data.top_failure_patterns || []).map(p => `<tr>
+                        <td>${escapeHtml(p.pattern)}</td>
+                        <td>${p.miss_count}</td>
+                    </tr>`).join('');
+
+                    const sgRows = (bd.by_signal_gap || []).map(b => `<tr><td>${escapeHtml(b.bucket)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const confRows = (bd.by_confidence || []).map(b => `<tr><td>${escapeHtml(b.bucket)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const methodRows = (bd.by_method || []).map(b => `<tr><td>${escapeHtml(b.predicted_method)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const rrRows = (bd.by_round_range || []).map(b => `<tr><td>${escapeHtml(b.round_range)}</td><td>${b.miss_count}</td></tr>`).join('');
+
+                    container.innerHTML = `
+                        <div style="margin-bottom:6px;font-size:13px;"><strong>Total Misses: ${data.total_misses}</strong></div>
+                        <div style="margin-bottom:8px;font-weight:600;font-size:13px;">Top Failure Patterns</div>
+                        <table class="phase1-table" style="margin-bottom:16px;">
+                            <thead><tr><th>Pattern</th><th>Misses</th></tr></thead>
+                            <tbody>${topRows || '<tr><td colspan="2" style="color:#888;">None</td></tr>'}</tbody>
+                        </table>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Signal Gap</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Bucket</th><th>Misses</th></tr></thead>
+                                    <tbody>${sgRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Confidence</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Bucket</th><th>Misses</th></tr></thead>
+                                    <tbody>${confRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Predicted Method</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Method</th><th>Misses</th></tr></thead>
+                                    <tbody>${methodRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Round Range</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Range</th><th>Misses</th></tr></thead>
+                                    <tbody>${rrRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                        </div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load failure patterns.</span>';
                 }
             }
             </script>
