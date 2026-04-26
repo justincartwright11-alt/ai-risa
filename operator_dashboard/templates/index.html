@@ -1009,6 +1009,16 @@
                 return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg};">${escapeHtml(label)}: ${escapeHtml(value)}</span>`;
             }
 
+            function metricOrNotAvailable(value, decimals = 3) {
+                if (value === null || value === undefined || value === '') {
+                    return 'Not available';
+                }
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value.toFixed(decimals);
+                }
+                return String(value);
+            }
+
             async function renderQueuePanel(data, panelId) {
                 const el = document.getElementById(panelId);
                 el.style.display = '';
@@ -1035,6 +1045,8 @@
                         const obs = observabilityByEvent[eventId] || {};
                         const decomposition = obs.decomposition || {};
                         const adapter = obs.adapter || {};
+                        const intelligence = obs.intelligence || {};
+                        const riskFlags = intelligence.risk_flags || {};
 
                         const decompositionStatus = decomposition.decomposition_status || 'unavailable';
                         const discoveredBoutSlots = decomposition.discovered_bout_slots ?? 'n/a';
@@ -1042,6 +1054,48 @@
                         const completionMode = adapter.completion_mode || 'unavailable';
                         const fallbackFields = Array.isArray(adapter.fallback_fields) ? adapter.fallback_fields : [];
                         const winnerSource = adapter.winner_source || 'unavailable';
+                        const signalGap = metricOrNotAvailable(intelligence.signal_gap);
+                        const stoppagePropensity = metricOrNotAvailable(intelligence.stoppage_propensity);
+                        const roundFinishTendency = metricOrNotAvailable(intelligence.round_finish_tendency);
+                        const confidence = metricOrNotAvailable(intelligence.confidence, 2);
+                        const confidenceExplanation = (typeof intelligence.confidence_explanation === 'string' && intelligence.confidence_explanation.trim())
+                            ? intelligence.confidence_explanation.trim()
+                            : 'Not available';
+
+                        const highCollapseRisk = !!(riskFlags.high_collapse_risk_fights && riskFlags.high_collapse_risk_fights.active);
+                        const fatigueFailurePattern = !!(riskFlags.fatigue_failure_patterns && riskFlags.fatigue_failure_patterns.active);
+                        const lowConfidencePredictions = !!(riskFlags.low_confidence_predictions && riskFlags.low_confidence_predictions.active);
+                        const adapterFallbackCases = !!(riskFlags.adapter_fallback_cases && riskFlags.adapter_fallback_cases.active);
+
+                        const collapseFlagInfo = riskFlags.high_collapse_risk_fights;
+                        const fatigueFlagInfo = riskFlags.fatigue_failure_patterns;
+                        const confidenceNum = (typeof intelligence.confidence === 'number' && Number.isFinite(intelligence.confidence))
+                            ? intelligence.confidence
+                            : null;
+                        const volatilityHint = confidenceExplanation !== 'Not available' && /volatil|variance|reversal danger|fight live|swing/i.test(confidenceExplanation.toLowerCase());
+
+                        let fatigueFailureIndicator = 'Not available';
+                        if (fatigueFlagInfo && typeof fatigueFlagInfo.total === 'number' && fatigueFlagInfo.total > 0) {
+                            fatigueFailureIndicator = fatigueFailurePattern ? 'Elevated pattern risk' : 'No elevated fatigue pattern';
+                        }
+
+                        let collapseTriggerHighlight = 'Not available';
+                        if (collapseFlagInfo && typeof collapseFlagInfo.total === 'number' && collapseFlagInfo.total > 0) {
+                            collapseTriggerHighlight = highCollapseRisk ? 'High collapse trigger risk' : 'No high collapse trigger detected';
+                        }
+
+                        let mentalConditionFlag = 'Not available';
+                        if (confidenceNum !== null) {
+                            if (volatilityHint && confidenceNum < 0.55) {
+                                mentalConditionFlag = 'Fragile (low confidence + volatility)';
+                            } else if (volatilityHint) {
+                                mentalConditionFlag = 'Unsettled (volatility noted)';
+                            } else if (confidenceNum < 0.55) {
+                                mentalConditionFlag = 'Guarded (low confidence)';
+                            } else {
+                                mentalConditionFlag = 'Composed';
+                            }
+                        }
 
                         const decompIsIncomplete = decompositionStatus !== 'decomposed';
                         const fallbackActive = !!adapter.fallback_active;
@@ -1054,6 +1108,10 @@
                             badge('input_bout_count', inputBoutCount, '#0f766e'),
                             badge('completion_mode', completionMode, fallbackActive ? '#ff9800' : '#334155'),
                             badge('winner_source', winnerSource, '#6b21a8'),
+                            badge('Decision Advantage', signalGap, '#0f766e'),
+                            badge('Damage Accumulation Rate', stoppagePropensity, '#7c3aed'),
+                            badge('Collapse Timing Bias', roundFinishTendency, '#0369a1'),
+                            badge('confidence', confidence, '#065f46'),
                         ];
                         if (fallbackFields.length > 0) {
                             chips.push(badge('fallback_fields', fallbackFields.join(', '), '#b45309'));
@@ -1064,10 +1122,26 @@
                         if (decompIsIncomplete) {
                             chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#d32f2f;color:#fff;">incomplete decomposition</span>');
                         }
+                        if (highCollapseRisk) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#b91c1c;color:#fff;">high collapse risk fights</span>');
+                        }
+                        if (fatigueFailurePattern) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#9a3412;color:#fff;">fatigue failure patterns</span>');
+                        }
+                        if (lowConfidencePredictions) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#92400e;color:#fff;">low-confidence predictions</span>');
+                        }
+                        if (completionMode === 'adapter_fallback' || adapterFallbackCases) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#dc2626;color:#fff;">adapter fallback case</span>');
+                        }
 
                         return `<li style="border-left:4px solid ${rowBorder};padding-left:12px;">
                             <div style="font-weight:700;margin-bottom:6px;">${escapeHtml(eventId)}</div>
                             <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips.join('')}</div>
+                            <div style="margin-top:8px;color:#374151;font-size:13px;"><strong>confidence_explanation:</strong> ${escapeHtml(confidenceExplanation)}</div>
+                            <div style="margin-top:4px;color:#374151;font-size:13px;"><strong>Fatigue Failure Indicator:</strong> ${escapeHtml(fatigueFailureIndicator)}</div>
+                            <div style="margin-top:2px;color:#374151;font-size:13px;"><strong>Collapse Trigger Highlight:</strong> ${escapeHtml(collapseTriggerHighlight)}</div>
+                            <div style="margin-top:2px;color:#374151;font-size:13px;"><strong>Mental Condition Flag:</strong> ${escapeHtml(mentalConditionFlag)}</div>
                         </li>`;
                     }).join('');
 
