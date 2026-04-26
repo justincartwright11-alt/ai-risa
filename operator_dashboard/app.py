@@ -751,12 +751,65 @@ def api_operator_run_calibration_review():
         )
 
 
+def _build_signal_gap_breakdown() -> dict:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+    ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+
+    BUCKETS = [
+        ("0.00–0.10", 0.00, 0.10),
+        ("0.11–0.20", 0.11, 0.20),
+        ("0.21–0.30", 0.21, 0.30),
+        ("0.31+",     0.31, float("inf")),
+    ]
+    bucket_data = {label: {"total": 0, "hits": 0} for label, _, _ in BUCKETS}
+
+    for row in ledger_records:
+        hit_winner = row.get("hit_winner")
+        if hit_winner is None:
+            continue
+        sg = _safe_float(row.get("signal_gap"))
+        if sg is None:
+            continue
+        for label, lo, hi in BUCKETS:
+            if lo <= sg <= hi:
+                bucket_data[label]["total"] += 1
+                if hit_winner:
+                    bucket_data[label]["hits"] += 1
+                break
+
+    breakdown = []
+    for label, _, _ in BUCKETS:
+        total = bucket_data[label]["total"]
+        hits = bucket_data[label]["hits"]
+        misses = total - hits
+        accuracy_pct = round((hits / total) * 100.0, 2) if total else None
+        breakdown.append({
+            "bucket": label,
+            "total_compared": total,
+            "winner_hits": hits,
+            "winner_misses": misses,
+            "accuracy_pct": accuracy_pct,
+        })
+
+    has_data = any(b["total_compared"] > 0 for b in breakdown)
+    return {"ok": True, "breakdown": breakdown, "has_data": has_data}
+
+
 @app.route("/api/accuracy/comparison-summary", methods=["GET"])
 def api_accuracy_comparison_summary():
     try:
         return jsonify(_build_accuracy_comparison_summary())
     except Exception as e:
         return jsonify({"ok": False, "error": str(e), "compared_results": [], "waiting_for_results": [], "summary_metrics": {}}), 500
+
+
+@app.route("/api/accuracy/signal-breakdown", methods=["GET"])
+def api_accuracy_signal_breakdown():
+    try:
+        return jsonify(_build_signal_gap_breakdown())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "breakdown": [], "has_data": False}), 500
 
 
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])

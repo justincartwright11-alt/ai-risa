@@ -38,5 +38,25 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Waiting For Real Results', resp.data)
         self.assertIn(b'/api/accuracy/comparison-summary', resp.data)
 
+    def test_signal_breakdown_contract(self):
+        resp = self.client.get('/api/accuracy/signal-breakdown')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('breakdown', data)
+        self.assertIn('has_data', data)
+        self.assertIsInstance(data.get('breakdown'), list)
+        buckets = [b['bucket'] for b in data['breakdown']]
+        self.assertIn('0.00–0.10', buckets)
+        self.assertIn('0.11–0.20', buckets)
+        self.assertIn('0.21–0.30', buckets)
+        self.assertIn('0.31+', buckets)
+
+    def test_signal_breakdown_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Signal Gap Accuracy Breakdown', resp.data)
+        self.assertIn(b'/api/accuracy/signal-breakdown', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

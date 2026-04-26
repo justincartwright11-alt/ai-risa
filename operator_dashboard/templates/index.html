@@ -753,6 +753,11 @@
                             <h4>Waiting For Real Results</h4>
                             <div id="operator-waiting-results-queue" class="phase1-table-shell">No rows waiting for results.</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="signal-gap-breakdown-panel">
+                            <div class="phase1-subtitle">Signal Intelligence</div>
+                            <h4>Signal Gap Accuracy Breakdown</h4>
+                            <div id="signal-gap-breakdown-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1637,6 +1642,39 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 // Load rolling success rate on page load
                 await loadRollingSuccessRate();
                 renderWaitingQueue([]);
+                await loadSignalGapBreakdown();
+            }
+
+            async function loadSignalGapBreakdown() {
+                const container = document.getElementById('signal-gap-breakdown-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/signal-breakdown');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    const rows = (data.breakdown || []).map(b => `<tr>
+                        <td>${escapeHtml(b.bucket)}</td>
+                        <td>${b.total_compared}</td>
+                        <td>${b.winner_hits}</td>
+                        <td>${b.winner_misses}</td>
+                        <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                    </tr>`).join('');
+                    container.innerHTML = `<table class="phase1-table">
+                        <thead><tr>
+                            <th>Signal Gap</th>
+                            <th>Total</th>
+                            <th>Hits</th>
+                            <th>Misses</th>
+                            <th>Accuracy</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load signal breakdown.</span>';
+                }
             }
             </script>
         </body>
