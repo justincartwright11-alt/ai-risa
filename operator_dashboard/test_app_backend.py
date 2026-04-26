@@ -20,5 +20,23 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn(b'Invalid file type', resp.data)
 
+    def test_accuracy_comparison_summary_contract(self):
+        resp = self.client.get('/api/accuracy/comparison-summary')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('compared_results', data)
+        self.assertIn('waiting_for_results', data)
+        self.assertIn('summary_metrics', data)
+        self.assertIsInstance(data.get('compared_results'), list)
+        self.assertIsInstance(data.get('waiting_for_results'), list)
+        self.assertIsInstance(data.get('summary_metrics'), dict)
+
+    def test_operator_waiting_queue_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Waiting For Real Results', resp.data)
+        self.assertIn(b'/api/accuracy/comparison-summary', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

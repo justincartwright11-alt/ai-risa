@@ -33,6 +33,258 @@ from operator_dashboard.phase1_ops import (
 app = Flask(__name__)
 
 
+def _load_json_records(file_path: Path):
+    if not file_path.exists():
+        return []
+    try:
+        with open(file_path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        if isinstance(payload, list):
+            return [row for row in payload if isinstance(row, dict)]
+        if isinstance(payload, dict):
+            return [payload]
+    except Exception:
+        return []
+    return []
+
+
+def _normalize_token(value: str) -> str:
+    text = str(value or "").strip().lower()
+    for ch in ["-", " ", "/", "\\", ".", ":", ","]:
+        text = text.replace(ch, "_")
+    while "__" in text:
+        text = text.replace("__", "_")
+    return text.strip("_")
+
+
+def _is_known_value(value) -> bool:
+    token = _normalize_token(value)
+    return token not in {"", "unknown", "none", "null", "na", "n_a", "tbd"}
+
+
+def _normalize_relative_path(path_text: str, base_dir: Path) -> str:
+    if not path_text:
+        return ""
+    raw = str(path_text).replace("\\", "/")
+    if os.path.isabs(raw):
+        try:
+            rel = Path(raw).resolve().relative_to(base_dir.resolve())
+            return str(rel).replace("\\", "/")
+        except Exception:
+            return raw
+    return raw.lstrip("./")
+
+
+def _winner_hit(predicted_winner, actual_winner) -> bool:
+    return _is_known_value(predicted_winner) and _is_known_value(actual_winner) and _normalize_token(predicted_winner) == _normalize_token(actual_winner)
+
+
+def _method_hit(predicted_method, actual_method) -> bool:
+    return _is_known_value(predicted_method) and _is_known_value(actual_method) and _normalize_token(predicted_method) == _normalize_token(actual_method)
+
+
+def _round_hit(predicted_round, actual_round) -> bool:
+    return _is_known_value(predicted_round) and _is_known_value(actual_round) and _normalize_token(predicted_round) == _normalize_token(actual_round)
+
+
+def _build_accuracy_comparison_summary() -> dict:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+
+    ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+    actual_records = []
+    for filename in [
+        "actual_results.json",
+        "actual_results_manual.json",
+        "actual_results_unresolved.json",
+    ]:
+        actual_records.extend(_load_json_records(accuracy_dir / filename))
+
+    actual_by_fight = {}
+    for row in actual_records:
+        fight_key = _normalize_token(row.get("fight_id"))
+        if fight_key:
+            actual_by_fight[fight_key] = row
+
+    compared_results = []
+    waiting_for_results = []
+    seen_compared = set()
+    seen_waiting = set()
+    known_artifact_paths = set()
+
+    method_available = 0
+    method_hits = 0
+    round_available = 0
+    round_hits = 0
+
+    def add_compared(row: dict):
+        nonlocal method_available, method_hits, round_available, round_hits
+        key = (
+            _normalize_token(row.get("fight_name")),
+            _normalize_token(row.get("file_path")),
+        )
+        if key in seen_compared:
+            return
+        seen_compared.add(key)
+        compared_results.append(row)
+        if row.get("method_available"):
+            method_available += 1
+            if row.get("method_hit"):
+                method_hits += 1
+        if row.get("round_available"):
+            round_available += 1
+            if row.get("round_hit"):
+                round_hits += 1
+
+    def add_waiting(row: dict):
+        key = (
+            _normalize_token(row.get("fight_name")),
+            _normalize_token(row.get("file_path")),
+        )
+        if key in seen_waiting:
+            return
+        seen_waiting.add(key)
+        waiting_for_results.append(row)
+
+    for ledger_row in ledger_records:
+        source_file = _normalize_relative_path(ledger_row.get("source_file", ""), base_dir)
+        if source_file:
+            known_artifact_paths.add(source_file.lower())
+
+        fight_name = str(ledger_row.get("fight_id") or "").strip() or Path(source_file).stem
+        fight_key = _normalize_token(fight_name)
+        actual_row = actual_by_fight.get(fight_key, {})
+
+        predicted_winner = ledger_row.get("predicted_winner")
+        predicted_method = ledger_row.get("predicted_method")
+        predicted_round = ledger_row.get("predicted_round")
+
+        actual_winner = ledger_row.get("actual_winner")
+        actual_method = ledger_row.get("actual_method")
+        actual_round = ledger_row.get("actual_round")
+
+        if not _is_known_value(actual_winner):
+            actual_winner = actual_row.get("actual_winner")
+        if not _is_known_value(actual_method):
+            actual_method = actual_row.get("actual_method")
+        if not _is_known_value(actual_round):
+            actual_round = actual_row.get("actual_round")
+
+        has_actual_result = bool(ledger_row.get("resolved_result")) or _is_known_value(actual_winner)
+
+        if has_actual_result:
+            winner_hit = bool(ledger_row.get("hit_winner")) if "hit_winner" in ledger_row else _winner_hit(predicted_winner, actual_winner)
+            method_available_flag = _is_known_value(predicted_method) and _is_known_value(actual_method)
+            method_hit_flag = bool(ledger_row.get("hit_method")) if "hit_method" in ledger_row else _method_hit(predicted_method, actual_method)
+            round_available_flag = _is_known_value(predicted_round) and _is_known_value(actual_round)
+            round_hit_flag = _round_hit(predicted_round, actual_round) if round_available_flag else False
+
+            add_compared({
+                "fight_name": fight_name or "UNKNOWN",
+                "predicted_winner": predicted_winner or "UNKNOWN",
+                "actual_winner": actual_winner or "UNKNOWN",
+                "winner_hit": winner_hit,
+                "predicted_method": predicted_method,
+                "actual_method": actual_method,
+                "method_available": method_available_flag,
+                "method_hit": method_hit_flag if method_available_flag else False,
+                "predicted_round": predicted_round,
+                "actual_round": actual_round,
+                "round_available": round_available_flag,
+                "round_hit": round_hit_flag,
+                "event_date": ledger_row.get("event_date") or actual_row.get("event_date"),
+                "file_path": source_file,
+                "status": "compared",
+            })
+        else:
+            add_waiting({
+                "fight_name": fight_name or "UNKNOWN",
+                "predicted_winner": predicted_winner or "UNKNOWN",
+                "event_date": ledger_row.get("event_date"),
+                "file_path": source_file,
+                "status": "waiting_for_actual_result",
+            })
+
+    for folder_name in ["predictions", "reports"]:
+        folder = base_dir / folder_name
+        if not folder.exists():
+            continue
+        for file_path in folder.rglob("*.json"):
+            rel_path = str(file_path.relative_to(base_dir)).replace("\\", "/")
+            if rel_path.lower() in known_artifact_paths:
+                continue
+            try:
+                with open(file_path, "r", encoding="utf-8") as handle:
+                    payload = json.load(handle)
+                data = payload if isinstance(payload, dict) else {}
+            except Exception:
+                data = {}
+
+            fight_name = str(data.get("fight_id") or file_path.stem)
+            predicted_winner = data.get("predicted_winner_id") or data.get("predicted_winner") or data.get("winner") or "UNKNOWN"
+            event_date = data.get("event_date")
+            actual_row = actual_by_fight.get(_normalize_token(fight_name), {})
+
+            if _is_known_value(predicted_winner) and _is_known_value(actual_row.get("actual_winner")):
+                predicted_method = data.get("method") or data.get("predicted_method")
+                predicted_round = data.get("round") or data.get("predicted_round")
+                actual_method = actual_row.get("actual_method")
+                actual_round = actual_row.get("actual_round")
+                method_available_flag = _is_known_value(predicted_method) and _is_known_value(actual_method)
+                round_available_flag = _is_known_value(predicted_round) and _is_known_value(actual_round)
+
+                add_compared({
+                    "fight_name": fight_name,
+                    "predicted_winner": predicted_winner,
+                    "actual_winner": actual_row.get("actual_winner"),
+                    "winner_hit": _winner_hit(predicted_winner, actual_row.get("actual_winner")),
+                    "predicted_method": predicted_method,
+                    "actual_method": actual_method,
+                    "method_available": method_available_flag,
+                    "method_hit": _method_hit(predicted_method, actual_method) if method_available_flag else False,
+                    "predicted_round": predicted_round,
+                    "actual_round": actual_round,
+                    "round_available": round_available_flag,
+                    "round_hit": _round_hit(predicted_round, actual_round) if round_available_flag else False,
+                    "event_date": event_date or actual_row.get("event_date"),
+                    "file_path": rel_path,
+                    "status": "compared",
+                })
+            else:
+                add_waiting({
+                    "fight_name": fight_name,
+                    "predicted_winner": predicted_winner,
+                    "event_date": event_date,
+                    "file_path": rel_path,
+                    "status": "waiting_for_actual_result",
+                })
+
+    total_compared = len(compared_results)
+    winner_hits = sum(1 for row in compared_results if row.get("winner_hit"))
+    winner_misses = max(total_compared - winner_hits, 0)
+
+    summary_metrics = {
+        "total_compared": total_compared,
+        "winner_hits": winner_hits,
+        "winner_misses": winner_misses,
+        "method_hits": method_hits,
+        "method_available": method_available,
+        "round_hits": round_hits,
+        "round_available": round_available,
+        "overall_accuracy_pct": round((winner_hits / total_compared) * 100.0, 2) if total_compared else 0.0,
+    }
+
+    compared_results.sort(key=lambda row: str(row.get("fight_name") or ""))
+    waiting_for_results.sort(key=lambda row: str(row.get("fight_name") or ""))
+
+    return {
+        "ok": True,
+        "compared_results": compared_results,
+        "waiting_for_results": waiting_for_results,
+        "summary_metrics": summary_metrics,
+    }
+
+
 def operator_error_response(message: str, status_code: int = 500, **extra):
     payload = {
         "ok": False,
@@ -499,6 +751,14 @@ def api_operator_run_calibration_review():
         )
 
 
+@app.route("/api/accuracy/comparison-summary", methods=["GET"])
+def api_accuracy_comparison_summary():
+    try:
+        return jsonify(_build_accuracy_comparison_summary())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "compared_results": [], "waiting_for_results": [], "summary_metrics": {}}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """
@@ -713,6 +973,148 @@ def _extract_adapter_metrics(event_id, decomposition_payload):
         "source": None,
     }
 
+
+def _safe_float(value):
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except Exception:
+        return None
+
+
+def _iter_prediction_payloads(event_id, decomposition_payload):
+    predictions_dir = os.path.join(_repo_root(), "predictions")
+    if not os.path.isdir(predictions_dir):
+        return []
+
+    payloads = []
+    seen = set()
+
+    for filename in _candidate_prediction_files_from_decomposition(decomposition_payload):
+        path = os.path.join(predictions_dir, filename)
+        payload = _safe_load_json(path)
+        if payload is None:
+            continue
+        seen.add(filename)
+        payloads.append((filename, payload))
+
+    event_token = _slugify_token(event_id)
+    if event_token:
+        for name in os.listdir(predictions_dir):
+            if name in seen:
+                continue
+            if not (name.endswith("_prediction.json") and event_token in _slugify_token(name)):
+                continue
+            path = os.path.join(predictions_dir, name)
+            payload = _safe_load_json(path)
+            if payload is None:
+                continue
+            seen.add(name)
+            payloads.append((name, payload))
+
+    return payloads
+
+
+def _extract_event_intelligence(event_id, decomposition_payload):
+    payloads = _iter_prediction_payloads(event_id, decomposition_payload)
+    total = len(payloads)
+
+    signal_gap_values = []
+    stoppage_values = []
+    round_finish_values = []
+    confidence_values = []
+    confidence_explanation = None
+
+    high_collapse_risk_count = 0
+    fatigue_failure_count = 0
+    low_confidence_count = 0
+    adapter_fallback_count = 0
+
+    for _source_name, payload in payloads:
+        signal_gap = _safe_float(payload.get("signal_gap"))
+        stoppage_propensity = _safe_float(payload.get("stoppage_propensity"))
+        round_finish_tendency = _safe_float(payload.get("round_finish_tendency"))
+        confidence = _safe_float(payload.get("confidence"))
+
+        if signal_gap is not None:
+            signal_gap_values.append(signal_gap)
+        if stoppage_propensity is not None:
+            stoppage_values.append(stoppage_propensity)
+        if round_finish_tendency is not None:
+            round_finish_values.append(round_finish_tendency)
+        if confidence is not None:
+            confidence_values.append(confidence)
+
+        explanation = payload.get("confidence_explanation")
+        if confidence_explanation is None and isinstance(explanation, str) and explanation.strip():
+            confidence_explanation = explanation.strip()
+
+        debug_metrics = payload.get("debug_metrics")
+        if not isinstance(debug_metrics, dict):
+            debug_metrics = {}
+
+        completion_mode = debug_metrics.get("completion_mode")
+        if completion_mode == "adapter_fallback":
+            adapter_fallback_count += 1
+
+        collapse_score = _safe_float(payload.get("diag_collapse_trigger_score"))
+        if collapse_score is None:
+            collapse_score = _safe_float(debug_metrics.get("collapse_risk_confidence"))
+        collapse_triggers = payload.get("collapse_triggers")
+        if (
+            (collapse_score is not None and collapse_score >= 0.60)
+            or (isinstance(collapse_triggers, str) and collapse_triggers.strip())
+        ):
+            high_collapse_risk_count += 1
+
+        fatigue_score = _safe_float(payload.get("diag_fatigue_failure_score"))
+        fatigue_points = payload.get("fatigue_failure_points")
+        if (
+            (fatigue_score is not None and fatigue_score >= 0.55)
+            or (isinstance(fatigue_points, str) and fatigue_points.strip())
+        ):
+            fatigue_failure_count += 1
+
+        if confidence is not None and confidence < 0.55:
+            low_confidence_count += 1
+
+    def _mean_or_none(values):
+        if not values:
+            return None
+        return round(sum(values) / len(values), 4)
+
+    return {
+        "signal_gap": _mean_or_none(signal_gap_values),
+        "stoppage_propensity": _mean_or_none(stoppage_values),
+        "round_finish_tendency": _mean_or_none(round_finish_values),
+        "confidence": _mean_or_none(confidence_values),
+        "confidence_explanation": confidence_explanation,
+        "prediction_files_considered": total,
+        "risk_flags": {
+            "high_collapse_risk_fights": {
+                "count": high_collapse_risk_count,
+                "total": total,
+                "active": high_collapse_risk_count > 0,
+            },
+            "fatigue_failure_patterns": {
+                "count": fatigue_failure_count,
+                "total": total,
+                "active": fatigue_failure_count > 0,
+            },
+            "low_confidence_predictions": {
+                "count": low_confidence_count,
+                "total": total,
+                "active": low_confidence_count > 0,
+            },
+            "adapter_fallback_cases": {
+                "count": adapter_fallback_count,
+                "total": total,
+                "active": adapter_fallback_count > 0,
+            },
+        },
+    }
+
 @app.route("/api/queue/event/<event_id>", methods=["GET"])
 def api_event_drilldown(event_id):
     # Minimal contract for drilldown
@@ -763,24 +1165,41 @@ def api_event_observability(event_id):
                 "fallback_active": False,
                 "source": None,
             }
+            intelligence = {
+                "signal_gap": None,
+                "stoppage_propensity": None,
+                "round_finish_tendency": None,
+                "confidence": None,
+                "confidence_explanation": None,
+                "prediction_files_considered": 0,
+                "risk_flags": {
+                    "high_collapse_risk_fights": {"count": 0, "total": 0, "active": False},
+                    "fatigue_failure_patterns": {"count": 0, "total": 0, "active": False},
+                    "low_confidence_predictions": {"count": 0, "total": 0, "active": False},
+                    "adapter_fallback_cases": {"count": 0, "total": 0, "active": False},
+                },
+            }
             return jsonify(
                 {
                     "ok": True,
                     "event_id": event_id,
                     "decomposition": decomposition,
                     "adapter": adapter,
+                    "intelligence": intelligence,
                     "errors": ["decomposition_artifact_not_found"],
                 }
             )
 
         decomposition = _extract_decomposition_metrics(decomposition_payload, decomposition_path)
         adapter = _extract_adapter_metrics(event_id, decomposition_payload)
+        intelligence = _extract_event_intelligence(event_id, decomposition_payload)
         return jsonify(
             {
                 "ok": True,
                 "event_id": event_id,
                 "decomposition": decomposition,
                 "adapter": adapter,
+                "intelligence": intelligence,
                 "errors": [],
             }
         )
@@ -803,6 +1222,20 @@ def api_event_observability(event_id):
                     "winner_source": None,
                     "fallback_active": False,
                     "source": None,
+                },
+                "intelligence": {
+                    "signal_gap": None,
+                    "stoppage_propensity": None,
+                    "round_finish_tendency": None,
+                    "confidence": None,
+                    "confidence_explanation": None,
+                    "prediction_files_considered": 0,
+                    "risk_flags": {
+                        "high_collapse_risk_fights": {"count": 0, "total": 0, "active": False},
+                        "fatigue_failure_patterns": {"count": 0, "total": 0, "active": False},
+                        "low_confidence_predictions": {"count": 0, "total": 0, "active": False},
+                        "adapter_fallback_cases": {"count": 0, "total": 0, "active": False},
+                    },
                 },
                 "errors": [str(e)],
             }

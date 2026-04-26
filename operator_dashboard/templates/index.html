@@ -748,6 +748,11 @@
                         </div>
                         <div id="operator-status" style="color:#2d5f2d;font-size:14px;margin-bottom:12px;min-height:20px;"></div>
                         <div id="operator-result" style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:12px;display:none;max-height:400px;overflow-y:auto;font-size:13px;"></div>
+                        <div class="phase1-box" style="margin-top:12px;">
+                            <div class="phase1-subtitle">Queue</div>
+                            <h4>Waiting For Real Results</h4>
+                            <div id="operator-waiting-results-queue" class="phase1-table-shell">No rows waiting for results.</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1410,6 +1415,7 @@
                 const errorDiv = document.getElementById('operator-error');
                 const rollingRateDiv = document.getElementById('operator-rolling-rate');
                 const rollingRateValue = document.getElementById('operator-rolling-rate-value');
+                const waitingQueueDiv = document.getElementById('operator-waiting-results-queue');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -1430,6 +1436,49 @@
                         errorDiv.textContent = msg;
                         errorDiv.style.display = msg ? 'block' : 'none';
                     }
+                }
+
+                function escapeHtml(value) {
+                    return String(value || '')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .replaceAll("'", '&#39;');
+                }
+
+                function renderWaitingQueue(rows) {
+                    if (!waitingQueueDiv) return;
+                    if (!rows || !rows.length) {
+                        waitingQueueDiv.innerHTML = '<div style="color:#666;">No rows waiting for real-life results.</div>';
+                        return;
+                    }
+                    const body = rows.map((row) => {
+                        const fightName = escapeHtml(row.fight_name || 'UNKNOWN');
+                        const predictedWinner = escapeHtml(row.predicted_winner || 'UNKNOWN');
+                        const eventDate = escapeHtml(row.event_date || 'UNKNOWN');
+                        const filePath = escapeHtml(row.file_path || 'UNKNOWN');
+                        const status = escapeHtml(row.status || 'waiting_for_actual_result');
+                        return `<tr>
+                            <td>${fightName}</td>
+                            <td>${predictedWinner}</td>
+                            <td>${eventDate}</td>
+                            <td>${filePath}</td>
+                            <td>${status}</td>
+                        </tr>`;
+                    }).join('');
+                    waitingQueueDiv.innerHTML = `<table class="phase1-table">
+                        <thead>
+                            <tr>
+                                <th>Fight/Report</th>
+                                <th>Predicted Winner</th>
+                                <th>Event Date</th>
+                                <th>Path</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>`;
                 }
 
                 async function loadRollingSuccessRate() {
@@ -1483,55 +1532,54 @@ ${data.errors && data.errors.length ? `<strong>Errors:</strong> ${data.errors.jo
                 });
 
                 compareBtn && (compareBtn.onclick = async () => {
-                    const matchup = matchupInput ? matchupInput.value.trim() : '';
-                    if (!matchup) {
-                        setError('Enter a matchup first');
-                        return;
-                    }
-                    setStatus('Searching for real result...');
+                    setStatus('Loading comparison summary...');
                     setError('');
                     setResult('');
                     try {
-                        const resp = await fetch('/api/operator/compare-with-result', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ matchup })
-                        });
+                        const resp = await fetch('/api/accuracy/comparison-summary');
                         const data = await resp.json();
                         if (!data.ok) {
                             setError((data.errors || []).join('; ') || 'Comparison failed');
                             setStatus('Comparison failed', true);
                             return;
                         }
-                        if (!data.result_found) {
-                            const html = `<strong>Result Status:</strong> ${data.message || 'No official result found yet'}<br>
-<strong>Message:</strong> ${data.confidence_blocker || 'Fight has not occurred or result not yet available.'}`;
-                            setResult(html);
-                            setStatus('No result available yet');
-                            return;
-                        }
-                        const result = data.result || {};
-                        const score = data.score || {};
-                        const metrics = score.metrics || {};
-                        
-                        let segmentsHtml = '';
-                        if (score.segments) {
-                            for (const [seg, scoreData] of Object.entries(score.segments)) {
-                                segmentsHtml += `<div style="margin:8px 0;padding:8px;background:#f9f9f9;border-radius:4px;"><strong>${seg}:</strong> ${scoreData.score}% - ${scoreData.reason}</div>`;
-                            }
-                        }
-                        
+                        const metrics = data.summary_metrics || {};
+                        const comparedResults = data.compared_results || [];
+                        const waitingResults = data.waiting_for_results || [];
+
+                        const comparedPreview = comparedResults.slice(0, 8).map((row) => {
+                            const winnerStatus = row.winner_hit ? 'HIT' : 'MISS';
+                            return `<tr>
+                                <td>${escapeHtml(row.fight_name || 'UNKNOWN')}</td>
+                                <td>${escapeHtml(row.predicted_winner || 'UNKNOWN')}</td>
+                                <td>${escapeHtml(row.actual_winner || 'UNKNOWN')}</td>
+                                <td>${winnerStatus}</td>
+                            </tr>`;
+                        }).join('');
+
                         const html = `
-<strong>Real Result:</strong> ${result.winner || 'unknown'} by ${result.method || 'unknown'} (R${result.round || 'X'})<br>
-<strong>Overall Accuracy:</strong> ${metrics.total_report_score || 0}%<br>
-<strong>Winner Prediction:</strong> ${metrics.winner_accuracy || 0}%<br>
-<strong>Method Prediction:</strong> ${metrics.method_accuracy || 0}%<br>
-<strong>Round Prediction:</strong> ${metrics.round_accuracy || 0}%<br>
-<div style="margin-top:12px;"><strong>Segment Scores:</strong></div>
-${segmentsHtml}
+<strong>Total Compared:</strong> ${metrics.total_compared || 0}<br>
+<strong>Winner Hits:</strong> ${metrics.winner_hits || 0}<br>
+<strong>Winner Misses:</strong> ${metrics.winner_misses || 0}<br>
+<strong>Method Hits (available):</strong> ${metrics.method_hits || 0}${metrics.method_available !== undefined ? ` / ${metrics.method_available}` : ''}<br>
+<strong>Round Hits (available):</strong> ${metrics.round_hits || 0}${metrics.round_available !== undefined ? ` / ${metrics.round_available}` : ''}<br>
+<strong>Overall Accuracy:</strong> ${metrics.overall_accuracy_pct || 0}%<br>
+<div style="margin-top:12px;"><strong>Compared Results (preview):</strong></div>
+${comparedResults.length ? `<table class="phase1-table">
+    <thead>
+        <tr>
+            <th>Fight</th>
+            <th>Predicted Winner</th>
+            <th>Actual Winner</th>
+            <th>Winner Result</th>
+        </tr>
+    </thead>
+    <tbody>${comparedPreview}</tbody>
+</table>` : '<div style="color:#666;">No compared results available yet.</div>'}
                         `;
                         setResult(html);
-                        setStatus(`Report accuracy: ${metrics.total_report_score || 0}%`);
+                        renderWaitingQueue(waitingResults);
+                        setStatus(`Comparison loaded: ${metrics.total_compared || 0} compared, ${waitingResults.length} waiting.`);
                         await loadRollingSuccessRate();
                     } catch (e) {
                         setError('Request error: ' + e.message);
@@ -1588,6 +1636,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
 
                 // Load rolling success rate on page load
                 await loadRollingSuccessRate();
+                renderWaitingQueue([]);
             }
             </script>
         </body>
