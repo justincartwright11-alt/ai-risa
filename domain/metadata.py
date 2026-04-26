@@ -3,6 +3,13 @@ import os
 import re
 
 
+_PLACEHOLDER_FIGHTER_TOKENS = {
+    "tbd",
+    "tba",
+    "unknown",
+}
+
+
 def _slugify_event_name(name):
     if not isinstance(name, str):
         return ""
@@ -24,6 +31,12 @@ def _extract_bouts_from_event_json(event_payload):
                 if isinstance(container.get(bkey), list):
                     return container.get(bkey)
     return []
+
+
+def _is_placeholder_fighter_name(value):
+    if not isinstance(value, str):
+        return False
+    return value.strip().lower() in _PLACEHOLDER_FIGHTER_TOKENS
 
 
 def _resolve_event_source_path(task):
@@ -142,6 +155,10 @@ def normalize_bout_candidate(bout, idx):
     else:
         notes.append("not_a_dict")
         weight_class = scheduled_rounds = is_title_fight = None
+    if _is_placeholder_fighter_name(fighter_a):
+        fighter_a = None
+    if _is_placeholder_fighter_name(fighter_b):
+        fighter_b = None
     if not fighter_a or not fighter_b:
         notes.append("fighters_invalid")
     return {
