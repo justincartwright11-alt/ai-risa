@@ -1,0 +1,8 @@
+d936782 Fix confidence 0.0 handling in report adapter
+207560c Expand prediction contract checker to canonical fields
+5e094a9 Add canonical field compatibility to report adapter
+d7233ab Record obsolete script cleanup state
+4d9bbe9 Harden runtime artifact ignore rules
+9b5cf6f Record post batch B untrack status
+63bb413 Untrack ops/events runtime artifacts
+89e0120 Record post batch A untrack status
