@@ -294,8 +294,8 @@ def normalize_legacy_prediction(data, pred_path):
     row["fighter_b"] = row["fighter_b"] or "UNKNOWN"
     row["predicted_winner"] = data.get("predicted_winner_id") or data.get("winner") or data.get("predicted_winner") or "UNKNOWN"
     row["predicted_method"] = data.get("method") or data.get("predicted_method") or data.get("method_tendency") or "UNKNOWN"
-    row["predicted_round"] = data.get("round") or data.get("predicted_round") or None
-    conf = data.get("confidence") or data.get("win_probability") or data.get("probability")
+    row["predicted_round"] = next((v for v in [data.get("round"), data.get("predicted_round")] if v is not None), None)
+    conf = next((v for v in [data.get("confidence"), data.get("win_probability"), data.get("probability")] if v is not None), None)
     row["confidence"] = normalize_confidence(conf)
     return row
 
