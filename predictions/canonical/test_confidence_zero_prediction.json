@@ -1,0 +1,19 @@
+{
+  "predicted_winner_id": "fighter_test_a",
+  "confidence": 0.0,
+  "method": "decision",
+  "round": "full",
+  "event_date": "2026-04-26",
+  "fighter_a_id": "fighter_test_a",
+  "fighter_b_id": "fighter_test_b",
+  "fighter_a_profile": {"name": "Test Fighter A"},
+  "fighter_b_profile": {"name": "Test Fighter B"},
+  "debug_metrics": {},
+  "signal_gap": 0.0,
+  "stoppage_propensity": 0.0,
+  "round_finish_tendency": 0.0,
+  "key_tactical_edges": [],
+  "risk_factors": [],
+  "confidence_explanation": "Test zero confidence",
+  "what_could_flip_the_fight": []
+}
