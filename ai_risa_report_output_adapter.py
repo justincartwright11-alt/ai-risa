@@ -504,7 +504,7 @@ def map_engine_output_to_report(engine_output):
 
     # Guard confidence formatting
     conf_label = _confidence_label(confidence)
-    if not confidence or conf_label in ["(confidence missing)", "N/A", "Unknown", "None", ""]:
+    if confidence is None or conf_label in ["(confidence missing)", "N/A", "Unknown", "None", ""]:
         raise ValueError("Missing or invalid confidence value for report headline")
     headline = {
         "winner": fighter_a_name if winner == engine_output.get('fighter_a_id') else (fighter_b_name if winner == engine_output.get('fighter_b_id') else winner),
