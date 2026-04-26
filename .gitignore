@@ -139,3 +139,19 @@ runs/*
 *.tmp
 
 deliveries/
+
+# Repo hygiene: generated artifacts and transient outputs
+report_assets/
+reports/
+results/
+tmp/
+.pytest_cache/
+*.log
+debug_*.txt
+report_log_*.txt
+run_report_*.log
+result*.txt
+test_out.txt
+test_err.txt
+test_results.txt
+server_log.txt
