@@ -132,5 +132,27 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Failure Patterns', resp.data)
         self.assertIn(b'/api/accuracy/error-patterns', resp.data)
 
+    def test_signal_coverage_contract(self):
+        resp = self.client.get('/api/accuracy/signal-coverage')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('coverage', data)
+        cov = data['coverage']
+        for bucket in ('overall', 'resolved', 'unresolved'):
+            self.assertIn(bucket, cov)
+            b = cov[bucket]
+            self.assertIn('total_predictions', b)
+            for field in ('signal_gap_coverage_pct', 'stoppage_propensity_coverage_pct',
+                          'round_finish_tendency_coverage_pct', 'predicted_method_coverage_pct',
+                          'predicted_round_coverage_pct'):
+                self.assertIn(field, b)
+
+    def test_signal_coverage_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Signal Coverage', resp.data)
+        self.assertIn(b'/api/accuracy/signal-coverage', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

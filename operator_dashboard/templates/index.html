@@ -778,6 +778,11 @@
                             <h4>Failure Patterns</h4>
                             <div id="failure-patterns-content" class="phase1-table-shell">Loading…</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="signal-coverage-panel">
+                            <div class="phase1-subtitle">Data Quality</div>
+                            <h4>Signal Coverage</h4>
+                            <div id="signal-coverage-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1666,6 +1671,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 await loadMethodRoundBreakdown();
                 await loadConfidenceCalibration();
                 await loadFailurePatterns();
+                await loadSignalCoverage();
             }
 
             async function loadSignalGapBreakdown() {
@@ -1803,6 +1809,52 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                     </table>`;
                 } catch (e) {
                     container.innerHTML = '<span style="color:#a80000;">Failed to load confidence calibration.</span>';
+                }
+            }
+
+            async function loadSignalCoverage() {
+                const container = document.getElementById('signal-coverage-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/signal-coverage');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No data available.</span>';
+                        return;
+                    }
+                    const cov = data.coverage || {};
+                    const fields = [
+                        { key: 'signal_gap_coverage_pct', label: 'Signal Gap' },
+                        { key: 'stoppage_propensity_coverage_pct', label: 'Stoppage Propensity' },
+                        { key: 'round_finish_tendency_coverage_pct', label: 'Round Finish Tendency' },
+                        { key: 'predicted_method_coverage_pct', label: 'Predicted Method' },
+                        { key: 'predicted_round_coverage_pct', label: 'Predicted Round' },
+                    ];
+                    const fmtPct = (v) => {
+                        if (v === null || v === undefined) return '<span style="color:#888;">—</span>';
+                        const color = v < 60 ? '#a80000' : '#1a7a1a';
+                        return `<span style="color:${color};font-weight:600;">${v}%</span>`;
+                    };
+                    const rows = fields.map(f => `<tr>
+                        <td>${escapeHtml(f.label)}</td>
+                        <td>${fmtPct((cov.overall || {})[f.key])}</td>
+                        <td>${fmtPct((cov.resolved || {})[f.key])}</td>
+                        <td>${fmtPct((cov.unresolved || {})[f.key])}</td>
+                    </tr>`).join('');
+                    const totals = `<tr style="font-size:11px;color:#888;">
+                        <td>Total predictions</td>
+                        <td>${(cov.overall || {}).total_predictions ?? '—'}</td>
+                        <td>${(cov.resolved || {}).total_predictions ?? '—'}</td>
+                        <td>${(cov.unresolved || {}).total_predictions ?? '—'}</td>
+                    </tr>`;
+                    container.innerHTML = `
+                        <table class="phase1-table">
+                            <thead><tr><th>Signal</th><th>Overall</th><th>Resolved</th><th>Unresolved</th></tr></thead>
+                            <tbody>${totals}${rows}</tbody>
+                        </table>
+                        <div style="font-size:11px;color:#888;margin-top:6px;">Red = &lt;60% coverage</div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load signal coverage.</span>';
                 }
             }
 

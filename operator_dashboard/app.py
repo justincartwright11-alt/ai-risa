@@ -1144,6 +1144,85 @@ def api_accuracy_error_patterns():
         return jsonify({"ok": False, "error": str(e), "has_data": False, "total_misses": 0}), 500
 
 
+def _build_signal_coverage() -> dict:
+    """
+    Measure signal field coverage across all predictions (overall, resolved, unresolved).
+    Coverage = field exists AND not None AND not "unknown"/"" string.
+    """
+    ledger_path = Path(__file__).resolve().parent.parent / "ops" / "accuracy" / "accuracy_ledger.json"
+    if not ledger_path.exists():
+        return {"ok": True, "has_data": False, "coverage": {}}
+
+    with open(ledger_path, "r", encoding="utf-8") as f:
+        rows = json.load(f)
+
+    if not rows:
+        return {"ok": True, "has_data": False, "coverage": {}}
+
+    def _present(val):
+        if val is None:
+            return False
+        if isinstance(val, str) and val.strip().lower() in ("", "unknown", "n/a"):
+            return False
+        return True
+
+    def _calc_bucket(subset):
+        n = len(subset)
+        if n == 0:
+            return {
+                "total_predictions": 0,
+                "signal_gap_coverage_pct": None,
+                "stoppage_propensity_coverage_pct": None,
+                "round_finish_tendency_coverage_pct": None,
+                "predicted_method_coverage_pct": None,
+                "predicted_round_coverage_pct": None,
+                "signal_gap_present": 0,
+                "stoppage_propensity_present": 0,
+                "round_finish_tendency_present": 0,
+                "predicted_method_present": 0,
+                "predicted_round_present": 0,
+            }
+        sg = sum(1 for r in subset if _present(r.get("signal_gap")))
+        sp = sum(1 for r in subset if _present(r.get("stoppage_propensity")))
+        rft = sum(1 for r in subset if _present(r.get("round_finish_tendency")))
+        pm = sum(1 for r in subset if _present(r.get("predicted_method")))
+        pr = sum(1 for r in subset if _present(r.get("predicted_round")))
+        return {
+            "total_predictions": n,
+            "signal_gap_coverage_pct": round(sg / n * 100, 1),
+            "stoppage_propensity_coverage_pct": round(sp / n * 100, 1),
+            "round_finish_tendency_coverage_pct": round(rft / n * 100, 1),
+            "predicted_method_coverage_pct": round(pm / n * 100, 1),
+            "predicted_round_coverage_pct": round(pr / n * 100, 1),
+            "signal_gap_present": sg,
+            "stoppage_propensity_present": sp,
+            "round_finish_tendency_present": rft,
+            "predicted_method_present": pm,
+            "predicted_round_present": pr,
+        }
+
+    resolved = [r for r in rows if r.get("resolved_result")]
+    unresolved = [r for r in rows if not r.get("resolved_result")]
+
+    return {
+        "ok": True,
+        "has_data": True,
+        "coverage": {
+            "overall": _calc_bucket(rows),
+            "resolved": _calc_bucket(resolved),
+            "unresolved": _calc_bucket(unresolved),
+        },
+    }
+
+
+@app.route("/api/accuracy/signal-coverage", methods=["GET"])
+def api_accuracy_signal_coverage():
+    try:
+        return jsonify(_build_signal_coverage())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "has_data": False, "coverage": {}}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """
