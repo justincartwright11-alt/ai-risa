@@ -924,6 +924,67 @@ def api_accuracy_method_round_breakdown():
         return jsonify({"ok": False, "error": str(e), "has_data": False}), 500
 
 
+def _build_confidence_calibration() -> dict:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+    ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+
+    BUCKETS = [
+        ("0.50–0.60", 0.50, 0.60),
+        ("0.61–0.70", 0.61, 0.70),
+        ("0.71–0.80", 0.71, 0.80),
+        ("0.81–0.90", 0.81, 0.90),
+        ("0.91–1.00", 0.91, 1.00),
+    ]
+    bucket_data = {label: {"confs": [], "hits": 0, "total": 0} for label, _, _ in BUCKETS}
+
+    for row in ledger_records:
+        if not row.get("resolved_result"):
+            continue
+        if row.get("hit_winner") is None:
+            continue
+        conf = _safe_float(row.get("confidence"))
+        if conf is None:
+            continue
+        # Normalize percent-scale (e.g. 60.0) to 0-1
+        if conf > 1.0:
+            conf = conf / 100.0
+        for label, lo, hi in BUCKETS:
+            if lo <= conf <= hi:
+                bucket_data[label]["confs"].append(conf)
+                bucket_data[label]["total"] += 1
+                if row.get("hit_winner"):
+                    bucket_data[label]["hits"] += 1
+                break
+
+    calibration = []
+    for label, _, _ in BUCKETS:
+        bd = bucket_data[label]
+        total = bd["total"]
+        hits = bd["hits"]
+        conf_avg = round(sum(bd["confs"]) / len(bd["confs"]), 4) if bd["confs"] else None
+        win_rate = round(hits / total, 4) if total else None
+        gap = round(win_rate - conf_avg, 4) if (conf_avg is not None and win_rate is not None) else None
+        calibration.append({
+            "bucket": label,
+            "total_compared": total,
+            "predicted_confidence_avg": conf_avg,
+            "actual_win_rate": win_rate,
+            "calibration_gap": gap,
+        })
+
+    has_data = any(b["total_compared"] > 0 for b in calibration)
+    return {"ok": True, "has_data": has_data, "calibration": calibration}
+
+
+@app.route("/api/accuracy/confidence-calibration", methods=["GET"])
+def api_accuracy_confidence_calibration():
+    try:
+        return jsonify(_build_confidence_calibration())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "has_data": False, "calibration": []}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """

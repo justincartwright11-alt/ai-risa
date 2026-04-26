@@ -768,6 +768,11 @@
                             <h4>Stoppage / Finish Tendency Accuracy</h4>
                             <div id="stoppage-finish-tendency-content" class="phase1-table-shell">Loading…</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="confidence-calibration-panel">
+                            <div class="phase1-subtitle">Model Calibration</div>
+                            <h4>Confidence Calibration</h4>
+                            <div id="confidence-calibration-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1654,6 +1659,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 renderWaitingQueue([]);
                 await loadSignalGapBreakdown();
                 await loadMethodRoundBreakdown();
+                await loadConfidenceCalibration();
             }
 
             async function loadSignalGapBreakdown() {
@@ -1754,6 +1760,43 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 } catch (e) {
                     if (mrContainer) mrContainer.innerHTML = '<span style="color:#a80000;">Failed to load method/round breakdown.</span>';
                     if (sfContainer) sfContainer.innerHTML = '<span style="color:#a80000;">Failed to load tendency breakdown.</span>';
+                }
+            }
+
+            async function loadConfidenceCalibration() {
+                const container = document.getElementById('confidence-calibration-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/confidence-calibration');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    const rows = (data.calibration || []).map(b => {
+                        const gap = b.calibration_gap;
+                        const gapLabel = gap !== null ? (gap >= 0 ? '+' : '') + (gap * 100).toFixed(1) + '%' : '—';
+                        const gapColor = gap === null ? '' : gap >= 0 ? 'color:#107c10;' : 'color:#a80000;';
+                        return `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.predicted_confidence_avg !== null ? (b.predicted_confidence_avg * 100).toFixed(1) + '%' : '—'}</td>
+                            <td>${b.actual_win_rate !== null ? (b.actual_win_rate * 100).toFixed(1) + '%' : '—'}</td>
+                            <td style="${gapColor}">${gapLabel}</td>
+                        </tr>`;
+                    }).join('');
+                    container.innerHTML = `<table class="phase1-table">
+                        <thead><tr>
+                            <th>Confidence</th>
+                            <th>Total</th>
+                            <th>Predicted Conf Avg</th>
+                            <th>Actual Win Rate</th>
+                            <th>Calibration Gap</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load confidence calibration.</span>';
                 }
             }
             </script>

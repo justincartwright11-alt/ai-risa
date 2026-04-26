@@ -88,5 +88,27 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Stoppage / Finish Tendency Accuracy', resp.data)
         self.assertIn(b'/api/accuracy/method-round-breakdown', resp.data)
 
+    def test_confidence_calibration_contract(self):
+        resp = self.client.get('/api/accuracy/confidence-calibration')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('has_data', data)
+        self.assertIn('calibration', data)
+        self.assertIsInstance(data['calibration'], list)
+        self.assertEqual(len(data['calibration']), 5)
+        buckets = [b['bucket'] for b in data['calibration']]
+        for expected in ('0.50–0.60', '0.61–0.70', '0.71–0.80', '0.81–0.90', '0.91–1.00'):
+            self.assertIn(expected, buckets)
+        for b in data['calibration']:
+            for key in ('total_compared', 'predicted_confidence_avg', 'actual_win_rate', 'calibration_gap'):
+                self.assertIn(key, b)
+
+    def test_confidence_calibration_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Confidence Calibration', resp.data)
+        self.assertIn(b'/api/accuracy/confidence-calibration', resp.data)
+
 if __name__ == '__main__':
     unittest.main()
