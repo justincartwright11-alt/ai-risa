@@ -1,0 +1,34 @@
+{
+  "fighter_id": "fighter_song_yadong",
+  "name": "Yadong Song",
+  "sport": "mma",
+  "weight_class": "135 lb (61 kg; 9.6 st) division bantamweight",
+  "stance": "unknown",
+  "style": "Striker",
+  "team": "",
+  "notes": "Song Yadong is a Chinese professional mixed martial artist who currently competes in the Bantamweight division of the Ultimate Fighting Championship (UFC). As of May 6, 2025, he is #5 in the UFC bantamweight rankings.",
+  "source": "auto_web_research",
+  "source_confidence": "medium",
+  "source_confidence_reason": "partial source evidence with division plus stance/style; accepted with fallback stance=Unknown (identity/sport/style evidence strong)",
+  "source_summary": [
+    {
+      "source": "wikipedia",
+      "tier": "fallback",
+      "url": "https://en.wikipedia.org/wiki/Song_Yadong"
+    },
+    {
+      "source": "thesportsdb",
+      "tier": "fallback",
+      "url": ""
+    }
+  ],
+  "source_urls": [
+    "https://en.wikipedia.org/wiki/Song_Yadong"
+  ],
+  "recent_activity": "Song Yadong Chinese mixed martial artist (born 1997) Song Yadong is a Chinese professional mixed martial artist who currently competes in the Bantamweight division of the Ultimate Fighting Championship (UFC)",
+  "output_decay": 0.58,
+  "late_fight_fade": 0.52,
+  "attrition_sensitivity": 0.58,
+  "defensive_breakdown_tendency": 0.56,
+  "panic_collapse_sensitivity": 0.52
+}

@@ -8,10 +8,25 @@
     "output_decay": 0.54,
     "late_fight_fade": 0.59,
     "attrition_sensitivity": 0.57,
-    "durability": 0.70,
+    "durability": 0.7,
     "knockdown_susceptibility": 0.53,
     "defensive_breakdown_tendency": 0.56,
     "panic_collapse_sensitivity": 0.55
+  },
+  "eric_mcconico": {
+    "style": "Generalist",
+    "stance": "Orthodox",
+    "source": "manual_enrichment",
+    "source_confidence": "low",
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.61,
+    "output_decay": 0.57,
+    "late_fight_fade": 0.62,
+    "attrition_sensitivity": 0.6,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.55,
+    "defensive_breakdown_tendency": 0.59,
+    "panic_collapse_sensitivity": 0.57
   },
   "novak_radulovic": {
     "style": "Pressure Fighter",
@@ -31,15 +46,6 @@
     "style": "Power Puncher",
     "stance": "Orthodox",
     "source": "manual_enrichment",
-    "cardio_endurance": 0.66,
-    "recovery_quality": 0.64,
-    "output_decay": 0.57,
-    "late_fight_fade": 0.62,
-    "attrition_sensitivity": 0.60,
-    "durability": 0.71,
-    "knockdown_susceptibility": 0.55,
-    "defensive_breakdown_tendency": 0.59,
-    "panic_collapse_sensitivity": 0.57,
     "cardio_endurance": 0.64,
     "recovery_quality": 0.63,
     "output_decay": 0.58,
@@ -47,27 +53,18 @@
     "attrition_sensitivity": 0.61,
     "durability": 0.72,
     "knockdown_susceptibility": 0.56,
-    "defensive_breakdown_tendency": 0.60,
+    "defensive_breakdown_tendency": 0.6,
     "panic_collapse_sensitivity": 0.58
   },
   "david_spilmont": {
     "style": "Journeyman",
     "stance": "Orthodox",
     "source": "manual_enrichment",
-    "cardio_endurance": 0.64,
-    "recovery_quality": 0.63,
-    "output_decay": 0.58,
-    "late_fight_fade": 0.63,
-    "attrition_sensitivity": 0.61,
-    "durability": 0.72,
-    "knockdown_susceptibility": 0.56,
-    "defensive_breakdown_tendency": 0.60,
-    "panic_collapse_sensitivity": 0.58,
     "cardio_endurance": 0.63,
     "recovery_quality": 0.62,
     "output_decay": 0.57,
     "late_fight_fade": 0.62,
-    "attrition_sensitivity": 0.60,
+    "attrition_sensitivity": 0.6,
     "durability": 0.71,
     "knockdown_susceptibility": 0.55,
     "defensive_breakdown_tendency": 0.59,
@@ -77,7 +74,7 @@
     "cardio_endurance": 0.65,
     "recovery_quality": 0.62,
     "output_decay": 0.55,
-    "late_fight_fade": 0.60,
+    "late_fight_fade": 0.6,
     "attrition_sensitivity": 0.58,
     "durability": 0.68,
     "knockdown_susceptibility": 0.52,
@@ -97,25 +94,44 @@
   },
   "joe_pyfer": {
     "cardio_endurance": 0.62,
-    "recovery_quality": 0.60,
-    "output_decay": 0.60,
+    "recovery_quality": 0.6,
+    "output_decay": 0.6,
     "late_fight_fade": 0.65,
     "attrition_sensitivity": 0.63,
     "durability": 0.74,
     "knockdown_susceptibility": 0.58,
     "defensive_breakdown_tendency": 0.62,
-    "panic_collapse_sensitivity": 0.60
+    "panic_collapse_sensitivity": 0.6
   },
   "tim_tszyu": {
-    "cardio_endurance": 0.65,
-    "recovery_quality": 0.64,
-    "output_decay": 0.59,
-    "late_fight_fade": 0.64,
-    "attrition_sensitivity": 0.62,
-    "durability": 0.73,
-    "knockdown_susceptibility": 0.57,
-    "defensive_breakdown_tendency": 0.61,
-    "panic_collapse_sensitivity": 0.59
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "orthodox",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "premierboxingchampions.com",
+        "tier": "official"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Timofei Konstantinovich Tszyu is an Australian professional boxer who held the World Boxing Organization (WBO) light-middleweight title from 2023 to 2024. He is the son of former light-welterweight world champion Kostya Tszyu and the older brother of Nikita Tszyu."
   },
   "denis_nurja": {
     "cardio_endurance": 0.62,
@@ -123,21 +139,36 @@
     "output_decay": 0.56,
     "late_fight_fade": 0.61,
     "attrition_sensitivity": 0.59,
-    "durability": 0.70,
+    "durability": 0.7,
     "knockdown_susceptibility": 0.54,
     "defensive_breakdown_tendency": 0.58,
     "panic_collapse_sensitivity": 0.56
   },
   "israel_adesanya": {
-    "cardio_endurance": 0.66,
-    "recovery_quality": 0.65,
-    "output_decay": 0.60,
-    "late_fight_fade": 0.65,
-    "attrition_sensitivity": 0.63,
-    "durability": 0.74,
-    "knockdown_susceptibility": 0.58,
-    "defensive_breakdown_tendency": 0.62,
-    "panic_collapse_sensitivity": 0.60
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "Unknown",
+    "source": "auto_intake",
+    "source_confidence": "medium",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Israel Mobolaji Temitayo Odunayo Oluwafemi Owolabi Adesanya is a Nigerian-New Zealand professional mixed martial artist, former kickboxer, and boxer. As a mixed martial artist, he currently competes in the Middleweight division of the Ultimate Fighting Championship (UFC), where he is a former..."
   },
   "dricus_du_plessis": {
     "cardio_endurance": 0.67,
@@ -149,5 +180,1033 @@
     "knockdown_susceptibility": 0.59,
     "defensive_breakdown_tendency": 0.63,
     "panic_collapse_sensitivity": 0.61
+  },
+  "jiri_prochazka": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "with his hands often down, he relies heavily on head movement, timing, and reflexes rather than textbook defense. [ 75 ] rather than focus on control or efficiency, procházka embraces a philosophy of total engagement, frequently taking damage to create openings for counterattacks. he has stated in interviews that he prefers a mindset of \" no-mind \" in the cage—drawing from zen and bushido principles to fight instinctively rather than strategically. [ 76 ] defensively, procházka has drawn criticism for leaving openings, but his durability, recovery, and offensive unpredictability have allowed him to survive and turn the tide in chaotic exchanges. [ 77 ] personal life [ edit ] procházka is well-known as a devoted follower of the bushido principles , the samurai moral values and miyamoto musashi 's teachings and philosophy, especially musashi's the book of five rings , which procházka considers a life-changing book for him. [ 78 ] he is a supporter of fc zbrojovka brno and was involved in organized football hooliganism , including pre-arranged fights, until he started his professional combat sports career. [ 79 ] besides his native czech, procházka is conversational in english and has actively improved his proficiency in the language since joining the promotion. [ 80 ] procházka is also conversational in japanese, having mostly fought in the country for the latter half of the 2010s. [ 81 ] while competing in ufc and rizin ff, procházka attended masaryk university for his bachelor's degree, majoring in security forces physical fitness policy. [ 82 ] he is also a graduate of his local protective service secondary academy (czech: soš oom), now the brno's school of law & security (czech: bpa). [ 83 ] he has also earned a master's degree in security and strategic studies from masaryk university’s school of special & sports education of security bodies while competing in the ufc. [ 84 ] procházka is known for his catchphrase, \" bjp \" ( b'e-y'e-p'e ; czech: [bɛːjɛːpɛː] ⓘ ). it is the czech initialism for \" b omby j ak p iča(!) \" (english: bomb the shit out of 'em[!] or bomb-'em-up[!] ), it is procházka's battle cry and also the name of his merchandise brand. [ 85 ] his nickname, denisa , is a girl's name in the czech language equivalent to the english denise , and deniska . it originated during a training camp, where procházka had responded to his",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Jiří Procházka is a Czech professional mixed martial artist. He currently competes in the Light Heavyweight division of the Ultimate Fighting Championship (UFC), where he is a former UFC Light Heavyweight Champion and the first Czech fighter to win a UFC championship. He was the inaugural Rizin..."
+  },
+  "carlos_ulberg": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "switch",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Carlos Sao Murry Ulberg is a New Zealand professional mixed martial artist and former kickboxer. He currently competes in the Light Heavyweight division of the Ultimate Fighting Championship (UFC), where he is the current UFC Light Heavyweight Champion. As of 14 April 2026, he is #15 in the UFC..."
+  },
+  "bahram_rajabzadeh": {
+    "style": "Aggressive Power Striker",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.8,
+    "durability": 0.85,
+    "recovery_quality": 0.82,
+    "knockdown_susceptibility": 0.4,
+    "output_decay": 0.55
+  },
+  "donovan_wisse": {
+    "style": "Technical Kickboxer",
+    "stance": "Switch",
+    "cardio_endurance": 0.83,
+    "durability": 0.81,
+    "recovery_quality": 0.8,
+    "knockdown_susceptibility": 0.42,
+    "output_decay": 0.53
+  },
+  "song_yadong": {
+    "style": "Striker",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.72,
+    "recovery_quality": 0.7,
+    "output_decay": 0.62,
+    "late_fight_fade": 0.45,
+    "attrition_sensitivity": 0.6,
+    "durability": 0.75,
+    "knockdown_susceptibility": 0.45,
+    "defensive_breakdown_tendency": 0.55,
+    "panic_collapse_sensitivity": 0.42,
+    "aggression_bias": 0.65,
+    "finish_bias": 0.55,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Volume striker. Moderate finish threat. Good durability. Solid cardio for bantamweight."
+  },
+  "deiveson_figueiredo": {
+    "style": "Pressure Fighter",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.55,
+    "recovery_quality": 0.52,
+    "output_decay": 0.68,
+    "late_fight_fade": 0.72,
+    "attrition_sensitivity": 0.7,
+    "durability": 0.62,
+    "knockdown_susceptibility": 0.6,
+    "defensive_breakdown_tendency": 0.65,
+    "panic_collapse_sensitivity": 0.62,
+    "aggression_bias": 0.7,
+    "finish_bias": 0.72,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Former flyweight champion moving to bantamweight. Power puncher, submission threat. Aging-adjusted lower cardio."
+  },
+  "oleksandr_usyk": {
+    "source": "manual_enrichment",
+    "style": "Technical Southpaw Boxer",
+    "stance": "Southpaw",
+    "cardio_endurance": 0.88,
+    "recovery_quality": 0.86,
+    "output_decay": 0.34,
+    "late_fight_fade": 0.3,
+    "attrition_sensitivity": 0.28,
+    "durability": 0.87,
+    "knockdown_susceptibility": 0.27,
+    "defensive_breakdown_tendency": 0.26,
+    "panic_collapse_sensitivity": 0.2,
+    "decision_structure": "Usyk's decisions prioritize angle creation, southpaw jab control, and cumulative scoring over single-shot trading.",
+    "tactical_edges": "Elite footwork, angle resets, and sustained technical control at mid-to-long range.",
+    "energy_use": "High engine with efficient volume pacing across all phases.",
+    "fatigue_failure_points": "Few clear fatigue cliffs; risk rises only in prolonged clinch-heavy mauls.",
+    "mental_condition": "Highly composed under pressure with strong tactical recalibration between rounds.",
+    "collapse_triggers": "Sustained body attrition in close quarters that limits movement later.",
+    "deception_unpredictability": "Layered feints and angle switches that hide entry and exit timing.",
+    "fight_control": "Controls bout geometry through footwork, jab rhythm, and ring positioning.",
+    "fight_turns": "Turns against him if trapped on ropes and denied angle exits.",
+    "scenario_tree": "1) Outboxes over distance. 2) Wins late via pace maintenance. 3) Faces tighter rounds if repeatedly pinned.",
+    "round_by_round_outlook": "Round 1: range mapping. Round 2: tempo ownership. Round 3+: cumulative technical separation.",
+    "risk_factors": "Close-range mauling and body pressure that compresses his movement game.",
+    "what_could_flip": "If exchanges stay in phone-booth range, opponent physicality can narrow Usyk's edge.",
+    "corner_notes": "Maintain lead-foot position, keep exits layered, and re-center after every exchange.",
+    "final_projection": "Projected to win on technical control and cumulative scoring reliability.",
+    "confidence_explanation": "Confidence is driven by repeatable ringcraft advantages and late-fight consistency."
+  },
+  "rico_verhoeven": {
+    "source": "manual_enrichment",
+    "style": "High-Volume Outside Boxer",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.82,
+    "recovery_quality": 0.8,
+    "output_decay": 0.4,
+    "late_fight_fade": 0.37,
+    "attrition_sensitivity": 0.35,
+    "durability": 0.84,
+    "knockdown_susceptibility": 0.31,
+    "defensive_breakdown_tendency": 0.33,
+    "panic_collapse_sensitivity": 0.24,
+    "decision_structure": "Verhoeven's decisions emphasize jab volume, outside rhythm, and sustained point accumulation.",
+    "tactical_edges": "Disciplined range management and consistent combination volume.",
+    "energy_use": "Steady output with controlled pace surges rather than all-out bursts.",
+    "fatigue_failure_points": "Can lose initiative if repeatedly forced to reset under angle-heavy pressure.",
+    "mental_condition": "Generally composed with strong adherence to game plan structure.",
+    "collapse_triggers": "Body work plus sustained lateral traps that break his preferred outside rhythm.",
+    "deception_unpredictability": "Jab feints and rhythm variation before right-hand commitments.",
+    "fight_control": "Controls through jab-led tempo and long-range scoring cycles.",
+    "fight_turns": "Turns when his jab lane is neutralized and exchanges become close-range.",
+    "scenario_tree": "1) Wins rounds on volume and ring command. 2) Close fight if opponent wins mid-range exchanges. 3) Late edge if pace remains stable.",
+    "round_by_round_outlook": "Round 1: establish jab rhythm. Round 2: extend volume advantage. Round 3+: manage distance and deny counters.",
+    "risk_factors": "Susceptible to momentum swings if denied space and forced into reactive exchanges.",
+    "what_could_flip": "Losing lead-jab control can quickly erase his scoring edge.",
+    "corner_notes": "Reassert jab priority, avoid squared exits, and keep exchanges at preferred range.",
+    "final_projection": "Path to success is sustained range control and clean volume accumulation.",
+    "confidence_explanation": "Confidence reflects strong process consistency when distance management remains intact."
+  },
+  "gervonta_davis": {
+    "source": "manual_enrichment",
+    "style": "Power Counter Puncher",
+    "stance": "Southpaw",
+    "cardio_endurance": 0.78,
+    "recovery_quality": 0.76,
+    "output_decay": 0.46,
+    "late_fight_fade": 0.44,
+    "attrition_sensitivity": 0.42,
+    "durability": 0.83,
+    "knockdown_susceptibility": 0.3,
+    "defensive_breakdown_tendency": 0.34,
+    "panic_collapse_sensitivity": 0.25,
+    "executive_summary": "Davis is a low-volume but high-consequence southpaw puncher whose fight-winning moments often come from timing reads rather than round-long activity.",
+    "decision_structure": "He typically gives away early initiative to gather rhythm data, then hunts for predictable patterns to punish with compact counters.",
+    "tactical_edges": "Elite single-shot power, sharp counter timing against linear entries, and efficient pocket defense when exchanges compress.",
+    "energy_use": "He spends energy in short, explosive windows and avoids wasteful volume, preserving finishing threat deep into the fight.",
+    "fatigue_failure_points": "His scoring risk rises if opponents force sustained output rounds where he must lead repeatedly instead of countering.",
+    "mental_condition": "Composed under pressure, comfortable trailing rounds, and generally unshaken by momentum swings before finding counters.",
+    "collapse_triggers": "Sustained jab pressure plus disciplined exits can reduce his counter windows and force less efficient offense.",
+    "deception_unpredictability": "He hides launch points with subtle shoulder feints, level shifts, and delayed left-hand triggers.",
+    "fight_control": "Control is established by threat management: opponents hesitate when his counter-left is live, slowing their preferred tempo.",
+    "fight_turns": "The fight turns when opponents repeat predictable exits or overcommit on entries that he can counter cleanly.",
+    "scenario_tree": "1) Late stoppage after timing lock-in. 2) Tight decision if counters are clean but sparse. 3) Close loss if out-jabbed without momentum swings.",
+    "round_by_round_outlook": "Early rounds are read-heavy with selective counters; middle rounds feature sharper interceptions; late rounds carry peak knockout danger.",
+    "risk_factors": "Low volume can concede rounds, and disciplined movers can bank points before his timing edge materializes.",
+    "what_could_flip": "One clean left-hand counter during an opponent's combination exit can instantly reverse score momentum.",
+    "corner_notes": "Force counters off the opponent's second beat, keep lead-foot advantage, and avoid chasing at high volume between windows.",
+    "final_projection": "Most reliable path is a momentum-changing counter sequence followed by controlled pressure and selective follow-up.",
+    "confidence_explanation": "Confidence is moderate-high because his fight-ending upside is elite, but round-by-round volume dependence can narrow margins."
+  },
+  "shakur_stevenson": {
+    "source": "manual_enrichment",
+    "style": "Defensive Technician",
+    "stance": "Southpaw",
+    "cardio_endurance": 0.86,
+    "recovery_quality": 0.84,
+    "output_decay": 0.34,
+    "late_fight_fade": 0.31,
+    "attrition_sensitivity": 0.29,
+    "durability": 0.81,
+    "knockdown_susceptibility": 0.24,
+    "defensive_breakdown_tendency": 0.22,
+    "panic_collapse_sensitivity": 0.18,
+    "executive_summary": "Stevenson is a control-oriented southpaw whose value comes from denial: he limits clean offense while accumulating scoring touches.",
+    "decision_structure": "He prioritizes positional wins and defensive reads first, then scales offense once timing and distance are fully mapped.",
+    "tactical_edges": "Elite distance control, layered lead-hand defense, and precise counters against overextended entries.",
+    "energy_use": "Highly efficient pacing with minimal wasted actions, enabling sustained technical sharpness across full distance.",
+    "fatigue_failure_points": "Primary vulnerability is not physical fade but lower urgency if opponents build rounds through disciplined activity.",
+    "mental_condition": "Calm and process-driven, with strong tactical discipline under pressure and little emotional drift.",
+    "collapse_triggers": "High-pressure body attacks combined with ring cuts can reduce his preferred reset space.",
+    "deception_unpredictability": "Subtle feint layers and cadence breaks disguise his lead-hand timing and defensive counters.",
+    "fight_control": "He controls geography through foot placement, range denial, and forcing opponents to reset before they can chain offense.",
+    "fight_turns": "Fights swing in his favor when opponents miss repeatedly and become hesitant to commit combinations.",
+    "scenario_tree": "1) Clear decision via defensive command. 2) Competitive decision if pressured consistently. 3) Narrow loss if outworked in low-event rounds.",
+    "round_by_round_outlook": "Early rounds establish distance authority; middle rounds widen control; late rounds favor his efficiency if pace stays technical.",
+    "risk_factors": "Low-event rounds can be interpreted narrowly if opponent activity appears higher to judges.",
+    "what_could_flip": "If trapped near ropes for sustained stretches, opponent body work can alter his output profile.",
+    "corner_notes": "Maintain lead-foot lane, increase right-jab volume when pressured, and exit on angles after every scoring touch.",
+    "final_projection": "Most likely path is a decision built on defensive suppression and cleaner scoring quality.",
+    "confidence_explanation": "Confidence is high on process reliability, with moderate variance tied to judging in low-damage rounds."
+  },
+  "saul_alvarez": {
+    "source": "manual_enrichment",
+    "style": "Pressure Counter Puncher",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.8,
+    "recovery_quality": 0.79,
+    "output_decay": 0.43,
+    "late_fight_fade": 0.4,
+    "attrition_sensitivity": 0.38,
+    "durability": 0.86,
+    "knockdown_susceptibility": 0.27,
+    "defensive_breakdown_tendency": 0.3,
+    "panic_collapse_sensitivity": 0.2,
+    "executive_summary": "Alvarez is a compact pressure counter puncher whose elite body work and timing control can steadily erode opponents over rounds.",
+    "decision_structure": "He builds outcomes through early pattern reads, then commits to body-head sequencing once defensive reactions are identified.",
+    "tactical_edges": "Premier body attack, high-level upper-body defense, and precise counters at mid-range.",
+    "energy_use": "Measured pacing with selective surges, conserving output for high-value exchanges rather than constant volume.",
+    "fatigue_failure_points": "If forced into sustained high-pace foot races, his late-round activity can flatten relative to mobile opponents.",
+    "mental_condition": "Experienced and composed in championship pacing, generally comfortable adapting after tactical setbacks.",
+    "collapse_triggers": "Persistent outside movement plus high punch-volume jabbing can reduce his body-shot opportunities.",
+    "deception_unpredictability": "Small feints and shoulder rolls mask counter entries and create hesitation before his right-hand triggers.",
+    "fight_control": "He controls through ring positioning and body pressure that narrows opponent mobility lanes.",
+    "fight_turns": "Turning point often appears when body damage reduces opponent foot speed and defensive discipline.",
+    "scenario_tree": "1) Late control decision after body attrition. 2) Mid-fight momentum swing from cleaner counters. 3) Tight loss if unable to pin movers.",
+    "round_by_round_outlook": "Early rounds are read-driven; middle rounds favor body investment; late rounds depend on cumulative attrition effects.",
+    "risk_factors": "Can cede portions of rounds against high-output movers if ring cuts are not consistently successful.",
+    "what_could_flip": "A sustained jab-volume edge by the opponent can force Alvarez to chase and narrow his efficiency.",
+    "corner_notes": "Cut exits with lead-foot discipline, invest to body early, and avoid waiting too long before pressure commits.",
+    "final_projection": "Best path is cumulative body attrition leading to late-round command or a close control decision.",
+    "confidence_explanation": "Confidence is moderate-high due to elite craft, with variance linked to opponent mobility and round-stealing volume."
+  },
+  "terence_crawford": {
+    "source": "manual_enrichment",
+    "style": "Adaptive Boxer Puncher",
+    "stance": "Switch",
+    "cardio_endurance": 0.87,
+    "recovery_quality": 0.85,
+    "output_decay": 0.33,
+    "late_fight_fade": 0.3,
+    "attrition_sensitivity": 0.28,
+    "durability": 0.84,
+    "knockdown_susceptibility": 0.26,
+    "defensive_breakdown_tendency": 0.25,
+    "panic_collapse_sensitivity": 0.18,
+    "executive_summary": "Crawford is a switch-hitting boxer-puncher whose adaptability and finishing instincts create strong upside in evolving tactical fights.",
+    "decision_structure": "He begins with information gathering, then changes stance, rhythm, and shot selection to exploit discovered vulnerabilities.",
+    "tactical_edges": "Elite adaptability, sharp counter mechanics from both stances, and strong late-fight finishing transitions.",
+    "energy_use": "Efficient baseline output with deliberate accelerations once he gains tactical reads.",
+    "fatigue_failure_points": "Limited cardio cliffs; risk rises mainly in prolonged clinch-heavy fights that suppress his stance-switch rhythm.",
+    "mental_condition": "Highly composed and opportunistic, with proven ability to shift game plans mid-fight under pressure.",
+    "collapse_triggers": "Can be disrupted if repeatedly tied up inside before he establishes rhythm and distance cues.",
+    "deception_unpredictability": "Stance switching, timing pauses, and feint layers obscure entry points for his power counters.",
+    "fight_control": "Controls fight narrative through adaptation, making opponents operate in less familiar tactical patterns.",
+    "fight_turns": "Fight turns once he identifies repeat defensive habits and begins punishing them with stance-specific counters.",
+    "scenario_tree": "1) Late stoppage after adaptation. 2) Clear decision via cleaner scoring. 3) Narrower fight if opponent limits adjustment windows.",
+    "round_by_round_outlook": "Opening rounds map reads; middle rounds feature adaptation gains; late rounds carry peak finishing probability.",
+    "risk_factors": "Slow starts can concede early rounds if opponent banks volume before adjustments land.",
+    "what_could_flip": "A single adaptation cycle that solves opponent jab timing can rapidly change momentum and damage profile.",
+    "corner_notes": "Accelerate stance shifts after confirmed reads, counter the second phase of combinations, and keep exits disciplined.",
+    "final_projection": "Most likely path is tactical separation followed by either decision control or late stoppage opportunity.",
+    "confidence_explanation": "Confidence is high due to adaptation reliability and two-stance problem-solving against elite opposition."
+  },
+  "tyson_fury": {
+    "source": "manual_enrichment",
+    "style": "Mobile Heavyweight Technician",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.82,
+    "recovery_quality": 0.8,
+    "output_decay": 0.41,
+    "late_fight_fade": 0.38,
+    "attrition_sensitivity": 0.36,
+    "durability": 0.85,
+    "knockdown_susceptibility": 0.33,
+    "defensive_breakdown_tendency": 0.35,
+    "panic_collapse_sensitivity": 0.24,
+    "executive_summary": "Fury is a range-manipulating heavyweight technician whose feints, clinch management, and rhythm disruption create durable round control.",
+    "decision_structure": "He prioritizes disruption first, then layers jab control and leaning clinches to drain opponent timing and output.",
+    "tactical_edges": "Elite size management, feint variety, and clinch framing that breaks opponent offensive continuity.",
+    "energy_use": "Uses variable pacing and strategic clinch rests to maintain late-fight control in heavyweight tempo.",
+    "fatigue_failure_points": "Performance can dip if forced into sustained high-output exchanges without clinch reset opportunities.",
+    "mental_condition": "Confident and adaptive in long fights, often comfortable making tactical adjustments under adversity.",
+    "collapse_triggers": "Consistent body work and straight-line power shots can disrupt his movement and posture control.",
+    "deception_unpredictability": "Constant feints, tempo changes, and stance-posture variations hide offensive commitments.",
+    "fight_control": "Controls through distance manipulation, jab rhythm, and clinch interruption of opponent combinations.",
+    "fight_turns": "Turns when opponents fail to solve his jab-clinch cycle and begin overreaching into counters.",
+    "scenario_tree": "1) Decision via range control. 2) Mid-late attritional stoppage if opponent fades. 3) Tight rounds if power exchanges dominate.",
+    "round_by_round_outlook": "Early rounds are tactical probing; middle rounds emphasize clinch/jab control; late rounds depend on attrition and discipline.",
+    "risk_factors": "Heavy clean right hands and committed body pressure remain the main danger zones.",
+    "what_could_flip": "A sequence of clean power shots before he resets rhythm can quickly alter score and confidence dynamics.",
+    "corner_notes": "Own center-line jab lane, tie up after hard exchanges, and avoid unnecessary pocket trading.",
+    "final_projection": "Best path is prolonged control through disruption, with attritional upside if opponent output declines.",
+    "confidence_explanation": "Confidence is moderate-high because his control toolkit is deep, though heavyweight power variance remains material."
+  },
+  "anthony_joshua": {
+    "source": "manual_enrichment",
+    "style": "Structured Power Puncher",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.76,
+    "recovery_quality": 0.74,
+    "output_decay": 0.47,
+    "late_fight_fade": 0.45,
+    "attrition_sensitivity": 0.43,
+    "durability": 0.8,
+    "knockdown_susceptibility": 0.39,
+    "defensive_breakdown_tendency": 0.41,
+    "panic_collapse_sensitivity": 0.3,
+    "executive_summary": "Joshua is a structured heavyweight power puncher whose best work comes from disciplined jab-right frameworks and controlled combinations.",
+    "decision_structure": "He prefers orderly exchanges with positional discipline, building offense from jab control and clear power lanes.",
+    "tactical_edges": "Strong straight-shot power, sharp uppercut counters inside, and clear combination mechanics when balanced.",
+    "energy_use": "Moderate-to-high output in controlled phases, with efficiency dropping in chaotic sustained exchanges.",
+    "fatigue_failure_points": "Can become less fluid under prolonged pressure where defensive resets are repeatedly denied.",
+    "mental_condition": "Generally composed when structure holds, but momentum shocks can reduce offensive confidence temporarily.",
+    "collapse_triggers": "Unstructured brawling phases and sustained pressure that break his preferred range management.",
+    "deception_unpredictability": "Uses jab feints and level changes before right-hand commitments, though patterning can become readable over time.",
+    "fight_control": "Controls best through jab-led distance and forcing opponents onto predictable entry lines.",
+    "fight_turns": "Fight turns when his jab lane is lost and exchanges become reactive rather than structured.",
+    "scenario_tree": "1) Decision on cleaner straight-shot scoring. 2) Stoppage if power lands early. 3) Late fade if pressured into disorder.",
+    "round_by_round_outlook": "Early rounds establish structure; middle rounds carry highest power threat; late rounds depend on pace management under pressure.",
+    "risk_factors": "Sustained pressure and rhythm disruption can degrade his defensive coordination and output quality.",
+    "what_could_flip": "A sequence of opponent pressure breakthroughs can shift him from proactive offense to reactive defense.",
+    "corner_notes": "Reclaim jab lane immediately after resets, avoid prolonged pocket exchanges, and keep exits disciplined after power shots.",
+    "final_projection": "Most reliable path is structured scoring with periodic power surges rather than extended chaos exchanges.",
+    "confidence_explanation": "Confidence is moderate because his upside is high in structure, but pressure-induced variance remains relevant."
+  },
+  "alex_pereira": {
+    "source": "manual_enrichment",
+    "style": "Kickboxing Counter Striker",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.77,
+    "recovery_quality": 0.75,
+    "output_decay": 0.45,
+    "late_fight_fade": 0.42,
+    "attrition_sensitivity": 0.4,
+    "durability": 0.82,
+    "knockdown_susceptibility": 0.34,
+    "defensive_breakdown_tendency": 0.37,
+    "panic_collapse_sensitivity": 0.26,
+    "executive_summary": "Pereira is a high-impact MMA striker with elite kickboxing mechanics and fight-changing power that alters opponent decision-making.",
+    "decision_structure": "He prioritizes range traps and counter timing, then escalates with calf kicks and left-hook entries once reads are secure.",
+    "tactical_edges": "Outstanding striking timing, dangerous left-hook counters, and damaging low-kick layering from open stances.",
+    "energy_use": "Measured output with explosive bursts, preserving knockout threat while minimizing unnecessary grappling scrambles.",
+    "fatigue_failure_points": "Extended wrestling sequences and repeated mat returns can tax his get-up cycles and reduce striking sharpness.",
+    "mental_condition": "Composed in striking duels, generally confident under pressure when range control remains available.",
+    "collapse_triggers": "Sustained chain-wrestling and top-control rides that deny striking resets can degrade his offensive posture.",
+    "deception_unpredictability": "Feint-heavy jab and kick setups disguise left-hook timing and trap exits along the cage.",
+    "fight_control": "Controls primarily through striking threat that forces defensive reactions and narrows opponent entries.",
+    "fight_turns": "Turns rapidly when opponents fail to hide level changes or linger in hook lanes after exchanges.",
+    "scenario_tree": "1) Striking finish after range traps. 2) Decision via damage edge. 3) Narrow loss if controlled in prolonged grappling phases.",
+    "round_by_round_outlook": "Round 1 favors striking reads and kick investments; middle rounds hinge on takedown success; late rounds depend on grappling tax.",
+    "risk_factors": "Defensive wrestling transitions and cage-wrestling durability remain the main structural vulnerabilities.",
+    "what_could_flip": "A single defended takedown leading to immediate counter damage can reverse round momentum abruptly.",
+    "corner_notes": "Hide level-change reads with feints, deny fence position after combinations, and punish entries with knees and hooks.",
+    "final_projection": "Highest-probability win path is striking damage accumulation with opportunistic finishing sequences.",
+    "confidence_explanation": "Confidence is moderate-high because his striking upside is elite, but grappling-control variance remains meaningful in MMA."
+  },
+  "magomed_ankalaev": {
+    "source": "manual_enrichment",
+    "style": "Measured Pressure Technician",
+    "stance": "Southpaw",
+    "cardio_endurance": 0.83,
+    "recovery_quality": 0.81,
+    "output_decay": 0.39,
+    "late_fight_fade": 0.36,
+    "attrition_sensitivity": 0.34,
+    "durability": 0.84,
+    "knockdown_susceptibility": 0.29,
+    "defensive_breakdown_tendency": 0.31,
+    "panic_collapse_sensitivity": 0.22,
+    "executive_summary": "Ankalaev is a disciplined MMA technician who combines southpaw striking control with credible wrestling pathways over full rounds.",
+    "decision_structure": "He builds rounds through controlled pressure, low-risk striking, and selective grappling transitions when opponents overcommit.",
+    "tactical_edges": "Strong positional discipline, accurate southpaw counters, and timely takedowns to secure momentum and control time.",
+    "energy_use": "Efficient pacing across three phases, with low waste in transitions and stable output under pressure.",
+    "fatigue_failure_points": "Primary risk appears when forced into high-tempo striking wars that reduce his measured control style.",
+    "mental_condition": "Calm and process-oriented, typically resilient in close tactical rounds without emotional overreaction.",
+    "collapse_triggers": "Extended striking firefights without control breaks can increase defensive error frequency.",
+    "deception_unpredictability": "Subtle stance feints and jab-to-level-change threats keep opponents split between strike and takedown defense.",
+    "fight_control": "Controls through range discipline, cage positioning, and intermittent grappling to interrupt opponent rhythm.",
+    "fight_turns": "Turns in his favor when opponents hesitate on entries due to mixed strike/takedown threat.",
+    "scenario_tree": "1) Decision via control and cleaner moments. 2) Late finish after cumulative damage. 3) Narrow loss if pressured into pure striking volatility.",
+    "round_by_round_outlook": "Round 1 establishes distance and reads; middle rounds mix pressure with takedowns; late rounds favor his composure and control metrics.",
+    "risk_factors": "Can cede optics in low-event rounds if opponents produce higher visible activity without major damage.",
+    "what_could_flip": "A failed control sequence followed by opponent momentum striking can quickly swing close rounds.",
+    "corner_notes": "Maintain center pressure, chain level changes behind jab reads, and avoid trading in prolonged pocket sequences.",
+    "final_projection": "Most reliable path is controlled decision building through measured pressure and mixed-phase threat management.",
+    "confidence_explanation": "Confidence is high-moderate due to consistent process control, with variance tied to low-event judging dynamics."
+  },
+  "oscar_diaz": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "orthodox",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "box.live",
+        "tier": "authority"
+      },
+      {
+        "source": "boxingscene.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Oscar Diaz was an American professional boxer and a NABF welterweight titleholder."
+  },
+  "nikita_tszyu": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.5599999999999999,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "southpaw",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Nikita Tszyu is an Australian professional boxer. He is the son of former world champion boxer Kostya Tszyu and younger brother of boxer Tim Tszyu."
+  },
+  "errol_spence_jr": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.5599999999999999,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "southpaw",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "espn.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Errol Spence Jr. is an American professional boxer. He is a former unified champion in the welterweight division, having held the World Boxing Association (WBA), World Boxing Council (WBC), and International Boxing Federation (IBF) titles between 2017 and 2023. As an amateur, in the welterweight..."
+  },
+  "youssef_zalal": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Technical Counter Grappler",
+    "stance": "Orthodox",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Youssef Zalal is a Moroccan professional mixed martial artist who currently competes in the Featherweight division of the Ultimate Fighting Championship (UFC). As of March 10, 2026, he is #7 in the UFC featherweight rankings."
+  },
+  "aljamain_sterling": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Pressure Grappler",
+    "stance": "Switch",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "boxingscene.com",
+        "tier": "authority"
+      },
+      {
+        "source": "fightmag.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Aljamain Antoine Sterling is an American professional mixed martial artist. He currently competes in the Featherweight division of the Ultimate Fighting Championship (UFC), where he is a former UFC Bantamweight Champion. Sterling is the first UFC champion to win a title by disqualification. He also..."
+  },
+  "joselyne_edwards": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "orthodox fighting out of panama city, panama",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "sherdog.com",
+        "tier": "authority"
+      },
+      {
+        "source": "espn.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Joselyne Celina Edwards Loboriel is a Panamanian mixed martial artist who currently competes in the women's Bantamweight division of the Ultimate Fighting Championship (UFC). As of February 24, 2026, she is #11 in the UFC women's bantamweight rankings."
+  },
+  "almeida": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "orthodox fighting out of salvador, bahia, brazil",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Jailton Jesus Almeida Júnior is a Brazilian professional mixed martial artist. He competed in the Light Heavyweight and Heavyweight divisions of the Ultimate Fighting Championship (UFC)."
+  },
+  "jailton_almeida": {
+    "cardio_endurance": 0.78,
+    "recovery_quality": 0.76,
+    "output_decay": 0.43,
+    "late_fight_fade": 0.41,
+    "attrition_sensitivity": 0.38,
+    "durability": 0.79,
+    "knockdown_susceptibility": 0.36,
+    "defensive_breakdown_tendency": 0.44,
+    "panic_collapse_sensitivity": 0.35,
+    "style": "Pressure Grappler",
+    "stance": "orthodox",
+    "source": "manual_quality_pass",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "ufcstats",
+        "tier": "reference"
+      }
+    ],
+    "notes": "Pressure wrestler with a fast first-shot trigger, strong top control retention, and a repeatable path through takedown chains and positional dominance.",
+    "executive_summary": "Jailton Almeida's path is to force Ryan Spann into layered defensive grappling where early takedown threat becomes cumulative top-control debt. He wants cage contacts to become body-lock or single-leg sequences, then convert to half guard rides and back-take windows. Against Spann, the key is denying long-range reset space where Spann's counter power is live. If Almeida secures repeated first-contact wrestling entries in rounds one and two, the fight trends toward control-heavy scoring and possible late attritional finish opportunities.",
+    "decision_structure": "Under pressure Almeida prefers direct access decisions: strike to level change, force the fence, then choose highest-percentage control sequence over low-percentage submission rushes. When ahead, he should keep process discipline and bank control minutes. When behind, he increases entry frequency but must still protect neck exposure during shot transitions.",
+    "tactical_edges": "Primary edge is transition persistence. Even when first shots fail, Almeida can chain to secondary legs and body locks, forcing repeated sprawls that tax Spann's hips. His opponent-specific edge is not just takedown success but denial of clean striking rhythm through constant phase switching.",
+    "energy_use": "Almeida's energy spend is front-loaded in entry bursts but efficient once top control stabilizes. The goal is to convert explosive entry cost into long control periods that reduce overall round-by-round energy volatility.",
+    "fatigue_failure_points": "If early entries are repeatedly stuffed in open space, Almeida's re-entry speed can dip and make later shots easier to read. His fatigue failure point is failed conversion volume, not raw cardio collapse.",
+    "mental_condition": "Generally composed when game plan is process-based. Confidence rises with positional control; frustration risk appears only if long striking phases persist without successful fence entries.",
+    "collapse_triggers": "Collapse risk appears if he is forced into prolonged kickboxing at mid-long range and starts shooting from too far out into visible counters. Another trigger is giving up top position in early rounds after costly entries.",
+    "deception_unpredictability": "Uses level-change feints, hand-fight disguises, and strike-to-shot rhythm breaks to hide entry timing. Best deception is making opponents defend two phases at once: upper-body threat and leg access.",
+    "fight_control": "Controls through cage geography and clinch-to-ground conversion. If Almeida gets repeated fence pins, he dictates both tempo and scoring optics via top time and positional progression.",
+    "fight_turns": "Fight turns in round two when opponents begin delaying exits to protect takedown defense. Almeida benefits once that hesitation appears because entries become cleaner and top control durations increase.",
+    "scenario_tree": "1) Early takedown chain success leads to decision control or late submission window. 2) Mixed entry success creates close first half then Almeida separation late. 3) If denied on first-layer entries, fight becomes volatile striking affair with reduced control margin.",
+    "round_by_round_outlook": "Round 1: fast wrestling probes and cage compression. Round 2: highest probability control swing if first chain succeeds. Round 3+: either stable top-pressure control for Almeida or increased volatility if entries were denied early.",
+    "risk_factors": "Counter exposure on naked entries, guillotine/front-headlock windows during rushed shots, and scorecard pressure if prolonged striking exchanges replace control rounds.",
+    "what_could_flip": "A clean anti-shot sequence from Spann that punishes two or three entry attempts in a row can flip confidence and force Almeida into less efficient approach decisions.",
+    "corner_notes": "Keep first entries behind jab or low-kick feint, do not shoot from outside dead space, and prioritize position retention over submission forcing once top control is secured.",
+    "final_projection": "Most reliable route is Almeida by decision through takedown chain success and control accumulation, with submission upside if Spann's defensive posture degrades late.",
+    "confidence_explanation": "Confidence is driven by repeatability of Almeida's control axis against an opponent who can be forced into reactive defensive chains. Confidence lowers if early entries fail cleanly and fight remains range-heavy."
+  },
+  "ryan_spann": {
+    "cardio_endurance": 0.64,
+    "recovery_quality": 0.62,
+    "output_decay": 0.59,
+    "late_fight_fade": 0.61,
+    "attrition_sensitivity": 0.63,
+    "durability": 0.71,
+    "knockdown_susceptibility": 0.48,
+    "defensive_breakdown_tendency": 0.6,
+    "panic_collapse_sensitivity": 0.57,
+    "style": "Counter Striker",
+    "stance": "orthodox",
+    "source": "manual_quality_pass",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "ufcstats",
+        "tier": "reference"
+      }
+    ],
+    "notes": "Long-range light-heavyweight counter threat with dangerous finishing moments, but can lose structure under sustained cage pressure and layered wrestling entries.",
+    "executive_summary": "Ryan Spann's winning route is disruption before control forms. He wants Almeida entering from too far away, then punish with counters or front-headlock threats before the fight reaches settled top-control states. Spann's key variable is first-contact denial quality. If he keeps early exchanges in open space and stuffs initial shots cleanly, his power and opportunistic finishing windows stay live.",
+    "decision_structure": "Best decisions are selective and sharp: punish predictable entries, disengage, and reset range. When ahead, avoid prolonged clinch pummeling and keep exchanges short. When behind, he must increase urgency without overcommitting and giving easy chain-wrestling entries.",
+    "tactical_edges": "Primary edge is fight-changing power in transition moments. Against Almeida specifically, his edge is strongest in anti-entry counters and front-headlock scrambles before position settles.",
+    "energy_use": "Spann's energy is efficient in short striking bursts but expensive in repeated defensive wrestling sequences. If forced to wall-walk and re-defend chain shots, recovery load rises quickly.",
+    "fatigue_failure_points": "Fatigue issues appear when takedown defense cycles repeat with little offensive return. Once hips and posture slow, defensive exits become late and control time extends.",
+    "mental_condition": "Dangerous when confident in open-space reads. Composure can dip if he is repeatedly forced into defensive grappling with limited striking opportunities.",
+    "collapse_triggers": "Most likely collapse trigger is sustained fence pressure followed by two or more completed takedown chains in the same round, reducing both offense volume and defensive sharpness.",
+    "deception_unpredictability": "Uses rhythm pauses and sudden right-hand counters to punish overcommitted entries. Can disguise front-headlock attacks during chaotic shot recoveries.",
+    "fight_control": "Controls when distance and reset tempo stay in open space. Loses control when exchanges are trapped on the fence and converted to prolonged grappling phases.",
+    "fight_turns": "Fight turns against Spann once he begins defending second and third efforts instead of first shots only. If that shift appears early, his power moments become less frequent.",
+    "scenario_tree": "1) Early denial and counter success produce volatile upset pathway. 2) Partial denial yields close first half before Almeida control drift. 3) Early control conceded leads to heavy decision deficit or late stoppage threat.",
+    "round_by_round_outlook": "Round 1: highest danger window for Spann counters. Round 2: crucial anti-chain defense phase. Round 3+: if control debt has accumulated, Spann must chase higher-variance offense to recover rounds.",
+    "risk_factors": "Cage entrapment, chain-wrestling attrition, and defensive posture erosion under repeated top-control re-entries.",
+    "what_could_flip": "A major flip event is a clean counter or front-headlock sequence that forces Almeida to hesitate on entries and delays control establishment.",
+    "corner_notes": "Punish first shot with immediate frame-and-angle exit, do not accept static fence battles, and prioritize reset position over low-percentage scramble offense.",
+    "final_projection": "Spann's best route is early disruption into high-impact finishing moments; if that route fails by round two, decision probability shifts toward Almeida control accumulation.",
+    "confidence_explanation": "Confidence for Spann remains moderate-low because his best outcomes require cleaner early defensive and counter sequencing than the control-heavy baseline path favored by Almeida."
+  },
+  "jarrell_miller": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "for the first time as a professional, miller outworked duhaupas in a one-sided fight winning with the scores of 119–109, 119–109, and 117–111. miller was mostly the aggressor, not allowing duhaupas to get much offence in. duhaupas landed clean occasionally when he did let his hands go. miller landed 261 of 782 total punches (33.4%), 185 being power punches, compared to duhaupas' 128 landed of his 538 (23.8%), with 67 being power shots. it was said that with the win, miller became the wba mandatory challenger. after the fight, miller stated he wanted joshua to fight him in brooklyn. [ 48 ] [ 49 ] [ 50 ] the fight averaged 706,000 viewers and peaked at 834,000 on hbo. [ 51 ] on june 16, 2018, the ibf ordered a final eliminator between miller and kubrat pulev (25–1, 13 kos), with a purse bid taking place on june 25. the winner would become the mandatory challenger to anthony joshua's ibf belt. [ 52 ] at the purse bid, epic sports & entertainment made the winning bid of $2,111,111, much higher than the $1,000,010, which was placed by",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Jarrell Miller is an American professional boxer and former kickboxer. In boxing, at regional level, he held the NABA and NABO heavyweight titles from 2016 to 2017. He holds notable wins over former world champions Tomasz Adamek and Lucas Browne. In kickboxing, he competed in the WCL, K-1 and Glory."
+  },
+  "lenier_pero": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.5599999999999999,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "southpaw",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "espn.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Lenier Eunice Peró Justiz is a Cuban professional boxer. As an amateur, he won a gold medal at both the 2011 and 2015 Pan American Games, whilst also competing at the 2016 Olympics.\nProfessional boxer Dainier Peró, who won the 2019 Pan Am Games super heavyweight gold medal and unsuccessfully..."
+  },
+  "skye_nicolson": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.5599999999999999,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "southpaw",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Skye Brittany Nicolson is an Australian professional boxer. She is a former WBC female featherweight champion and has held the WBC interim female super-bantamweight title since December 2025. As an amateur, Nicolson won the gold medal in the featherweight event at the 2018 Commonwealth Games and..."
+  },
+  "zalal": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "orthodox fighting out of casablanca, morocco englewood, colorado , u.s.",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Youssef Zalal is a Moroccan professional mixed martial artist who currently competes in the Featherweight division of the Ultimate Fighting Championship (UFC). As of March 10, 2026, he is #7 in the UFC featherweight rankings."
+  },
+  "miller": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "abuse , which was often referenced in his lyrics. [ 1 ] he died from an accidental drug overdose of cocaine , fentanyl , and alcohol at his home at the age of 26. life and career 1992–2010: early life and career beginnings malcolm james mccormick was born on january 19, 1992, [ 2 ] in the point breeze neighborhood of pittsburgh , pennsylvania. [ 3 ] he was a son of karen meyers, a photographer, and mark mccormick, an architect, [ 4 ] and had an older brother, miller. [ 5 ] his mother is jewish , and his father is christian . [ 6 ] miller was raised jewish and had a bar mitzvah . [ 7 ] [ 8 ] he grew up playing basketball, football, soccer, and lacrosse. [ 9 ] he attended winchester thurston school for a time [ 10 ] but graduated from taylor allderdice high school . [ 11 ] at age 5, miller was gifted a musical keyboard for hanukkah and told his parents he wished to make music, recalling: \"i hooked that thing up and never stopped playing it.\" [ 7 ] a self-taught musician, miller played piano, guitar, drums, and bass by the age of six. [ 11 ] [ 12 ] he first started rapping at the age of 14. [ 13 ] before that, he wanted to be a singer. [ 14 ] in high school, he decided to focus on his rap career, later noting, \"once i hit 15, i got real serious about it and it changed my life completely ... i used to be into sports, play all the sports, go to all the high school parties. but once i found out hip-hop is almost like a job, that's all i did.\" [ 12 ] originally going by the name of easy mac (often stylized as ez mac), he released his first mixtape but my mackin' ain't easy in 2007 at the age of 15. [ 2 ] in 2008, he and fellow pittsburgh-based rapper beedie formed the rap duo the ill spoken, and released their mixtape how high . the duo decided to part ways shortly after, in order to focus on their solo careers. [ 15 ] by 2009, he rebranded himself as mac miller, and released two mixtapes: the jukebox: prelude to class clown and the high life . [ 2 ] at the 2010 pittsburgh hip hop awards, miller won 21 & under of the year, and best hip hop video for \"live free\". [ 16 ] 2010–2013: breakthrough miller performing at the nyc governor's ball in 2011 miller signed with the independent pittsburgh-based label rostrum records in july 2010, in the lead-up to his mixtape k.i.d.s. [ 17 ] rostrum president benjy grinberg met miller while recording with wiz khalifa at id labs . [ 18 ] although grinberg started giving miller advice, he did not show interest in getting involved with his career until miller began work on k.i.d.s. , when he \"noticed a maturation in his sound and approach to his music\". [ 18 ] by that point, miller had started attracting interest from other record companies, but chose rostrum due to its location in his hometown and association with wiz khalifa. [ 18 ] k.i.d.s. was released by rostrum in august 2010. [ 12 ] during this time, miller broke through with a focus on social media engagement, digital sales, and persistent touring, due to a lack of radio airplay or mainstream features . [ 19 ] xxl featured miller in its annual \"freshman class\" list of 2011, alongside 10 other rappers including kendrick lamar and meek mill . [ 20 ] [ 21 ] miller released his fifth mixtape, best day ever , in march 2011. [ 22 ] its single \" donald trump \" became his first song to chart on the us billboard hot 100 , [ 23 ] peaking at number 75, [ 24 ] and received a platinum certification from the recording industry association of america (riaa). [ 25 ] also in march 2011, he released a six-track ep , on and on and beyond . intended to target a new audience, four of its tracks were previously included on his mixtapes. [ 26 ] the ep was his first entry into the us billboard 200 albums chart at number 55. [ 27 ] leading up to the release of his debut studio album, and to celebrate reaching one million followers on twitter , miller released his sixth mixtape, i love life, thank you , on october 14, 2011. [ 28 ] miller's debut studio album, blue slide park , released on november 8, 2011. [ 29 ] with 144,000 first week sales, it debuted atop the billboard 200, the first independently distributed debut album to do so since tha dogg pound 's dogg food in 1995. [ 30 ] three songs from the album, \"smile back\", \" frick park market \", and \" party on fifth ave. \" charted on the billboard hot 100, peaking at number 55, 60, and 64, respectively. [ 24 ] blue slide park was certified gold in the united states and canada. [ 31 ] [ 32 ] despite its impressive commercial performance, blue slide park received a generally mixed critical response. on march 23, 2012, miller released his seventh mixtape, macadelic . [ 33 ] the single \" loud \" peaked at number 53 on the billboard hot 100. [ 24 ] in mid-2012, miller premiered two songs produced by pharrell williams , from a planned collaboration ep, pink slime . [ 34 ] at least ten tracks were completed by august 2012 according to miller, [ 34 ] but the project was not released despite a multi-year effort. [ 35 ] [ 36 ] miller released an ep, you , under the alias larry lovestein & the velvet revival on november 21, 2012. rather than rap, the ep features miller crooning over lounging jazz instrumentals. [ 37 ] miller on the space migration tour in october 2013 in early 2013, miller founded the record label imprint remember music, named after a deceased friend. [ 38 ] the label primarily focused on pittsburgh artists, as well as releases for miller's alter-egos. [ 39 ] miller starred in his own reality series , mac miller and the most dope family , on mtv2 . it followed the production of his upcoming second studio album, and premiered on february 26, 2013. [ 40 ] on march 4, 2013, miller released a mixtape, run-on sentences, volume one, solely featuring instrumentals made by himself, under his production alias larry fisherman. [ 41 ] later that month, miller featured on singer ariana grande 's lead single \" the way \" for her debut album, yours truly ; [ 42 ] the song is miller's highest peak on the billboard hot 100 at number nine, and was certified triple platinum by the riaa. [ 24 ] [ 25 ] his second studio album, watching movies with the sound off , was released on june 18, 2013. it received generally positive reviews, with most critics praising his new psychedelic sound. the album debuted at number three on the billboard 200, selling 102,000 copies in its first week. [ 43 ] the album spawned three singles; \" s.d.s. \", \" watching movies \" and \" goosebumpz \". the album featured guest appearances from schoolboy q , ab-soul , earl sweatshirt , tyler, the creator , action bronson and jay electronica . [ 44 ] [ 45 ] according to miller, the album is \"very introspective and very personal so it's kind of throwing it all out there and seeing what happens.\" [ 46 ] pittsburgh mayor luke ravenstahl presented miller with a key to the city on september 20, 2013, and declared the date \"mac miller day\". [ 47 ] [ 48 ] in collaboration with vince staples , miller produced the mixtape stolen youth . [ 49 ] under the moniker delusional thomas, miller self-produced and released an eponymous mixtape, delusional thomas , on october 31, 2013. [ 50 ] on december 17, 2013, miller released the live album live from space , containing nine songs performed with the band the internet during his space migration tour and five studio-recorded tracks that were cut from his second album. [ 51 ] 2014–2018: major label work miller parted ways with rostrum records when his contract expired in january 2014. [ 52 ] on may 11, 2014, miller independently released his tenth solo mixtape, faces . [ 53 ] colin stutz of billboard wrote that the 24-track mixtape \"shows [miller] introspective, ruminating over his drug use, fame and past.\" [ 53 ] pitchfork 's craig jenkins called faces his \"most consistently honest and personal work to date\". [ 54 ] when later reflecting on the record in 2017, miller acknowledged his heavy drug use during the creation of the record, stating that he was \"not on planet earth when [he] made faces.\" [ 55 ] the second season of miller's reality series mac miller and the most dope family aired on mtv2 in mid-2014. [ 56 ] in october 2014, miller signed a recording contract and distribution deal for remember music with the major label warner bros. records . he chose warner as it was \"the most independent thinking\" company he met with. [ 57 ] miller's third studio album and major label debut, go:od am , was released on september 18, 2015. [ 58 ] it charted at number four on the billboard 200, with 87,000 album-equivalent units . [ 59 ] the album and the single \" weekend \", featuring singer miguel , were certified gold and platinum by the riaa, respectively. [ 25 ] [ 60 ] on december 29, 2015, miller released a follow-up to his first instrumental mixtape under his alias larry fisherman, titled run-on sentences, volume two . [ 61 ] miller performing at the 2017 splash! festival in germany miller began work on his next studio album immediately after completing go:od am , wanting to explore the emotion of love. [ 62 ] [ 63 ] his fourth studio album, the divine feminine , was released on september 16, 2016. [ 64 ] the album features miller singing nearly as much as rapping, and incorporates genres such as r&b , jazz and funk . [ 63 ] it received positive reviews, with pitchfork stating that the album was succinct and refined in its portrayal of love, consequently accentuating miller's artistry. [ 65 ] the divine feminine debuted at number two on the billboard 200 and number one on billboard 's top r&b/hip-hop albums chart with 48,000 units. [ 66 ] [ 67 ] miller's fifth studio album, swimming , was released on august 3, 2018, to positive reviews from critics. [ 68 ] pitchfork described the album as consisting of \"wistful soul and warm funk\", through his exploration of heartbreak and his own mental health issues. [ 69 ] swimming debuted at number three on the billboard 200 with 66,000 units, his fifth consecutive top five-charting album release in the united states. [ 70 ] miller's final public performances included an npr tiny desk concert released august 6, 2018, [ 71 ] [ 72 ] and a small promotional performance at hotel cafe in hollywood on september 3, 2018, [ 73 ] [ 74 ] both in support of swimming. after his death in september 2018, the single \" self care \" rose to number 33 on the billboard hot 100, his highest peak as a lead artist at the time. [ 75 ] swimming was nominated for best rap album at the 61st annual grammy awards . [ 76 ] posthumous releases miller's estate began approving posthumous music releases in june 2019, with the collaborative singles \" time \" with free nationals and kali uchis , and \" that's life \" with 88-keys and sia . [ 77 ] on january 8, 2020, miller's family announced his first posthumous album, circles , which was released later that month on january 17. before his death, miller had been working on the album as a companion album to swimming . production was completed by jon brion , who worked with miller on both albums. [ 78 ] circles debuted at number three on the billboard 200 with 164,000 units, his biggest week for an album. [ 79 ] its single, \" good news \", became his highest-charting song as lead artist, peaking at number 17 on the billboard hot 100. [ 24 ] between 2020 and 2023, miller's estate commercially re-released his mixtapes k.i.d.s. , faces and i love life, thank you . [ 80 ] [ 81 ] [ 82 ] tenth anniversary editions of k.i.d.s. and watching movies with the sound off were also released with previously unreleased bonus tracks. [ 80 ] [ 83 ] miller's second posthumous album, balloonerism , was released on january 17, 2025. the album was recorded in 2014 around the release of faces . [ 84 ] artistry musical style and progression early in his career, miller's music was widely regarded as \" frat rap \", with lyrics focusing on partying, smoking marijuana , and lusting after fame, money, and women. [ 85 ] [ 86 ] after the mixed critical response of blue slide park , miller began to employ a more expressive and experimental approach to his subsequent releases. [ 86 ] by the release of swimming , a review of rolling stone stated that miller had shed his frat rap reputation. [ 87 ] miller experimented with jazz in his career as well. in 2012, miller released you , an ep featuring lounge-jazz tracks as larry lovestein and the velvet revival. [ 88 ] speaking about the larry lovestein persona, miller stated \"i've kinda have always had this random fantasy of being a seventy-year-old lounge jazz singer.\" [ 89 ] toward the latter half of miller's career, his music further implemented elements of jazz and additionally branched to funk and r&b . [ 90 ] faces incorporated jazz, [ 91 ] while the divine feminine and swimming have both been described by music publications as jazz rap . [ 92 ] rolling stone writer danny schwartz also described swimming as \"spanning rap, funk, and trip-hop.\" [ 92 ] influences miller included big l , lauryn hill , beastie boys , outkast , and a tribe called quest among his influences. [ 93 ] he had a close relationship with fellow pittsburgh rapper wiz khalifa , saying \"wiz has been a big brother to me with this music thing so far. our relationship is beyond music. he really is just my homie, whether i will be making music or not.\" [ 6 ] miller also expressed admiration for john lennon . he had multiple tattoos of lennon, including a tattoo of lennon's face and a tattoo of his song \" imagine \". [ 94 ] personal life relationships miller was in an on-again, off-again relationship with writer nomi leasure, whom he met in middle school, for seven years until 2016. [ 95 ] [ 96 ] [ 97 ] many of the songs on his mixtape macadelic were about their relationship. [ 96 ] miller dated singer ariana grande from august 2016 to may 2018. [ 98 ] health miller spoke openly about his struggle with substance abuse and depression . [ 1 ] [ 99 ] to manage stress during his macadelic tour in 2012, miller began taking promethazine , and later became addicted to lean . miller told complex in january 2013: \"i love lean; it's great. i was not happy and i was on lean very heavy. i was so fucked up all the time it was bad. my friends couldn't even look at me the same. i was lost.\" [ 45 ] he quit taking promethazine in november 2012, before shooting his reality show mac miller and the most dope family . [ 45 ] in 2014, miller was taking drugs daily, and felt that the final track on faces , \"grand finale\", was \"supposed to be the last song [he] made on earth.\" recounting that period to billboard in august 2015, miller appraised he had become \"definitely way healthier\" since then, but \"not completely sober\". [ 95 ] after stating he \"hated\" being sober in a february 2016 documentary, [ 1 ] miller had become sober for three months by october 2016, noting his better mood and maintained creativity. [ 100 ] however, when asked about his sobriety in april 2017, miller said he was now \"living regularly\". [ 101 ] legal issues in february 2011, while on tour in upstate new york , miller and his friends were arrested for possession of marijuana for which they spent the night in jail. miller said the case was \"settled\". [ 102 ] producer lord finesse filed a $10 million lawsuit against miller, rostrum records and datpiff in july 2012, for the use of a sample of finesse's song \"hip 2 da game\" in miller's 2010 mixtape song \" kool aid & frozen pizza \". [ 103 ] in december 2012, the lawsuit was settled out of court with its stipulations kept confidential. [ 104 ] in 2013, after the success of his single \"donald trump\", donald trump publicly criticized miller on social media for using his name in the song, calling it an \"illegal\" use and suggesting legal action. trump's comments sparked a brief public dispute between the two, though no formal lawsuit was ever filed. miller later distanced himself from trump's politics and spoke critically of him in interviews while continuing his music career. [ 105 ] in march 2015, the band aquarian dream filed a $150,000 lawsuit against miller for sampling their song \"yesterday (was so nice today)\" in the song \"therapy\" that appeared on miller's 2014 mixtape faces . [ 106 ] miller was arrested in may 2018 on charges of driving under the influence and hit and run after crashing into a utility pole and fleeing the scene with two passengers. police obtained his address from his license plate number, and miller confessed when police arrived at his home. he was taken into custody and released on $15,000 bail. [ 107 ] in august 2018, miller was charged with two counts of driving under the influence for the incident. [ 108 ] miller died before his arraignment, and the charges were dropped. [ 109 ] death death of mac miller date september 7, 2018 ; 7 years ago ( 2018-09-07 ) time 11:51 a.m. ( pst ) location los angeles , california, u.s. type accidental drug overdose deaths 1 (malcolm james mccormick, a.k.a. mac miller, aged 26) accused cameron james pettit convicted ryan michael reavis stephen andrew walter charges conspiring to distribute controlled substances resulting in death distribution of fentanyl resulting in death [ 110 ] verdict reavis and walter: pleaded guilty to distribution of fentanyl [ 111 ] sentence reavis: 10 years and 11 months in prison walter: 17 and a half years in prison wikinews has related news: us rapper mac miller dies at home in los angeles on september 7, 2018, miller was found unresponsive in his studio city home by his personal assistant, who called 911 and performed cpr until paramedics arrived. miller was pronounced dead at the scene at 11:51 a.m. ( pdt ). [ 112 ] [ 113 ] he had been scheduled to shoot a music video on the day of his death, and was to embark on his swimming tour in october. [ 114 ] [ 115 ] a traditional jewish funeral was held for miller, and he was buried at homewood cemetery in his hometown of pittsburgh . [ 116 ] on november 5, 2018, the los angeles county coroner 's office determined that miller died from an accidental drug overdose due to a \"mixed drug toxicity\" of fentanyl , cocaine , and alcohol . [ 117 ] in his will, he named his mother, father, and brother as beneficiaries. [ 118 ] thousands of fans held a vigil for miller on september 11, 2018, at pittsburgh's blue slide park , the inspiration behind his debut album title; [ 119 ] the site continues to be a place of remembrance. [ 120 ] a tribute concert, mac miller: a celebration of life, took place on october 31, 2018, at the greek theatre in los angeles. many of his friends and collaborators performed or provided messages at the concert; proceeds raised benefited the newly established mac miller circles fund, which aims to support youth arts and community-building programs in his memory. [ 121 ] the charity had raised over $700,000 by january 2019. [ 122 ] in may 2019, the renamed mac miller fund issued its first grants, including $50,000 to musicares , which was used to launch their mac miller legacy fund to help young musicians with substance abuse issues. [ 123 ] [ 124 ] three men were arrested in september 2019 during an investigation into miller's death. cameron james pettit allegedly sold miller counterfeit oxycodone pills containing fentanyl two days before his death, which were run to pettit by ryan reavis and supplied by stephen walter. miller had asked pettit for percocet , a prescribed painkiller containing oxycodone, in addition to cocaine and xanax . investigators believe miller snorted the laced pills before his death. [ 125 ] [ 126 ] [ 127 ] the three men were indicted on charges of conspiracy and distribution of drugs resulting in death. [ 128 ] on april 18, 2022, reavis was sentenced to ten years in prison for his role in distributing the pills. [ 129 ] on may 17, 2022, walter was sentenced to 17 and a half years in prison for his role. [ 130 ] pettit served an unknown sentence and was released from prison on october 11, 2024. [ 131 ] discography main articles: mac miller discography and mac miller production discography studio albums blue slide park (2011) watching movies with the sound off (2013) go:od am (2015) the divine feminine (2016) swimming (2018) circles (2020) balloonerism (2025) filmography film and television roles year title role notes ref. 2011 single ladies himself 2 episodes [ 22 ] 2012 punk'd himself episode: \"mac miller\" [ 132 ] 2013, 2015 ridiculousness himself 2 episodes [ 133 ] [ 134 ] 2013–2014 mac miller and the most dope family himself [ 135 ] 2013 scary movie 5 d'andre film [ 136 ] 2014 loiter squad dave episode: \"stone cold stunner\" [ 137 ] 2015 hi, how are you daniel johnston? none short film; executive producer [ 138 ] 2019 shangri-la himself episode: \"wrestling\"; posthumous release [ 139 ] awards and nominations award year category nominee(s) result ref. berlin music video awards 2025 best animation balloonerism nominated [ 140 ] 2026 \" she knows too much \" pending [ 141 ] clio awards 2026 five minutes and over balloonerism gold [ 142 ] animation gold [ 143 ] virtual/augmented reality bronze [ 144 ] grammy awards 2019 best rap album swimming nominated [ 76 ] hungarian music awards 2026 foreign rap or hip-hop album balloonerism nominated [ 145 ] mtv europe music awards 2012 best push act himself nominated [ 146 ] best us act nominated mtv video music awards 2025 best long form video balloonerism nominated [ 147 ] mtvu woodie awards 2012 woodie of the year himself won [ 148 ] performing woodie won uk music video awards 2025 best animation in a video balloonerism won [ 149 ] references ^ a b c drysdale, jennifer (september 7, 2018). \"everything mac miller has said about drug abuse, depression and death\" . entertainment tonight . archived from the original on april 11, 2023 . retrieved january 13, 2019 . ^ a b c browne, rembert (august 20, 2015). \"mac miller finds the way\" . grantland . archived from the original on december 31, 2018 . retrieved december 30, 2018 . ^ \"mac miller fund\" . pittsburgh foundation . october 1, 2018. ^ mervis, scott (november 8, 2011). \"mac miller: from blue slide to billboard\" . pittsburgh post-gazette . archived from the original on february 26, 2024 . retrieved february 19, 2013 . ^ hyman, dan (november 15, 2018). \"mac miller's last days and life after death\" . rolling stone . archived from the original on october 17, 2022 . retrieved february 19, 2019 . ^ a b tobias, jonathan (november 4, 2010). \"dxnext: mac miller\" . hiphopdx . archived from the original on april 3, 2015 . retrieved november 24, 2011 . ^ a b \"mac miller raps his way into the spotlight\" . pittsburgh jewish chronicle . september 5, 2010. archived from the original on december 31, 2024 . retrieved june 14, 2025 . i've grown up jewish. i went to emma kaufmann camp, i had a bar mitzva. ^ phillips, rashad (march 9, 2011). \"mac miller talks jewish heritage\" . hiphopdx . archived from the original on april 3, 2015 . retrieved november 24, 2011 . ^ \"mac miller 'like a young stockton' \" . espn . march 13, 2012. ^ falk, joshua (september 3, 2011). \"winchester thurston celebrates 125 years\" . pittsburgh post-gazette . archived from the original on december 9, 2023 . retrieved december 31, 2018 . ^ a b bowman, patrick (march 31, 2011). \"allderdice grad mac miller garners national attention with his latest mixtape\" . pittsburgh city paper . archived from the original on july 14, 2024 . retrieved january 14, 2024 . ^ a b c todd, deborah m. (august 12, 2010). \"like wiz khalifa, rapper mac miller is another talent from allderdice\" . pittsburgh post-gazette . archived from the original on june 28, 2011 . retrieved february 23, 2011 . ^ ahmed, insanul (january 29, 2013). \"he started rapping when he was 14\" . complex . archived from the original on december 30, 2018 . retrieved january 30, 2013 . ^ ahmed, insanul (january 29, 2013). \"he tried to be a singer/songwriter before becoming a rapper\" . complex . archived from the original on november 28, 2022 . retrieved january 30, 2013 . ^ webb, rory d. (september 26, 2012). \"being beedie\" . pittsburgh city paper . archived from the original on june 14, 2024 . retrieved december 29, 2023 . ^ \"pittsburgh hip hop awards winners\" . new pittsburgh courier . march 3, 2010. archived from the original on december 29, 2018 . retrieved december 28, 2018 . ^ skoroma (july 21, 2010). \"dx news bits: mac miller, skiddalz, joell ortiz\" . hiphopdx . archived from the original on january 1, 2019 . retrieved december 30, 2018 . ^ a b c bouwman, kimbel (october 17, 2011). \"interview with benjy grinberg, president of rostrum records and a&r and manager for wiz khalifa, mac miller\" . hitquarters . archived from the original on november 15, 2012 . retrieved august 9, 2019 . ^ lipshutz, jason (september 10, 2018). \"mac miller's 'blue slide park' made chart history in 2011 — and pushed him to strive for more\" . billboard . archived from the original on july 29, 2021 . retrieved february 19, 2019 . ^ blanco, alvin (february 22, 2011). \"xxl magazine unveils 2011 'freshman' class\" . mtv . archived from the original on february 23, 2015 . retrieved december 28, 2018 . ^ \"introducing xxl freshman mac miller\" . xxl . may 25, 2009. archived from the original on august 4, 2018 . retrieved november 24, 2011 . ^ a b jesse (march 4, 2011). \"mac miller talks best day ever\" . xxl . archived from the original on april 14, 2020 . retrieved december 29, 2018 . ^ ryan, reed (may 25, 2016). \"mac miller preps reissue of breakout mixtape 'best day ever' \" . rolling stone . archived from the original on november 30, 2024 . retrieved december 29, 2018 . ^ a b c d e \"mac miller chart history\" . billboard . archived from the original on february 19, 2019 . retrieved january 22, 2020 . ^ a b c \"american certifications – mac miller\" . recording industry association of america . retrieved september 10, 2019 . ^ \"listen: mac miller \"on and on\" \" . complex . march 25, 2011. archived from the original on april 11, 2023 . retrieved september 10, 2019 . ^ caulfield, keith (september 10, 2018). \"mac miller's music streams increased 970% following death\" . billboard . archived from the original on february 15, 2019 . retrieved february 19, 2019 . ^ xxl staff (october 20, 2011). \"mac miller, i love life, thank you – xxl\" . xxl mag . archived from the original on december 1, 2024 . retrieved december 29, 2023 . ^ markman, rob (december 28, 2011). \"mac miller talks 2011 highlights, 'blue slide park' debut\" . mtv . archived from the original on december 29, 2018 . retrieved december 28, 2018 . ^ sinha-roy, piya (november 16, 2011). \"rapper mac miller straight to no.1 in indie victory\" . reuters . archived from the original on april 16, 2023 . retrieved december 28, 2018 . ^ nazim, hafeezah (november 8, 2018). \"mac miller's go:od am has officially gone gold\" . the fader . archived from the original on november 30, 2024 . retrieved december 29, 2018 . ^ \"canadian certifications – mac miller\" . music canada . retrieved february 19, 2019 . ^ markman, rob (march 16, 2012). \"mac miller announces macadelic release date at woodies\" . mtv . archived from the original on february 20, 2019 . retrieved february 19, 2019 . ^ a b markman, rob (august 7, 2012). \"mac miller and pharrell writing pink slime's last chapter together\" . mtv . archived from the original on october 22, 2014 . retrieved december 31, 2018 . ^ hyman, dan (december 10, 2013). \"mac miller's 'pink slime' ep oozes again\" . rolling stone . archived from the original on january 2, 2025 . retrieved december 31, 2018 . ^ darville, jordan (september 8, 2015). \"mac miller discusses detoxing with rick rubin, recording with cam'ron and pharrell\" . the fader . archived from the original on november 30, 2024 . retrieved december 31, 2018 . ^ horowitz, steven (november 21, 2012). \"mac miller releases \"you\" free ep as larry lovestein & the velvet revival\" . hiphopdx . archived from the original on december 1, 2024 . retrieved december 29, 2018 . ^ ahmed, insanul (january 29, 2013). \"he's starting his own label, remember music\" . complex . archived from the original on december 7, 2022 . retrieved january 30, 2013 . ^ webb, rory d. (march 20, 2013). \"mac miller's new remember music label highlights pittsburgh acts\" . pittsburgh city paper . archived from the original on november 27, 2022 . retrieved december 29, 2018 . ^ horowitz, steven j. (january 20, 2013). \"mac miller & mtv2's \"mac miller and the most dope family\" reality show trailer\" . hiphopdx . archived from the original on december 19, 2014 . retrieved february 19, 2013 . ^ sryon (march 4, 2013). \"mac miller \"run-on sentences: vol. 1\" mixtape stream & download\" . hiphopdx . archived from the original on may 27, 2013 . retrieved march 9, 2015 . ^ lipshutz, jason (march 28, 2013). \"ariana grande talks breakout hit 'the way': watch new music video\" . billboard . archived from the original on june 26, 2019 . retrieved december 29, 2018 . ^ paine, jake (june 26, 2013). \"hip hop album sales: the week ending 6/23/2013\" . hiphopdx . archived from the original on june 29, 2013 . retrieved august 25, 2013 . ^ tardio, andres (september 10, 2012). \"mac miller says \"tde will be a big part\" of next album, talks bond with schoolboy q, ab-soul & cam'ron\" . hiphopdx . archived from the original on may 27, 2013 . retrieved november 2, 2012 . ^ a b c ahmed, insanul (january 28, 2013). \"mac miller: king of the hill (2013 online cover story)\" . complex . archived from the original on november 6, 2018 . retrieved january 30, 2013 . ^ \"interview: mac miller speaks on winning complex's man of next year\" . complex . archived from the original on january 27, 2013 . retrieved february 19, 2013 . ^ rys, dan (october 4, 2013). \"mac miller appreciates the love from his hometown\" . xxl . archived from the original on october 17, 2019 . retrieved september 10, 2019 . ^ waltz, amanda (september 19, 2018). \"remembering malcolm mccormick\" . pittsburgh city paper . archived from the original on november 30, 2022 . retrieved september 10, 2019 . ^ ahmed, insanul (january 29, 2013). \"he's producing an ep for vince staples\" . complex . archived from the original on november 28, 2022 . retrieved january 30, 2013 . ^ x, dharmic (november 1, 2013). \"mixtape: mac miller (as delusional thomas) \"delusional thomas\" \" . complex . archived from the original on december 29, 2018 . retrieved december 29, 2018 . ^ ortiz, edwin (december 3, 2013). \"mac miller shares cover art & tracklist for upcoming project \"live from space\" with the internet\" . complex . archived from the original on april 11, 2023 . retrieved january 25, 2019 . ^ markman, rob (january 14, 2014). \"exclusive: mac miller, rostrum records announce end of deal\" . mtv . archived from the original on november 3, 2014 . retrieved december 29, 2018 . ^ a b stutz, colin (may 11, 2014). \"mac miller on new mixtape 'faces': 'don't tell my mama i got a drug problem' \" . billboard . archived from the original on december 29, 2018 . retrieved december 29, 2018 . ^ jenkins, craig (may 22, 2014). \"mac miller: faces album review\" . pitchfork . archived from the original on november 27, 2024 . retrieved december 29, 2018 . ^ ivey, justin (may 11, 2017). \"mac miller says he wasn't on planet earth when he made 'faces' project\" . xxl . archived from the original on april 11, 2019 . retrieved december 29, 2018 . ^ grow, kory (june 25, 2014). \" 'mac miller and the most dope family' to take on the world this summer\" . rolling stone . archived from the original on august 23, 2021 . retrieved december 29, 2018 . ^ zeichner, naomi (october 21, 2014). \"exclusive: mac miller signs his label to warner bros records\" . the fader . archived from the original on october 22, 2014 . retrieved october 21, 2014 . ^ thompson, paul (august 6, 2015). \"mac miller's new album drops september 18\" . xxl . archived from the original on october 17, 2019 . retrieved december 29, 2018 . ^ caulfield, keith (september 27, 2015). \"seven debuts hit top 10 of billboard 200 chart, led by drake & future, lana del rey and mac miller\" . billboard . retrieved january 2, 2019 . {{ cite magazine }} : cs1 maint: deprecated archival service ( link ) ^ aniftos, rania (november 8, 2018). \"mac miller's 'go:od am' is certified gold\" . billboard . archived from the original on october 22, 2021 . retrieved december 29, 2018 . ^ \"mac miller's new beat tape 'run-on sentences, volume two' is total experimentation\" . inverse . december 30, 2015. archived from the original on july 16, 2024 . retrieved december 29, 2023 . ^ garcia, patricia (september 27, 2016). \"mac miller on love, ariana grande, and the last thing that made him cry\" . vogue . archived from the original on september 15, 2018 . retrieved january 3, 2019 . ^ a b norris, john (september 14, 2016). \"mac miller talks ariana grande, donald trump, making the soulful celebration of women & love 'the divine feminine' \" . billboard . archived from the original on april 12, 2019 . retrieved january 3, 2019 . ^ morris, jessie (july 28, 2016). \"mac miller announces 'the divine feminine' album and shares new song \"dang!\" f/ anderson .paak\" . complex . archived from the original on july 31, 2016 . retrieved july 28, 2016 . ^ pearce, sheldon (september 17, 2016). \"mac miller: the divine feminine album review\" . pitchfork . archived from the original on december 7, 2024 . retrieved november 7, 2018 . ^ weinstein, max (september 25, 2016). \"mac miller's 'the divine feminine' album nabs no. 2 spot on billboard 200\" . xxl . retrieved january 3, 2019 . ^ mendizabal, amaya (september 29, 2016). \"mac miller nets second no. 1 on top r&b/hip-hop albums with 'divine feminine' \" . billboard . archived from the original on march 5, 2021 . retrieved january 3, 2019 . ^ \"swimming by mac miller reviews and tracks\" . metacritic . archived from the original on september 13, 2018 . retrieved december 28, 2018 . ^ rytlewski, evan (august 3, 2018). \"mac miller: swimming album review\" . pitchfork . archived from the original on august 5, 2018 . retrieved december 28, 2018 . ^ caulfield, keith (august 12, 2018). \"travis scott's 'astroworld' bows at no. 1 on billboard 200 chart with second-largest debut of 2018\" . billboard . archived from the original on august 12, 2018 . retrieved november 7, 2018 . ^ carter, bobby (2018). \"mac miller: tiny desk concert\" . npr music . archived from the original on december 23, 2024 . retrieved april 11, 2023 . ^ o'brien, andrew (september 7, 2022). \"remembering mac miller four years after his death with his reflective tiny desk concert [watch]\" . l4lm . archived from the original on june 6, 2023 . retrieved april 11, 2023 . ^ leight, elias (september 7, 2018). \"watch mac miller's intimate final performance of 'hurt feelings' \" . rolling stone . archived from the original on december 20, 2024 . retrieved april 11, 2023 . ^ \"watch mac miller's last performance, which was just days before his death\" . cosmopolitan . september 8, 2018. archived from the original on april 16, 2023 . retrieved april 11, 2023 . ^ zellner, xander (september 18, 2018). \"mac miller charts three songs on billboard hot 100, led by 'self care' in top 40\" . billboard . archived from the original on december 5, 2018 . retrieved december 29, 2018 . ^ a b burke, minyvonne (december 7, 2018). \"mac miller receives his first-ever grammy nomination months after death\" . nbc news . archived from the original on april 16, 2023 . retrieved december 28, 2018 . ^ \"mac miller's relatives grant 88-keys permission for new single release\" . calgary herald . june 13, 2019. archived from the original on february 16, 2022 . retrieved june 13, 2019 . ^ blistein, jon (january 8, 2020). \"mac miller's family details posthumous album 'circles' \" . rolling stone . archived from the original on january 8, 2020 . retrieved january 8, 2020 . ^ caulfield, keith (january 26, 2020). \"eminem scores historic 10th no. 1 album on billboard 200 chart with 'music to be murdered by' \" . billboard . archived from the original on january 27, 2020 . retrieved january 27, 2020 . ^ a b brereton, greta (august 13, 2020). \"two new mac miller tracks released on deluxe digital version of 'k.i.d.s.' \" . nme . archived from the original on november 27, 2024 . retrieved october 31, 2021 . ^ garcia, thania (october 15, 2021). \"mac miller's faces available on streaming for the first time\" . billboard . retrieved november 24, 2024 . ^ guy, zoe (july 22, 2022). \"mac miller's i love life, thank you now available on streaming services\" . vulture . archived from the original on march 13, 2025 . retrieved november 24, 2024 . ^ lamarre, carl (march 22, 2024). \"mac miller's previously unreleased song 'the quest' finally hits streaming: listen now\" . billboard . archived from the original on march 22, 2024 . retrieved june 7, 2024 . ^ strauss, matthew (november 21, 2024). \"new mac miller album balloonerism announced\" . pitchfork . retrieved november 21, 2024 . ^ sargent, jordan (december 8, 2011). \"mac miller: blue slide park album review\" . pitchfork . archived from the original on december 7, 2024 . retrieved february 20, 2020 . ^ a b mench, chris (september 10, 2018). \"the endless remaking of mac miller\" . genius . archived from the original on december 1, 2024 . retrieved february 20, 2020 . ^ cea, max (september 8, 2018). \"mac miller was proof that a rapper could grow up\" . gq . archived from the original on june 3, 2024 . retrieved june 3, 2024 . ^ reed, ryan (december 28, 2015). \"hear mac miller's creepy, soulful billy joel cover\" . rolling stone . archived from the original on june 9, 2023 . retrieved december 15, 2022 . ^ smith, trevor (august 10, 2013). \"mac miller speaks on \"larry fisherman\" moniker & other personas\" . hotnewhiphop . archived from the original on january 2, 2025 . retrieved december 15, 2022 . ^ yee, gregory (april 18, 2022). \"man sentenced to nearly 11 years in prison in rapper mac miller's death\" . los angeles times . archived from the original on june 16, 2024 . retrieved december 15, 2022 . ^ chesman, donna-claire (october 15, 2021). \"mac miller found freedom on faces \" . vulture . archived from the original on april 21, 2024 . retrieved december 15, 2022 . ^ a b schwartz, danny (january 17, 2020). \"mac miller's posthumous album 'circles' is a fitting coda to his career\" . rolling stone . archived from the original on january 17, 2020 . retrieved december 15, 2022 . ^ \"mac miller\" . rostrum records . archived from the original on june 3, 2011 . retrieved may 22, 2011 . ^ \"mac miller's 42 tattoos & their meanings – body art guru\" . december 22, 2019. archived from the original on may 22, 2024 . retrieved august 22, 2021 . ^ a b gale, alex (august 12, 2015). \"mac miller on sobering up, his nemesis donald trump and the drake-meek mill beef\" . billboard . archived from the original on august 24, 2021 . retrieved january 14, 2019 . ^ a b zeichner, naomi (june 5, 2013). \"interview: mac miller\" . the fader . archived from the original on december 20, 2024 . retrieved june 25, 2013 . ^ quinn, dave (september 8, 2018). \"mac miller's ex-girlfriend nomi leasure honors rapper after his death: 'you changed my life' \" . people . archived from the original on april 16, 2023 . retrieved january 15, 2019 . ^ vulpo, mike (may 9, 2018). \"ariana grande and mac miller break up\" . e! news . archived from the original on december 20, 2024 . retrieved december 28, 2018 . ^ \"everything mac miller has said about drug abuse, depression and death\" . entertainment tonight . september 7, 2018. archived from the original on april 11, 2023 . retrieved november 25, 2022 . ^ gore, sydney (october 3, 2016). \"mac miller talks about sobriety, being in love, and why he's not voting for donald trump\" . nylon . archived from the original on september 16, 2024 . retrieved january 14, 2019 . ^ chikhoune, ryma (april 24, 2017). \"mac miller on coachella, girlfriend ariana grande, and settling into his happy place\" . w . archived from the original on may 29, 2024 . retrieved january 14, 2019 . ^ ahmed, insanul (november 29, 2011). \"interview: the night mac miller spent in jail\" . complex . archived from the original on april 23, 2023 . retrieved february 27, 2019 . ^ horowitz, steven j (july 13, 2012). \"for promotional use only?\" . billboard . archived from the original on january 17, 2016 . retrieved february 19, 2016 . ^ kaufman, gil (january 16, 2013). \"mac miller settles $10 million lord finesse lawsuit\" . mtv . archived from the original on january 19, 2013 . retrieved february 19, 2013 . ^ dillin, rachel (september 7, 2018). \"donald trump once threatened to sue mac miller for using his name in a song\" . yahoo news . retrieved december 30, 2025 . {{ cite web }} : cs1 maint: url-status ( link ) ^ frydenlund, zach (march 19, 2015). \"mac miller sued by '70's soul and funk band aquarian dream\" . complex . archived from the original on april 17, 2023 . retrieved october 14, 2017 . ^ hautman, nicholas (may 17, 2018). \"mac miller arrested on dui and hit-and-run charges\" . us weekly . archived from the original on july 5, 2018 . retrieved may 19, 2018 . ^ saponara, michael (august 21, 2018). \"mac miller charged with dui following may crash: report\" . billboard . archived from the original on july 24, 2021 . retrieved december 28, 2018 . ^ aniftos, rania (september 10, 2018). \"mac miller's dui case will be dropped\" . billboard . archived from the original on october 21, 2021 . retrieved august 9, 2019 . ^ \"federal grand jury charges 3 men in scheme to distribute fentanyl-laced pills that caused overdose death of rapper mac miller\" . october 2, 2019. archived from the original on december 24, 2024 . retrieved july 18, 2022 . ^ \"arizona man agrees to plead guilty to distributing fentanyl in connection with the overdose death of hip-hop artist mac miller\" . november 10, 2021. archived from the original on december 26, 2024 . retrieved july 18, 2022 . ^ winton, richard (september 7, 2018). \"mac miller found dead inside his studio city home; drug overdose suspected\" . los angeles times . archived from the original on april 23, 2019 . retrieved september 7, 2018 . ^ blankstein, andrew; li, david k. (november 5, 2018). \"rapper mac miller died of a drug overdose\" . nbc news . archived from the original on december 25, 2024 . retrieved february 21, 2019 . ^ crabtree, erin (september 8, 2018). \"mac miller was scheduled to shoot music video on the day he died\" . us weekly . archived from the original on september 8, 2018 . retrieved december 28, 2018 . ^ brooks, dave (september 7, 2018). \"mac miller's tour canceled following news of his death\" . billboard . archived from the original on august 19, 2019 . retrieved june 19, 2019 . ^ vasquez, whitney; trock, gary (september 15, 2018). \"mac miller to be buried at pittsburgh cemetery used in his music video\" . theblast.com . archived from the original on august 24, 2019 . retrieved december 28, 2018 . ^ klinkenberg, brendan (november 5, 2018). \"mac miller's cause of death: accidental fentanyl, cocaine overdose\" . rolling stone . archived from the original on november 5, 2018 . retrieved november 5, 2018 . ^ contreras, cydney (september 14, 2018). \"mac miller's will revealed: who his fortune will go to\" . e! news . archived from the original on december 20, 2024 . retrieved january 2, 2019 . ^ monroe, jazz (september 12, 2018). \"mac miller fans hold vigil at pittsburgh's blue slide park\" . pitchfork . archived from the original on november 7, 2018 . retrieved november 7, 2018 . ^ mervis, scott (september 3, 2019). \"organizer of mac miller vigil says rapper was like 'a big brother and a friend – to everyone\" . pittsburgh post-gazette . archived from the original on june 24, 2024 . retrieved september 5, 2019 . ^ mizoguchi, karen; merrett, robyn (november 1, 2018). \"mac miller remembered by travis scott, john mayer and more during celebration of life concert\" . people . archived from the original on december 2, 2021 . retrieved january 2, 2019 . ^ aniftos, rania (january 2, 2019). \"the mac miller circle fund has raised $700k: report\" . billboard . archived from the original on october 31, 2021 . retrieved january 3, 2019 . ^ fitzgerald, trent (may 18, 2019). \"mac miller fund announces first grant recipients\" . xxl . archived from the original on march 29, 2020 . retrieved june 14, 2019 . ^ \"musicares launches the mac miller legacy fund\" . the recording academy . may 17, 2019. archived from the original on may 7, 2021 . retrieved june 14, 2019 . ^ murphy, heather (september 4, 2019). \"man faces drug charge in mac miller's death\" . the new york times . archived from the original on december 14, 2024 . retrieved september 5, 2019 . ^ blistein, jon (september 25, 2019). \"mac miller: second man arrested in connection with rapper's death\" . rolling stone . archived from the original on november 26, 2024 . retrieved september 25, 2019 . ^ blistein, jon (september 26, 2019). \"third person arrested in connection to mac miller's death\" . rolling stone . archived from the original on december 20, 2024 . retrieved september 26, 2019 . ^ blistein, jon (october 2, 2019). \"mac miller: three men officially charged in connection with rapper's death\" . rolling stone . archived from the original on january 2, 2025 . retrieved october 3, 2019 . ^ tapp, tom (april 18, 2022). \"man who provided fentanyl-laced pills that killed mac miller sentenced to 10 years behind bars\" . deadline . archived from the original on may 10, 2022 . retrieved april 20, 2022 . ^ treisman, rachel (may 17, 2022). \"a dealer is sentenced to 17.5 years for his role in mac miller's fatal overdose\" . npr . archived from the original on december 8, 2024 . retrieved july 18, 2022 . ^ ganz, jami (november 22, 2024). \"drug dealer charged in mac miller's death released from prison\" . new york daily news . archived from the original on november 23, 2024 . retrieved november 24, 2024 . ^ ng, philiana; schillaci, sophie (march 15, 2012). \"nick cannon, lucy hale, mac miller and heather morris to guest host 'punk'd' \" . the hollywood reporter . archived from the original on april 17, 2019 . retrieved january 17, 2019 . ^ \"ridiculousness season 3 episode 2: mac miller\" . tv guide . archived from the original on november 30, 2020 . retrieved january 17, 2019 . ^ \"ridiculousness season 7 episode 3: mac miller ii\" . tv guide . archived from the original on november 29, 2020 . retrieved january 17, 2019 . ^ flemming, jack (november 16, 2018). \"studio city pad leased out by late rapper mac miller hits the market at $2.79 million\" . los angeles times . archived from the original on april 17, 2019 . retrieved january 17, 2019 . ^ \"promo: watch snoop & mac miller in an exclusive clip from scary movie 5!\" . complex . april 9, 2013. archived from the original on april 17, 2019 . retrieved january 17, 2019 . ^ \"loiter squad – stone cold stunner\" . adult swim . archived from the original on june 8, 2019 . retrieved january 17, 2019 . ^ spanos, brittany (november 10, 2015). \"hear lana del rey's aching daniel johnston cover\" . rolling stone . archived from the original on august 5, 2019 . retrieved august 24, 2019 . ^ blistein, jon (july 26, 2019). \"watch mac miller talk getting vulnerable on record with rick rubin in 'shangri-la' clip\" . rolling stone . archived from the original on november 26, 2024 . retrieved august 25, 2019 . ^ \"berlin music video awards\" . berlin music video awards . retrieved march 20, 2026 . ^ https://www.berlinmva.com/main/2026-nominees/ ^ https://clios.com/winners-gallery/details/199620 ^ https://clios.com/winners-gallery/explore?vertical=clio%20music&season=2026&award=&keywords=&searchindividualcredit=&searchcompanycredit=&program=&page_number=2 ^ https://clios.com/winners-gallery/details/206358 ^ https://fonogram.hu/jeloltek ^ https://www.digitalspy.com/music/a406300/mtv-europe-music-awards-2012-the-nominees-in-full/ ^ https://www.cbsnews.com/news/mtv-video-music-award-nominees-2025-list/ ^ maloney, devon (march 19, 2012). \"mac miller, best coast, calvin harris take home 2012 woodies\" . spin . retrieved january 11, 2026 . ^ https://lbbonline.com/news/uk-music-video-awards-2025-winners-revealed external links wikimedia commons has media related to mac miller . official website mac miller on mtv mac miller at imdb mac miller (feat. thundercat) tiny desk concert at npr v t e mac miller discography production discography studio albums blue slide park watching movies with the sound off go:od am the divine feminine swimming circles balloonerism live albums live from space eps on and on and beyond mixtapes k.i.d.s. best day ever i love life, thank you macadelic stolen youth delusional thomas faces singles \" kool aid & frozen pizza \" \" knock knock \" \" donald trump \" \" frick park market \" \" party on fifth ave. \" \" loud \" \" s.d.s. \" \" watching movies \" \" diablo \" \" 100 grandkids \" \" weekend \" \" dang! \" \" my favorite part \" \" self care \" \" time \" \" good news \" \" blue world \" \" 5 dollar pony rides \" \" funny papers \" \" she knows too much \" featured singles \" moves like jagger \" \" middle finger \" \" the way \" \" that's life \" other songs \" the spins \" \" goosebumpz \" \" come back to earth \" \" hurt feelings \" \" 2009 \" related articles mac miller and the most dope family category portals : biography music pennsylvania record production rhythm and blues united states authority control databases international isni viaf gnd worldcat national united states france bnf data italy israel artists musicbrainz 2 3 4 grammy awards people deutsche biographie other idref yale lux retrieved from \" https://en.wikipedia.org/w/index.php?title=mac_miller&oldid=1349772243 \" categories : mac miller 1992 births 2018 deaths 21st-century american jews 21st-century american male musicians 21st-century american rappers accidental deaths in california alcohol-related deaths in california alternative hip-hop musicians american hip-hop record producers 21st-century american male rappers american male songwriters american television personalities burials at homewood cemetery cocaine-related deaths in california drug-related deaths in california east coast hip-hop musicians jewish hip-hop record producers jewish american rappers musicians from pittsburgh pop rappers rappers from pittsburgh record producers from pennsylvania songwriters from pennsylvania taylor allderdice high school alumni warner records artists frat rap hidden categories: cs1 maint: deprecated archival service cs1 maint: url-status articles with short description short description matches wikidata wikipedia pages semi-protected against vandalism use american english from december 2020 all wikipedia articles written in american english use mdy dates from december 2025 biography with signature articles with hcards short description is different from wikidata pages using infobox mapframe with missing coordinates commons category link is on wikidata this page was last edited on 18 april 2026, at 21:39 (utc) . text is available under the creative commons attribution-sharealike 4.0 license ; additional terms may apply. by using this site, you agree to the terms of use and privacy policy . wikipedia® is a registered trademark of the wikimedia foundation, inc. , a non-profit organization. privacy policy about wikipedia disclaimers contact wikipedia legal & safety contacts code of conduct developers statistics cookie statement mobile view search search toggle the table of contents mac miller 41 languages add topic",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "sherdog.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Malcolm James McCormick, known by the stage name Mac Miller, was an American rapper. He began his career in Pittsburgh's local hip-hop scene in 2007, at the age of 15. In 2010, he signed a record deal with independent label Rostrum Records and released his breakthrough mixtapes K.I.D.S. (2010) and..."
+  },
+  "eric_mcconico_premium_report": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.5599999999999999,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Boxer",
+    "stance": "southpaw",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "boxingscene.com",
+        "tier": "authority"
+      },
+      {
+        "source": "espn.com",
+        "tier": "authority"
+      }
+    ],
+    "notes": "Stay updated with the latest boxing news, fight results, interviews, and rankings. Get real-time coverage of upcoming bouts, analysis, and exclusive insights from the world of boxing ."
+  },
+  "rodolfo_vieira": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "orthodox",
+    "source": "auto_intake",
+    "source_confidence": "high",
+    "source_summary": [
+      {
+        "source": "fightmag.com",
+        "tier": "authority"
+      },
+      {
+        "source": "espn.com",
+        "tier": "authority"
+      },
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Rodolfo Vieira is a Brazilian submission grappler, mixed martial artist and Brazilian Jiu Jitsu (BJJ) practitioner."
+  },
+  "charles_oliveira": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "Unknown",
+    "source": "auto_intake",
+    "source_confidence": "medium",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Charles Oliveira da Silva is a Brazilian professional mixed martial artist and fourth degree black belt Brazilian jiu-jitsu practitioner. Oliveira currently competes in the Lightweight division of the Ultimate Fighting Championship (UFC), where he is a former UFC Lightweight Champion and current..."
+  },
+  "renato_moicano": {
+    "cardio_endurance": 0.63,
+    "recovery_quality": 0.62,
+    "output_decay": 0.56,
+    "late_fight_fade": 0.6,
+    "attrition_sensitivity": 0.58,
+    "durability": 0.7,
+    "knockdown_susceptibility": 0.54,
+    "defensive_breakdown_tendency": 0.58,
+    "panic_collapse_sensitivity": 0.56,
+    "style": "Fighter",
+    "stance": "Unknown",
+    "source": "auto_intake",
+    "source_confidence": "medium",
+    "source_summary": [
+      {
+        "source": "wikipedia",
+        "tier": "fallback"
+      },
+      {
+        "source": "thesportsdb",
+        "tier": "fallback"
+      }
+    ],
+    "notes": "Renato Alves Carneiro, known as Renato Moicano, is a Brazilian professional mixed martial artist. He currently competes in the Lightweight division of the Ultimate Fighting Championship (UFC). A professional since 2010, Moicano made a name for himself fighting all over his home country of Brazil,..."
+  },
+  "joshua_van": {
+    "style": "Wrestler",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.8,
+    "recovery_quality": 0.75,
+    "output_decay": 0.3,
+    "late_fight_fade": 0.25,
+    "attrition_sensitivity": 0.3,
+    "durability": 0.82,
+    "knockdown_susceptibility": 0.28,
+    "defensive_breakdown_tendency": 0.3,
+    "panic_collapse_sensitivity": 0.28,
+    "aggression_bias": 0.35,
+    "finish_bias": 0.2,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Control wrestler. High cardio for five rounds. Low finish threat. Hard to stop."
+  },
+  "tatsuro_taira": {
+    "style": "Fighter",
+    "stance": "Southpaw",
+    "cardio_endurance": 0.68,
+    "recovery_quality": 0.65,
+    "output_decay": 0.5,
+    "late_fight_fade": 0.52,
+    "attrition_sensitivity": 0.55,
+    "durability": 0.65,
+    "knockdown_susceptibility": 0.5,
+    "defensive_breakdown_tendency": 0.52,
+    "panic_collapse_sensitivity": 0.45,
+    "aggression_bias": 0.55,
+    "finish_bias": 0.52,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Submission specialist. Scramble-heavy style. Can finish via grappling. Moderate cardio."
+  },
+  "belal_muhammad": {
+    "style": "Wrestler",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.85,
+    "recovery_quality": 0.8,
+    "output_decay": 0.25,
+    "late_fight_fade": 0.2,
+    "attrition_sensitivity": 0.25,
+    "durability": 0.88,
+    "knockdown_susceptibility": 0.22,
+    "defensive_breakdown_tendency": 0.25,
+    "panic_collapse_sensitivity": 0.2,
+    "aggression_bias": 0.3,
+    "finish_bias": 0.18,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Elite control wrestler. Decision-oriented. Very hard to finish. Excellent cardio."
+  },
+  "gabriel_bonfim": {
+    "style": "Striker",
+    "stance": "Orthodox",
+    "cardio_endurance": 0.6,
+    "recovery_quality": 0.55,
+    "output_decay": 0.65,
+    "late_fight_fade": 0.68,
+    "attrition_sensitivity": 0.7,
+    "durability": 0.6,
+    "knockdown_susceptibility": 0.65,
+    "defensive_breakdown_tendency": 0.68,
+    "panic_collapse_sensitivity": 0.6,
+    "aggression_bias": 0.82,
+    "finish_bias": 0.78,
+    "source": "manual_differentiation",
+    "source_confidence": "medium",
+    "notes": "Aggressive finisher. High KO and submission threat. Lower durability under sustained pressure."
   }
 }

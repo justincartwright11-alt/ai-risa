@@ -1,0 +1,15 @@
+{
+  "fight_id": "song_yadong_vs_deiveson_figueiredo",
+  "event": "song_vs_figueiredo",
+  "event_date": "2026-05-30",
+  "fighters": [
+    "Song Yadong",
+    "Deiveson Figueiredo"
+  ],
+  "sport": "mma",
+  "ruleset": "unified",
+  "report_ready": true,
+  "profile_gaps": [],
+  "notes": "Main event, all required fields present.",
+  "confidence": 0.62
+}
