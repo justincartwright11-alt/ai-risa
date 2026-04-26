@@ -758,6 +758,16 @@
                             <h4>Signal Gap Accuracy Breakdown</h4>
                             <div id="signal-gap-breakdown-content" class="phase1-table-shell">Loading…</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="method-round-reliability-panel">
+                            <div class="phase1-subtitle">Model Reliability</div>
+                            <h4>Method &amp; Round Reliability</h4>
+                            <div id="method-round-reliability-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="stoppage-finish-tendency-panel">
+                            <div class="phase1-subtitle">Model Reliability</div>
+                            <h4>Stoppage / Finish Tendency Accuracy</h4>
+                            <div id="stoppage-finish-tendency-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1643,6 +1653,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 await loadRollingSuccessRate();
                 renderWaitingQueue([]);
                 await loadSignalGapBreakdown();
+                await loadMethodRoundBreakdown();
             }
 
             async function loadSignalGapBreakdown() {
@@ -1674,6 +1685,75 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                     </table>`;
                 } catch (e) {
                     container.innerHTML = '<span style="color:#a80000;">Failed to load signal breakdown.</span>';
+                }
+            }
+
+            async function loadMethodRoundBreakdown() {
+                const mrContainer = document.getElementById('method-round-reliability-content');
+                const sfContainer = document.getElementById('stoppage-finish-tendency-content');
+                try {
+                    const resp = await fetch('/api/accuracy/method-round-breakdown');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        if (mrContainer) mrContainer.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        if (sfContainer) sfContainer.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    // Method & Round panel
+                    if (mrContainer) {
+                        const m = data.method_accuracy || {};
+                        const r = data.round_accuracy || {};
+                        mrContainer.innerHTML = `<table class="phase1-table">
+                            <thead><tr><th>Signal</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>Method</td>
+                                    <td>${m.total_available || 0}</td>
+                                    <td>${m.method_hits || 0}</td>
+                                    <td>${m.method_misses || 0}</td>
+                                    <td>${m.method_accuracy_pct !== null && m.method_accuracy_pct !== undefined ? m.method_accuracy_pct + '%' : '—'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Round</td>
+                                    <td>${r.total_available || 0}</td>
+                                    <td>${r.round_hits || 0}</td>
+                                    <td>${r.round_misses || 0}</td>
+                                    <td>${r.round_accuracy_pct !== null && r.round_accuracy_pct !== undefined ? r.round_accuracy_pct + '%' : '—'}</td>
+                                </tr>
+                            </tbody>
+                        </table>`;
+                    }
+                    // Stoppage / Finish Tendency panel
+                    if (sfContainer) {
+                        const stopRows = (data.stoppage_propensity_buckets || []).map(b => `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.winner_hits}</td>
+                            <td>${b.winner_misses}</td>
+                            <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                        </tr>`).join('');
+                        const rftRows = (data.round_finish_tendency_buckets || []).map(b => `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.winner_hits}</td>
+                            <td>${b.winner_misses}</td>
+                            <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                        </tr>`).join('');
+                        sfContainer.innerHTML = `
+                            <div style="margin-bottom:10px;font-weight:600;font-size:13px;">Stoppage Propensity</div>
+                            <table class="phase1-table" style="margin-bottom:16px;">
+                                <thead><tr><th>Bucket</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                                <tbody>${stopRows}</tbody>
+                            </table>
+                            <div style="margin-bottom:10px;font-weight:600;font-size:13px;">Round Finish Tendency</div>
+                            <table class="phase1-table">
+                                <thead><tr><th>Bucket</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                                <tbody>${rftRows}</tbody>
+                            </table>`;
+                    }
+                } catch (e) {
+                    if (mrContainer) mrContainer.innerHTML = '<span style="color:#a80000;">Failed to load method/round breakdown.</span>';
+                    if (sfContainer) sfContainer.innerHTML = '<span style="color:#a80000;">Failed to load tendency breakdown.</span>';
                 }
             }
             </script>

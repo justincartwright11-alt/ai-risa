@@ -812,6 +812,118 @@ def api_accuracy_signal_breakdown():
         return jsonify({"ok": False, "error": str(e), "breakdown": [], "has_data": False}), 500
 
 
+def _build_method_round_breakdown() -> dict:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+    ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+
+    UNKNOWN_VALS = {"UNKNOWN", "unknown", "", None}
+
+    def _known(v):
+        return v not in UNKNOWN_VALS and v is not None
+
+    # --- Method accuracy ---
+    method_total = method_hits = 0
+    for row in ledger_records:
+        if not row.get("resolved_result"):
+            continue
+        if _known(row.get("predicted_method")) and _known(row.get("actual_method")):
+            method_total += 1
+            if row.get("hit_method"):
+                method_hits += 1
+
+    method_misses = method_total - method_hits
+    method_accuracy_pct = round((method_hits / method_total) * 100.0, 2) if method_total else None
+
+    # --- Round accuracy ---
+    round_total = round_hits = 0
+    for row in ledger_records:
+        if not row.get("resolved_result"):
+            continue
+        pr = row.get("predicted_round")
+        ar = row.get("actual_round")
+        if _known(pr) and _known(ar):
+            round_total += 1
+            try:
+                if int(pr) == int(ar):
+                    round_hits += 1
+            except (TypeError, ValueError):
+                if str(pr).strip().lower() == str(ar).strip().lower():
+                    round_hits += 1
+
+    round_misses = round_total - round_hits
+    round_accuracy_pct = round((round_hits / round_total) * 100.0, 2) if round_total else None
+
+    # --- Propensity buckets helper ---
+    PROP_BUCKETS = [
+        ("0.00–0.25", 0.00, 0.25),
+        ("0.26–0.50", 0.26, 0.50),
+        ("0.51–0.75", 0.51, 0.75),
+        ("0.76–1.00", 0.76, 1.00),
+    ]
+
+    def _build_propensity_buckets(field: str) -> list:
+        bucket_data = {label: {"total": 0, "hits": 0} for label, _, _ in PROP_BUCKETS}
+        for row in ledger_records:
+            if row.get("hit_winner") is None:
+                continue
+            val = _safe_float(row.get(field))
+            if val is None:
+                continue
+            for label, lo, hi in PROP_BUCKETS:
+                if lo <= val <= hi:
+                    bucket_data[label]["total"] += 1
+                    if row.get("hit_winner"):
+                        bucket_data[label]["hits"] += 1
+                    break
+        result = []
+        for label, _, _ in PROP_BUCKETS:
+            total = bucket_data[label]["total"]
+            hits = bucket_data[label]["hits"]
+            result.append({
+                "bucket": label,
+                "total_compared": total,
+                "winner_hits": hits,
+                "winner_misses": total - hits,
+                "accuracy_pct": round((hits / total) * 100.0, 2) if total else None,
+            })
+        return result
+
+    stoppage_buckets = _build_propensity_buckets("stoppage_propensity")
+    rft_buckets = _build_propensity_buckets("round_finish_tendency")
+
+    has_data = (method_total > 0 or round_total > 0
+                or any(b["total_compared"] > 0 for b in stoppage_buckets)
+                or any(b["total_compared"] > 0 for b in rft_buckets))
+
+    return {
+        "ok": True,
+        "has_data": has_data,
+        "method_accuracy": {
+            "total_available": method_total,
+            "method_hits": method_hits,
+            "method_misses": method_misses,
+            "method_accuracy_pct": method_accuracy_pct,
+        },
+        "round_accuracy": {
+            "total_available": round_total,
+            "round_hits": round_hits,
+            "round_misses": round_misses,
+            "round_accuracy_pct": round_accuracy_pct,
+        },
+        "stoppage_propensity_buckets": stoppage_buckets,
+        "round_finish_tendency_buckets": rft_buckets,
+    }
+
+
+@app.route("/api/accuracy/method-round-breakdown", methods=["GET"])
+def api_accuracy_method_round_breakdown():
+    try:
+        return jsonify(_build_method_round_breakdown())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "has_data": False}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """

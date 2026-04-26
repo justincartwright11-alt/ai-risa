@@ -58,5 +58,35 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Signal Gap Accuracy Breakdown', resp.data)
         self.assertIn(b'/api/accuracy/signal-breakdown', resp.data)
 
+    def test_method_round_breakdown_contract(self):
+        resp = self.client.get('/api/accuracy/method-round-breakdown')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('has_data', data)
+        self.assertIn('method_accuracy', data)
+        self.assertIn('round_accuracy', data)
+        self.assertIn('stoppage_propensity_buckets', data)
+        self.assertIn('round_finish_tendency_buckets', data)
+        m = data['method_accuracy']
+        for key in ('total_available', 'method_hits', 'method_misses', 'method_accuracy_pct'):
+            self.assertIn(key, m)
+        r = data['round_accuracy']
+        for key in ('total_available', 'round_hits', 'round_misses', 'round_accuracy_pct'):
+            self.assertIn(key, r)
+        # Each propensity list should have 4 buckets
+        self.assertEqual(len(data['stoppage_propensity_buckets']), 4)
+        self.assertEqual(len(data['round_finish_tendency_buckets']), 4)
+        buckets = [b['bucket'] for b in data['stoppage_propensity_buckets']]
+        for expected in ('0.00–0.25', '0.26–0.50', '0.51–0.75', '0.76–1.00'):
+            self.assertIn(expected, buckets)
+
+    def test_method_round_panels_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Method &amp; Round Reliability', resp.data)
+        self.assertIn(b'Stoppage / Finish Tendency Accuracy', resp.data)
+        self.assertIn(b'/api/accuracy/method-round-breakdown', resp.data)
+
 if __name__ == '__main__':
     unittest.main()
