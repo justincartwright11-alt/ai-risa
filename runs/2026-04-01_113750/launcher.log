@@ -1,5 +1,0 @@
-﻿[2026-04-01 11:37:50] === AI-RISA Pipeline: NORMAL RUN ===
-[2026-04-01 11:37:50] Start time: 2026-04-01 11:37:50
-[2026-04-01 11:37:50] Run folder: C:\ai_risa_data\runs\2026-04-01_113750
-[2026-04-01 11:37:50] Formats: md docx pdf
-[2026-04-01 11:37:50] Executing: python .\run_full_pipeline_auto.py --formats md --formats docx --formats pdf
