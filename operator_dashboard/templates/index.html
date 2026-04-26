@@ -1,838 +1,1520 @@
-﻿                                <!-- Build 23: Response Matrix / Playbook Panel -->
-                                <div id="response-matrix-panel" class="panel" style="background:#f8fff0; border-left:4px solid #228B22; margin-bottom:14px;">
-                                    <h2>Operator Response Matrix / Playbook</h2>
-                                    <button onclick="refreshResponseMatrix()">Refresh Response Matrix</button>
-                                    <div id="response-matrix-content"></div>
-                                </div>
-                                <script>
-                                    async function refreshResponseMatrix() {
-                                        const resp = await fetch('/api/response-matrix');
-                                        const data = await resp.json();
-                                        let html = `<b>Matrix Status:</b> ${data.matrix_status || ''}<br>`;
-                                        html += `<b>Top Issue:</b> ${data.top_issue || ''}<br>`;
-                                        html += `<b>Why It Matters:</b> ${data.why_it_matters || ''}<br>`;
-                                        html += `<b>First Surface:</b> ${data.first_surface || ''}<br>`;
-                                        html += `<b>Second Surface:</b> ${data.second_surface || ''}<br>`;
-                                        html += `<b>Third Surface:</b> ${data.third_surface || ''}<br>`;
-                                        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-                                        html += `<b>Summary:</b> ${data.summary || ''}<br>`;
-                                        html += `<b>Stabilizing Signals:</b> ${(data.stabilizing_signals || []).join('; ') || 'None'}<br>`;
-                                        html += `<b>Worsening Signals:</b> ${(data.worsening_signals || []).join('; ') || 'None'}<br>`;
-                                        html += `<b>Recommended Paths:</b><ul>`;
-                                        for (const path of (data.recommended_paths || [])) {
-                                            html += `<li><b>Issue:</b> ${path.issue} | <b>Why:</b> ${path.why} | <b>Inspect First:</b> ${path.inspect_first} | <b>Inspect Next:</b> ${path.inspect_next} | <b>Trend:</b> ${path.trend}</li>`;
-                                        }
-                                        html += `</ul>`;
-                                        document.getElementById('response-matrix-content').innerHTML = html;
-                                    }
-                                    // Initial load
-                                    refreshResponseMatrix();
-                                </script>
-                <!-- Build 22: Forecast / Early Warning Panel -->
-                <div id="forecast-panel" class="panel" style="background:#f0fff8; border-left:4px solid #008080; margin-bottom:14px;">
-                    <h2>Operator Forecast / Early Warning</h2>
-                    <button onclick="refreshForecast()">Refresh Forecast</button>
-                    <div id="forecast-content"></div>
-                </div>
-                <script>
-                    async function refreshForecast() {
-                        const resp = await fetch('/api/forecast');
-                        const data = await resp.json();
-                        let html = `<b>Status:</b> ${data.forecast_status || ''}<br>`;
-                        html += `<b>Projected Risk Bands:</b> ${(data.projected_risk_bands || []).join(', ') || 'None'}<br>`;
-                        html += `<b>Early Warning Items:</b> ${(data.early_warning_items || []).join('; ') || 'None'}<br>`;
-                        html += `<b>Urgent Event Forecast:</b> ${(data.urgent_event_forecast || []).join(', ') || 'None'}<br>`;
-                        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-                        document.getElementById('forecast-content').innerHTML = html;
-                    }
-                    // Initial load
-                    refreshForecast();
-                </script>
-                <!-- Build 21: Drift Panel -->
-                <div id="drift-panel" class="panel" style="background:#fff8f0; border-left:4px solid #d2691e; margin-bottom:14px;">
-                    <h2>Operator Drift</h2>
-                    <button onclick="refreshDrift()">Refresh Drift</button>
-                    <div id="drift-content"></div>
-                </div>
-                <!-- Build 20: Integrity/Readiness Panel -->
-                            <script>
-                                async function refreshDrift() {
-                                    const resp = await fetch('/api/drift');
-                                    const data = await resp.json();
-                                    let html = `<b>Pressure band drift:</b> ${JSON.stringify(data.pressure_band_drift)}<br>`;
-                                    html += `<b>Escalation drift:</b> ${JSON.stringify(data.escalation_drift)}<br>`;
-                                    html += `<b>Review drift:</b> ${JSON.stringify(data.review_drift)}<br>`;
-                                    html += `<b>Briefing drift:</b> ${JSON.stringify(data.briefing_drift)}<br>`;
-                                    html += `<b>Artifact drift:</b> ${JSON.stringify(data.artifact_drift)}<br>`;
-                                    html += `<b>Blocker drift:</b> ${JSON.stringify(data.blocker_drift)}<br>`;
-                                    html += `<b>Stale surface drift:</b> ${JSON.stringify(data.stale_surface_drift)}<br>`;
-                                    html += `<b>Urgent event delta:</b> ${JSON.stringify(data.urgent_event_delta)}<br>`;
-                                    html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-                                    document.getElementById('drift-content').innerHTML = html;
-                                }
-                                // Initial load
-                                refreshDrift();
-                            </script>
-                <div id="integrity-panel" class="panel" style="background:#f0f8ff; border-left:4px solid #005fa3; margin-bottom:14px;">
-                    <h2>Operator Integrity / Readiness</h2>
-                    <button onclick="refreshIntegrity()">Refresh Integrity</button>
-                    <div id="integrity-content"></div>
-                </div>
-                <!-- Build 19: Control Summary Panel -->
-                            <script>
-                                async function refreshIntegrity() {
-                                    const resp = await fetch('/api/integrity');
-                                    const data = await resp.json();
-                                    let html = `<b>Readiness:</b> ${data.readiness_status}<br>`;
-                                    html += `<b>Endpoint health:</b> ${data.endpoint_health}<br>`;
-                                    html += `<b>Alignment:</b> ${data.alignment_summary}<br>`;
-                                    html += `<b>Artifact health:</b> ${data.artifact_health}<br>`;
-                                    html += `<b>Ledger health:</b> ${data.ledger_health}<br>`;
-                                    html += `<b>Blocker health:</b> ${data.blocker_health}<br>`;
-                                    html += `<b>Stale surface:</b> ${data.stale_surface_health}<br>`;
-                                    html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-                                    document.getElementById('integrity-content').innerHTML = html;
-                                }
-                                // Initial load
-                                refreshIntegrity();
-                            </script>
-                <div id="control-summary-panel" class="panel" style="background:#f8f8ff; border-left:4px solid #444; margin-bottom:18px;">
-                    <h2>Operator Control Summary</h2>
-                    <button onclick="refreshControlSummary()">Refresh Summary</button>
-                    <div id="control-summary-content"></div>
-                </div>
-                <!-- Build 18: Portfolio Panel -->
-                            <script>
-                                async function refreshControlSummary() {
-                                    const resp = await fetch('/api/control-summary');
-                                    const data = await resp.json();
-                                    let html = `<b>Total tracked events:</b> ${data.total_tracked_events}<br>`;
-                                    html += `<b>Pressure bands:</b> ${JSON.stringify(data.pressure_band_counts)}<br>`;
-                                    html += `<b>Top urgent events:</b> ${(data.top_urgent_events || []).join(', ') || 'None'}<br>`;
-                                    html += `<b>Recent changes:</b><ul>`;
-                                    for (const c of data.recent_changes || []) {
-                                        html += `<li>${c.description || ''}</li>`;
-                                    }
-                                    html += `</ul>`;
-                                    html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-                                    document.getElementById('control-summary-content').innerHTML = html;
-                                }
-                                // Initial load
-                                refreshControlSummary();
-                            </script>
-                <div id="portfolio-panel" class="panel">
-                    <h2>Operator Portfolio</h2>
-                    <button onclick="refreshPortfolio()">Refresh Portfolio</button>
-                    <div id="portfolio-summary"></div>
-                    <div id="portfolio-bands"></div>
-                </div>
-            <script>
-                async function refreshPortfolio() {
-                    const resp = await fetch('/api/portfolio');
-                    const data = await resp.json();
-                    document.getElementById('portfolio-summary').innerText = data.summary + ' ' + (data.recommendation || '');
-                    let html = '';
-                    const bands = ["critical", "high", "medium", "low", "quiet"];
-                    for (const band of bands) {
-                        const rows = data.portfolio.filter(r => r.pressure_band === band);
-                        if (rows.length === 0) continue;
-                        html += `<div class='band-group'><b>${band.toUpperCase()} (${rows.length})</b><ul>`;
-                        for (const row of rows) {
-                            html += `<li><b>${row.event_id}</b> | Score: ${row.portfolio_score} | ${row.casefile_summary || ''} <i>${row.recommendation || ''}</i></li>`;
-                        }
-                        html += '</ul></div>';
-                    }
-                    document.getElementById('portfolio-bands').innerHTML = html;
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ dashboard_title or "AI-RISA Local Operator Dashboard" }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f7fb;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto 40px auto;
+            padding: 0 20px;
+        }
+        .panel-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            margin-bottom: 36px;
+            border-left: 7px solid #ccc;
+            padding: 0 0 18px 0;
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+        }
+        .panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 20px 28px 12px 28px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafbfc;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .panel-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            color: #2d2d2d;
+            flex: 1 1 auto;
+        }
+        .panel-header .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 18px;
+        }
+        .panel-header button {
+            background: #f3f3f7;
+            color: #333;
+            border: 1px solid #d0d0d7;
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0;
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .panel-header button:hover {
+            background: #e6e6f2;
+            border-color: #b0b0c7;
+        }
+        .panel-header input[type="text"] {
+            border: 1px solid #d0d0d7;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 14px;
+            margin: 0;
+            background: #fff;
+        }
+        .panel-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .panel-table th, .panel-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+        }
+        .panel-table th {
+            background: #f6f7fb;
+            font-weight: 600;
+            color: #444;
+        }
+        .panel-row {
+            padding: 10px 28px;
+            font-size: 15px;
+        }
+        .error-card {
+            color: #a80000;
+            background: #fff0f0;
+            border: 1px solid #f5c2c7;
+            border-radius: 7px;
+            margin: 14px 28px 0 28px;
+            padding: 12px 18px;
+            font-size: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #e6e6f2;
+            color: #4a4a7a;
+            margin-left: 8px;
+        }
+        .panel-body {
+            padding: 16px 28px 0 28px;
+            flex: 1 1 auto;
+        }
+        .panel-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .panel-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .panel-list li:last-child {
+            border-bottom: none;
+        }
+        label {
+            font-weight: 500;
+            color: #555;
+            margin-right: 8px;
+        }
+        .phase1-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0 14px 0;
+        }
+        .phase1-controls button {
+            background: #eef3f8;
+            border: 1px solid #c5d2df;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .phase1-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+        }
+        .phase1-box {
+            border: 1px solid #e5e8ef;
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 100px;
+            background: #fafcff;
+        }
+        .phase1-box h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #234;
+        }
+        .phase1-status {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .phase1-primary {
+            border-left-color: #1d4f91;
+            box-shadow: 0 6px 24px rgba(23, 59, 110, 0.16);
+        }
+        .phase1-primary .panel-header {
+            background: #f3f8ff;
+        }
+        .phase1-primary .panel-body {
+            padding-top: 12px;
+        }
+        .phase1-toolbar-shell {
+            position: sticky;
+            top: 8px;
+            z-index: 5;
+            background: #ffffff;
+            border: 1px solid #d8e4f2;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(17, 55, 107, 0.08);
+        }
+        .phase1-toolbar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #2c4b72;
+            margin: 0 0 6px 0;
+        }
+        .phase1-toolbar {
+            display: grid;
+            grid-template-columns: minmax(160px, 210px) 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+        .phase1-filter-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .phase1-filter-block label {
+            margin-right: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: #314b68;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        #phase1-sport-filter {
+            border: 1px solid #c7d6e8;
+            border-radius: 7px;
+            padding: 7px 9px;
+            font-size: 13px;
+            background: #fbfdff;
+        }
+        .phase1-controls {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(165px, 1fr));
+            gap: 8px;
+            margin: 0;
+        }
+        .phase1-controls button {
+            width: 100%;
+            min-height: 34px;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #eef4fb;
+            border: 1px solid #c3d3e6;
+            border-radius: 7px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .phase1-controls button:hover {
+            background: #e2edf9;
+            border-color: #9cb9d9;
+        }
+        .phase1-status-banner {
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            background: #f7fbff;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+        }
+        .phase1-status-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4a6281;
+            margin-bottom: 4px;
+        }
+        .phase1-status {
+            font-size: 13px;
+            color: #2d4058;
+            margin: 0;
+            min-height: 18px;
+        }
+        .phase1-data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+            width: 100%;
+        }
+        .phase1-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-width: 0;
+        }
+        .phase1-box {
+            border: 1px solid #dde7f2;
+            border-radius: 9px;
+            background: #fcfdff;
+            min-height: 0;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+        .phase1-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #476288;
+            margin: 0 0 6px 0;
+        }
+        .phase1-box h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #213753;
+        }
+        .phase1-table-shell {
+            min-height: 170px;
+            max-height: 260px;
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid #e8eef6;
+            border-radius: 7px;
+            background: #fff;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .phase1-table-shell .panel-table {
+            margin-top: 0;
+            font-size: 12px;
+            table-layout: fixed;
+            width: 100%;
+        }
+        .phase1-table-shell .panel-table th,
+        .phase1-table-shell .panel-table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .phase1-table-shell .panel-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #eef4fb;
+        }
+        .phase1-empty {
+            color: #778397;
+            font-size: 13px;
+            padding: 10px;
+        }
+        .group-shell {
+            margin-bottom: 18px;
+        }
+        .group-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #223;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .legacy-monitoring-shell {
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+        .legacy-monitoring-shell > summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: #2d3f58;
+            margin-bottom: 8px;
+        }
+        .chat-panel {
+            border: 1px solid #e4e8f0;
+            border-radius: 8px;
+            background: #fbfcff;
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .chat-bubble-wrap {
+            margin: 6px 0;
+            display: flex;
+        }
+        .chat-bubble-wrap.user {
+            justify-content: flex-end;
+        }
+        .chat-bubble-wrap.assistant {
+            justify-content: flex-start;
+        }
+        .chat-bubble {
+            display: inline-block;
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.35;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            white-space: pre-wrap;
+        }
+        .chat-bubble.user {
+            background: #e9f2ff;
+            color: #12407c;
+        }
+        .chat-bubble.assistant {
+            background: #f3f5f8;
+            color: #2d2d2d;
+        }
+        .chat-meta {
+            font-size: 11px;
+            color: #6f7885;
+            margin-top: 2px;
+        }
+        .chat-status {
+            color: #2d5f2d;
+            font-size: 13px;
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+        .panel-table tbody tr:nth-child(even) {
+            background: #fbfcff;
+        }
+                .panel-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                    font-size: 14px;
                 }
-                // Initial load
-                refreshPortfolio();
-            </script>
-        <!-- Build 17: Casefile Panel -->
-        <div class="row" id="casefile-panel-row">
-            <label>Operator Casefile <input id="casefile-event-id" type="text" placeholder="Enter event id" style="margin-left:8px; width:180px; font-size:13px;" /> <button id="load-casefile-btn" style="font-size:12px; padding:2px 10px; margin-left:8px;">Load Casefile</button></label>
-            <div id="casefile-panel" class="status-card" style="display:none; background:#f7f7fa; border-left:4px solid #6a329f; color:#6a329f;"></div>
-            <div id="casefile-error" class="error-card" style="display:none;"></div>
-        </div>
-        // Casefile panel elements
-        const casefilePanel = document.getElementById('casefile-panel');
-        const casefileError = document.getElementById('casefile-error');
-        const loadCasefileBtn = document.getElementById('load-casefile-btn');
-        const casefileEventIdInput = document.getElementById('casefile-event-id');
-
-        function renderCasefilePanel(data) {
-            if (!data || !data.ok) {
-                casefilePanel.style.display = 'none';
-                casefileError.style.display = 'block';
-                casefileError.innerText = data && data.errors && data.errors.length ? data.errors.join('; ') : 'Failed to load casefile.';
-                return;
-            }
-            casefileError.style.display = 'none';
-            casefilePanel.style.display = 'block';
-            let html = `<b>Event:</b> ${data.event_id || ''}<br>`;
-            html += `<b>Summary:</b> ${data.casefile_summary || ''}<br>`;
-            html += `<b>Status:</b> ${(data.queue_snapshot && data.queue_snapshot.status) || 'N/A'}<br>`;
-            html += `<b>Recommendation:</b> ${data.operator_recommendation || ''}<br>`;
-            html += `<b>Next Review:</b> ${data.next_review_note || ''}<br>`;
-            if (data.review_queue_snapshot && data.review_queue_snapshot.reasons && data.review_queue_snapshot.reasons.length > 0) {
-                html += `<b>Strongest Signals:</b> ${data.review_queue_snapshot.reasons.slice(0,2).join('; ')}<br>`;
-            } else if (data.briefing_snapshot && data.briefing_snapshot.top_reasons && data.briefing_snapshot.top_reasons.length > 0) {
-                html += `<b>Strongest Signals:</b> ${data.briefing_snapshot.top_reasons.slice(0,2).join('; ')}<br>`;
-            }
-            casefilePanel.innerHTML = html;
-        }
-
-        function fetchCasefile() {
-            const eventId = casefileEventIdInput.value.trim();
-            if (!eventId) {
-                casefilePanel.style.display = 'none';
-                casefileError.style.display = 'block';
-                casefileError.innerText = 'Please enter an event id.';
-                return;
-            }
-            casefilePanel.style.display = 'none';
-            casefileError.style.display = 'none';
-            fetch(`/api/queue/event/${encodeURIComponent(eventId)}/casefile`).then(r => r.json()).then(renderCasefilePanel).catch(e => {
-                casefilePanel.style.display = 'none';
-                casefileError.style.display = 'block';
-                casefileError.innerText = 'Failed to load casefile.';
-            });
-        }
-
-        loadCasefileBtn.addEventListener('click', fetchCasefile);
-        casefileEventIdInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') fetchCasefile();
-        });
-    <!-- Build 15: Review Queue Panel -->
-    <div class="row" id="review-queue-panel-row">
-        <label>Operator Review Queue <button id="refresh-review-queue-btn" style="float:right; font-size:12px; padding:2px 10px; margin-left:8px;">Refresh Review Queue</button></label>
-        <div id="review-queue-panel" class="status-card" style="display:none; background:#f0fff0; border-left:4px solid #228B22; color:#228B22;"></div>
-        <div id="review-queue-error" class="error-card" style="display:none;"></div>
-    </div>
-    <!-- Build 16: Briefing Panel -->
-    <div class="row" id="briefing-panel-row">
-        <label>Operator Briefing <button id="refresh-briefing-btn" style="float:right; font-size:12px; padding:2px 10px; margin-left:8px;">Refresh Briefing</button></label>
-        <div id="briefing-panel" class="status-card" style="display:none; background:#eaf6ff; border-left:4px solid #005fa3; color:#005fa3;"></div>
-        <div id="briefing-error" class="error-card" style="display:none;"></div>
-    </div>
-    // Review queue panel elements
-    const reviewQueuePanel = document.getElementById('review-queue-panel');
-    const reviewQueueError = document.getElementById('review-queue-error');
-    const refreshReviewQueueBtn = document.getElementById('refresh-review-queue-btn');
-
-    function renderReviewQueuePanel(data) {
-        if (!data || !data.ok) {
-            reviewQueuePanel.style.display = 'none';
-            reviewQueueError.style.display = 'block';
-            reviewQueueError.innerText = data && data.errors && data.errors.length ? data.errors.join('; ') : 'Failed to load review queue.';
-            return;
-        }
-        reviewQueueError.style.display = 'none';
-        reviewQueuePanel.style.display = 'block';
-        let html = `<b>Summary:</b> ${data.summary || ''}<br>`;
-        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-        if (data.review_queue && data.review_queue.length > 0) {
-            html += `<b>Top Review Queue:</b><ul style="margin-top:8px;">`;
-            for (const e of data.review_queue.slice(0, 6)) {
-                html += `<li><b>${e.event_id}</b> [${e.review_priority}, score: ${e.review_score}]<br><span style='font-size:12px;'>${e.reasons.join('; ')}</span>${e.recommendation ? `<br><i>${e.recommendation}</i>` : ''}</li>`;
-            }
-            html += '</ul>';
-        } else {
-            html += '<b>No events require review.</b>';
-        }
-        reviewQueuePanel.innerHTML = html;
-    }
-
-    function fetchReviewQueue() {
-        reviewQueuePanel.style.display = 'none';
-        reviewQueueError.style.display = 'none';
-        fetch('/api/review-queue').then(r => r.json()).then(renderReviewQueuePanel).catch(e => {
-            reviewQueuePanel.style.display = 'none';
-            reviewQueueError.style.display = 'block';
-            reviewQueueError.innerText = 'Failed to load review queue.';
-        });
-    }
-
-    refreshReviewQueueBtn.addEventListener('click', fetchReviewQueue);
-    window.addEventListener('DOMContentLoaded', fetchReviewQueue);
-
-    // Briefing panel elements
-    const briefingPanel = document.getElementById('briefing-panel');
-    const briefingError = document.getElementById('briefing-error');
-    const refreshBriefingBtn = document.getElementById('refresh-briefing-btn');
-
-    function renderBriefingPanel(data) {
-        if (!data || !data.ok) {
-            briefingPanel.style.display = 'none';
-            briefingError.style.display = 'block';
-            briefingError.innerText = data && data.errors && data.errors.length ? data.errors.join('; ') : 'Failed to load briefing.';
-            return;
-        }
-        briefingError.style.display = 'none';
-        briefingPanel.style.display = 'block';
-        let html = `<b>Summary:</b> ${data.summary || ''}<br>`;
-        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-        if (data.briefings && data.briefings.length > 0) {
-            html += `<b>Top Briefing Events:</b><ul style="margin-top:8px;">`;
-            for (const b of data.briefings.slice(0, 6)) {
-                html += `<li><b>${b.event_id}</b> [${b.briefing_priority}, score: ${b.briefing_score}]<br><span style='font-size:12px;'>${b.handoff_summary}<br>${b.top_reasons.join('; ')}</span>${b.operator_recommendation ? `<br><i>${b.operator_recommendation}</i>` : ''}</li>`;
-            }
-            html += '</ul>';
-        } else {
-            html += '<b>No events require operator handoff.</b>';
-        }
-        briefingPanel.innerHTML = html;
-    }
-
-    function fetchBriefing() {
-        briefingPanel.style.display = 'none';
-        briefingError.style.display = 'none';
-        fetch('/api/briefing').then(r => r.json()).then(renderBriefingPanel).catch(e => {
-            briefingPanel.style.display = 'none';
-            briefingError.style.display = 'block';
-            briefingError.innerText = 'Failed to load briefing.';
-        });
-    }
-
-    refreshBriefingBtn.addEventListener('click', fetchBriefing);
-    window.addEventListener('DOMContentLoaded', fetchBriefing);
-<!-- Build 13: Digest Panel -->
-    <div class="row" id="digest-panel-row">
-        <label>Operator Digest <button id="refresh-digest-btn" style="float:right; font-size:12px; padding:2px 10px; margin-left:8px;">Refresh Digest</button></label>
-        <div id="digest-panel" class="status-card" style="display:none; background:#fffbe6; border-left:4px solid #b8860b; color:#b8860b;"></div>
-        <div id="digest-error" class="error-card" style="display:none;"></div>
-    </div>
-    <!-- Build 12: Watchlist Panel -->
-    <div class="row" id="watchlist-panel-row">
-        <label>Operator Watchlist <button id="refresh-watchlist-btn" style="float:right; font-size:12px; padding:2px 10px; margin-left:8px;">Refresh Watchlist</button></label>
-        <div id="watchlist-panel" class="status-card" style="display:none; background:#e5f6fd; border-left:4px solid #0078d4; color:#0078d4;"></div>
-        <div id="watchlist-error" class="error-card" style="display:none;"></div>
-    </div>
-    <!-- Build 14: Escalation Panel -->
-    <div class="row" id="escalation-panel-row">
-        <label>Operator Escalation <button id="refresh-escalation-btn" style="float:right; font-size:12px; padding:2px 10px; margin-left:8px;">Refresh Escalations</button></label>
-        <div id="escalation-panel" class="status-card" style="display:none; background:#fff0f0; border-left:4px solid #a80000; color:#a80000;"></div>
-        <div id="escalation-error" class="error-card" style="display:none;"></div>
-    </div>
-
-    // Digest panel elements
-    const digestPanel = document.getElementById('digest-panel');
-    const digestError = document.getElementById('digest-error');
-    const refreshDigestBtn = document.getElementById('refresh-digest-btn');
-
-    function renderDigestPanel(data) {
-        if (!data || !data.ok) {
-            digestPanel.style.display = 'none';
-            digestError.style.display = 'block';
-            digestError.innerText = data && data.errors && data.errors.length ? data.errors.join('; ') : 'Failed to load digest.';
-            return;
-        }
-        digestError.style.display = 'none';
-        digestPanel.style.display = 'block';
-        let html = `<b>Summary:</b> ${data.summary || ''}<br>`;
-        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-        if (data.digest) {
-            html += `<b>Top Watchlist:</b> ${(data.digest.top_watchlist || []).map(e => e.event_id).join(', ') || 'None'}<br>`;
-            html += `<b>Top Anomalies:</b> ${(data.digest.top_anomalies || []).map(e => e.event_name).join(', ') || 'None'}<br>`;
-            html += `<b>Timeline Pressure:</b> ${(data.digest.timeline_pressure_events || []).map(e => e.event_id || e.event_name).join(', ') || 'None'}<br>`;
-            html += `<b>Triage Counts:</b> ${JSON.stringify(data.digest.triage_counts || {})}<br>`;
-            html += `<b>Priority Bands:</b> ${JSON.stringify(data.digest.priority_bands || {})}<br>`;
-            html += `<b>Recent Attention:</b> ${(data.digest.recent_attention_items || []).join(', ') || 'None'}<br>`;
-        }
-        digestPanel.innerHTML = html;
-    }
-
-    function fetchDigest() {
-        digestPanel.style.display = 'none';
-        digestError.style.display = 'none';
-        fetch('/api/digest').then(r => r.json()).then(renderDigestPanel).catch(e => {
-            digestPanel.style.display = 'none';
-            digestError.style.display = 'block';
-            digestError.innerText = 'Failed to load digest.';
-        });
-    }
-
-    refreshDigestBtn.addEventListener('click', fetchDigest);
-    window.addEventListener('DOMContentLoaded', fetchDigest);
-
-    // Watchlist panel elements
-    const watchlistPanel = document.getElementById('watchlist-panel');
-    const watchlistError = document.getElementById('watchlist-error');
-    const refreshWatchlistBtn = document.getElementById('refresh-watchlist-btn');
-
-    function renderWatchlistPanel(data) {
-        if (!data || !data.ok) {
-            watchlistPanel.style.display = 'none';
-            watchlistError.style.display = 'block';
-            watchlistError.innerText = data && data.error ? data.error : 'Failed to load watchlist.';
-            return;
-        }
-        watchlistError.style.display = 'none';
-        watchlistPanel.style.display = 'block';
-        if (!data.watchlist || data.watchlist.length === 0) {
-            watchlistPanel.innerHTML = '<b>No events require repeated monitoring.</b>';
-            return;
-        }
-        let html = `<b>Top ${data.watchlist.length} event(s) to monitor:</b><ul style="margin-top:8px;">`;
-        for (const w of data.watchlist.slice(0, 6)) {
-            html += `<li><b>${w.event_id}</b> [${w.priority}, score: ${w.watch_score}]<br><span style='font-size:12px;'>${w.reasons.join('; ')}</span>${w.recommendation ? `<br><i>${w.recommendation}</i>` : ''}</li>`;
-        }
-        html += '</ul>';
-        watchlistPanel.innerHTML = html;
-    }
-
-    function fetchWatchlist() {
-        watchlistPanel.style.display = 'none';
-        watchlistError.style.display = 'none';
-        fetch('/api/watchlist').then(r => r.json()).then(renderWatchlistPanel).catch(e => {
-            watchlistPanel.style.display = 'none';
-            watchlistError.style.display = 'block';
-            watchlistError.innerText = 'Failed to load watchlist.';
-        });
-    }
-
-    refreshWatchlistBtn.addEventListener('click', fetchWatchlist);
-    window.addEventListener('DOMContentLoaded', fetchWatchlist);
-
-    // Escalation panel elements
-    const escalationPanel = document.getElementById('escalation-panel');
-    const escalationError = document.getElementById('escalation-error');
-    const refreshEscalationBtn = document.getElementById('refresh-escalation-btn');
-
-    function renderEscalationPanel(data) {
-        if (!data || !data.ok) {
-            escalationPanel.style.display = 'none';
-            escalationError.style.display = 'block';
-            escalationError.innerText = data && data.errors && data.errors.length ? data.errors.join('; ') : 'Failed to load escalations.';
-            return;
-        }
-        escalationError.style.display = 'none';
-        escalationPanel.style.display = 'block';
-        let html = `<b>Summary:</b> ${data.summary || ''}<br>`;
-        html += `<b>Recommendation:</b> ${data.recommendation || ''}<br>`;
-        if (data.escalations && data.escalations.length > 0) {
-            html += `<b>Top Escalations:</b><ul style="margin-top:8px;">`;
-            for (const e of data.escalations.slice(0, 6)) {
-                html += `<li><b>${e.event_id}</b> [${e.escalation_level}, score: ${e.escalation_score}]<br><span style='font-size:12px;'>${e.reasons.join('; ')}</span>${e.recommendation ? `<br><i>${e.recommendation}</i>` : ''}</li>`;
-            }
-            html += '</ul>';
-        } else {
-            html += '<b>No events require escalation review.</b>';
-        }
-        escalationPanel.innerHTML = html;
-    }
-
-    function fetchEscalations() {
-        escalationPanel.style.display = 'none';
-        escalationError.style.display = 'none';
-        fetch('/api/escalations').then(r => r.json()).then(renderEscalationPanel).catch(e => {
-            escalationPanel.style.display = 'none';
-            escalationError.style.display = 'block';
-            escalationError.innerText = 'Failed to load escalations.';
-        });
-    }
-
-    refreshEscalationBtn.addEventListener('click', fetchEscalations);
-    window.addEventListener('DOMContentLoaded', fetchEscalations);
-
-    const chatHistory = document.getElementById('chat-history');
-    const chatInput = document.getElementById('chat-input');
-    const activity = document.getElementById('activity');
-    const chatHistoryDiv = document.getElementById('chat-history');
-    // Status panel elements
-    const statusPanel = document.getElementById('status-panel');
-    const statusError = document.getElementById('status-error');
-    const refreshStatusBtn = document.getElementById('refresh-status-btn');
-    // Queue panel elements
-    const queuePanel = document.getElementById('queue-panel');
-    const queueError = document.getElementById('queue-error');
-    const refreshQueueBtn = document.getElementById('refresh-queue-btn');
-
-    // Anomaly panel elements
-    const anomalyPanel = document.getElementById('anomaly-panel');
-    const anomalyError = document.getElementById('anomaly-error');
-    const refreshAnomalyBtn = document.getElementById('refresh-anomaly-btn');
-
-    function renderAnomalyPanel(data) {
-        if (!data || !data.ok) {
-            anomalyPanel.style.display = 'none';
-            anomalyError.style.display = 'block';
-            anomalyError.innerText = data && data.error ? data.error : 'Failed to load anomalies.';
-            return;
-        }
-        anomalyError.style.display = 'none';
-        anomalyPanel.style.display = 'block';
-        if (!data.anomalies || data.anomalies.length === 0) {
-            anomalyPanel.innerHTML = '<b>No anomalies detected.</b>';
-            return;
-        }
-        let html = `<b>${data.count} anomaly${data.count === 1 ? '' : 'ies'} detected:</b><ul style="margin-top:8px;">`;
-        for (const a of data.anomalies) {
-            html += `<li><b>${a.event_name}</b> [${a.type}] <span style="color:#a80000;">(Severity: ${a.severity})</span></li>`;
-        }
-        html += '</ul>';
-        anomalyPanel.innerHTML = html;
-    }
-
-    function fetchAnomalies() {
-        anomalyPanel.style.display = 'none';
-        anomalyError.style.display = 'none';
-        fetch('/api/anomalies').then(r => r.json()).then(renderAnomalyPanel).catch(e => {
-            anomalyPanel.style.display = 'none';
-            anomalyError.style.display = 'block';
-            anomalyError.innerText = 'Failed to load anomalies.';
-        });
-    }
-
-    refreshAnomalyBtn.addEventListener('click', fetchAnomalies);
-    window.addEventListener('DOMContentLoaded', fetchAnomalies);
-
-    // --- Queue Panel Logic ---
-    function renderQueuePanel(data) {
-        if (!data || !data.ok) {
-            queuePanel.style.display = 'none';
-            queueError.style.display = 'block';
-            queueError.innerText = data && data.error ? data.error : 'Failed to load queue.';
-            return;
-        }
-        queueError.style.display = 'none';
-        queuePanel.style.display = 'block';
-        queuePanel.innerHTML = `
-            <div style="margin-bottom:6px;">
-                <b>Queued:</b> <span>${data.queued_count ?? '-'}</span> &nbsp;
-                <b>In Progress:</b> <span>${data.in_progress_count ?? '-'}</span> &nbsp;
-                <b>Blocked:</b> <span>${data.blocked_count ?? '-'}</span> &nbsp;
-                <b>Complete:</b> <span>${data.complete_count ?? '-'}</span>
-            </div>
-            <div id="queue-recommendation" style="margin-bottom:6px;"></div>
-            <table style="width:100%; font-size:13px; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:#f3f2f1;">
-                        <th style="text-align:left; padding:2px 4px;">Event</th>
-                        <th style="text-align:left; padding:2px 4px;">Status</th>
-                        <th style="text-align:left; padding:2px 4px;">Artifact</th>
-                        <th style="text-align:left; padding:2px 4px;">Blockers</th>
-                        <th style="text-align:left; padding:2px 4px;">Completed</th>
-                        <th style="text-align:left; padding:2px 4px;">Frozen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.rows.slice(0, 6).map(r => `
-                        <tr class="event-row" data-event-id="${r.event_id}">
-                            <td><a href="#" onclick="inspectEvent('${r.event_id}')">${r.event_id || '-'}</a></td>
-                            <td>${r.status || '-'}</td>
-                            <td>${r.artifact || '-'}</td>
-                            <td>${r.blockers || '-'}</td>
-                            <td>${r.completed_at || '-'}</td>
-                            <td>${r.frozen_flag || '-'}</td>
-                        </tr>
-                    `).join('')}
-                    // --- Event Drilldown Logic ---
-
-
-                    function inspectEvent(eventId) {
-                        fetch(`/api/queue/event/${eventId}`)
-                            .then(r => r.json())
-                            .then(data => {
-                                const drill = document.getElementById('event-drilldown');
-                                if (!data.ok || !data.event_found) {
-                                    drill.style.display = 'block';
-                                    drill.innerHTML = `<b>Event:</b> ${eventId} <br><span style='color:#a4262c;'>Not found or unavailable.</span>`;
-                                    document.getElementById('event-evidence-panel').style.display = 'none';
-                                    document.getElementById('event-comparison-panel').style.display = 'none';
-                                    return;
-                                }
-                                let artifactBtn = '';
-                                if (data.artifact) {
-                                    artifactBtn = `<button id="open-artifact-btn" style="margin-left:8px;">Open Artifact</button>`;
-                                }
-                                drill.style.display = 'block';
-                                drill.innerHTML = `
-                                    <b>Event:</b> ${data.event_id}<br>
-                                    <b>Status:</b> ${data.status || '-'}<br>
-                                    <b>Blockers:</b> ${data.blockers || '-'}<br>
-                                    <b>Completed At:</b> ${data.completed_at || '-'}<br>
-                                    <b>Frozen:</b> ${data.frozen_flag || '-'}<br>
-                                    <b>Recommendation:</b> ${data.recommendation || '-'}<br>
-                                    <b>Artifact:</b> ${data.artifact || '-'} ${artifactBtn}
-                                `;
-                                if (data.artifact) {
-                                    document.getElementById('open-artifact-btn').onclick = function() {
-                                        fetch(`/api/queue/event/${eventId}/open_artifact`, {method:'POST'})
-                                            .then(r => r.json())
-                                            .then(res => {
-                                                if (res.ok) {
-                                                    alert('Artifact opened successfully.');
-                                                } else {
-                                                    alert('Failed to open artifact: ' + (res.error || 'Unknown error'));
-                                                }
-                                            });
-                                    };
-                                }
-                                // Fetch and render evidence panel
-                                fetch(`/api/queue/event/${eventId}/evidence`).then(r=>r.json()).then(ev=>{
-                                    const panel = document.getElementById('event-evidence-panel');
-                                    if (!ev.ok || !ev.event_found) {
-                                        panel.style.display = 'block';
-                                        panel.innerHTML = `<b>Evidence:</b> Not available.<br>${(ev.errors||[]).join('<br>')}`;
-                                        return;
-                                    }
-                                    let ledgerHtml = '';
-                                    if (ev.recent_ledger_entries && ev.recent_ledger_entries.length) {
-                                        ledgerHtml = `<div style='margin-top:8px;'><b>Recent Activity:</b><ul style='margin:0 0 0 16px;padding:0;'>` +
-                                            ev.recent_ledger_entries.map(e=>`<li>${e.timestamp ? e.timestamp.slice(0,19).replace('T',' ') : ''} ${e.action||''} ${e.user_message||''}</li>`).join('') +
-                                            `</ul></div>`;
-                                    }
-                                    let linksHtml = '';
-                                    if (ev.approved_record_links && ev.approved_record_links.length) {
-                                        linksHtml = `<div style='margin-top:8px;'><b>Approved Records:</b><ul style='margin:0 0 0 16px;padding:0;'>` +
-                                            ev.approved_record_links.map(l=>`<li><a href=\"file://${l.path}\" target=\"_blank\">${l.label||l.path}</a></li>`).join('') +
-                                            `</ul></div>`;
-                                    }
-                                    panel.style.display = 'block';
-                                    panel.innerHTML = `
-                                        <b>Evidence Panel</b><br>
-                                        <b>Event:</b> ${ev.event_id}<br>
-                                        <b>Status:</b> ${ev.status || '-'}<br>
-                                        <b>Blockers:</b> ${ev.blockers || '-'}<br>
-                                        <b>Artifact:</b> ${ev.artifact || '-'}<br>
-                                        <b>Artifact Exists:</b> ${ev.artifact_exists ? 'Yes' : 'No'}<br>
-                                        <b>Artifact Safe:</b> ${ev.artifact_safe ? 'Yes' : 'No'}<br>
-                                        <b>Completed At:</b> ${ev.completed_at || '-'}<br>
-                                        <b>Frozen:</b> ${ev.frozen_flag || '-'}<br>
-                                        <b>Recommendation:</b> ${ev.recommendation || '-'}<br>
-                                        ${ledgerHtml}
-                                        ${linksHtml}
-                                    `;
-                                });
-                                // Fetch and render comparison panel
-                                fetch(`/api/queue/event/${eventId}/comparison`).then(r=>r.json()).then(comp=>{
-                                    const compPanel = document.getElementById('event-comparison-panel');
-                                    if (!comp.ok || !comp.event_found) {
-                                        compPanel.style.display = 'block';
-                                        compPanel.innerHTML = `<b>Comparison:</b> Not available.<br>${(comp.errors||[]).join('<br>')}`;
-                                        return;
-                                    }
-                                    compPanel.style.display = 'block';
-                                    compPanel.innerHTML = `
-                                        <b>Comparison Panel</b><br>
-                                        <b>Event:</b> ${comp.event_id}<br>
-                                        <b>Queue Status:</b> ${(comp.queue_snapshot && comp.queue_snapshot.status) || '-'}<br>
-                                        <b>Blockers:</b> ${(comp.queue_snapshot && comp.queue_snapshot.blockers) || '-'}<br>
-                                        <b>Artifact:</b> ${(comp.evidence_snapshot && comp.evidence_snapshot.artifact) || '-'}<br>
-                                        <b>Artifact Exists:</b> ${(comp.evidence_snapshot && comp.evidence_snapshot.artifact_exists) ? 'Yes' : 'No'}<br>
-                                        <b>Recent Activity:</b> ${(comp.recent_activity_snapshot && comp.recent_activity_snapshot.length) || 0}<br>
-                                        <b>Discrepancies:</b> ${(comp.discrepancies && comp.discrepancies.length) ? comp.discrepancies.join('; ') : 'None'}<br>
-                                        <b>Recommendation:</b> ${comp.recommendation || '-'}<br>
-                                    `;
-                                });
-                            });
-                        });
+                .panel-table th, .panel-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #f0f0f0;
+                    text-align: left;
+                }
+                .panel-table th {
+                    background: #f6f7fb;
+                    font-weight: 600;
+                    color: #444;
+                }
+                .panel-row {
+                    padding: 10px 28px;
+                    font-size: 15px;
+                }
+                .error-card {
+                    color: #a80000;
+                    background: #fff0f0;
+                    border: 1px solid #f5c2c7;
+                    border-radius: 7px;
+                    margin: 14px 28px 0 28px;
+                    padding: 12px 18px;
+                    font-size: 15px;
+                }
+                .badge {
+                    display: inline-block;
+                    padding: 2px 10px;
+                    border-radius: 12px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    background: #e6e6f2;
+                    color: #4a4a7a;
+                    margin-left: 8px;
+                }
+                .panel-body {
+                    padding: 16px 28px 0 28px;
+                    flex: 1 1 auto;
+                }
+                .panel-list {
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                }
+                .panel-list li {
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                .panel-list li:last-child {
+                    border-bottom: none;
+                }
+                label {
+                    font-weight: 500;
+                    color: #555;
+                    margin-right: 8px;
+                }
+                .badge-critical { background: #d32f2f; }
+                .badge-high { background: #ff9800; }
+                .badge-medium { background: #1976d2; }
+                .badge-low { background: #388e3c; }
+                .badge-quiet { background: #888; }
+                @media (max-width: 1100px) {
+                    .phase1-controls {
+                        grid-template-columns: repeat(3, minmax(140px, 1fr));
                     }
+                }
+                @media (max-width: 780px) {
+                    .phase1-toolbar {
+                        grid-template-columns: 1fr;
+                    }
+                    .phase1-controls {
+                        grid-template-columns: repeat(2, minmax(140px, 1fr));
+                    }
+                    .phase1-data-grid {
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                    }
+                    .phase1-toolbar-shell {
+                        position: static;
+                    }
+                }
+                @media (max-width: 700px) {
+                    .dashboard-container { padding: 0 2px; }
+                    .panel-card { padding: 10px 4px; }
+                    .phase1-controls {
+                        grid-template-columns: 1fr;
+                    }
+                    .phase1-table-shell {
+                        max-height: 185px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="dashboard-container">
+                <h1>{{ dashboard_title or "AI-RISA Local Operator Dashboard" }}</h1>
+                <div id="backend-status-indicator" style="margin:12px 0 8px 0; text-align:center;"></div>
+                <!-- Panels -->
+                <section class="panel-card" style="border-left-color:#a800a8;">
+                    <div class="panel-header">
+                        <h2>Anomaly Explanation</h2>
+                        <button id="refresh-anomaly-explanation-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="anomaly-explanation-panel" style="display:none;"></div>
+                        <div id="anomaly-explanation-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#228B22;">
+                    <div class="panel-header">
+                        <h2>Response Matrix</h2>
+                        <button id="refresh-response-matrix-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="response-matrix-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#008080;">
+                    <div class="panel-header">
+                        <h2>Forecast</h2>
+                        <button id="refresh-forecast-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="forecast-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#d2691e;">
+                    <div class="panel-header">
+                        <h2>Drift</h2>
+                        <button id="refresh-drift-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="drift-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Integrity</h2>
+                        <button id="refresh-integrity-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="integrity-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#444;">
+                    <div class="panel-header">
+                        <h2>Control Summary</h2>
+                        <button id="refresh-control-summary-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="control-summary-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#6a329f;">
+                    <div class="panel-header">
+                        <h2>Portfolio</h2>
+                        <button id="refresh-portfolio-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="portfolio-summary"></div>
+                        <div id="portfolio-bands"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#6a329f;">
+                    <div class="panel-header">
+                        <h2>Casefile</h2>
+                        <div class="panel-actions">
+                            <input id="casefile-event-id" type="text" placeholder="Enter event id" style="width:180px;" />
+                            <button id="load-casefile-btn">Load Casefile</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="casefile-panel" style="display:none;"></div>
+                        <div id="casefile-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#228B22;">
+                    <div class="panel-header">
+                        <h2>Review Queue</h2>
+                        <button id="refresh-review-queue-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="review-queue-panel" style="display:none;"></div>
+                        <div id="review-queue-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Briefing</h2>
+                        <button id="refresh-briefing-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="briefing-panel" style="display:none;"></div>
+                        <div id="briefing-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#b8860b;">
+                    <div class="panel-header">
+                        <h2>Digest</h2>
+                        <button id="refresh-digest-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="digest-panel" style="display:none;"></div>
+                        <div id="digest-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#0078d4;">
+                    <div class="panel-header">
+                        <h2>Watchlist</h2>
+                        <button id="refresh-watchlist-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="watchlist-panel" style="display:none;"></div>
+                        <div id="watchlist-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#a80000;">
+                    <div class="panel-header">
+                        <h2>Escalations</h2>
+                        <button id="refresh-escalation-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="escalation-panel" style="display:none;"></div>
+                        <div id="escalation-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#444;">
+                    <div class="panel-header">
+                        <h2>Queue</h2>
+                        <button id="refresh-queue-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="queue-panel" style="display:none;"></div>
+                        <div id="queue-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card phase1-primary" style="border-left-color:#2e5fa0;">
+                    <div class="panel-header">
+                        <h2>Phase 1 Operations</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="phase1-toolbar-shell">
+                            <div class="phase1-toolbar-title">Controls</div>
+                            <div class="phase1-toolbar">
+                                <div class="phase1-filter-block">
+                                    <label for="phase1-sport-filter">Sport Filter</label>
+                                    <select id="phase1-sport-filter">
+                                        <option value="all">All</option>
+                                        <option value="mma">MMA</option>
+                                        <option value="boxing">Boxing</option>
+                                        <option value="kickboxing">Kickboxing</option>
+                                        <option value="muay thai">Muay Thai</option>
+                                    </select>
+                                </div>
+                                <div class="phase1-controls">
+                                    <button id="phase1-scan-upcoming-btn">Scan Upcoming Events</button>
+                                    <button id="phase1-freeze-card-btn">Freeze Approved Card</button>
+                                    <button id="phase1-create-matchups-btn">Create Matchups</button>
+                                    <button id="phase1-run-main-btn">Run Main Event Report</button>
+                                    <button id="phase1-run-full-btn">Run Full Card Reports</button>
+                                    <button id="phase1-enter-result-btn">Enter Actual Result</button>
+                                    <button id="phase1-score-accuracy-btn">Score Accuracy</button>
+                                    <button id="phase1-open-ledger-btn">Open Accuracy Ledger</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="phase1-status-banner">
+                            <div class="phase1-status-label">Status</div>
+                            <div class="phase1-status" id="phase1-status">Ready.</div>
+                        </div>
+                        <div class="phase1-data-grid">
+                            <div class="phase1-column">
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Queues</div>
+                                    <h4>Upcoming Events</h4>
+                                    <div id="phase1-upcoming-events" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Queues</div>
+                                    <h4>Event Review Queue</h4>
+                                    <div id="phase1-event-review-queue" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                            </div>
+                            <div class="phase1-column">
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Runs</div>
+                                    <h4>Fight Run Queue</h4>
+                                    <div id="phase1-fight-run-queue" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Results</div>
+                                    <h4>Results Ledger</h4>
+                                    <div id="phase1-results-ledger" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Status</h2>
+                        <button id="refresh-status-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="status-panel" style="display:none;"></div>
+                        <div id="status-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#0078d4;">
+                    <div class="panel-header">
+                        <h2>Operator Matchup Workflow</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;margin-bottom:6px;font-weight:700;">Matchup Input</label>
+                            <input id="operator-matchup-input" type="text" placeholder="Type Fighter A vs Fighter B" style="width:100%;padding:10px 12px;font-size:15px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box;" />
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:16px;">
+                            <button id="operator-analyze-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #0078d4;background:#e8f4fd;color:#0078d4;cursor:pointer;">Analyze + Build Premium Report</button>
+                            <button id="operator-compare-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Compare With Real Result</button>
+                            <button id="operator-calibrate-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #d83b01;background:#fde7e1;color:#d83b01;cursor:pointer;">Run Calibration Review</button>
+                        </div>
+                        <div id="operator-rolling-rate" style="background:#f0f8ff;border:1px solid #d0e8f2;border-radius:6px;padding:10px;margin-bottom:12px;font-size:14px;display:none;">
+                            <strong>Rolling AI-RISA Success Rate:</strong> <span id="operator-rolling-rate-value">--</span>%
+                        </div>
+                        <div id="operator-status" style="color:#2d5f2d;font-size:14px;margin-bottom:12px;min-height:20px;"></div>
+                        <div id="operator-result" style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:12px;display:none;max-height:400px;overflow-y:auto;font-size:13px;"></div>
+                        <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#888;">
+                    <div class="panel-header">
+                        <h2>Chat</h2>
+                        <div class="panel-actions">
+                            <button id="chat-refresh-btn">Refresh Chat</button>
+                            <button id="chat-clear-btn">Clear Chat</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="chat-status" class="chat-status"></div>
+                        <div id="chat-panel" class="chat-panel" style="display:block;"></div>
+                        <div style="display:flex;gap:8px;margin-top:12px;">
+                            <input id="chat-input" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;font-size:15px;border-radius:6px;border:1px solid #ccc;" />
+                            <button id="chat-send-btn" style="padding:8px 18px;font-size:15px;border-radius:6px;border:1px solid #888;background:#f3f3f7;cursor:pointer;">Send</button>
+                        </div>
+                        <div id="chat-error" class="error-card" style="display:none;margin-top:10px;"></div>
+                    </div>
+                </section>
+            </div>
+            <script>
+            // --- Chat Panel Logic ---
+            const chatPanel = document.getElementById('chat-panel');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatRefreshBtn = document.getElementById('chat-refresh-btn');
+            const chatClearBtn = document.getElementById('chat-clear-btn');
+            const chatStatus = document.getElementById('chat-status');
+            const chatError = document.getElementById('chat-error');
 
-                    // Controls
-                    document.getElementById('show-next-btn').onclick = function() {
-                        fetch('/api/queue/recommendation').then(r=>r.json()).then(data=>{
-                            const drill = document.getElementById('event-drilldown');
-                            drill.style.display = 'block';
-                            drill.innerHTML = `<b>Recommended Next Action:</b> ${data.recommendation || '-'}`;
-                        });
-                    };
-                    document.getElementById('show-blocked-btn').onclick = function() {
-                        fetch('/api/queue').then(r=>r.json()).then(data=>{
-                            const blocked = (data.rows||[]).filter(r=>r.status && r.status.toLowerCase()==='blocked');
-                            const drill = document.getElementById('event-drilldown');
-                            drill.style.display = 'block';
-                            if (!blocked.length) {
-                                drill.innerHTML = '<b>No blocked events in the queue.</b>';
-                            } else {
-                                drill.innerHTML = `<b>Blocked Events:</b> ${blocked.map(r=>r.event_id).join(', ')}`;
+            function setChatStatus(msg, isError=false) {
+                if (!chatStatus) return;
+                chatStatus.textContent = msg || '';
+                chatStatus.style.color = isError ? '#a80000' : '#2d5f2d';
+            }
+
+            function collapseRepeatedMessages(messages) {
+                if (!Array.isArray(messages) || messages.length === 0) return [];
+                const out = [];
+                for (const msg of messages) {
+                    const prev = out[out.length - 1];
+                    const currentContent = String((msg && msg.content) || '').trim();
+                    const prevContent = prev ? String((prev.msg && prev.msg.content) || '').trim() : '';
+                    const isLikelyHelp = currentContent.toLowerCase().includes('available commands') || currentContent.toLowerCase().includes('try:') || currentContent.toLowerCase().includes('help');
+                    if (prev && prev.msg.role === msg.role && prevContent === currentContent && isLikelyHelp) {
+                        prev.count += 1;
+                    } else {
+                        out.push({ msg, count: 1 });
+                    }
+                }
+                return out;
+            }
+
+            function renderChat(messages) {
+                chatPanel.innerHTML = '';
+                if (!messages || !messages.length) {
+                    chatPanel.innerHTML = '<div style="color:#888;font-size:14px;">No chat history yet.</div>';
+                    return;
+                }
+                const grouped = collapseRepeatedMessages(messages);
+                for (const item of grouped) {
+                    const msg = item.msg;
+                    const role = msg.role === 'user' ? 'user' : 'assistant';
+                    const countBadge = item.count > 1 ? ` <span class="chat-meta">(repeated ${item.count}x)</span>` : '';
+                    const safeContent = String(msg.content || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+                    const bubble = `
+                        <div class="chat-bubble-wrap ${role}">
+                            <div>
+                                <div class="chat-bubble ${role}">${safeContent}</div>
+                                <div class="chat-meta">${role === 'user' ? 'You' : 'Assistant'}${countBadge}</div>
+                            </div>
+                        </div>`;
+                    chatPanel.innerHTML += bubble;
+                }
+                chatPanel.scrollTop = chatPanel.scrollHeight;
+            }
+
+            async function loadChatHistory() {
+                chatError.style.display = 'none';
+                try {
+                    const resp = await fetch('/chat/history');
+                    if (!resp.ok) throw new Error('Failed to load chat history');
+                    const data = await resp.json();
+                    setChatStatus('');
+                    renderChat(data.history || data);
+                } catch (e) {
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not load chat history.';
+                    setChatStatus('Could not refresh chat.', true);
+                }
+            }
+
+            async function clearChatHistory() {
+                chatError.style.display = 'none';
+                setChatStatus('Clearing chat...');
+                try {
+                    const resp = await fetch('/chat/clear', { method: 'POST' });
+                    const data = await resp.json();
+                    if (!resp.ok || data.ok === false) {
+                        throw new Error(data.error || 'Failed to clear chat');
+                    }
+                    await loadChatHistory();
+                    setChatStatus(data.status || 'Chat cleared.');
+                } catch (e) {
+                    setChatStatus('Could not clear chat.', true);
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not clear chat history.';
+                }
+            }
+
+            async function sendChatMessage() {
+                const msg = chatInput.value.trim();
+                if (!msg) return;
+                chatSendBtn.disabled = true;
+                chatError.style.display = 'none';
+                try {
+                    const resp = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: msg })
+                    });
+                    if (!resp.ok) throw new Error('Failed to send message');
+                    chatInput.value = '';
+                    await loadChatHistory();
+                    setChatStatus('');
+                } catch (e) {
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not send message.';
+                    setChatStatus('Could not send message.', true);
+                } finally {
+                    chatSendBtn.disabled = false;
+                }
+            }
+
+            chatSendBtn && (chatSendBtn.onclick = sendChatMessage);
+            chatRefreshBtn && (chatRefreshBtn.onclick = loadChatHistory);
+            chatClearBtn && (chatClearBtn.onclick = clearChatHistory);
+            chatInput && chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+            window.addEventListener('DOMContentLoaded', loadChatHistory);
+
+            function makeGroup(title) {
+                const group = document.createElement('section');
+                group.className = 'group-shell';
+                const h = document.createElement('h3');
+                h.className = 'group-title';
+                h.textContent = title;
+                group.appendChild(h);
+                return group;
+            }
+
+            function moveCardByTitle(title, target) {
+                const cards = Array.from(document.querySelectorAll('.panel-card'));
+                const card = cards.find(c => {
+                    const h2 = c.querySelector('.panel-header h2');
+                    return h2 && h2.textContent.trim() === title;
+                });
+                if (card && target) target.appendChild(card);
+            }
+
+            function reorganizeLayout() {
+                const container = document.querySelector('.dashboard-container');
+                if (!container) return;
+
+                const operationsGroup = makeGroup('Operations');
+                const queuesGroup = makeGroup('Queues');
+                const resultsGroup = makeGroup('Results');
+                const chatGroup = makeGroup('Chat');
+
+                const legacyDetails = document.createElement('details');
+                legacyDetails.className = 'legacy-monitoring-shell';
+                legacyDetails.open = false;
+                const summary = document.createElement('summary');
+                summary.textContent = 'Legacy Monitoring';
+                legacyDetails.appendChild(summary);
+
+                const anchor = document.getElementById('backend-status-indicator');
+                if (anchor && anchor.parentNode === container) {
+                    anchor.insertAdjacentElement('afterend', operationsGroup);
+                    operationsGroup.insertAdjacentElement('afterend', queuesGroup);
+                    queuesGroup.insertAdjacentElement('afterend', resultsGroup);
+                    resultsGroup.insertAdjacentElement('afterend', chatGroup);
+                    chatGroup.insertAdjacentElement('afterend', legacyDetails);
+                }
+
+                moveCardByTitle('Phase 1 Operations', operationsGroup);
+
+                moveCardByTitle('Queue', queuesGroup);
+                moveCardByTitle('Review Queue', queuesGroup);
+                moveCardByTitle('Casefile', queuesGroup);
+
+                moveCardByTitle('Status', resultsGroup);
+
+                moveCardByTitle('Chat', chatGroup);
+
+                [
+                    'Anomaly Explanation',
+                    'Response Matrix',
+                    'Forecast',
+                    'Drift',
+                    'Integrity',
+                    'Control Summary',
+                    'Portfolio',
+                    'Briefing',
+                    'Digest',
+                    'Watchlist',
+                    'Escalations'
+                ].forEach(title => moveCardByTitle(title, legacyDetails));
+            }
+
+            // --- Dashboard Panel Logic ---
+            // Panel config: id, endpoint, render function
+            const panels = [
+                { id: 'anomaly-explanation-panel', btn: 'refresh-anomaly-explanation-btn', endpoint: '/api/anomalies', render: renderTextPanel },
+                { id: 'response-matrix-content', btn: 'refresh-response-matrix-btn', endpoint: '/api/response-matrix', render: renderTextPanel },
+                { id: 'forecast-content', btn: 'refresh-forecast-btn', endpoint: '/api/forecast', render: renderTextPanel },
+                { id: 'drift-content', btn: 'refresh-drift-btn', endpoint: '/api/drift', render: renderTextPanel },
+                { id: 'integrity-content', btn: 'refresh-integrity-btn', endpoint: '/api/integrity', render: renderTextPanel },
+                { id: 'control-summary-content', btn: 'refresh-control-summary-btn', endpoint: '/api/control-summary', render: renderTextPanel },
+                { id: 'portfolio-summary', btn: 'refresh-portfolio-btn', endpoint: '/api/portfolio', render: renderTextPanel },
+                { id: 'review-queue-panel', btn: 'refresh-review-queue-btn', endpoint: '/api/review-queue', render: renderListPanel },
+                { id: 'briefing-panel', btn: 'refresh-briefing-btn', endpoint: '/api/briefing', render: renderTextPanel },
+                { id: 'digest-panel', btn: 'refresh-digest-btn', endpoint: '/api/digest', render: renderTextPanel },
+                { id: 'watchlist-panel', btn: 'refresh-watchlist-btn', endpoint: '/api/watchlist', render: renderListPanel },
+                { id: 'escalation-panel', btn: 'refresh-escalation-btn', endpoint: '/api/escalations', render: renderListPanel },
+                { id: 'queue-panel', btn: 'refresh-queue-btn', endpoint: '/api/queue', render: renderQueuePanel },
+                { id: 'status-panel', btn: 'refresh-status-btn', endpoint: '/api/status', render: renderStatusPanel }
+            ];
+
+            function renderTextPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                el.innerHTML = typeof data === 'string' ? data : (data && data.text) ? data.text : JSON.stringify(data, null, 2);
+            }
+
+            function renderListPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                if (Array.isArray(data) && data.length) {
+                    el.innerHTML = '<ul class="panel-list">' + data.map(item => `<li>${typeof item === 'string' ? item : JSON.stringify(item)}</li>`).join('') + '</ul>';
+                } else {
+                    el.innerHTML = '<div style="color:#888;font-size:14px;">No items.</div>';
+                }
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
+            }
+
+            function badge(label, value, bg, fg = '#fff') {
+                return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg};">${escapeHtml(label)}: ${escapeHtml(value)}</span>`;
+            }
+
+            async function renderQueuePanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                if (data && data.rows && data.rows.length) {
+                    const observabilityByEvent = {};
+                    await Promise.all(
+                        data.rows.map(async (row) => {
+                            const eventId = row.event_id || row.event_name;
+                            if (!eventId) {
+                                return;
                             }
-                        });
-                    };
-                </tbody>
-            </table>
-            <div style="font-size:11px; color:#888; margin-top:4px;">Showing up to 6 most recent rows.</div>
-        `;
-        // Fetch recommendation
-        fetch('/api/queue').then(r => r.json()).then(qdata => {
-            if (qdata.ok && qdata.rows) {
-                fetch('/api/queue/recommendation').then(r => r.json()).then(rec => {
-                    document.getElementById('queue-recommendation').innerHTML = `<b>Recommended Next Action:</b> <span>${rec.recommendation || '-'}</span>`;
-                }).catch(() => {
-                    document.getElementById('queue-recommendation').innerHTML = '';
+                            try {
+                                const resp = await fetch(`/api/queue/event/${encodeURIComponent(eventId)}/observability`);
+                                observabilityByEvent[eventId] = await resp.json();
+                            } catch (_err) {
+                                observabilityByEvent[eventId] = null;
+                            }
+                        })
+                    );
+
+                    const rowsHtml = data.rows.map((row) => {
+                        const eventId = row.event_id || row.event_name || 'Unknown';
+                        const status = row.status || 'unknown';
+                        const obs = observabilityByEvent[eventId] || {};
+                        const decomposition = obs.decomposition || {};
+                        const adapter = obs.adapter || {};
+
+                        const decompositionStatus = decomposition.decomposition_status || 'unavailable';
+                        const discoveredBoutSlots = decomposition.discovered_bout_slots ?? 'n/a';
+                        const inputBoutCount = decomposition.input_bout_count ?? 'n/a';
+                        const completionMode = adapter.completion_mode || 'unavailable';
+                        const fallbackFields = Array.isArray(adapter.fallback_fields) ? adapter.fallback_fields : [];
+                        const winnerSource = adapter.winner_source || 'unavailable';
+
+                        const decompIsIncomplete = decompositionStatus !== 'decomposed';
+                        const fallbackActive = !!adapter.fallback_active;
+                        const rowBorder = fallbackActive ? '#ff9800' : (decompIsIncomplete ? '#d32f2f' : '#1f8a3d');
+
+                        const chips = [
+                            badge('status', status, '#475569'),
+                            badge('decomposition_status', decompositionStatus, decompIsIncomplete ? '#d32f2f' : '#1f8a3d'),
+                            badge('discovered_bout_slots', discoveredBoutSlots, '#0369a1'),
+                            badge('input_bout_count', inputBoutCount, '#0f766e'),
+                            badge('completion_mode', completionMode, fallbackActive ? '#ff9800' : '#334155'),
+                            badge('winner_source', winnerSource, '#6b21a8'),
+                        ];
+                        if (fallbackFields.length > 0) {
+                            chips.push(badge('fallback_fields', fallbackFields.join(', '), '#b45309'));
+                        }
+                        if (fallbackActive) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#ff9800;color:#111;">fallback active</span>');
+                        }
+                        if (decompIsIncomplete) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#d32f2f;color:#fff;">incomplete decomposition</span>');
+                        }
+
+                        return `<li style="border-left:4px solid ${rowBorder};padding-left:12px;">
+                            <div style="font-weight:700;margin-bottom:6px;">${escapeHtml(eventId)}</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips.join('')}</div>
+                        </li>`;
+                    }).join('');
+
+                    el.innerHTML = `<ul class="panel-list">${rowsHtml}</ul>`;
+                } else {
+                    el.innerHTML = '<div style="color:#888;font-size:14px;">Queue is empty.</div>';
+                }
+            }
+
+            function renderStatusPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                el.innerHTML = '<pre style="font-size:13px;">' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+
+            async function fetchAndRenderPanel(panel) {
+                const el = document.getElementById(panel.id);
+                const errEl = document.getElementById(panel.id.replace(/(-panel|-content)$/, '-error'));
+                if (errEl) errEl.style.display = 'none';
+                if (!el) return;
+                try {
+                    const resp = await fetch(panel.endpoint);
+                    const data = await resp.json();
+                    await panel.render(data, panel.id);
+                } catch (e) {
+                    if (errEl) {
+                        errEl.style.display = 'block';
+                        errEl.textContent = 'Failed to load panel: ' + e;
+                    }
+                }
+            }
+
+            function setupPanelRefresh() {
+                panels.forEach(panel => {
+                    const btn = document.getElementById(panel.btn);
+                    if (btn) btn.onclick = () => fetchAndRenderPanel(panel);
                 });
             }
-        });
-    }
 
-    function fetchQueuePanel() {
-        queuePanel.style.display = 'none';
-        queueError.style.display = 'none';
-        fetch('/api/queue').then(r => r.json()).then(data => {
-            renderQueuePanel(data);
-        }).catch(e => {
-            queuePanel.style.display = 'none';
-            queueError.style.display = 'block';
-            queueError.innerText = 'Failed to load queue.';
-        });
-    }
-    refreshQueueBtn.onclick = fetchQueuePanel;
-    // Load queue panel on page open
-    window.addEventListener('DOMContentLoaded', fetchQueuePanel);
-    // --- Status Panel Logic ---
-    function renderStatusPanel(data) {
-        if (!data || !data.ok) {
-            statusPanel.style.display = 'none';
-            statusError.style.display = 'block';
-            statusError.innerText = data && data.error ? data.error : 'Failed to load status.';
-            return;
-        }
-        statusError.style.display = 'none';
-        statusPanel.style.display = 'block';
-        statusPanel.innerHTML = `
-            <div><b>Last Action:</b> <span>${data.last_action || '-'}</span></div>
-            <div><b>Last Event:</b> <span>${data.last_normalized_event || '-'}</span></div>
-            <div><b>Last Outcome:</b> <span>${data.last_outcome_status || '-'}</span></div>
-            <div><b>Total Actions:</b> <span>${data.total_logged_actions ?? '-'}</span></div>
-            <div><b>Total Chat:</b> <span>${data.total_chat_messages ?? '-'}</span></div>
-            <div><b>Last Success:</b> <span>${data.last_success_timestamp || '-'}</span></div>
-            <div><b>Last Failure:</b> <span>${data.last_failure_timestamp || '-'}</span></div>
-            <div><b>Queue File:</b> <span>${data.queue_file_present ? 'Present' : 'Missing'}</span></div>
-            <div><b>Live Log:</b> <span>${data.live_log_present ? 'Present' : 'Missing'}</span></div>
-            <div><b>Manifest:</b> <span>${data.manifest_present ? 'Present' : 'Missing'}</span></div>
-            <div><b>Go/No-Go Note:</b> <span>${data.go_no_go_note_present ? 'Present' : 'Missing'}</span></div>
-        `;
-    }
-
-    function fetchStatusPanel() {
-        statusPanel.style.display = 'none';
-        statusError.style.display = 'none';
-        fetch('/api/status').then(r => r.json()).then(data => {
-            renderStatusPanel(data);
-        }).catch(e => {
-            statusPanel.style.display = 'none';
-            statusError.style.display = 'block';
-            statusError.innerText = 'Failed to load status.';
-        });
-    }
-    refreshStatusBtn.onclick = fetchStatusPanel;
-    // Load status panel on page open
-    window.addEventListener('DOMContentLoaded', fetchStatusPanel);
-    const chatInput = document.getElementById('chat-input');
-    const activity = document.getElementById('activity');
-    const statusDiv = document.getElementById('status');
-    const errorDiv = document.getElementById('error');
-
-    // Render chat history from array
-    function renderChatHistory(history) {
-        chatHistoryDiv.innerHTML = '';
-        history.forEach(msg => {
-            let bubble = document.createElement('div');
-            let role = msg.role;
-            let content = msg.content || '';
-            let details = msg.details || '';
-            let error = msg.error || '';
-            let action = msg.action || '';
-            let norm = msg.normalized_event || '';
-            let ts = msg.timestamp ? `<span style='font-size:11px;color:#888;margin-left:8px;'>${msg.timestamp.slice(0,19).replace('T',' ')}</span>` : '';
-            let bubbleClass = 'chat-bubble ' + (role === 'user' ? 'chat-bubble-user' : (role === 'assistant' ? 'chat-bubble-assistant' : 'chat-bubble-system'));
-            let who = role === 'user' ? 'You' : (role === 'assistant' ? 'AI' : 'System');
-            let meta = '';
-            if (action && action !== 'unknown') meta += `<span style='color:#888;font-size:11px;'>[${action}${norm?': '+norm:''}]</span> `;
-            if (error) meta += `<span style='color:#a4262c;font-size:11px;'>${error}</span> `;
-            bubble.innerHTML = `<span style='font-weight:bold;'>${who}:</span> ${content.replace(/\n/g,'<br>')} ${meta} ${ts}`;
-            bubble.className = bubbleClass;
-            chatHistoryDiv.appendChild(bubble);
-        });
-        chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
-    }
-
-    // Load chat history on page load
-    function loadChatHistory() {
-        fetch('/chat/history').then(r => r.json()).then(history => {
-            renderChatHistory(history);
-        });
-    }
-    loadChatHistory();
-
-    function addChatMessage(role, content) {
-        // For immediate echo before backend reply
-        let bubble = document.createElement('div');
-        let bubbleClass = 'chat-bubble ' + (role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant');
-        let who = role === 'user' ? 'You' : 'AI';
-        bubble.innerHTML = `<span style='font-weight:bold;'>${who}:</span> ${content.replace(/\n/g, '<br>')}`;
-        bubble.className = bubbleClass;
-        chatHistoryDiv.appendChild(bubble);
-        chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
-    }
-
-    function sendChat() {
-        const msg = chatInput.value.trim();
-        if (!msg) return;
-        addChatMessage('user', msg);
-        chatInput.value = '';
-        
-        fetch('/chat/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg })
-        })
-        .then(r => r.json())
-        .then(data => {
-            addChatMessage('assistant', data.response || '[System: No message received]');
-            if (data.details) {
-                activity.innerText = data.details;
+            function loadAllPanels() {
+                panels.forEach(fetchAndRenderPanel);
             }
-        })
-        .catch(e => {
-            addChatMessage('assistant', 'Error connecting to system backend.');
-            console.error(e);
-        });
-    }
 
-    chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') sendChat();
-    });
-    document.getElementById('chat-send-btn').onclick = sendChat;
+            function setPhase1Status(msg, isError=false) {
+                const el = document.getElementById('phase1-status');
+                if (!el) return;
+                el.textContent = msg;
+                el.style.color = isError ? '#a80000' : '#555';
+            }
 
-    function runLocalAI() {
-        clearInfo();
-        fetch('/run_local_ai', { method: 'POST' })
-        .then(r => r.json()).then(data => handleRes(data, 'Local AI Run')).catch(showErr);
-    }
-    function runAcceptanceTest() {
-        clearInfo();
-        fetch('/run_acceptance_test', { method: 'POST' })
-        .then(r => r.json()).then(data => handleRes(data, 'Acceptance Test')).catch(showErr);
-    }
-    function openFile(type) {
-        clearInfo();
-        fetch('/open_file', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file: type })
-        })
-        .then(r => r.json()).then(data => {
-            if (data.error) showErr(data.error);
-            else { statusDiv.style.display = 'block'; statusDiv.innerText = data.status; }
-        }).catch(showErr);
-    }
+            function renderMiniTable(containerId, rows, fields) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                if (!rows || !rows.length) {
+                    el.innerHTML = '<div class="phase1-empty">No rows.</div>';
+                    return;
+                }
+                const header = fields.map(f => `<th>${f.label}</th>`).join('');
+                const body = rows.map(row => {
+                    const cells = fields.map(f => `<td>${row[f.key] ?? ''}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                el.innerHTML = `<table class="panel-table"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+            }
 
-    function handleRes(data, label) {
-        if (data.error) { showErr(data.error); return; }
-        statusDiv.style.display = 'block';
-        statusDiv.innerText = ${label} finished with code ;
-        activity.innerText = (data.stdout || '') + (data.stderr || '');
-    }
-    function showErr(msg) {
-        errorDiv.style.display = 'block';
-        errorDiv.innerText = msg;
-    }
-    function clearInfo() {
-        statusDiv.style.display = 'none';
-        errorDiv.style.display = 'none';
-        activity.innerText = '';
-    }
-</script>
-</body>
+            async function refreshPhase1Lanes() {
+                const sport = (document.getElementById('phase1-sport-filter') || {}).value || 'all';
+                try {
+                    const [upcomingResp, reviewResp, runResp, ledgerResp] = await Promise.all([
+                        fetch(`/api/phase1/upcoming-events?sport=${encodeURIComponent(sport)}`),
+                        fetch('/api/phase1/event-review-queue'),
+                        fetch('/api/phase1/fight-run-queue'),
+                        fetch('/api/phase1/results-ledger')
+                    ]);
+                    const upcoming = await upcomingResp.json();
+                    const review = await reviewResp.json();
+                    const run = await runResp.json();
+                    const ledger = await ledgerResp.json();
+
+                    renderMiniTable('phase1-upcoming-events', upcoming.rows || [], [
+                        {key: 'event_id', label: 'Event'},
+                        {key: 'sport', label: 'Sport'},
+                        {key: 'state', label: 'State'},
+                        {key: 'completeness', label: 'Completeness'}
+                    ]);
+                    renderMiniTable('phase1-event-review-queue', review.rows || [], [
+                        {key: 'event_name', label: 'Event'},
+                        {key: 'source', label: 'Source'},
+                        {key: 'date', label: 'Date'},
+                        {key: 'state', label: 'State'}
+                    ]);
+                    renderMiniTable('phase1-fight-run-queue', run.rows || [], [
+                        {key: 'matchup_slug', label: 'Matchup'},
+                        {key: 'event_id', label: 'Event'},
+                        {key: 'readiness', label: 'Ready'},
+                        {key: 'report_status', label: 'Report'}
+                    ]);
+                    renderMiniTable('phase1-results-ledger', ledger.rows || [], [
+                        {key: 'matchup_slug', label: 'Matchup'},
+                        {key: 'actual_winner', label: 'Actual Winner'},
+                        {key: 'hit_winner', label: 'Winner Hit'},
+                        {key: 'round_error', label: 'Round Error'}
+                    ]);
+                } catch (e) {
+                    setPhase1Status('Failed to refresh Phase 1 lanes: ' + e, true);
+                }
+            }
+
+            function askEventId() {
+                const eventId = window.prompt('Enter event_id');
+                return eventId ? eventId.trim() : '';
+            }
+
+            async function postPhase1(endpoint, payload) {
+                const resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload || {})
+                });
+                const data = await resp.json();
+                if (!resp.ok || data.ok === false) {
+                    throw new Error(data.error || 'Request failed');
+                }
+                return data;
+            }
+
+            function setupPhase1Actions() {
+                const sportFilter = document.getElementById('phase1-sport-filter');
+                sportFilter && sportFilter.addEventListener('change', refreshPhase1Lanes);
+
+                const scanBtn = document.getElementById('phase1-scan-upcoming-btn');
+                scanBtn && (scanBtn.onclick = async () => {
+                    try {
+                        setPhase1Status('Scanning upcoming events...');
+                        const sport = (document.getElementById('phase1-sport-filter') || {}).value || 'all';
+                        const data = await postPhase1('/api/phase1/scan-upcoming-events', {sport});
+                        setPhase1Status(`Scan complete. New triggers: ${data.new_triggers || 0}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Scan failed: ' + e.message, true);
+                    }
+                });
+
+                const freezeBtn = document.getElementById('phase1-freeze-card-btn');
+                freezeBtn && (freezeBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Freezing approved card...');
+                        await postPhase1('/api/phase1/freeze-approved-card', {event_id: eventId});
+                        setPhase1Status(`Card frozen: ${eventId}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Freeze failed: ' + e.message, true);
+                    }
+                });
+
+                const matchupsBtn = document.getElementById('phase1-create-matchups-btn');
+                matchupsBtn && (matchupsBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Creating matchups...');
+                        const data = await postPhase1('/api/phase1/create-matchups', {event_id: eventId});
+                        setPhase1Status(`Matchups created/updated: ${data.created_matchups || 0}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Create matchups failed: ' + e.message, true);
+                    }
+                });
+
+                const runMainBtn = document.getElementById('phase1-run-main-btn');
+                runMainBtn && (runMainBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Dispatching main event report...');
+                        const data = await postPhase1('/api/phase1/run-main-event-report', {event_id: eventId});
+                        setPhase1Status(`Main event run processed: ${(data.runs || []).length} item(s).`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Run main event failed: ' + e.message, true);
+                    }
+                });
+
+                const runFullBtn = document.getElementById('phase1-run-full-btn');
+                runFullBtn && (runFullBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Dispatching full-card reports...');
+                        const data = await postPhase1('/api/phase1/run-full-card-reports', {event_id: eventId});
+                        setPhase1Status(`Full card run processed: ${(data.runs || []).length} item(s).`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Run full card failed: ' + e.message, true);
+                    }
+                });
+
+                const enterResultBtn = document.getElementById('phase1-enter-result-btn');
+                enterResultBtn && (enterResultBtn.onclick = async () => {
+                    const matchupSlug = window.prompt('Enter matchup_slug');
+                    if (!matchupSlug) return;
+                    const actualWinner = window.prompt('Enter actual winner');
+                    const actualMethod = window.prompt('Enter actual method');
+                    const actualRound = window.prompt('Enter actual round');
+                    if (!actualWinner || !actualMethod || !actualRound) return;
+                    try {
+                        setPhase1Status('Recording actual result...');
+                        await postPhase1('/api/phase1/enter-actual-result', {
+                            matchup_slug: matchupSlug.trim(),
+                            actual_winner: actualWinner.trim(),
+                            actual_method: actualMethod.trim(),
+                            actual_round: actualRound.trim()
+                        });
+                        setPhase1Status(`Actual result recorded for ${matchupSlug.trim()}.`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Enter actual result failed: ' + e.message, true);
+                    }
+                });
+
+                const scoreBtn = document.getElementById('phase1-score-accuracy-btn');
+                scoreBtn && (scoreBtn.onclick = async () => {
+                    const eventId = window.prompt('Optional event_id to scope scoring (leave blank for all)', '');
+                    try {
+                        setPhase1Status('Scoring accuracy...');
+                        await postPhase1('/api/phase1/score-accuracy', {event_id: (eventId || '').trim() || null});
+                        setPhase1Status('Accuracy scoring complete.');
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Score accuracy failed: ' + e.message, true);
+                    }
+                });
+
+                const openLedgerBtn = document.getElementById('phase1-open-ledger-btn');
+                openLedgerBtn && (openLedgerBtn.onclick = async () => {
+                    try {
+                        setPhase1Status('Refreshing accuracy ledger...');
+                        await fetch('/api/phase1/open-accuracy-ledger');
+                        setPhase1Status('Accuracy ledger opened.');
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Open ledger failed: ' + e.message, true);
+                    }
+                });
+            }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                reorganizeLayout();
+                setupPanelRefresh();
+                loadAllPanels();
+                setupPhase1Actions();
+                refreshPhase1Lanes();
+                setupOperatorMatchupWorkflow();
+            });
+
+            // --- Operator Matchup Workflow Logic ---
+            async function setupOperatorMatchupWorkflow() {
+                const matchupInput = document.getElementById('operator-matchup-input');
+                const analyzeBtn = document.getElementById('operator-analyze-btn');
+                const compareBtn = document.getElementById('operator-compare-btn');
+                const calibrateBtn = document.getElementById('operator-calibrate-btn');
+                const statusDiv = document.getElementById('operator-status');
+                const resultDiv = document.getElementById('operator-result');
+                const errorDiv = document.getElementById('operator-error');
+                const rollingRateDiv = document.getElementById('operator-rolling-rate');
+                const rollingRateValue = document.getElementById('operator-rolling-rate-value');
+
+                function setStatus(msg, isError = false) {
+                    if (statusDiv) {
+                        statusDiv.textContent = msg;
+                        statusDiv.style.color = isError ? '#a80000' : '#2d5f2d';
+                    }
+                }
+
+                function setResult(content) {
+                    if (resultDiv) {
+                        resultDiv.innerHTML = content;
+                        resultDiv.style.display = content ? 'block' : 'none';
+                    }
+                }
+
+                function setError(msg) {
+                    if (errorDiv) {
+                        errorDiv.textContent = msg;
+                        errorDiv.style.display = msg ? 'block' : 'none';
+                    }
+                }
+
+                async function loadRollingSuccessRate() {
+                    try {
+                        const resp = await fetch('/api/operator/rolling-success-rate');
+                        const data = await resp.json();
+                        if (data.ok && data.rolling_success_rate !== undefined) {
+                            rollingRateValue.textContent = Math.round(data.rolling_success_rate);
+                            rollingRateDiv.style.display = 'block';
+                        }
+                    } catch (e) {
+                        // Silent fail on rate load
+                    }
+                }
+
+                analyzeBtn && (analyzeBtn.onclick = async () => {
+                    const matchup = matchupInput ? matchupInput.value.trim() : '';
+                    if (!matchup) {
+                        setError('Enter a matchup first (e.g., "Tim Tszyu vs Errol Spence Jr.")');
+                        return;
+                    }
+                    setStatus('Analyzing and building premium report...');
+                    setError('');
+                    setResult('');
+                    try {
+                        const resp = await fetch('/api/operator/analyze-build-report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ matchup })
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setError((data.errors || []).join('; ') || 'Failed to build report');
+                            setStatus('Build failed', true);
+                            return;
+                        }
+                        const html = `
+<strong>Matchup:</strong> ${data.matchup_slug || 'unknown'}<br>
+<strong>Output PDF:</strong> ${data.output_pdf_path || 'N/A'}<br>
+<strong>QA Pass:</strong> <span style="color:${data.qa_pass ? '#107c10' : '#a80000'};">${data.qa_pass ? 'YES' : 'NO'}</span><br>
+<strong>Files Written:</strong> ${(data.files_written || []).join(', ') || 'None'}<br>
+${data.errors && data.errors.length ? `<strong>Errors:</strong> ${data.errors.join('; ')}<br>` : ''}
+                        `;
+                        setResult(html);
+                        setStatus('Report built successfully!');
+                        await loadRollingSuccessRate();
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                compareBtn && (compareBtn.onclick = async () => {
+                    const matchup = matchupInput ? matchupInput.value.trim() : '';
+                    if (!matchup) {
+                        setError('Enter a matchup first');
+                        return;
+                    }
+                    setStatus('Searching for real result...');
+                    setError('');
+                    setResult('');
+                    try {
+                        const resp = await fetch('/api/operator/compare-with-result', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ matchup })
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setError((data.errors || []).join('; ') || 'Comparison failed');
+                            setStatus('Comparison failed', true);
+                            return;
+                        }
+                        if (!data.result_found) {
+                            const html = `<strong>Result Status:</strong> ${data.message || 'No official result found yet'}<br>
+<strong>Message:</strong> ${data.confidence_blocker || 'Fight has not occurred or result not yet available.'}`;
+                            setResult(html);
+                            setStatus('No result available yet');
+                            return;
+                        }
+                        const result = data.result || {};
+                        const score = data.score || {};
+                        const metrics = score.metrics || {};
+                        
+                        let segmentsHtml = '';
+                        if (score.segments) {
+                            for (const [seg, scoreData] of Object.entries(score.segments)) {
+                                segmentsHtml += `<div style="margin:8px 0;padding:8px;background:#f9f9f9;border-radius:4px;"><strong>${seg}:</strong> ${scoreData.score}% - ${scoreData.reason}</div>`;
+                            }
+                        }
+                        
+                        const html = `
+<strong>Real Result:</strong> ${result.winner || 'unknown'} by ${result.method || 'unknown'} (R${result.round || 'X'})<br>
+<strong>Overall Accuracy:</strong> ${metrics.total_report_score || 0}%<br>
+<strong>Winner Prediction:</strong> ${metrics.winner_accuracy || 0}%<br>
+<strong>Method Prediction:</strong> ${metrics.method_accuracy || 0}%<br>
+<strong>Round Prediction:</strong> ${metrics.round_accuracy || 0}%<br>
+<div style="margin-top:12px;"><strong>Segment Scores:</strong></div>
+${segmentsHtml}
+                        `;
+                        setResult(html);
+                        setStatus(`Report accuracy: ${metrics.total_report_score || 0}%`);
+                        await loadRollingSuccessRate();
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                calibrateBtn && (calibrateBtn.onclick = async () => {
+                    setStatus('Running calibration review...');
+                    setError('');
+                    setResult('');
+                    try {
+                        const resp = await fetch('/api/operator/run-calibration-review', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setError(data.recommendation || 'Calibration review failed');
+                            setStatus('Calibration review failed', true);
+                            return;
+                        }
+                        
+                        let calibsHtml = '';
+                        if (data.proposed_calibrations && data.proposed_calibrations.length) {
+                            for (const cal of data.proposed_calibrations) {
+                                calibsHtml += `<div style="margin:8px 0;padding:10px;background:#e8f4fd;border-radius:4px;border-left:3px solid #0078d4;">
+<strong>${cal.title}</strong> [${cal.priority}]<br>
+${cal.description}<br>
+<em>Expected Impact: +${Math.round(cal.estimated_impact * 100)}%</em>
+</div>`;
+                            }
+                        }
+                        
+                        const backtest = data.backtest_summary || {};
+                        const html = `
+<strong>Fights Analyzed:</strong> ${data.fights_analyzed || 0}<br>
+<strong>Confidence in Calibration:</strong> ${Math.round((data.confidence_in_calibration || 0) * 100)}%<br>
+<strong>Current Success Rate:</strong> ${backtest.success_rate_current || 0}%<br>
+<strong>Projected Success Rate:</strong> ${backtest.success_rate_projected || 0}%<br>
+<strong>Projected Improvement:</strong> +${backtest.projected_improvement || 0}%<br>
+<strong>Approval Required:</strong> YES (no silent auto-apply)<br>
+<div style="margin-top:12px;"><strong>Recommendation:</strong></div>
+<div style="padding:10px;background:#fffbf0;border-radius:4px;border-left:3px solid #d83b01;">${data.recommendation || 'N/A'}</div>
+${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</strong></div>${calibsHtml}` : ''}
+                        `;
+                        setResult(html);
+                        setStatus('Calibration review complete');
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                // Load rolling success rate on page load
+                await loadRollingSuccessRate();
+            }
+            </script>
+        </body>
 </html>
