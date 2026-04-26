@@ -154,5 +154,29 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Signal Coverage', resp.data)
         self.assertIn(b'/api/accuracy/signal-coverage', resp.data)
 
+    def test_structural_signal_backfill_planner_contract(self):
+        resp = self.client.get('/api/accuracy/structural-signal-backfill-planner')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('planner', data)
+        planner = data['planner']
+        for key in ('total_predictions', 'predictions_needing_backfill', 'structural_fields', 'summary', 'priority_queue'):
+            self.assertIn(key, planner)
+        summary = planner['summary']
+        for key in ('unresolved_needing_backfill', 'resolved_needing_backfill', 'resolved_miss_needing_backfill'):
+            self.assertIn(key, summary)
+        self.assertIsInstance(planner['priority_queue'], list)
+        if planner['priority_queue']:
+            row = planner['priority_queue'][0]
+            for key in ('fight_id', 'missing_signals', 'missing_count', 'priority_score', 'priority_tier'):
+                self.assertIn(key, row)
+
+    def test_structural_signal_backfill_planner_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Structural Signal Backfill Planner', resp.data)
+        self.assertIn(b'/api/accuracy/structural-signal-backfill-planner', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

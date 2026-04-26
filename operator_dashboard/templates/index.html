@@ -783,6 +783,11 @@
                             <h4>Signal Coverage</h4>
                             <div id="signal-coverage-content" class="phase1-table-shell">Loading…</div>
                         </div>
+                        <div class="phase1-box" style="margin-top:12px;" id="structural-backfill-planner-panel">
+                            <div class="phase1-subtitle">Data Quality</div>
+                            <h4>Structural Signal Backfill Planner</h4>
+                            <div id="structural-backfill-planner-content" class="phase1-table-shell">Loading…</div>
+                        </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
                     </div>
                 </section>
@@ -1672,6 +1677,7 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 await loadConfidenceCalibration();
                 await loadFailurePatterns();
                 await loadSignalCoverage();
+                await loadStructuralBackfillPlanner();
             }
 
             async function loadSignalGapBreakdown() {
@@ -1855,6 +1861,58 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                         <div style="font-size:11px;color:#888;margin-top:6px;">Red = &lt;60% coverage</div>`;
                 } catch (e) {
                     container.innerHTML = '<span style="color:#a80000;">Failed to load signal coverage.</span>';
+                }
+            }
+
+            async function loadStructuralBackfillPlanner() {
+                const container = document.getElementById('structural-backfill-planner-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/structural-signal-backfill-planner');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No data available.</span>';
+                        return;
+                    }
+
+                    const planner = data.planner || {};
+                    const queue = planner.priority_queue || [];
+                    const summary = planner.summary || {};
+
+                    if (!queue.length) {
+                        container.innerHTML = '<span style="color:#888;">No structural signal backfill needed.</span>';
+                        return;
+                    }
+
+                    const tierColor = (tier) => {
+                        if (tier === 'critical') return '#a80000';
+                        if (tier === 'high') return '#b65f00';
+                        return '#1a7a1a';
+                    };
+
+                    const rows = queue.slice(0, 25).map(item => `<tr>
+                        <td><span style="color:${tierColor(item.priority_tier)};font-weight:600;">${escapeHtml(item.priority_tier)}</span></td>
+                        <td>${escapeHtml(item.fight_id || 'unknown')}</td>
+                        <td>${item.resolved_result ? 'resolved' : 'unresolved'}</td>
+                        <td>${item.missing_count}</td>
+                        <td>${escapeHtml((item.missing_signals || []).join(', '))}</td>
+                        <td>${item.priority_score}</td>
+                    </tr>`).join('');
+
+                    container.innerHTML = `
+                        <div style="margin-bottom:8px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap;">
+                            <span><strong>Total:</strong> ${planner.total_predictions ?? 0}</span>
+                            <span><strong>Need Backfill:</strong> ${planner.predictions_needing_backfill ?? 0}</span>
+                            <span><strong>Unresolved:</strong> ${summary.unresolved_needing_backfill ?? 0}</span>
+                            <span><strong>Resolved Misses:</strong> ${summary.resolved_miss_needing_backfill ?? 0}</span>
+                        </div>
+                        <table class="phase1-table">
+                            <thead><tr><th>Priority</th><th>Fight</th><th>Status</th><th>Missing</th><th>Signals</th><th>Score</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                        <div style="font-size:11px;color:#888;margin-top:6px;">Showing top 25 by priority score.</div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load backfill planner.</span>';
                 }
             }
 

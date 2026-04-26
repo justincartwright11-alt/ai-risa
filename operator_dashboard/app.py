@@ -1223,6 +1223,131 @@ def api_accuracy_signal_coverage():
         return jsonify({"ok": False, "error": str(e), "has_data": False, "coverage": {}}), 500
 
 
+def _build_structural_signal_backfill_planner() -> dict:
+    """
+    Build a read-only priority queue for records that are missing structural signals.
+    """
+    root = Path(__file__).resolve().parent.parent
+    ledger_path = root / "ops" / "accuracy" / "accuracy_ledger.json"
+    if not ledger_path.exists():
+        return {"ok": True, "has_data": False, "planner": {}}
+
+    with open(ledger_path, "r", encoding="utf-8") as f:
+        rows = json.load(f)
+
+    if not rows:
+        return {"ok": True, "has_data": False, "planner": {}}
+
+    structural_fields = ["signal_gap", "stoppage_propensity", "round_finish_tendency"]
+
+    def _present(val):
+        if val is None:
+            return False
+        if isinstance(val, str) and val.strip().lower() in ("", "unknown", "n/a"):
+            return False
+        return True
+
+    queue = []
+    unresolved_needing_backfill = 0
+    resolved_needing_backfill = 0
+    resolved_miss_needing_backfill = 0
+    source_file_present = 0
+    source_file_missing = 0
+    prediction_file_exists = 0
+    prediction_file_missing = 0
+
+    for row in rows:
+        source_file = row.get("source_file")
+        if source_file:
+            source_file_present += 1
+            prediction_path = root / source_file
+            if prediction_path.exists():
+                prediction_file_exists += 1
+            else:
+                prediction_file_missing += 1
+        else:
+            source_file_missing += 1
+
+        missing_signals = [field for field in structural_fields if not _present(row.get(field))]
+        if not missing_signals:
+            continue
+
+        resolved = bool(row.get("resolved_result"))
+        is_miss = resolved and row.get("hit_winner") is False
+
+        # Prioritize unresolved rows first (actionable), then resolved misses (diagnostics).
+        priority_score = len(missing_signals) * 10
+        if not resolved:
+            priority_score += 8
+        if is_miss:
+            priority_score += 4
+
+        if not resolved:
+            unresolved_needing_backfill += 1
+        else:
+            resolved_needing_backfill += 1
+            if is_miss:
+                resolved_miss_needing_backfill += 1
+
+        if priority_score >= 34:
+            priority_tier = "critical"
+        elif priority_score >= 24:
+            priority_tier = "high"
+        else:
+            priority_tier = "normal"
+
+        queue.append(
+            {
+                "fight_id": row.get("fight_id") or "unknown",
+                "event_date": row.get("event_date"),
+                "resolved_result": resolved,
+                "hit_winner": row.get("hit_winner"),
+                "missing_signals": missing_signals,
+                "missing_count": len(missing_signals),
+                "priority_score": priority_score,
+                "priority_tier": priority_tier,
+                "source_file": source_file,
+            }
+        )
+
+    queue.sort(
+        key=lambda r: (
+            -r["priority_score"],
+            r["resolved_result"],
+            r.get("event_date") or "",
+            r.get("fight_id") or "",
+        )
+    )
+
+    return {
+        "ok": True,
+        "has_data": True,
+        "planner": {
+            "total_predictions": len(rows),
+            "predictions_needing_backfill": len(queue),
+            "structural_fields": structural_fields,
+            "summary": {
+                "unresolved_needing_backfill": unresolved_needing_backfill,
+                "resolved_needing_backfill": resolved_needing_backfill,
+                "resolved_miss_needing_backfill": resolved_miss_needing_backfill,
+                "source_file_present": source_file_present,
+                "source_file_missing": source_file_missing,
+                "prediction_file_exists": prediction_file_exists,
+                "prediction_file_missing": prediction_file_missing,
+            },
+            "priority_queue": queue,
+        },
+    }
+
+
+@app.route("/api/accuracy/structural-signal-backfill-planner", methods=["GET"])
+def api_accuracy_structural_signal_backfill_planner():
+    try:
+        return jsonify(_build_structural_signal_backfill_planner())
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "has_data": False, "planner": {}}), 500
+
+
 @app.route("/api/operator/rolling-success-rate", methods=["GET"])
 def api_operator_rolling_success_rate():
     """
