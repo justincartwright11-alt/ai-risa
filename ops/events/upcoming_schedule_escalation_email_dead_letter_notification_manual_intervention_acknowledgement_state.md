@@ -1,2 +1,0 @@
-# Manual Intervention Acknowledgement State
-
