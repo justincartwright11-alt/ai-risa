@@ -1540,6 +1540,24 @@ def api_operator_rolling_success_rate():
         )
 
 
+@app.route("/api/operator/intent", methods=["POST"])
+def api_operator_intent():
+    """
+    Route a plain-English operator command to a structured intent plan.
+    Read-only routing — never mutates data.
+    """
+    data = request.get_json(silent=True) or {}
+    command = str(data.get("command", "")).strip()
+    if not command:
+        return jsonify({"ok": False, "error": "No command provided"}), 400
+    try:
+        from operator_dashboard.operator_intent_router import route_intent
+        result = route_intent(command)
+        return jsonify({"ok": True, **result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/")
 def index():
     # Render the dashboard UI, preserving the expected text in the HTML title if needed

@@ -655,6 +655,33 @@
         <body>
             <div class="dashboard-container">
                 <h1>{{ dashboard_title or "AI-RISA Local Operator Dashboard" }}</h1>
+                <!-- Operator Mode panel — always at top, not moved by reorganizeLayout -->
+                <section id="operator-mode-panel" class="panel-card" style="border-left-color:#1a4fa0;">
+                    <div class="panel-header" style="background:#f0f4ff;">
+                        <h2 style="color:#1a4fa0;">AI-RISA Operator Mode</h2>
+                    </div>
+                    <div class="panel-body" style="padding:20px 28px;">
+                        <p style="margin:0 0 10px;color:#555;font-size:14px;">Type a plain-English command. AI-RISA will route it to a safe workflow automatically.</p>
+                        <textarea id="operator-mode-input" rows="2" style="width:100%;box-sizing:border-box;font-size:14px;padding:10px 12px;border:1px solid #b0b8cc;border-radius:8px;resize:vertical;font-family:inherit;" placeholder="Tell AI-RISA what you want to do..."></textarea>
+                        <div style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button id="operator-mode-run-btn" style="padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#1a4fa0;color:#fff;cursor:pointer;">Run Safe Check</button>
+                            <button id="operator-mode-approve-btn" style="display:none;padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#1a7a1a;color:#fff;cursor:pointer;">Approve Planned Action</button>
+                            <button id="operator-mode-cancel-btn" style="display:none;padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#f5f5f5;color:#555;cursor:pointer;">Cancel</button>
+                        </div>
+                        <div style="margin-top:10px;font-size:12px;color:#888;">
+                            <strong>Examples:</strong>
+                            <span style="display:inline-flex;flex-wrap:wrap;gap:4px;margin-left:4px;">
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">check health</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">run accuracy calibration</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">show backfill status</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">show unresolved fights</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">build Jafel Filho vs Cody Durden report</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">apply backfill</code>
+                            </span>
+                        </div>
+                        <div id="operator-mode-output" style="margin-top:14px;font-size:14px;min-height:10px;"></div>
+                    </div>
+                </section>
                 <div id="backend-status-indicator" style="margin:12px 0 8px 0; text-align:center;"></div>
                 <!-- Panels -->
                 <section class="panel-card" style="border-left-color:#a800a8;">
@@ -1763,6 +1790,203 @@
                 });
             }
 
+            // ---------------------------------------------------------------
+            // Operator Mode — natural-language command center
+            // ---------------------------------------------------------------
+            function setupOperatorMode() {
+                const input = document.getElementById('operator-mode-input');
+                const runBtn = document.getElementById('operator-mode-run-btn');
+                const approveBtn = document.getElementById('operator-mode-approve-btn');
+                const cancelBtn = document.getElementById('operator-mode-cancel-btn');
+                const outputDiv = document.getElementById('operator-mode-output');
+
+                let pendingPlan = null;
+
+                // Wire example chips
+                document.querySelectorAll('.om-example').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        if (input) { input.value = chip.textContent; input.focus(); }
+                    });
+                });
+
+                const safetyColors = {
+                    AUTO_READ_ONLY: '#1a7a1a',
+                    APPROVAL_REQUIRED_WRITE: '#b65f00',
+                    LOCKED_HIGH_RISK: '#a80000',
+                };
+
+                function renderPlan(data) {
+                    const color = safetyColors[data.safety_level] || '#333';
+                    let html = `<div style="margin-bottom:8px;">
+                        <span style="font-weight:700;">Intent:</span> ${escapeHtml(data.intent || 'unknown')}
+                        &nbsp;
+                        <span style="background:${color};color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">${escapeHtml(data.safety_level || '')}</span>
+                    </div>
+                    <div style="margin-bottom:6px;"><span style="font-weight:700;">Planned Action:</span> ${escapeHtml(data.planned_action || '')}</div>`;
+
+                    if (data.blocked) {
+                        html += `<div style="background:#fff0f0;border:1px solid #f5c6c6;border-radius:6px;padding:8px 12px;color:#a80000;margin-top:8px;">
+                            <strong>BLOCKED.</strong> This action is locked. A new approved checkpoint is required.
+                        </div>`;
+                    } else if (data.safety_level === 'APPROVAL_REQUIRED_WRITE') {
+                        html += `<div style="background:#fff8e6;border:1px solid #fde7b0;border-radius:6px;padding:8px 12px;color:#7a4f00;margin-top:8px;">
+                            Approval required. Review the plan above, then click <strong>Approve Planned Action</strong>.
+                        </div>`;
+                    }
+
+                    if (data.intent === 'unknown_intent' && data.examples) {
+                        html += `<div style="margin-top:10px;font-size:12px;color:#666;">Try: ${data.examples.map(e => `<code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">${escapeHtml(e)}</code>`).join(' ')}</div>`;
+                    }
+                    outputDiv.innerHTML = html;
+                }
+
+                function appendResult(html) {
+                    outputDiv.innerHTML += html;
+                }
+
+                async function executeReadOnly(plan) {
+                    try {
+                        if (plan.intent === 'system_health') {
+                            const d = await fetch('/api/system/health').then(r => r.json());
+                            const ok = d.ok !== false;
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:${ok ? '#f0fff0' : '#fff0f0'};border-radius:6px;border:1px solid ${ok ? '#b0e0b0' : '#f5c6c6'};">
+                                <strong>System Health:</strong> <span style="color:${ok ? '#1a7a1a' : '#a80000'};">${ok ? 'OK' : 'ISSUES'}</span>
+                                ${d.health ? `<br><span style="font-size:12px;color:#555;">${escapeHtml(JSON.stringify(d.health).slice(0, 300))}</span>` : ''}
+                            </div>`);
+
+                        } else if (plan.intent === 'accuracy_calibration') {
+                            const [cs, cc] = await Promise.all([
+                                fetch('/api/accuracy/comparison-summary').then(r => r.json()),
+                                fetch('/api/accuracy/confidence-calibration').then(r => r.json()),
+                            ]);
+                            const s = cs.summary || {};
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f0f8ff;border-radius:6px;border:1px solid #c5ddf5;">
+                                <strong>Accuracy-Ledger Calibration</strong><br>
+                                Total Compared: <strong>${s.total_compared ?? '—'}</strong> &nbsp;
+                                Winner Hits: <strong>${s.winner_hit ?? '—'}</strong> &nbsp;
+                                Winner Misses: <strong>${s.winner_miss ?? '—'}</strong> &nbsp;
+                                Overall Accuracy: <strong>${s.overall_accuracy_pct ?? '—'}%</strong>
+                            </div>`);
+
+                        } else if (plan.intent === 'backfill_status_check') {
+                            const d = await fetch('/api/accuracy/structural-signal-backfill-planner').then(r => r.json());
+                            const ready = d?.planner?.summary?.eligibility_counts?.READY_FOR_BACKFILL ?? 0;
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f5f5ff;border-radius:6px;border:1px solid #d0d0f0;">
+                                <strong>Backfill Status:</strong> READY_FOR_BACKFILL = <strong>${ready}</strong>
+                                — ${ready === 0 ? '<span style="color:#1a7a1a;">BLOCKED (no eligible records)</span>' : '<span style="color:#b65f00;">Records pending review</span>'}
+                            </div>`);
+
+                        } else if (plan.intent === 'unresolved_result_review') {
+                            const d = await fetch('/api/operator/rolling-success-rate').then(r => r.json());
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Fights Scored:</strong> ${d.total_fights_scored ?? '—'} &nbsp;
+                                <strong>Rolling Success Rate:</strong> ${d.rolling_success_rate ?? '—'}%
+                            </div>`);
+
+                        } else if (plan.intent === 'event_queue_review') {
+                            const d = await fetch('/api/queue').then(r => r.json());
+                            const events = Array.isArray(d) ? d : (d.events || []);
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Events in queue:</strong> ${events.length}
+                                ${events.slice(0, 5).map(e => '<br>• ' + escapeHtml(typeof e === 'string' ? e : (e.event_id || JSON.stringify(e)))).join('')}
+                            </div>`);
+
+                        } else if (plan.intent === 'commit_readiness_check') {
+                            const d = await fetch('/api/system/health').then(r => r.json());
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Dashboard health:</strong> ${(d.ok !== false) ? 'OK' : 'Issues found'}. For full git status, use terminal: <code>git -C C:\\ai_risa_data status</code>
+                            </div>`);
+
+                        } else if (plan.intent === 'fighter_profile_check') {
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                Fighter profile lookup is available via the fighter registry. Specify a fighter name to search.
+                            </div>`);
+                        }
+                    } catch (e) {
+                        appendResult(`<div style="color:#a80000;margin-top:6px;">Action failed: ${escapeHtml(e.message)}</div>`);
+                    }
+                }
+
+                async function executeApproved(plan) {
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    pendingPlan = null;
+
+                    if (plan.intent === 'build_premium_report' && plan.matchup) {
+                        appendResult(`<div style="margin-top:8px;color:#666;">Building report for ${escapeHtml(plan.matchup)}…</div>`);
+                        try {
+                            const resp = await fetch('/api/operator/analyze-build-report', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({matchup: plan.matchup}),
+                            });
+                            const d = await resp.json();
+                            const ok = d.ok !== false;
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:${ok ? '#f0fff0' : '#fff0f0'};border-radius:6px;border:1px solid ${ok ? '#b0e0b0' : '#f5c6c6'};">
+                                <strong>Report Build ${ok ? 'Succeeded' : 'Failed'}</strong><br>
+                                ${escapeHtml(d.message || d.error || JSON.stringify(d)).slice(0, 500)}
+                            </div>`);
+                        } catch (e) {
+                            appendResult(`<div style="color:#a80000;margin-top:6px;">Build failed: ${escapeHtml(e.message)}</div>`);
+                        }
+                    } else {
+                        appendResult(`<div style="color:#a80000;margin-top:6px;">Approved action not yet implemented for intent: ${escapeHtml(plan.intent)}</div>`);
+                    }
+                }
+
+                async function runCommand() {
+                    const command = (input ? input.value : '').trim();
+                    if (!command) return;
+
+                    outputDiv.innerHTML = '<span style="color:#888;">Routing command…</span>';
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    pendingPlan = null;
+
+                    try {
+                        const resp = await fetch('/api/operator/intent', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({command}),
+                        });
+                        const data = await resp.json();
+
+                        if (!data.ok) {
+                            outputDiv.innerHTML = `<span style="color:#a80000;">Router error: ${escapeHtml(data.error || 'Unknown error')}</span>`;
+                            return;
+                        }
+
+                        renderPlan(data);
+
+                        if (!data.blocked && data.safety_level === 'AUTO_READ_ONLY') {
+                            await executeReadOnly(data);
+                        } else if (data.safety_level === 'APPROVAL_REQUIRED_WRITE') {
+                            pendingPlan = data;
+                            approveBtn.style.display = '';
+                            cancelBtn.style.display = '';
+                        }
+                    } catch (e) {
+                        outputDiv.innerHTML = `<span style="color:#a80000;">Failed to route command: ${escapeHtml(e.message)}</span>`;
+                    }
+                }
+
+                if (runBtn) runBtn.addEventListener('click', runCommand);
+                if (input) {
+                    input.addEventListener('keydown', e => {
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runCommand(); }
+                    });
+                }
+                if (approveBtn) approveBtn.addEventListener('click', () => {
+                    if (pendingPlan) executeApproved(pendingPlan);
+                });
+                if (cancelBtn) cancelBtn.addEventListener('click', () => {
+                    pendingPlan = null;
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    appendResult('<div style="color:#888;margin-top:6px;">Action cancelled.</div>');
+                });
+            }
+
             window.addEventListener('DOMContentLoaded', () => {
                 reorganizeLayout();
                 setupPanelRefresh();
@@ -1772,6 +1996,7 @@
                 refreshPhase1Lanes();
                 setupOperatorMatchupWorkflow();
                 setupAccuracyLedgerCalibrationReview();
+                setupOperatorMode();
             });
 
             // --- Operator Matchup Workflow Logic ---
