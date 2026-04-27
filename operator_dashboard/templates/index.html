@@ -774,6 +774,11 @@
                         <div class="phase1-box" style="margin-top:12px;" id="confidence-calibration-panel">
                             <div class="phase1-subtitle">Model Calibration</div>
                             <h4>Confidence Calibration</h4>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+                                <button id="accuracy-calibration-review-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #5c2d91;background:#f4ecff;color:#5c2d91;cursor:pointer;">Run Accuracy-Ledger Calibration Review</button>
+                                <span style="font-size:12px;color:#4b5563;">Report-scoring calibration uses manually scored report outcomes. Accuracy-ledger calibration uses resolved prediction-vs-result comparisons.</span>
+                            </div>
+                            <div id="accuracy-calibration-review-content" class="phase1-table-shell" style="margin-bottom:12px;">Run the accuracy-ledger review to summarize resolved prediction-vs-result calibration.</div>
                             <div id="confidence-calibration-content" class="phase1-table-shell">Loading…</div>
                         </div>
                         <div class="phase1-box" style="margin-top:12px;" id="failure-patterns-panel">
@@ -1440,6 +1445,7 @@
                 setupPhase1Actions();
                 refreshPhase1Lanes();
                 setupOperatorMatchupWorkflow();
+                setupAccuracyLedgerCalibrationReview();
             });
 
             // --- Operator Matchup Workflow Logic ---
@@ -1681,6 +1687,115 @@ ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</st
                 await loadFailurePatterns();
                 await loadSignalCoverage();
                 await loadStructuralBackfillPlanner();
+            }
+
+            async function setupAccuracyLedgerCalibrationReview() {
+                const reviewBtn = document.getElementById('accuracy-calibration-review-btn');
+                const container = document.getElementById('accuracy-calibration-review-content');
+                if (!reviewBtn || !container) return;
+
+                const formatPct = (value) => {
+                    if (value === null || value === undefined || value === '') return '—';
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric)) return '—';
+                    return `${numeric}%`;
+                };
+
+                const formatRatioPct = (value) => {
+                    if (value === null || value === undefined) return '—';
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric)) return '—';
+                    return `${(numeric * 100).toFixed(1)}%`;
+                };
+
+                const buildRecommendation = (comparison, calibration, errorPatterns) => {
+                    const summaryMetrics = comparison.summary_metrics || {};
+                    const compared = Number(summaryMetrics.total_compared || 0);
+                    if (!compared) {
+                        return 'No resolved prediction-vs-result comparisons are available yet.';
+                    }
+
+                    const buckets = calibration.calibration || [];
+                    const significantGap = buckets
+                        .filter((bucket) => bucket.calibration_gap !== null && bucket.calibration_gap !== undefined)
+                        .sort((left, right) => Math.abs(right.calibration_gap) - Math.abs(left.calibration_gap))[0];
+
+                    if (significantGap && Math.abs(significantGap.calibration_gap) >= 0.1) {
+                        const direction = significantGap.calibration_gap > 0 ? 'under-confident' : 'over-confident';
+                        return `Review the ${significantGap.bucket} bucket first: actual win rate is ${direction} versus predictions by ${formatRatioPct(Math.abs(significantGap.calibration_gap))}.`;
+                    }
+
+                    const topPattern = (errorPatterns.top_failure_patterns || [])[0];
+                    if (topPattern && topPattern.pattern) {
+                        return `Focus next review on the top miss pattern: ${topPattern.pattern} (${topPattern.miss_count} misses).`;
+                    }
+
+                    return 'Accuracy-ledger calibration is populated and does not show a dominant calibration gap right now.';
+                };
+
+                reviewBtn.onclick = async () => {
+                    container.innerHTML = 'Loading accuracy-ledger calibration review...';
+                    try {
+                        const [comparisonResp, calibrationResp, errorResp] = await Promise.all([
+                            fetch('/api/accuracy/comparison-summary'),
+                            fetch('/api/accuracy/confidence-calibration'),
+                            fetch('/api/accuracy/error-patterns')
+                        ]);
+
+                        const [comparison, calibration, errorPatterns] = await Promise.all([
+                            comparisonResp.json(),
+                            calibrationResp.json(),
+                            errorResp.json()
+                        ]);
+
+                        if (!comparison.ok) {
+                            throw new Error('Comparison summary failed to load.');
+                        }
+                        if (!calibration.ok) {
+                            throw new Error('Confidence calibration failed to load.');
+                        }
+
+                        const summaryMetrics = comparison.summary_metrics || {};
+                        const buckets = calibration.calibration || [];
+                        const bucketRows = buckets.map((bucket) => {
+                            const gap = bucket.calibration_gap;
+                            const gapLabel = gap !== null && gap !== undefined ? `${gap >= 0 ? '+' : ''}${(gap * 100).toFixed(1)}%` : '—';
+                            const gapColor = gap === null || gap === undefined ? '' : gap >= 0 ? 'color:#107c10;' : 'color:#a80000;';
+                            return `<tr>
+                                <td>${escapeHtml(bucket.bucket)}</td>
+                                <td>${bucket.total_compared ?? 0}</td>
+                                <td>${bucket.predicted_confidence_avg !== null && bucket.predicted_confidence_avg !== undefined ? formatRatioPct(bucket.predicted_confidence_avg) : '—'}</td>
+                                <td>${bucket.actual_win_rate !== null && bucket.actual_win_rate !== undefined ? formatRatioPct(bucket.actual_win_rate) : '—'}</td>
+                                <td style="${gapColor}">${gapLabel}</td>
+                            </tr>`;
+                        }).join('');
+
+                        const recommendation = buildRecommendation(comparison, calibration, errorPatterns.ok ? errorPatterns : {});
+
+                        container.innerHTML = `
+                            <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;margin-bottom:12px;">
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Total Compared:</strong><br>${summaryMetrics.total_compared ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Winner Hits:</strong><br>${summaryMetrics.winner_hits ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Winner Misses:</strong><br>${summaryMetrics.winner_misses ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Overall Accuracy:</strong><br>${formatPct(summaryMetrics.overall_accuracy_pct)}</div>
+                            </div>
+                            <div style="margin-bottom:10px;padding:10px;background:#f5f9ff;border:1px solid #d0e8f2;border-radius:6px;">
+                                <strong>Recommendation:</strong> ${escapeHtml(recommendation)}
+                            </div>
+                            <table class="phase1-table">
+                                <thead><tr>
+                                    <th>Confidence</th>
+                                    <th>Total</th>
+                                    <th>Predicted Conf Avg</th>
+                                    <th>Actual Win Rate</th>
+                                    <th>Calibration Gap</th>
+                                </tr></thead>
+                                <tbody>${bucketRows || '<tr><td colspan="5" style="color:#888;">No confidence calibration data available.</td></tr>'}</tbody>
+                            </table>`;
+                    } catch (e) {
+                        container.innerHTML = `<span style="color:#a80000;">Failed to load accuracy-ledger review: ${escapeHtml(e.message)}</span>`;
+                    }
+                };
             }
 
             async function loadSignalGapBreakdown() {
