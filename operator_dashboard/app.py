@@ -1374,6 +1374,13 @@ def _build_structural_signal_backfill_planner() -> dict:
     prediction_file_exists = 0
     prediction_file_missing = 0
 
+    eligibility_counts: dict = {
+        "READY_FOR_BACKFILL": 0,
+        "BLOCKED_NEEDS_SOURCE_VALUES": 0,
+        "REQUIRES_ENGINE_RERUN": 0,
+        "UNRESOLVED_RESULT_PENDING": 0,
+    }
+
     for row in rows:
         source_file = row.get("source_file")
         if source_file:
@@ -1392,6 +1399,43 @@ def _build_structural_signal_backfill_planner() -> dict:
 
         resolved = bool(row.get("resolved_result"))
         is_miss = resolved and row.get("hit_winner") is False
+
+        # --- Eligibility classification ---
+        schema_variant = (row.get("schema_variant") or "").strip().lower()
+        is_intermediate = schema_variant in ("intermediate", "narrative", "legacy")
+
+        if not resolved:
+            eligibility_class = "UNRESOLVED_RESULT_PENDING"
+            eligibility_reason = "Fight result is not yet resolved; structural backfill deferred until result is confirmed."
+            source_value_status = "deferred"
+            source_values_found = False
+            recommended_action = "wait_for_result_resolution"
+        elif is_intermediate:
+            # Intermediate/narrative schema records were generated before structural
+            # fields existed; no authoritative source values exist in the repo.
+            eligibility_class = "BLOCKED_NEEDS_SOURCE_VALUES"
+            eligibility_reason = (
+                "Record uses intermediate/narrative schema. Structural fields were never computed. "
+                "No authoritative numeric source values exist in the repo."
+            )
+            source_value_status = "not_present_in_any_source"
+            source_values_found = False
+            recommended_action = "requires_source_values_or_engine_rerun"
+        else:
+            # Resolved, non-intermediate: structural values are missing but the record
+            # was produced by a capable schema version.  Without an explicit canonical
+            # source file containing the values we cannot confirm readiness, so default
+            # to REQUIRES_ENGINE_RERUN to avoid false positives.
+            eligibility_class = "REQUIRES_ENGINE_RERUN"
+            eligibility_reason = (
+                "Record is resolved and uses a capable schema, but structural field values "
+                "were not found in any existing source file. Engine rerun needed to populate them."
+            )
+            source_value_status = "missing_requires_rerun"
+            source_values_found = False
+            recommended_action = "requires_engine_rerun_with_approval"
+
+        eligibility_counts[eligibility_class] += 1
 
         # Prioritize unresolved rows first (actionable), then resolved misses (diagnostics).
         priority_score = len(missing_signals) * 10
@@ -1425,6 +1469,11 @@ def _build_structural_signal_backfill_planner() -> dict:
                 "priority_score": priority_score,
                 "priority_tier": priority_tier,
                 "source_file": source_file,
+                "eligibility_class": eligibility_class,
+                "eligibility_reason": eligibility_reason,
+                "source_value_status": source_value_status,
+                "source_values_found": source_values_found,
+                "recommended_action": recommended_action,
             }
         )
 
@@ -1452,6 +1501,7 @@ def _build_structural_signal_backfill_planner() -> dict:
                 "source_file_missing": source_file_missing,
                 "prediction_file_exists": prediction_file_exists,
                 "prediction_file_missing": prediction_file_missing,
+                "eligibility_counts": eligibility_counts,
             },
             "priority_queue": queue,
         },
