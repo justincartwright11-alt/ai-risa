@@ -1,0 +1,25 @@
+{
+  "snapshot_date": "2026-04-27",
+  "context": "post-ledger-dedup-checkpoint-1994f5b",
+  "ledger": {
+    "rows": 31,
+    "file": "ops/accuracy/accuracy_ledger.json"
+  },
+  "endpoint_status": {
+    "/api/accuracy/comparison-summary": 200,
+    "/api/accuracy/signal-breakdown": 200,
+    "/api/accuracy/method-round-breakdown": 200,
+    "/api/accuracy/confidence-calibration": 200,
+    "/api/accuracy/error-patterns": 200,
+    "/api/accuracy/signal-coverage": 500,
+    "/api/accuracy/structural-signal-backfill-planner": 500
+  },
+  "errors": {
+    "/api/accuracy/signal-coverage": "Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)",
+    "/api/accuracy/structural-signal-backfill-planner": "Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"
+  },
+  "notes": [
+    "Read-only verification run via app.test_client()",
+    "Coverage endpoint did not return usable coverage payload due BOM parse failure"
+  ]
+}
