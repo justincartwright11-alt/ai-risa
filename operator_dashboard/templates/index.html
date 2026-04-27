@@ -876,10 +876,9 @@
                             <label style="display:block;margin-bottom:6px;font-weight:700;">Matchup Input</label>
                             <input id="operator-matchup-input" type="text" placeholder="Type Fighter A vs Fighter B" style="width:100%;padding:10px 12px;font-size:15px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box;" />
                         </div>
-                        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:16px;">
+                        <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin-bottom:16px;">
                             <button id="operator-analyze-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #0078d4;background:#e8f4fd;color:#0078d4;cursor:pointer;">Analyze + Build Premium Report</button>
                             <button id="operator-compare-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Compare With Real Result</button>
-                            <button id="operator-calibrate-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #d83b01;background:#fde7e1;color:#d83b01;cursor:pointer;">Run Report-Scoring Calibration Review</button>
                         </div>
                         <div style="font-size:13px;color:#4b5563;margin:-6px 0 12px 0;">
                             This panel uses report-scoring data only. Accuracy-ledger calibration is shown in the Model Calibration section below.
@@ -887,6 +886,14 @@
                         <div id="operator-rolling-rate" style="background:#f0f8ff;border:1px solid #d0e8f2;border-radius:6px;padding:10px;margin-bottom:12px;font-size:14px;display:none;">
                             <strong>Rolling AI-RISA Success Rate:</strong> <span id="operator-rolling-rate-value">--</span>%
                         </div>
+                        <details style="margin-bottom:12px;border:1px solid #eadfd4;border-radius:8px;background:#fffaf6;">
+                            <summary style="cursor:pointer;padding:10px 12px;font-size:13px;font-weight:700;color:#7a3f00;">Advanced / Report-Scoring Calibration</summary>
+                            <div style="padding:10px 12px 12px 12px;">
+                                <div id="operator-calibration-availability-note" style="font-size:12px;color:#6b7280;margin-bottom:10px;">Report-scoring calibration is unavailable until report outcomes are manually scored.</div>
+                                <button id="operator-calibrate-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #d83b01;background:#fde7e1;color:#d83b01;cursor:pointer;">Run Report-Scoring Calibration Review</button>
+                            </div>
+                        </details>
+                        <div id="operator-calibration-static-note" style="font-size:12px;color:#6b7280;margin:-4px 0 10px 0;">Report-scoring calibration is unavailable until report outcomes are manually scored.</div>
                         <div id="operator-status" style="color:#2d5f2d;font-size:14px;margin-bottom:12px;min-height:20px;"></div>
                         <div id="operator-result" style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:12px;display:none;max-height:400px;overflow-y:auto;font-size:13px;"></div>
                         <div class="phase1-box" style="margin-top:12px;">
@@ -1777,6 +1784,7 @@
                 const statusDiv = document.getElementById('operator-status');
                 const resultDiv = document.getElementById('operator-result');
                 const errorDiv = document.getElementById('operator-error');
+                const calibrationAvailabilityNote = document.getElementById('operator-calibration-availability-note');
                 const rollingRateDiv = document.getElementById('operator-rolling-rate');
                 const rollingRateValue = document.getElementById('operator-rolling-rate-value');
                 const waitingQueueDiv = document.getElementById('operator-waiting-results-queue');
@@ -1800,6 +1808,12 @@
                         errorDiv.textContent = msg;
                         errorDiv.style.display = msg ? 'block' : 'none';
                     }
+                }
+
+                function setCalibrationAvailability(message, isWarning = false) {
+                    if (!calibrationAvailabilityNote) return;
+                    calibrationAvailabilityNote.textContent = message;
+                    calibrationAvailabilityNote.style.color = isWarning ? '#7a3f00' : '#4b5563';
                 }
 
                 function escapeHtml(value) {
@@ -1852,6 +1866,18 @@
                         if (data.ok && data.rolling_success_rate !== undefined) {
                             rollingRateValue.textContent = Math.round(data.rolling_success_rate);
                             rollingRateDiv.style.display = 'block';
+                        }
+                        const totalScored = Number(data.total_fights_scored || 0);
+                        if (calibrateBtn) {
+                            const noScoredReports = totalScored === 0;
+                            calibrateBtn.disabled = noScoredReports;
+                            calibrateBtn.style.opacity = noScoredReports ? '0.55' : '1';
+                            calibrateBtn.style.cursor = noScoredReports ? 'not-allowed' : 'pointer';
+                        }
+                        if (totalScored === 0) {
+                            setCalibrationAvailability('Report-scoring calibration is unavailable until report outcomes are manually scored.', true);
+                        } else {
+                            setCalibrationAvailability('Report-scoring calibration is available for manually scored report outcomes.');
                         }
                     } catch (e) {
                         // Silent fail on rate load
@@ -1955,6 +1981,7 @@ ${comparedResults.length ? `<table class="phase1-table">
                     setStatus('Running calibration review...');
                     setError('');
                     setResult('');
+                    setCalibrationAvailability('Running report-scoring calibration review...');
                     try {
                         const resp = await fetch('/api/operator/run-calibration-review', {
                             method: 'POST',
@@ -1964,6 +1991,14 @@ ${comparedResults.length ? `<table class="phase1-table">
                         if (!data.ok) {
                             setError(data.recommendation || 'Calibration review failed');
                             setStatus('Calibration review failed', true);
+                            return;
+                        }
+
+                        const fightsAnalyzed = Number(data.fights_analyzed || 0);
+                        if (fightsAnalyzed === 0) {
+                            setResult('');
+                            setCalibrationAvailability('Report-scoring calibration is unavailable until report outcomes are manually scored.', true);
+                            setStatus('Report-scoring calibration unavailable: no manually scored report outcomes yet.');
                             return;
                         }
                         
@@ -1991,6 +2026,7 @@ ${cal.description}<br>
 ${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</strong></div>${calibsHtml}` : ''}
                         `;
                         setResult(html);
+                        setCalibrationAvailability('Report-scoring calibration is available for manually scored report outcomes.');
                         setStatus('Calibration review complete');
                     } catch (e) {
                         setError('Request error: ' + e.message);
