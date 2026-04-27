@@ -12,6 +12,7 @@ from pathlib import Path
 import os
 import json
 from datetime import datetime, timezone
+from time import perf_counter, time
 import uuid
 
 from operator_dashboard.forecast_utils import get_operator_forecast
@@ -31,6 +32,39 @@ from operator_dashboard.phase1_ops import (
 )
 
 app = Flask(__name__)
+
+_RUNTIME_METRICS = {
+    "started_at_epoch": time(),
+    "requests_total": 0,
+    "errors_total": 0,
+    "endpoint_counts": {},
+    "endpoint_latency_ms": {},
+    "last_error": None,
+}
+
+
+@app.before_request
+def _runtime_metrics_before_request():
+    request._started_at = perf_counter()
+
+
+@app.after_request
+def _runtime_metrics_after_request(response):
+    endpoint = request.path
+    elapsed_ms = round((perf_counter() - getattr(request, "_started_at", perf_counter())) * 1000, 3)
+
+    _RUNTIME_METRICS["requests_total"] += 1
+    _RUNTIME_METRICS["endpoint_counts"][endpoint] = _RUNTIME_METRICS["endpoint_counts"].get(endpoint, 0) + 1
+    _RUNTIME_METRICS["endpoint_latency_ms"][endpoint] = elapsed_ms
+
+    if response.status_code >= 500:
+        _RUNTIME_METRICS["errors_total"] += 1
+        _RUNTIME_METRICS["last_error"] = {
+            "endpoint": endpoint,
+            "status_code": response.status_code,
+        }
+
+    return response
 
 
 def _load_json_records(file_path: Path):
@@ -466,6 +500,44 @@ def api_status():
             "errors": [str(e)],
             "backend_status": "disconnected"
         }), 500
+
+
+@app.route("/api/system/health")
+def api_system_health():
+    accuracy_endpoints = [
+        "/api/accuracy/comparison-summary",
+        "/api/accuracy/signal-breakdown",
+        "/api/accuracy/method-round-breakdown",
+        "/api/accuracy/confidence-calibration",
+        "/api/accuracy/error-patterns",
+        "/api/accuracy/signal-coverage",
+        "/api/accuracy/structural-signal-backfill-planner",
+    ]
+
+    statuses = {}
+    with app.test_client() as c:
+        for ep in accuracy_endpoints:
+            statuses[ep] = c.get(ep).status_code
+
+    ledger_path = Path(__file__).resolve().parent.parent / "ops" / "accuracy" / "accuracy_ledger.json"
+    try:
+        _load_accuracy_ledger_rows(ledger_path)
+        last_ledger_read_success = True
+    except Exception:
+        last_ledger_read_success = False
+
+    return jsonify({
+        "ok": all(code == 200 for code in statuses.values()),
+        "uptime_seconds": round(time() - _RUNTIME_METRICS["started_at_epoch"], 3),
+        "last_ledger_read_success": last_ledger_read_success,
+        "requests_total": _RUNTIME_METRICS["requests_total"],
+        "errors_total": _RUNTIME_METRICS["errors_total"],
+        "endpoint_counts": _RUNTIME_METRICS["endpoint_counts"],
+        "endpoint_latency_ms": _RUNTIME_METRICS["endpoint_latency_ms"],
+        "last_error": _RUNTIME_METRICS["last_error"],
+        "accuracy_endpoint_status": statuses,
+    })
+
 
 @app.route("/api/watchlist", methods=["GET"])
 def api_watchlist():

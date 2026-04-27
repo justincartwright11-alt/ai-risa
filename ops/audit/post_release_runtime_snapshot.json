@@ -1,0 +1,35 @@
+{
+  "accuracy_endpoint_status": {
+    "/api/accuracy/comparison-summary": 200,
+    "/api/accuracy/confidence-calibration": 200,
+    "/api/accuracy/error-patterns": 200,
+    "/api/accuracy/method-round-breakdown": 200,
+    "/api/accuracy/signal-breakdown": 200,
+    "/api/accuracy/signal-coverage": 200,
+    "/api/accuracy/structural-signal-backfill-planner": 200
+  },
+  "endpoint_counts": {
+    "/api/accuracy/comparison-summary": 1,
+    "/api/accuracy/confidence-calibration": 1,
+    "/api/accuracy/error-patterns": 1,
+    "/api/accuracy/method-round-breakdown": 1,
+    "/api/accuracy/signal-breakdown": 1,
+    "/api/accuracy/signal-coverage": 1,
+    "/api/accuracy/structural-signal-backfill-planner": 1
+  },
+  "endpoint_latency_ms": {
+    "/api/accuracy/comparison-summary": 15.982,
+    "/api/accuracy/confidence-calibration": 0.424,
+    "/api/accuracy/error-patterns": 0.33,
+    "/api/accuracy/method-round-breakdown": 0.502,
+    "/api/accuracy/signal-breakdown": 0.53,
+    "/api/accuracy/signal-coverage": 0.633,
+    "/api/accuracy/structural-signal-backfill-planner": 1.975
+  },
+  "errors_total": 0,
+  "last_error": null,
+  "last_ledger_read_success": true,
+  "ok": true,
+  "requests_total": 7,
+  "uptime_seconds": 0.052
+}
