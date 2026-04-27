@@ -2,6 +2,16 @@
   "fighter_id": "fighter_jafel_filho",
   "name": "Jafel Filho",
   "sport": "mma",
-  "stance": "unknown",
-  "division": "unknown"
+  "stance": "orthodox",
+  "division": "bantamweight",
+  "style": "Grappler",
+  "team": "Nova Uni\u00e3o",
+  "notes": "Active UFC fighter from Sento S\u00e9, Brazil, listed by UFC as a grappler and training at Nova Uni\u00e3o.",
+  "source": "ufc_official_profile",
+  "source_confidence": "high",
+  "source_confidence_reason": "official UFC athlete profile",
+  "source_urls": [
+    "https://www.ufc.com/athlete/jafel-filho",
+    "http://ufcstats.com/fighter-details/65adf3856c4d9256"
+  ]
 }

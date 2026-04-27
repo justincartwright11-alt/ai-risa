@@ -2,6 +2,30 @@
   "fighter_id": "fighter_cody_durden",
   "name": "Cody Durden",
   "sport": "mma",
-  "stance": "unknown",
-  "division": "unknown"
+  "weight_class": "125 lb (57 kg; 8 st 13 lb) division flyweight (2017–2018, 2020–present) bantamweight (2016–2020, 2024)",
+  "stance": "southpaw",
+  "style": "Fighter",
+  "team": "",
+  "notes": "Cody Marcus Brian Durden is an American mixed martial artist who competes in the Flyweight division of the Ultimate Fighting Championship.",
+  "source": "auto_web_research",
+  "source_confidence": "high",
+  "source_confidence_reason": "ranked combat-source evidence with division and stance",
+  "source_summary": [
+    {
+      "source": "wikipedia",
+      "tier": "fallback",
+      "url": "https://en.wikipedia.org/wiki/Cody_Durden"
+    },
+    {
+      "source": "thesportsdb",
+      "tier": "fallback",
+      "url": ""
+    }
+  ],
+  "source_urls": [
+    "https://en.wikipedia.org/wiki/Cody_Durden",
+    "https://www.ufc.com/athlete/cody-durden",
+    "http://ufcstats.com/fighter-details/7f6ed67d3ed3c036"
+  ],
+  "recent_activity": "Cody Durden American mixed martial artist Cody Marcus Brian Durden is an American mixed martial artist who competes in the Flyweight division of the Ultimate Fighting Championship"
 }

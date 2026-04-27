@@ -77,7 +77,7 @@ def _safe_metric(source, key, default=0.0):
         return float(default)
 
 
-def _clean_short_scalar(value, fallback="Unknown", max_len=32):
+def _clean_short_scalar(value, fallback="", max_len=32):
     """Allow only short scalar text values for table cells; reject prose/narrative payloads."""
     if value is None:
         return fallback
@@ -111,7 +111,7 @@ def _canonical_style(enrich, profile, fallback="Generalist"):
     return style
 
 
-def _canonical_stance(enrich, profile, fallback="Unknown"):
+def _canonical_stance(enrich, profile, fallback="unlisted stance"):
     allowed = {"orthodox", "southpaw", "switch"}
     raw = _clean_short_scalar((enrich or {}).get("stance"), fallback="", max_len=16).lower()
     if not raw:
@@ -151,8 +151,8 @@ def _build_visual_data(engine_output, fighter_a_name, fighter_b_name, enrich_a, 
 
     style_a = _canonical_style(enrich_a, fighter_a_profile, fallback="Aggressive Striker")
     style_b = _canonical_style(enrich_b, fighter_b_profile, fallback="Technical Striker")
-    stance_a = _canonical_stance(enrich_a, fighter_a_profile, fallback="Unknown")
-    stance_b = _canonical_stance(enrich_b, fighter_b_profile, fallback="Unknown")
+    stance_a = _canonical_stance(enrich_a, fighter_a_profile, fallback="unlisted stance")
+    stance_b = _canonical_stance(enrich_b, fighter_b_profile, fallback="unlisted stance")
     profile_a = _style_profile(style_a)
     profile_b = _style_profile(style_b)
 
@@ -377,8 +377,8 @@ def _generate_matchup_section(sid, context):
         )
     if sid == "tactical_edges":
         return (
-            f"{a} edge: {style_a.lower()} pressure with {stance_a} stance entries can stack exchanges when timing is hidden.\n"
-            f"{b} edge: {style_b.lower()} timing from {stance_b} stance can interrupt entry rhythm and force low-value restarts.\n\n"
+            f"{a} edge: {style_a.lower()} pressure with {stance_a} entries can stack exchanges when timing is hidden.\n"
+            f"{b} edge: {style_b.lower()} timing from {stance_b} can interrupt entry rhythm and force low-value restarts.\n\n"
             f"Primary tactical edge in this pairing is control-transfer timing, where {control_lead} currently grades ahead."
         )
     if sid == "energy_use":
@@ -406,7 +406,7 @@ def _generate_matchup_section(sid, context):
         )
     if sid == "deception_unpredictability":
         return (
-            f"{a} deception path is feint-to-phase extension from {stance_a} stance; {b} deception path is rhythm disruption and counter release from {stance_b}.\n\n"
+            f"{a} deception path is feint-to-phase extension from {stance_a}; {b} deception path is rhythm disruption and counter release from {stance_b}.\n\n"
             f"Unpredictability advantage goes to the fighter who wins transition reads first and forces the opponent to commit early in mixed phases."
         )
     if sid == "fight_control":
@@ -504,7 +504,7 @@ def map_engine_output_to_report(engine_output):
 
     # Guard confidence formatting
     conf_label = _confidence_label(confidence)
-    if confidence is None or conf_label in ["(confidence missing)", "N/A", "Unknown", "None", ""]:
+    if confidence is None or conf_label in ["(confidence missing)", "N/A", "None", ""]:
         raise ValueError("Missing or invalid confidence value for report headline")
     headline = {
         "winner": fighter_a_name if winner == engine_output.get('fighter_a_id') else (fighter_b_name if winner == engine_output.get('fighter_b_id') else winner),
@@ -537,8 +537,8 @@ def map_engine_output_to_report(engine_output):
 
     style_a = _canonical_style(enrich_a, fighter_a_profile, fallback="Generalist")
     style_b = _canonical_style(enrich_b, fighter_b_profile, fallback="Generalist")
-    stance_a = _canonical_stance(enrich_a, fighter_a_profile, fallback="Unknown")
-    stance_b = _canonical_stance(enrich_b, fighter_b_profile, fallback="Unknown")
+    stance_a = _canonical_stance(enrich_a, fighter_a_profile, fallback="unlisted stance")
+    stance_b = _canonical_stance(enrich_b, fighter_b_profile, fallback="unlisted stance")
 
     control_profile_a = max(0.0, min(1.0,
         0.45 * _style_profile(style_a)["aggression"]

@@ -1,0 +1,16 @@
+{
+  "fight_id": "jafel_filho_vs_cody_durden",
+  "event": "jafel_filho_vs_cody_durden",
+  "event_date": "Date TBD",
+  "fighters": [
+    "Jafel Filho",
+    "Cody Durden"
+  ],
+  "fighter_a_id": "fighter_jafel_filho",
+  "fighter_b_id": "fighter_cody_durden",
+  "sport": "mma",
+  "ruleset": "unified",
+  "report_ready": true,
+  "profile_gaps": [],
+  "notes": "Created by operator matchup input."
+}
