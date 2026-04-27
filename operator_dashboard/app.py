@@ -1144,6 +1144,17 @@ def api_accuracy_error_patterns():
         return jsonify({"ok": False, "error": str(e), "has_data": False, "total_misses": 0}), 500
 
 
+def _load_accuracy_ledger_rows(ledger_path: Path):
+    """
+    Load accuracy ledger JSON with BOM-safe UTF-8 decoding.
+    """
+    with open(ledger_path, "r", encoding="utf-8-sig") as f:
+        rows = json.load(f)
+    if isinstance(rows, list):
+        return rows
+    return []
+
+
 def _build_signal_coverage() -> dict:
     """
     Measure signal field coverage across all predictions (overall, resolved, unresolved).
@@ -1153,8 +1164,7 @@ def _build_signal_coverage() -> dict:
     if not ledger_path.exists():
         return {"ok": True, "has_data": False, "coverage": {}}
 
-    with open(ledger_path, "r", encoding="utf-8") as f:
-        rows = json.load(f)
+    rows = _load_accuracy_ledger_rows(ledger_path)
 
     if not rows:
         return {"ok": True, "has_data": False, "coverage": {}}
@@ -1232,8 +1242,7 @@ def _build_structural_signal_backfill_planner() -> dict:
     if not ledger_path.exists():
         return {"ok": True, "has_data": False, "planner": {}}
 
-    with open(ledger_path, "r", encoding="utf-8") as f:
-        rows = json.load(f)
+    rows = _load_accuracy_ledger_rows(ledger_path)
 
     if not rows:
         return {"ok": True, "has_data": False, "planner": {}}
