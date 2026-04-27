@@ -361,6 +361,127 @@
             padding: 12px 16px;
             margin-bottom: 20px;
         }
+        .dashboard-summary-shell {
+            margin: 12px 0 20px 0;
+            text-align: left !important;
+        }
+        .dashboard-summary-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #12233d 0%, #1d3e66 100%);
+            border-radius: 14px;
+            color: #f5f9ff;
+            box-shadow: 0 6px 18px rgba(18, 35, 61, 0.18);
+            margin-bottom: 12px;
+        }
+        .dashboard-summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+        .dashboard-summary-subtitle {
+            font-size: 12px;
+            color: #d6e5fb;
+            margin: 0;
+        }
+        .dashboard-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .dashboard-summary-card {
+            background: #ffffff;
+            border: 1px solid #dce6f3;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 8px rgba(17, 55, 107, 0.06);
+        }
+        .dashboard-summary-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #58708f;
+            margin-bottom: 6px;
+        }
+        .dashboard-summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1c314a;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+        .dashboard-summary-note {
+            font-size: 12px;
+            color: #5b6674;
+            line-height: 1.35;
+        }
+        .dashboard-summary-value.is-good {
+            color: #107c10;
+        }
+        .dashboard-summary-value.is-warn {
+            color: #a15c00;
+        }
+        .dashboard-summary-value.is-bad {
+            color: #a80000;
+        }
+        .dashboard-fold {
+            border: 1px solid #dde7f2;
+            border-radius: 12px;
+            background: #fff;
+            margin-bottom: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(17, 55, 107, 0.05);
+        }
+        .dashboard-fold > summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            list-style: none;
+            padding: 12px 16px;
+            font-weight: 700;
+            color: #213753;
+            background: #f8fbff;
+        }
+        .dashboard-fold > summary::-webkit-details-marker {
+            display: none;
+        }
+        .dashboard-fold-note {
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            text-align: right;
+        }
+        .dashboard-fold-content {
+            padding: 14px 16px 2px 16px;
+        }
+        .dashboard-fold-content .panel-card {
+            margin-bottom: 16px;
+        }
+        .dashboard-fold-content .panel-card:last-child {
+            margin-bottom: 8px;
+        }
+        .operator-section-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px 0;
+        }
+        .operator-section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef4fb;
+            color: #2f527a;
+            font-size: 12px;
+            font-weight: 700;
+        }
         .legacy-monitoring-shell > summary {
             cursor: pointer;
             font-weight: 700;
@@ -501,6 +622,9 @@
                     .phase1-toolbar-shell {
                         position: static;
                     }
+                    .dashboard-summary-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
                 }
                 @media (max-width: 700px) {
                     .dashboard-container { padding: 0 2px; }
@@ -510,6 +634,20 @@
                     }
                     .phase1-table-shell {
                         max-height: 185px;
+                    }
+                    .dashboard-summary-banner {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    .dashboard-summary-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .dashboard-fold > summary {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    .dashboard-fold-note {
+                        text-align: left;
                     }
                 }
             </style>
@@ -950,49 +1088,229 @@
                 return group;
             }
 
-            function moveCardByTitle(title, target) {
-                const cards = Array.from(document.querySelectorAll('.panel-card'));
-                const card = cards.find(c => {
-                    const h2 = c.querySelector('.panel-header h2');
+            function createFold(title, note = '', open = false) {
+                const details = document.createElement('details');
+                details.className = 'dashboard-fold';
+                details.open = open;
+
+                const summary = document.createElement('summary');
+                const label = document.createElement('span');
+                label.textContent = title;
+                summary.appendChild(label);
+
+                if (note) {
+                    const noteEl = document.createElement('span');
+                    noteEl.className = 'dashboard-fold-note';
+                    noteEl.textContent = note;
+                    summary.appendChild(noteEl);
+                }
+
+                const content = document.createElement('div');
+                content.className = 'dashboard-fold-content';
+
+                details.appendChild(summary);
+                details.appendChild(content);
+                return { details, content };
+            }
+
+            function findCardByTitle(title) {
+                return Array.from(document.querySelectorAll('.panel-card')).find((card) => {
+                    const h2 = card.querySelector('.panel-header h2');
                     return h2 && h2.textContent.trim() === title;
                 });
+            }
+
+            function moveCardByTitle(title, target) {
+                const card = findCardByTitle(title);
                 if (card && target) target.appendChild(card);
+            }
+
+            function setupDashboardSummary(anchor) {
+                if (!anchor || anchor.dataset.summaryReady === 'true') return;
+                anchor.dataset.summaryReady = 'true';
+                anchor.classList.add('dashboard-summary-shell');
+                anchor.innerHTML = `
+                    <div class="dashboard-summary-banner">
+                        <div>
+                            <div class="dashboard-summary-title">Command Center</div>
+                            <div class="dashboard-summary-subtitle">Topline status first. Queues, diagnostics, and backfill details are grouped below.</div>
+                        </div>
+                        <div class="operator-section-tags">
+                            <span class="operator-section-tag">Report Builder</span>
+                            <span class="operator-section-tag">Accuracy Ledger</span>
+                            <span class="operator-section-tag">Backfill Guardrail</span>
+                            <span class="operator-section-tag">Diagnostics</span>
+                        </div>
+                    </div>
+                    <div class="dashboard-summary-grid">
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Health Status</div>
+                            <div class="dashboard-summary-value" id="summary-health-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-health-note">Checking dashboard health and endpoint status.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Backfill Guardrail</div>
+                            <div class="dashboard-summary-value" id="summary-backfill-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-backfill-note">Verifying READY_FOR_BACKFILL and planner state.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Accuracy Ledger</div>
+                            <div class="dashboard-summary-value" id="summary-accuracy-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-accuracy-note">Resolved comparison metrics will appear here.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Queue Warning Count</div>
+                            <div class="dashboard-summary-value" id="summary-queue-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-queue-note">Waiting-for-result and unresolved pressure.</div>
+                        </div>
+                    </div>`;
+            }
+
+            async function loadDashboardSummary() {
+                const healthValue = document.getElementById('summary-health-value');
+                const healthNote = document.getElementById('summary-health-note');
+                const backfillValue = document.getElementById('summary-backfill-value');
+                const backfillNote = document.getElementById('summary-backfill-note');
+                const accuracyValue = document.getElementById('summary-accuracy-value');
+                const accuracyNote = document.getElementById('summary-accuracy-note');
+                const queueValue = document.getElementById('summary-queue-value');
+                const queueNote = document.getElementById('summary-queue-note');
+                if (!healthValue || !backfillValue || !accuracyValue || !queueValue) return;
+
+                try {
+                    const [healthResp, comparisonResp, plannerResp] = await Promise.all([
+                        fetch('/api/system/health'),
+                        fetch('/api/accuracy/comparison-summary'),
+                        fetch('/api/accuracy/structural-signal-backfill-planner')
+                    ]);
+                    const [health, comparison, plannerData] = await Promise.all([
+                        healthResp.json(),
+                        comparisonResp.json(),
+                        plannerResp.json()
+                    ]);
+
+                    const isHealthy = Boolean(health.ok);
+                    healthValue.textContent = isHealthy ? 'Online' : 'Degraded';
+                    healthValue.className = `dashboard-summary-value ${isHealthy ? 'is-good' : 'is-bad'}`;
+                    healthNote.textContent = `${health.errors_total || 0} errors. ${Object.keys(health.accuracy_endpoint_status || {}).length} accuracy endpoints checked.`;
+
+                    const planner = plannerData.planner || {};
+                    const counts = (planner.summary || {}).eligibility_counts || {};
+                    const readyForBackfill = counts.READY_FOR_BACKFILL ?? '—';
+                    const isBlocked = Number(readyForBackfill) === 0;
+                    backfillValue.textContent = `READY ${readyForBackfill}`;
+                    backfillValue.className = `dashboard-summary-value ${isBlocked ? 'is-good' : 'is-warn'}`;
+                    backfillNote.textContent = isBlocked
+                        ? `Blocked by guardrail. ${counts.BLOCKED_NEEDS_SOURCE_VALUES || 0} need source values, ${counts.UNRESOLVED_RESULT_PENDING || 0} unresolved.`
+                        : 'Backfill planner reports ready work.';
+
+                    const metrics = comparison.summary_metrics || {};
+                    const totalCompared = Number(metrics.total_compared || 0);
+                    accuracyValue.textContent = `${totalCompared} compared`;
+                    accuracyValue.className = 'dashboard-summary-value';
+                    accuracyNote.textContent = `${metrics.overall_accuracy_pct || 0}% overall accuracy. Winner hits: ${metrics.winner_hits || 0}, misses: ${metrics.winner_misses || 0}.`;
+
+                    const waitingCount = (comparison.waiting_for_results || []).length;
+                    queueValue.textContent = String(waitingCount);
+                    queueValue.className = `dashboard-summary-value ${waitingCount ? 'is-warn' : 'is-good'}`;
+                    queueNote.textContent = waitingCount
+                        ? `${waitingCount} predictions still waiting for resolved results.`
+                        : 'No waiting-for-result pressure right now.';
+                } catch (e) {
+                    healthValue.textContent = 'Unavailable';
+                    healthValue.className = 'dashboard-summary-value is-bad';
+                    healthNote.textContent = `Summary load failed: ${e.message}`;
+                    backfillValue.textContent = 'Unavailable';
+                    accuracyValue.textContent = 'Unavailable';
+                    queueValue.textContent = 'Unavailable';
+                }
+            }
+
+            function reorganizeOperatorWorkflowCard() {
+                const workflowCard = findCardByTitle('Operator Matchup Workflow');
+                if (!workflowCard || workflowCard.dataset.cleaned === 'true') return;
+                workflowCard.dataset.cleaned = 'true';
+
+                const panelBody = workflowCard.querySelector('.panel-body');
+                const errorDiv = panelBody.querySelector('#operator-error');
+                if (!panelBody || !errorDiv) return;
+
+                const queueBox = panelBody.querySelector('#operator-waiting-results-queue')?.closest('.phase1-box');
+                const signalGapBox = panelBody.querySelector('#signal-gap-breakdown-panel');
+                const methodRoundBox = panelBody.querySelector('#method-round-reliability-panel');
+                const stoppageBox = panelBody.querySelector('#stoppage-finish-tendency-panel');
+                const confidenceBox = panelBody.querySelector('#confidence-calibration-panel');
+                const failureBox = panelBody.querySelector('#failure-patterns-panel');
+                const signalCoverageBox = panelBody.querySelector('#signal-coverage-panel');
+                const structuralPlannerBox = panelBody.querySelector('#structural-backfill-planner-panel');
+
+                const tags = document.createElement('div');
+                tags.className = 'operator-section-tags';
+                tags.innerHTML = `
+                    <span class="operator-section-tag">Report Builder</span>
+                    <span class="operator-section-tag">Report-Scoring Calibration</span>
+                    <span class="operator-section-tag">Accuracy Ledger</span>
+                    <span class="operator-section-tag">Backfill Guardrail</span>`;
+                panelBody.insertBefore(tags, queueBox || errorDiv);
+
+                const bucketShell = document.createElement('div');
+                bucketShell.className = 'dashboard-buckets';
+                panelBody.insertBefore(bucketShell, errorDiv);
+
+                const accuracyFold = createFold('Accuracy & Calibration', 'Accuracy Ledger and report-scoring calibration stay separate.', true);
+                [signalGapBox, methodRoundBox, stoppageBox, confidenceBox].filter(Boolean).forEach((node) => accuracyFold.content.appendChild(node));
+                bucketShell.appendChild(accuracyFold.details);
+
+                const queueFold = createFold('Queues & Events', 'Waiting-for-result detail is available on demand.', false);
+                [queueBox].filter(Boolean).forEach((node) => queueFold.content.appendChild(node));
+                bucketShell.appendChild(queueFold.details);
+
+                const qualityFold = createFold('Data Quality / Backfill', 'Coverage and planner tables stay collapsed by default.', false);
+                [signalCoverageBox, structuralPlannerBox].filter(Boolean).forEach((node) => qualityFold.content.appendChild(node));
+                bucketShell.appendChild(qualityFold.details);
+
+                const diagnosticsFold = createFold('Diagnostics / Logs', 'Failure patterns and troubleshooting detail.', false);
+                [failureBox].filter(Boolean).forEach((node) => diagnosticsFold.content.appendChild(node));
+                bucketShell.appendChild(diagnosticsFold.details);
             }
 
             function reorganizeLayout() {
                 const container = document.querySelector('.dashboard-container');
-                if (!container) return;
+                if (!container || container.dataset.reorganized === 'true') return;
+                container.dataset.reorganized = 'true';
 
-                const operationsGroup = makeGroup('Operations');
-                const queuesGroup = makeGroup('Queues');
-                const resultsGroup = makeGroup('Results');
-                const chatGroup = makeGroup('Chat');
+                const primaryGroup = makeGroup('Primary Operator Panel');
+                const queueGroup = makeGroup('Queues & Events');
+                const diagnosticsGroup = makeGroup('Diagnostics / Logs');
 
-                const legacyDetails = document.createElement('details');
-                legacyDetails.className = 'legacy-monitoring-shell';
-                legacyDetails.open = false;
-                const summary = document.createElement('summary');
-                summary.textContent = 'Legacy Monitoring';
-                legacyDetails.appendChild(summary);
+                const legacyFold = createFold('Legacy Monitoring', 'Forecasting, drift, integrity, watchlists, and escalations.', false);
 
                 const anchor = document.getElementById('backend-status-indicator');
                 if (anchor && anchor.parentNode === container) {
-                    anchor.insertAdjacentElement('afterend', operationsGroup);
-                    operationsGroup.insertAdjacentElement('afterend', queuesGroup);
-                    queuesGroup.insertAdjacentElement('afterend', resultsGroup);
-                    resultsGroup.insertAdjacentElement('afterend', chatGroup);
-                    chatGroup.insertAdjacentElement('afterend', legacyDetails);
+                    setupDashboardSummary(anchor);
+                    anchor.insertAdjacentElement('afterend', primaryGroup);
+                    primaryGroup.insertAdjacentElement('afterend', queueGroup);
+                    queueGroup.insertAdjacentElement('afterend', diagnosticsGroup);
+                    diagnosticsGroup.insertAdjacentElement('afterend', legacyFold.details);
                 }
 
-                moveCardByTitle('Phase 1 Operations', operationsGroup);
+                moveCardByTitle('Operator Matchup Workflow', primaryGroup);
+                reorganizeOperatorWorkflowCard();
 
-                moveCardByTitle('Queue', queuesGroup);
-                moveCardByTitle('Review Queue', queuesGroup);
-                moveCardByTitle('Casefile', queuesGroup);
+                const eventIntakeFold = createFold('Event Intake', 'Operations controls and high-volume intake tables.', false);
+                queueGroup.appendChild(eventIntakeFold.details);
+                moveCardByTitle('Phase 1 Operations', eventIntakeFold.content);
 
-                moveCardByTitle('Status', resultsGroup);
+                const queueToolsFold = createFold('Queue Tools', 'Queue board, review queue, and casefile are available here.', false);
+                queueGroup.appendChild(queueToolsFold.details);
+                moveCardByTitle('Queue', queueToolsFold.content);
+                moveCardByTitle('Review Queue', queueToolsFold.content);
+                moveCardByTitle('Casefile', queueToolsFold.content);
 
-                moveCardByTitle('Chat', chatGroup);
+                const diagnosticsFold = createFold('Diagnostics', 'Status JSON and chat are collapsed by default.', false);
+                diagnosticsGroup.appendChild(diagnosticsFold.details);
+                moveCardByTitle('Status', diagnosticsFold.content);
+                moveCardByTitle('Chat', diagnosticsFold.content);
 
                 [
                     'Anomaly Explanation',
@@ -1006,7 +1324,7 @@
                     'Digest',
                     'Watchlist',
                     'Escalations'
-                ].forEach(title => moveCardByTitle(title, legacyDetails));
+                ].forEach(title => moveCardByTitle(title, legacyFold.content));
             }
 
             // --- Dashboard Panel Logic ---
@@ -1293,6 +1611,7 @@
                         {key: 'hit_winner', label: 'Winner Hit'},
                         {key: 'round_error', label: 'Round Error'}
                     ]);
+                    loadDashboardSummary();
                 } catch (e) {
                     setPhase1Status('Failed to refresh Phase 1 lanes: ' + e, true);
                 }
@@ -1442,6 +1761,7 @@
                 reorganizeLayout();
                 setupPanelRefresh();
                 loadAllPanels();
+                loadDashboardSummary();
                 setupPhase1Actions();
                 refreshPhase1Lanes();
                 setupOperatorMatchupWorkflow();
