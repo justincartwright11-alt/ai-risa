@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 CHAT_HISTORY_PATH = os.path.join(os.path.dirname(__file__), 'chat_history.json')
 MAX_HISTORY = 200
@@ -34,12 +34,21 @@ def save_chat_history(history):
     except Exception:
         pass
 
+
+def clear_chat_history():
+    try:
+        with open(CHAT_HISTORY_PATH, 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+        return True
+    except Exception:
+        return False
+
 def append_chat_message(role, content, action=None, normalized_event=None, details=None, error=None):
     history = load_chat_history()
     msg = {
         'role': role,
         'content': content,
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'action': action or '',
         'normalized_event': normalized_event,
         'details': details or '',
