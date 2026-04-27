@@ -1,3 +1,6 @@
+# Minimal wrapper for app.py compatibility
+def aggregate_event_comparison(event_id):
+    return get_event_comparison(event_id)
 # Build 17: comparison_utils.py
 
 def get_event_comparison(event_id):
