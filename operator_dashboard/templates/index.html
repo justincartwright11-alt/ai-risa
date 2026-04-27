@@ -1922,6 +1922,21 @@
                             });
                             const d = await resp.json();
                             const ok = d.ok !== false;
+                            const errorText = [d.error, ...(d.errors || [])].filter(Boolean).join(' | ');
+                            const isFighterVerificationBlocked = d.blocked_reason === 'fighter_profile_not_verified'
+                                || /ambiguous fighter name|need full fighter name|missing fighter profile after intake|fighter profile too weak for analysis/i.test(errorText);
+
+                            if (!ok && isFighterVerificationBlocked) {
+                                appendResult(`<div style="margin-top:8px;padding:10px 12px;background:#fff0f0;border-radius:6px;border:1px solid #f5c6c6;color:#8a1212;">
+                                    <strong>Report Build Blocked</strong><br>
+                                    Fighter profile not verified. Do not build report yet.<br>
+                                    Source verification required.<br>
+                                    <strong>Suggested next action:</strong> choose verified matchup or run fighter intake verification.
+                                    ${errorText ? `<div style="margin-top:6px;font-size:12px;color:#6b1a1a;">Details: ${escapeHtml(errorText).slice(0, 400)}</div>` : ''}
+                                </div>`);
+                                return;
+                            }
+
                             appendResult(`<div style="margin-top:8px;padding:8px 12px;background:${ok ? '#f0fff0' : '#fff0f0'};border-radius:6px;border:1px solid ${ok ? '#b0e0b0' : '#f5c6c6'};">
                                 <strong>Report Build ${ok ? 'Succeeded' : 'Failed'}</strong><br>
                                 ${escapeHtml(d.message || d.error || JSON.stringify(d)).slice(0, 500)}
@@ -2125,7 +2140,14 @@
                         });
                         const data = await resp.json();
                         if (!data.ok) {
-                            setError((data.errors || []).join('; ') || 'Failed to build report');
+                            const errorText = [data.error, ...(data.errors || [])].filter(Boolean).join('; ');
+                            const isFighterVerificationBlocked = data.blocked_reason === 'fighter_profile_not_verified'
+                                || /ambiguous fighter name|need full fighter name|missing fighter profile after intake|fighter profile too weak for analysis/i.test(errorText);
+                            if (isFighterVerificationBlocked) {
+                                setError('Fighter profile not verified. Do not build report yet. Source verification required. Suggested next action: choose verified matchup or run fighter intake verification.');
+                            } else {
+                                setError(errorText || 'Failed to build report');
+                            }
                             setStatus('Build failed', true);
                             return;
                         }

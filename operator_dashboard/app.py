@@ -348,6 +348,30 @@ def operator_error_response(message: str, status_code: int = 500, **extra):
     return jsonify(payload), status_code
 
 
+def classify_fighter_verification_block(error_texts):
+    combined = " | ".join(str(x or "") for x in (error_texts or [])).lower()
+    blocked_markers = [
+        "ambiguous fighter name",
+        "need full fighter name",
+        "missing fighter profile after intake",
+        "fighter profile too weak for analysis",
+    ]
+    if not any(marker in combined for marker in blocked_markers):
+        return None
+
+    return {
+        "blocked_reason": "fighter_profile_not_verified",
+        "operator_message": (
+            "Fighter profile not verified. Do not build report yet. "
+            "Source verification is required before retrying this matchup."
+        ),
+        "suggested_next_action": (
+            "Choose a verified matchup or run fighter intake verification "
+            "for both fighters."
+        ),
+    }
+
+
 @app.errorhandler(404)
 def handle_404(error):
     if request.path.startswith("/api/operator/"):
@@ -754,10 +778,19 @@ def api_operator_analyze_build_report():
         
         # Build report
         result = operator.build_premium_report(fighter_a, fighter_b)
+
+        if isinstance(result, dict) and result.get("ok") is False:
+            error_texts = [result.get("error")] + list(result.get("errors") or [])
+            blocked_meta = classify_fighter_verification_block(error_texts)
+            if blocked_meta:
+                result.update(blocked_meta)
         
         return jsonify(result)
     
     except Exception as e:
+        blocked_meta = classify_fighter_verification_block([str(e)])
+        if blocked_meta:
+            return operator_error_response(str(e), 500, errors=[str(e)], **blocked_meta)
         return operator_error_response(str(e), 500, errors=[str(e)])
 
 
