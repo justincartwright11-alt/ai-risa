@@ -67,6 +67,26 @@ def _runtime_metrics_after_request(response):
     return response
 
 
+def _append_health_log(health_record: dict) -> bool:
+    """Append a compact health snapshot to the runtime health log (JSONL).
+    
+    Args:
+        health_record: dict with timestamp_utc, ok, uptime_seconds, requests_total, errors_total, accuracy_endpoint_status
+        
+    Returns:
+        True if successfully written, False on any I/O error
+    """
+    try:
+        log_path = Path(__file__).resolve().parent.parent / "ops" / "runtime_health_log.jsonl"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(health_record) + "\n")
+        return True
+    except Exception:
+        return False
+
+
 def _load_json_records(file_path: Path):
     if not file_path.exists():
         return []
@@ -526,9 +546,23 @@ def api_system_health():
     except Exception:
         last_ledger_read_success = False
 
-    return jsonify({
-        "ok": all(code == 200 for code in statuses.values()),
-        "uptime_seconds": round(time() - _RUNTIME_METRICS["started_at_epoch"], 3),
+    ok_status = all(code == 200 for code in statuses.values())
+    uptime_seconds = round(time() - _RUNTIME_METRICS["started_at_epoch"], 3)
+    
+    # Build compact health log record and attempt to persist
+    health_record = {
+        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        "ok": ok_status,
+        "uptime_seconds": uptime_seconds,
+        "requests_total": _RUNTIME_METRICS["requests_total"],
+        "errors_total": _RUNTIME_METRICS["errors_total"],
+        "accuracy_endpoint_status": statuses,
+    }
+    health_log_written = _append_health_log(health_record)
+    
+    response_payload = {
+        "ok": ok_status,
+        "uptime_seconds": uptime_seconds,
         "last_ledger_read_success": last_ledger_read_success,
         "requests_total": _RUNTIME_METRICS["requests_total"],
         "errors_total": _RUNTIME_METRICS["errors_total"],
@@ -536,7 +570,10 @@ def api_system_health():
         "endpoint_latency_ms": _RUNTIME_METRICS["endpoint_latency_ms"],
         "last_error": _RUNTIME_METRICS["last_error"],
         "accuracy_endpoint_status": statuses,
-    })
+        "health_log_written": health_log_written,
+    }
+    
+    return jsonify(response_payload)
 
 
 @app.route("/api/watchlist", methods=["GET"])
