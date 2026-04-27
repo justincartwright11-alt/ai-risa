@@ -267,7 +267,8 @@
     "finish_bias": 0.55,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Volume striker. Moderate finish threat. Good durability. Solid cardio for bantamweight."
+    "notes": "Volume striker. Moderate finish threat. Good durability. Solid cardio for bantamweight.",
+    "durability_bias": 0.65
   },
   "deiveson_figueiredo": {
     "style": "Pressure Fighter",
@@ -285,7 +286,8 @@
     "finish_bias": 0.72,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Former flyweight champion moving to bantamweight. Power puncher, submission threat. Aging-adjusted lower cardio."
+    "notes": "Former flyweight champion moving to bantamweight. Power puncher, submission threat. Aging-adjusted lower cardio.",
+    "durability_bias": 0.5
   },
   "oleksandr_usyk": {
     "source": "manual_enrichment",
@@ -1153,7 +1155,8 @@
     "finish_bias": 0.2,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Control wrestler. High cardio for five rounds. Low finish threat. Hard to stop."
+    "notes": "Control wrestler. High cardio for five rounds. Low finish threat. Hard to stop.",
+    "durability_bias": 0.75
   },
   "tatsuro_taira": {
     "style": "Fighter",
@@ -1171,7 +1174,8 @@
     "finish_bias": 0.52,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Submission specialist. Scramble-heavy style. Can finish via grappling. Moderate cardio."
+    "notes": "Submission specialist. Scramble-heavy style. Can finish via grappling. Moderate cardio.",
+    "durability_bias": 0.6
   },
   "belal_muhammad": {
     "style": "Wrestler",
@@ -1189,7 +1193,8 @@
     "finish_bias": 0.18,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Elite control wrestler. Decision-oriented. Very hard to finish. Excellent cardio."
+    "notes": "Elite control wrestler. Decision-oriented. Very hard to finish. Excellent cardio.",
+    "durability_bias": 0.8
   },
   "gabriel_bonfim": {
     "style": "Striker",
@@ -1207,6 +1212,7 @@
     "finish_bias": 0.78,
     "source": "manual_differentiation",
     "source_confidence": "medium",
-    "notes": "Aggressive finisher. High KO and submission threat. Lower durability under sustained pressure."
+    "notes": "Aggressive finisher. High KO and submission threat. Lower durability under sustained pressure.",
+    "durability_bias": 0.55
   }
 }

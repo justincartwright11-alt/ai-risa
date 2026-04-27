@@ -1,15 +1,7 @@
 {
-  "matchup_id": "fighter_joshua_van_vs_fighter_tatsuro_taira",
   "fight_id": "fighter_joshua_van_vs_fighter_tatsuro_taira",
   "fighter_a_id": "fighter_joshua_van",
   "fighter_b_id": "fighter_tatsuro_taira",
   "weight_class": "flyweight",
-  "sport": "mma",
-  "ruleset": "unified",
-  "event": "ufc_fight_night_van_taira",
-  "event_date": "2025-06-07",
-  "report_ready": true,
-  "profile_gaps": [],
-  "notes": "UFC flyweight title fight. Van (wrestler/control) vs Taira (submission specialist/scrambler). Five-round main event.",
-  "confidence": 0.67
+  "sport": "mma"
 }

@@ -1,15 +1,7 @@
 {
-  "matchup_id": "matchup_fighter_belal_muhammad_vs_fighter_gabriel_bonfim",
   "fight_id": "matchup_fighter_belal_muhammad_vs_fighter_gabriel_bonfim",
   "fighter_a_id": "fighter_belal_muhammad",
   "fighter_b_id": "fighter_gabriel_bonfim",
   "weight_class": "welterweight",
-  "sport": "mma",
-  "ruleset": "unified",
-  "event": "ufc_fight_night_muhammad_bonfim",
-  "event_date": "2025-07-12",
-  "report_ready": true,
-  "profile_gaps": [],
-  "notes": "UFC welterweight fight. Muhammad (control/decision) vs Bonfim (aggressive finisher, KO and submission threat).",
-  "confidence": 0.73
+  "sport": "mma"
 }
