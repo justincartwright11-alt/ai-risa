@@ -482,6 +482,15 @@
             font-size: 12px;
             font-weight: 700;
         }
+        .operator-section-chip {
+            border: 1px solid #c5d6ea;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .operator-section-chip:hover {
+            background: #e2edf9;
+            border-color: #9cb9d9;
+        }
         .legacy-monitoring-shell > summary {
             cursor: pointer;
             font-weight: 700;
@@ -1262,10 +1271,10 @@
                             <div class="dashboard-summary-subtitle">Live system status — health, accuracy, and guardrail checks.</div>
                         </div>
                         <div class="operator-section-tags">
-                            <span class="operator-section-tag">Health</span>
-                            <span class="operator-section-tag">Accuracy</span>
-                            <span class="operator-section-tag">Backfill Guardrail</span>
-                            <span class="operator-section-tag">Queue</span>
+                            <button id="summary-chip-health" class="operator-section-tag operator-section-chip" type="button">Health</button>
+                            <button id="summary-chip-accuracy" class="operator-section-tag operator-section-chip" type="button">Accuracy</button>
+                            <button id="summary-chip-backfill" class="operator-section-tag operator-section-chip" type="button">Backfill Guardrail</button>
+                            <button id="summary-chip-queue" class="operator-section-tag operator-section-chip" type="button">Queue</button>
                         </div>
                     </div>
                     <div class="dashboard-summary-grid">
@@ -1350,6 +1359,50 @@
                     accuracyValue.textContent = 'Unavailable';
                     queueValue.textContent = 'Unavailable';
                 }
+            }
+
+            function _openDetailsAncestors(node) {
+                let cursor = node;
+                while (cursor) {
+                    if (cursor.tagName && cursor.tagName.toLowerCase() === 'details') {
+                        cursor.open = true;
+                    }
+                    cursor = cursor.parentElement;
+                }
+            }
+
+            function _focusDashboardNode(node) {
+                if (!node) return;
+                _openDetailsAncestors(node);
+                node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function setupDashboardSummaryChipActions() {
+                const chipHealth = document.getElementById('summary-chip-health');
+                const chipAccuracy = document.getElementById('summary-chip-accuracy');
+                const chipBackfill = document.getElementById('summary-chip-backfill');
+                const chipQueue = document.getElementById('summary-chip-queue');
+
+                chipHealth && chipHealth.addEventListener('click', async () => {
+                    await loadDashboardSummary();
+                    const node = document.getElementById('backend-status-indicator');
+                    _focusDashboardNode(node);
+                });
+
+                chipAccuracy && chipAccuracy.addEventListener('click', () => {
+                    const node = document.getElementById('confidence-calibration-panel') || document.getElementById('accuracy-calibration-review-content');
+                    _focusDashboardNode(node);
+                });
+
+                chipBackfill && chipBackfill.addEventListener('click', () => {
+                    const node = document.getElementById('structural-backfill-planner-content') || document.getElementById('structural-backfill-planner-panel');
+                    _focusDashboardNode(node);
+                });
+
+                chipQueue && chipQueue.addEventListener('click', () => {
+                    const node = document.getElementById('operator-waiting-results-queue');
+                    _focusDashboardNode(node);
+                });
             }
 
             function reorganizeOperatorWorkflowCard() {
@@ -1939,6 +1992,25 @@
                         runScout(query);
                     });
                 });
+
+                function setManualReviewMessage(rows) {
+                    const needsManualReview = Array.isArray(rows) && rows.some((row) => {
+                        const trigger = String(row.trigger_type || '').toUpperCase();
+                        const action = String(row.recommended_action || '').toUpperCase();
+                        return trigger === 'NO_RESULT_FOUND' || action.includes('MANUAL_REVIEW');
+                    });
+                    if (needsManualReview && guardrailsDiv) {
+                        const current = guardrailsDiv.textContent || '';
+                        const note = 'External result lookup is not connected for automatic queue resolution yet. Manual review required.';
+                        guardrailsDiv.textContent = current ? `${current} | ${note}` : note;
+                    }
+                }
+
+                const originalRenderRows = renderRows;
+                renderRows = function(rows) {
+                    originalRenderRows(rows);
+                    setManualReviewMessage(rows);
+                };
             }
 
             // ---------------------------------------------------------------
@@ -2192,6 +2264,7 @@
 
             window.addEventListener('DOMContentLoaded', () => {
                 reorganizeLayout();
+                setupDashboardSummaryChipActions();
                 setupPanelRefresh();
                 loadAllPanels();
                 loadDashboardSummary();

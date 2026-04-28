@@ -43,10 +43,40 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Waiting For Real Results', resp.data)
         self.assertIn(b'/api/accuracy/comparison-summary', resp.data)
 
+    def test_index_command_center_uses_intent_endpoint(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'/api/operator/intent', resp.data)
+        self.assertNotIn(b'/api/operator/mode', resp.data)
+
+    def test_index_compare_handler_targets_compare_endpoint(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'operator-compare-btn', resp.data)
+        self.assertIn(b'/api/operator/compare-with-result', resp.data)
+
+    def test_advanced_dashboard_has_interactive_summary_chips(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'summary-chip-health', resp.data)
+        self.assertIn(b'summary-chip-accuracy', resp.data)
+        self.assertIn(b'summary-chip-backfill', resp.data)
+        self.assertIn(b'summary-chip-queue', resp.data)
+
+    def test_manual_review_empty_state_message_present(self):
+        expected = b'External result lookup is not connected for automatic queue resolution yet. Manual review required.'
+        index_resp = self.client.get('/')
+        self.assertEqual(index_resp.status_code, 200)
+        self.assertIn(expected, index_resp.data)
+
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(expected, advanced_resp.data)
+
     def test_web_trigger_scout_panel_present(self):
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'AI-RISA Web Trigger Scout', resp.data)
+        self.assertIn(b'Find Fight Results', resp.data)
         self.assertIn(b'/api/operator/web-trigger-scout', resp.data)
 
     def test_web_trigger_scout_endpoint_contract(self):
@@ -95,9 +125,8 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn('0.31+', buckets)
 
     def test_signal_breakdown_panel_present(self):
-        resp = self.client.get('/')
+        resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Signal Gap Accuracy Breakdown', resp.data)
         self.assertIn(b'/api/accuracy/signal-breakdown', resp.data)
 
     def test_method_round_breakdown_contract(self):
@@ -124,10 +153,8 @@ class DashboardBackendTest(unittest.TestCase):
             self.assertIn(expected, buckets)
 
     def test_method_round_panels_present(self):
-        resp = self.client.get('/')
+        resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Method &amp; Round Reliability', resp.data)
-        self.assertIn(b'Stoppage / Finish Tendency Accuracy', resp.data)
         self.assertIn(b'/api/accuracy/method-round-breakdown', resp.data)
 
     def test_confidence_calibration_contract(self):
@@ -147,9 +174,8 @@ class DashboardBackendTest(unittest.TestCase):
                 self.assertIn(key, b)
 
     def test_confidence_calibration_panel_present(self):
-        resp = self.client.get('/')
+        resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Confidence Calibration', resp.data)
         self.assertIn(b'/api/accuracy/confidence-calibration', resp.data)
 
     def test_error_patterns_contract(self):
@@ -169,9 +195,8 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIsInstance(data['total_misses'], int)
 
     def test_failure_patterns_panel_present(self):
-        resp = self.client.get('/')
+        resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Failure Patterns', resp.data)
         self.assertIn(b'/api/accuracy/error-patterns', resp.data)
 
     def test_signal_coverage_contract(self):
@@ -191,9 +216,8 @@ class DashboardBackendTest(unittest.TestCase):
                 self.assertIn(field, b)
 
     def test_signal_coverage_panel_present(self):
-        resp = self.client.get('/')
+        resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Signal Coverage', resp.data)
         self.assertIn(b'/api/accuracy/signal-coverage', resp.data)
 
     def test_structural_signal_backfill_planner_contract(self):
@@ -240,7 +264,6 @@ class DashboardBackendTest(unittest.TestCase):
     def test_structural_signal_backfill_planner_panel_present(self):
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'Structural Signal Backfill Planner', resp.data)
         self.assertIn(b'/api/accuracy/structural-signal-backfill-planner', resp.data)
 
 

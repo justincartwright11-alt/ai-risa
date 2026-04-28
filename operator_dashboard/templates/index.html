@@ -387,20 +387,30 @@
             }
             operatorModeOutput.innerHTML = '<span style="color:#888;">Running safe check...</span>';
             try {
-                const res = await fetch('/api/operator/mode', {
+                const res = await fetch('/api/operator/intent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ command })
                 });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    operatorModeOutput.innerHTML = `<span style="color:#a80000;">Endpoint error ${res.status}: ${_escapeHtml(errorText || 'request failed')}</span>`;
+                    return;
+                }
                 const data = await res.json();
-                if (data.status === 'success') {
-                    operatorModeOutput.innerHTML = `<span style="color:#2d5f2d;"><strong>✓ Safe:</strong> ${data.message}</span>`;
-                    if (data.requires_approval) {
-                        operatorModeApproveBtn.style.display = 'inline-block';
-                        operatorModeCancelBtn.style.display = 'inline-block';
-                    }
-                } else {
-                    operatorModeOutput.innerHTML = `<span style="color:#a80000;"><strong>✗ Blocked:</strong> ${data.message}</span>`;
+                if (!data.ok) {
+                    operatorModeOutput.innerHTML = `<span style="color:#a80000;">Router error: ${_escapeHtml(data.error || 'unknown')}</span>`;
+                    return;
+                }
+
+                operatorModeOutput.innerHTML = _renderIntentPlan(data);
+                operatorModeApproveBtn.style.display = 'none';
+                operatorModeCancelBtn.style.display = 'none';
+
+                if (!data.blocked && data.safety_level === 'APPROVAL_REQUIRED_WRITE') {
+                    operatorModeApproveBtn.style.display = 'inline-block';
+                    operatorModeCancelBtn.style.display = 'inline-block';
+                    operatorModeOutput.innerHTML += '<div style="margin-top:8px;color:#7a4f00;">Approval required. Local dashboard does not expose an approval endpoint for writes.</div>';
                 }
             } catch (e) {
                 operatorModeOutput.innerHTML = `<span style="color:#a80000;">Error: ${e.message}</span>`;
@@ -408,21 +418,7 @@
         });
 
         operatorModeApproveBtn.addEventListener('click', async () => {
-            const command = operatorModeInput.value.trim();
-            operatorModeOutput.innerHTML = '<span style="color:#888;">Approving and executing...</span>';
-            try {
-                const res = await fetch('/api/operator/mode/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ command })
-                });
-                const data = await res.json();
-                operatorModeOutput.innerHTML = `<span style="color:#2d5f2d;"><strong>✓ Executed:</strong> ${data.message}</span>`;
-                operatorModeApproveBtn.style.display = 'none';
-                operatorModeCancelBtn.style.display = 'none';
-            } catch (e) {
-                operatorModeOutput.innerHTML = `<span style="color:#a80000;">Error: ${e.message}</span>`;
-            }
+            operatorModeOutput.innerHTML += '<div style="margin-top:8px;color:#7a4f00;">Approval endpoint is intentionally unavailable in local runtime wiring. Use Advanced Dashboard guarded flows for write actions.</div>';
         });
 
         operatorModeCancelBtn.addEventListener('click', () => {
@@ -434,8 +430,50 @@
         // --- Report Builder Logic ---
         const operatorMatchupInput = document.getElementById('operator-matchup-input');
         const operatorAnalyzeBtn = document.getElementById('operator-analyze-btn');
+        const operatorCompareBtn = document.getElementById('operator-compare-btn');
         const operatorStatus = document.getElementById('operator-status');
         const operatorResult = document.getElementById('operator-result');
+
+        function _escapeHtml(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function _renderIntentPlan(data) {
+            const blocked = Boolean(data.blocked);
+            const safety = data.safety_level || 'UNKNOWN';
+            const endpoint = data.endpoint || 'none';
+            const endpointLabel = endpoint === 'none' ? 'No direct endpoint' : endpoint;
+            let html = `<div><strong>Intent:</strong> ${_escapeHtml(data.intent || 'unknown')}</div>` +
+                `<div><strong>Safety:</strong> ${_escapeHtml(safety)}</div>` +
+                `<div><strong>Planned Action:</strong> ${_escapeHtml(data.planned_action || '')}</div>` +
+                `<div><strong>Endpoint:</strong> ${_escapeHtml(endpointLabel)}</div>`;
+            if (blocked) {
+                html += '<div style="margin-top:8px;color:#a80000;"><strong>Blocked:</strong> action is locked by safety policy.</div>';
+            }
+            return html;
+        }
+
+        async function _loadComparisonSummary() {
+            const res = await fetch('/api/accuracy/comparison-summary');
+            const data = await res.json();
+            const metrics = data.summary_metrics || {};
+            const waiting = (data.waiting_for_results || []).length;
+            const summaryHtml = `
+                <div style="margin-top:10px;padding:10px;border:1px solid #d0e8f2;border-radius:6px;background:#f7fbff;">
+                    <div><strong>Total Compared:</strong> ${Number(metrics.total_compared || 0)}</div>
+                    <div><strong>Winner Hits:</strong> ${Number(metrics.winner_hits || 0)}</div>
+                    <div><strong>Winner Misses:</strong> ${Number(metrics.winner_misses || 0)}</div>
+                    <div><strong>Overall Accuracy:</strong> ${(metrics.overall_accuracy_pct || 0).toFixed(2)}%</div>
+                    <div><strong>Waiting For Real Results:</strong> ${waiting}</div>
+                    <div style="margin-top:6px;font-size:12px;color:#5a6374;">Bulk lookup for waiting records does not run automatically.</div>
+                </div>`;
+            return { data, summaryHtml };
+        }
 
         operatorAnalyzeBtn.addEventListener('click', async () => {
             const matchup = operatorMatchupInput.value.trim();
@@ -455,6 +493,39 @@
                 operatorStatus.innerHTML = `<span style="color:#2d5f2d;">✓ Report built.</span>`;
                 operatorResult.style.display = 'block';
                 operatorResult.innerHTML = '<pre style="margin:0;white-space:pre-wrap;word-wrap:break-word;font-size:12px;">' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (e) {
+                operatorStatus.innerHTML = `<span style="color:#a80000;">Error: ${e.message}</span>`;
+            }
+        });
+
+        operatorCompareBtn.addEventListener('click', async () => {
+            const matchup = operatorMatchupInput.value.trim();
+            operatorStatus.innerHTML = 'Loading comparison state...';
+            operatorResult.style.display = 'none';
+
+            try {
+                let compareData = null;
+                if (matchup) {
+                    const compareRes = await fetch('/api/operator/compare-with-result', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ matchup })
+                    });
+                    compareData = await compareRes.json();
+                }
+
+                const summary = await _loadComparisonSummary();
+                let details = summary.summaryHtml;
+
+                if (compareData) {
+                    details = `<pre style="margin:0 0 10px 0;white-space:pre-wrap;word-wrap:break-word;font-size:12px;">${_escapeHtml(JSON.stringify(compareData, null, 2))}</pre>` + details;
+                } else {
+                    details = `<div style="margin-bottom:10px;color:#5a6374;">Enter a matchup to run single-matchup compare with real result. Queue-wide lookup is manual and guarded.</div>` + details;
+                }
+
+                operatorStatus.innerHTML = '<span style="color:#2d5f2d;">Comparison state loaded.</span>';
+                operatorResult.style.display = 'block';
+                operatorResult.innerHTML = details;
             } catch (e) {
                 operatorStatus.innerHTML = `<span style="color:#a80000;">Error: ${e.message}</span>`;
             }
@@ -495,6 +566,14 @@
                             data.results.map(r => `<tr><td style="border:1px solid #ddd;padding:6px;">${r.trigger_type || '—'}</td><td style="border:1px solid #ddd;padding:6px;">${r.source_confidence || '—'}</td><td style="border:1px solid #ddd;padding:6px;">${r.recommended_action || '—'}</td></tr>`).join('') +
                             '</table>';
                         webTriggerScoutResults.innerHTML = html;
+
+                        const needsManualReview = data.results.some(r =>
+                            String(r.trigger_type || '').toUpperCase() === 'NO_RESULT_FOUND' ||
+                            String(r.recommended_action || '').toUpperCase().includes('MANUAL_REVIEW')
+                        );
+                        if (needsManualReview) {
+                            webTriggerScoutResults.innerHTML += '<div style="margin-top:10px;padding:8px 10px;background:#fff8e6;border:1px solid #f3d9a4;border-radius:6px;color:#7a4f00;">External result lookup is not connected for automatic queue resolution yet. Manual review required.</div>';
+                        }
                     }
                 } else {
                     webTriggerScoutStatus.innerHTML = '<span style="color:#a80000;">No results found.</span>';
