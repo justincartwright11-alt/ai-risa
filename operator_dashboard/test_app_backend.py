@@ -53,7 +53,28 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'operator-compare-btn', resp.data)
+        self.assertIn(b"operatorCompareBtn.addEventListener('click'", resp.data)
         self.assertIn(b'/api/operator/compare-with-result', resp.data)
+
+    def test_compare_endpoint_not_called_on_page_load(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        # Compare endpoint must stay behind explicit operator action.
+        self.assertIn("operatorCompareBtn.addEventListener('click'", page)
+        self.assertIn("/api/operator/compare-with-result", page)
+
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 500]
+        self.assertNotIn('/api/operator/compare-with-result', dom_ready_slice)
+        self.assertNotIn('/api/operator/web-trigger-scout', dom_ready_slice)
+
+    def test_index_no_automatic_queue_wide_lookup_copy_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Bulk lookup for waiting records does not run automatically.', resp.data)
 
     def test_advanced_dashboard_has_interactive_summary_chips(self):
         resp = self.client.get('/advanced-dashboard')
@@ -62,6 +83,15 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'summary-chip-accuracy', resp.data)
         self.assertIn(b'summary-chip-backfill', resp.data)
         self.assertIn(b'summary-chip-queue', resp.data)
+
+    def test_advanced_summary_chip_click_wiring_present(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b"chipHealth && chipHealth.addEventListener('click'", resp.data)
+        self.assertIn(b"chipAccuracy && chipAccuracy.addEventListener('click'", resp.data)
+        self.assertIn(b"chipBackfill && chipBackfill.addEventListener('click'", resp.data)
+        self.assertIn(b"chipQueue && chipQueue.addEventListener('click'", resp.data)
+        self.assertIn(b'_focusDashboardNode(', resp.data)
 
     def test_manual_review_empty_state_message_present(self):
         expected = b'External result lookup is not connected for automatic queue resolution yet. Manual review required.'
