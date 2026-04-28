@@ -2,6 +2,7 @@ import unittest
 import json
 import os
 import tempfile
+import hashlib
 from pathlib import Path
 from unittest.mock import patch
 from app import app, _build_structural_signal_backfill_planner
@@ -9,6 +10,11 @@ from app import app, _build_structural_signal_backfill_planner
 class DashboardBackendTest(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
+
+    def _sha256_or_none(self, path: Path):
+        if not path.exists():
+            return None
+        return hashlib.sha256(path.read_bytes()).hexdigest()
 
     def test_index(self):
         resp = self.client.get('/')
@@ -92,6 +98,67 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b"chipBackfill && chipBackfill.addEventListener('click'", resp.data)
         self.assertIn(b"chipQueue && chipQueue.addEventListener('click'", resp.data)
         self.assertIn(b'_focusDashboardNode(', resp.data)
+
+    def test_dry_run_preview_endpoint_contract(self):
+        resp = self.client.get('/api/operator/actual-result-lookup/dry-run-preview')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'dry_run_preview')
+        self.assertIn('waiting_count', data)
+        self.assertIn('preview_limit', data)
+        self.assertIn('preview_rows', data)
+        self.assertIn('required_fields', data)
+        self.assertIn('missing_by_row', data)
+        self.assertIs(data.get('mutation_performed'), False)
+        self.assertIs(data.get('external_lookup_performed'), False)
+        self.assertIs(data.get('bulk_lookup_performed'), False)
+        self.assertLessEqual(len(data.get('preview_rows') or []), 10)
+
+    def test_dry_run_preview_limit_capped(self):
+        resp = self.client.get('/api/operator/actual-result-lookup/dry-run-preview?limit=999')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('preview_limit'), 10)
+        self.assertLessEqual(len(data.get('preview_rows') or []), 10)
+
+    def test_dry_run_preview_does_not_mutate_actual_results_files(self):
+        root = Path(__file__).resolve().parent.parent
+        accuracy_dir = root / 'ops' / 'accuracy'
+        targets = [
+            accuracy_dir / 'actual_results.json',
+            accuracy_dir / 'actual_results_manual.json',
+            accuracy_dir / 'actual_results_unresolved.json',
+        ]
+        before = {str(p): self._sha256_or_none(p) for p in targets}
+
+        resp = self.client.get('/api/operator/actual-result-lookup/dry-run-preview')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIs(data.get('mutation_performed'), False)
+
+        after = {str(p): self._sha256_or_none(p) for p in targets}
+        self.assertEqual(before, after)
+
+    def test_advanced_dashboard_has_dry_run_preview_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'operator-dry-run-preview-btn', resp.data)
+        self.assertIn(b'operator-dry-run-preview-output', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/dry-run-preview', resp.data)
+        self.assertIn(b'No web lookup or result write is performed by this preview.', resp.data)
+
+    def test_advanced_dry_run_preview_not_called_on_page_load(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 900]
+        self.assertNotIn('/api/operator/actual-result-lookup/dry-run-preview', dom_ready_slice)
 
     def test_manual_review_empty_state_message_present(self):
         expected = b'External result lookup is not connected for automatic queue resolution yet. Manual review required.'

@@ -996,6 +996,11 @@
                             <button id="operator-analyze-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #0078d4;background:#e8f4fd;color:#0078d4;cursor:pointer;">Analyze + Build Premium Report</button>
                             <button id="operator-compare-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Compare With Real Result</button>
                         </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                            <button id="operator-dry-run-preview-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #6b7280;background:#f5f7fa;color:#374151;cursor:pointer;">Dry-Run Preview Waiting Results</button>
+                            <span style="font-size:12px;color:#5a6374;">No web lookup or result write is performed by this preview.</span>
+                        </div>
+                        <div id="operator-dry-run-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
                         <div style="font-size:13px;color:#4b5563;margin:-6px 0 12px 0;">
                             This panel uses report-scoring data only. Accuracy-ledger calibration is shown in the Model Calibration section below.
                         </div>
@@ -2289,6 +2294,8 @@
                 const rollingRateDiv = document.getElementById('operator-rolling-rate');
                 const rollingRateValue = document.getElementById('operator-rolling-rate-value');
                 const waitingQueueDiv = document.getElementById('operator-waiting-results-queue');
+                const dryRunPreviewBtn = document.getElementById('operator-dry-run-preview-btn');
+                const dryRunPreviewOutputDiv = document.getElementById('operator-dry-run-preview-output');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2358,6 +2365,49 @@
                         </thead>
                         <tbody>${body}</tbody>
                     </table>`;
+                }
+
+                function renderDryRunPreview(data) {
+                    if (!dryRunPreviewOutputDiv) return;
+                    const rows = Array.isArray(data.preview_rows) ? data.preview_rows : [];
+                    if (!rows.length) {
+                        dryRunPreviewOutputDiv.style.display = 'block';
+                        dryRunPreviewOutputDiv.innerHTML = `<div style="color:#666;">No waiting records are available for preview.</div>`;
+                        return;
+                    }
+
+                    const body = rows.map((row) => {
+                        const missing = Array.isArray(row.missing_fields) && row.missing_fields.length
+                            ? escapeHtml(row.missing_fields.join(', '))
+                            : 'none';
+                        return `<tr>
+                            <td>${escapeHtml(row.fight_name || 'UNKNOWN')}</td>
+                            <td>${escapeHtml(row.fight_id || 'N/A')}</td>
+                            <td>${escapeHtml(row.predicted_winner || 'UNKNOWN')}</td>
+                            <td>${escapeHtml(row.event_date || 'UNKNOWN')}</td>
+                            <td>${escapeHtml(row.file_path || 'UNKNOWN')}</td>
+                            <td>${escapeHtml(row.status || 'waiting_for_actual_result')}</td>
+                            <td>${missing}</td>
+                        </tr>`;
+                    }).join('');
+
+                    dryRunPreviewOutputDiv.style.display = 'block';
+                    dryRunPreviewOutputDiv.innerHTML = `
+                        <div style="margin-bottom:8px;"><strong>Waiting Count:</strong> ${Number(data.waiting_count || 0)} | <strong>Preview Limit:</strong> ${Number(data.preview_limit || 0)}</div>
+                        <table class="phase1-table">
+                            <thead>
+                                <tr>
+                                    <th>Fight</th>
+                                    <th>Fight ID</th>
+                                    <th>Predicted Winner</th>
+                                    <th>Event Date</th>
+                                    <th>Path</th>
+                                    <th>Status</th>
+                                    <th>Missing Fields</th>
+                                </tr>
+                            </thead>
+                            <tbody>${body}</tbody>
+                        </table>`;
                 }
 
                 async function loadRollingSuccessRate() {
@@ -2482,6 +2532,29 @@ ${comparedResults.length ? `<table class="phase1-table">
                     } catch (e) {
                         setError('Request error: ' + e.message);
                         setStatus('Request failed', true);
+                    }
+                });
+
+                dryRunPreviewBtn && (dryRunPreviewBtn.onclick = async () => {
+                    setStatus('Loading dry-run waiting-results preview...');
+                    setError('');
+                    if (dryRunPreviewOutputDiv) {
+                        dryRunPreviewOutputDiv.style.display = 'none';
+                        dryRunPreviewOutputDiv.innerHTML = '';
+                    }
+                    try {
+                        const resp = await fetch('/api/operator/actual-result-lookup/dry-run-preview');
+                        const data = await resp.json();
+                        if (!resp.ok || !data.ok) {
+                            setError(data.error || 'Dry-run preview failed');
+                            setStatus('Dry-run preview failed.', true);
+                            return;
+                        }
+                        renderDryRunPreview(data);
+                        setStatus(`Dry-run preview loaded: ${Number(data.waiting_count || 0)} waiting record(s).`);
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Dry-run preview request failed.', true);
                     }
                 });
 

@@ -339,6 +339,58 @@ def _build_accuracy_comparison_summary() -> dict:
     }
 
 
+def _build_actual_result_lookup_dry_run_preview(limit_value=None) -> dict:
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+
+    try:
+        preview_limit = int(limit_value) if limit_value is not None else 5
+    except Exception:
+        preview_limit = 5
+    preview_limit = max(1, min(preview_limit, 10))
+
+    required_fields = [
+        "fight_name",
+        "predicted_winner",
+        "event_date",
+        "file_path",
+        "status",
+    ]
+
+    preview_rows = []
+    missing_by_row = []
+    for row in waiting_rows[:preview_limit]:
+        missing_fields = [field for field in required_fields if not _is_known_value(row.get(field))]
+        preview_row = {
+            "fight_name": row.get("fight_name") or "UNKNOWN",
+            "fight_id": row.get("fight_id") if _is_known_value(row.get("fight_id")) else None,
+            "predicted_winner": row.get("predicted_winner") or "UNKNOWN",
+            "event_date": row.get("event_date") or "UNKNOWN",
+            "file_path": row.get("file_path") or "UNKNOWN",
+            "status": row.get("status") or "waiting_for_actual_result",
+            "missing_fields": missing_fields,
+        }
+        preview_rows.append(preview_row)
+        missing_by_row.append({
+            "fight_name": preview_row["fight_name"],
+            "fight_id": preview_row["fight_id"],
+            "missing_fields": missing_fields,
+        })
+
+    return {
+        "ok": True,
+        "mode": "dry_run_preview",
+        "waiting_count": len(waiting_rows),
+        "preview_limit": preview_limit,
+        "preview_rows": preview_rows,
+        "required_fields": required_fields,
+        "missing_by_row": missing_by_row,
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+    }
+
+
 def operator_error_response(message: str, status_code: int = 500, **extra):
     payload = {
         "ok": False,
@@ -944,6 +996,27 @@ def api_accuracy_comparison_summary():
         return jsonify(_build_accuracy_comparison_summary())
     except Exception as e:
         return jsonify({"ok": False, "error": str(e), "compared_results": [], "waiting_for_results": [], "summary_metrics": {}}), 500
+
+
+@app.route("/api/operator/actual-result-lookup/dry-run-preview", methods=["GET"])
+def api_operator_actual_result_lookup_dry_run_preview():
+    try:
+        preview_limit = request.args.get("limit")
+        return jsonify(_build_actual_result_lookup_dry_run_preview(preview_limit))
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "mode": "dry_run_preview",
+            "error": str(e),
+            "waiting_count": 0,
+            "preview_limit": 5,
+            "preview_rows": [],
+            "required_fields": ["fight_name", "predicted_winner", "event_date", "file_path", "status"],
+            "missing_by_row": [],
+            "mutation_performed": False,
+            "external_lookup_performed": False,
+            "bulk_lookup_performed": False,
+        }), 500
 
 
 @app.route("/api/accuracy/signal-breakdown", methods=["GET"])
