@@ -10,6 +10,41 @@ from ai_risa_report_renderer import render_markdown, _resolve_visual_slot
 from report_render_assets import VISUAL_SLOT_CONFIG, AI_RISA_VISUAL_THEME
 from report_visual_asset_producer import build_visual_manifest, get_fixture_id, get_manifest_path
 
+# QA content scanning helpers — scan only human-facing values, never raw metadata keys.
+_QA_EXCLUDED_EXACT_KEYS = frozenset({
+    "fight_id", "source_path", "debug", "raw", "fixture", "internal",
+})
+_QA_EXCLUDED_KEY_SUFFIXES = ("_id",)
+_QA_EXCLUDED_KEY_PREFIXES = ("debug_", "trace_", "internal_")
+
+
+def _qa_content_text(content):
+    """Return a flat string of human-facing text for QA token scanning.
+
+    For dict content: recurse into values only for display-safe keys.
+    Metadata keys (ending in _id, or in the excluded sets) are skipped so
+    that internal field names like fighter_a_id never appear in the scan.
+    For list/other content: stringify normally.
+    """
+    if content is None:
+        return ""
+    if isinstance(content, dict):
+        parts = []
+        for k, v in content.items():
+            ks = str(k)
+            if ks in _QA_EXCLUDED_EXACT_KEYS:
+                continue
+            if any(ks.endswith(suf) for suf in _QA_EXCLUDED_KEY_SUFFIXES):
+                continue
+            if any(ks.startswith(pre) for pre in _QA_EXCLUDED_KEY_PREFIXES):
+                continue
+            parts.append(_qa_content_text(v))
+        return " ".join(parts)
+    if isinstance(content, list):
+        return " ".join(_qa_content_text(item) for item in content)
+    return str(content)
+
+
 def export_report(report_payload, out_path=None, fmt="pdf"):
     # QA validation step
     def _qa_check(payload):
@@ -28,7 +63,7 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
                 expected_fighters = [x.strip().lower() for x in fighters_str.split(" vs ")]
         for sec in required_sections:
             s = section_map.get(sec)
-            content = str(s["content"]) if s and s.get("content") is not None else ""
+            content = _qa_content_text(s.get("content")) if s else ""
             # Blank/missing
             if not s or not s.get("content") or content.strip() in ("", "None", "(No data)"):
                 errors.append(f"Section '{sec}' is blank or missing.")
