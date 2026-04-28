@@ -1,0 +1,2893 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ dashboard_title or "AI-RISA Local Operator Dashboard" }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f7fb;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto 40px auto;
+            padding: 0 20px;
+        }
+        .panel-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            margin-bottom: 36px;
+            border-left: 7px solid #ccc;
+            padding: 0 0 18px 0;
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+        }
+        .panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 20px 28px 12px 28px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafbfc;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .panel-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            color: #2d2d2d;
+            flex: 1 1 auto;
+        }
+        .panel-header .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 18px;
+        }
+        .panel-header button {
+            background: #f3f3f7;
+            color: #333;
+            border: 1px solid #d0d0d7;
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0;
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .panel-header button:hover {
+            background: #e6e6f2;
+            border-color: #b0b0c7;
+        }
+        .panel-header input[type="text"] {
+            border: 1px solid #d0d0d7;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 14px;
+            margin: 0;
+            background: #fff;
+        }
+        .panel-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .panel-table th, .panel-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+        }
+        .panel-table th {
+            background: #f6f7fb;
+            font-weight: 600;
+            color: #444;
+        }
+        .panel-row {
+            padding: 10px 28px;
+            font-size: 15px;
+        }
+        .error-card {
+            color: #a80000;
+            background: #fff0f0;
+            border: 1px solid #f5c2c7;
+            border-radius: 7px;
+            margin: 14px 28px 0 28px;
+            padding: 12px 18px;
+            font-size: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #e6e6f2;
+            color: #4a4a7a;
+            margin-left: 8px;
+        }
+        .panel-body {
+            padding: 16px 28px 0 28px;
+            flex: 1 1 auto;
+        }
+        .panel-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .panel-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .panel-list li:last-child {
+            border-bottom: none;
+        }
+        label {
+            font-weight: 500;
+            color: #555;
+            margin-right: 8px;
+        }
+        .phase1-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0 14px 0;
+        }
+        .phase1-controls button {
+            background: #eef3f8;
+            border: 1px solid #c5d2df;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .phase1-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+        }
+        .phase1-box {
+            border: 1px solid #e5e8ef;
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 100px;
+            background: #fafcff;
+        }
+        .phase1-box h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #234;
+        }
+        .phase1-status {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .phase1-primary {
+            border-left-color: #1d4f91;
+            box-shadow: 0 6px 24px rgba(23, 59, 110, 0.16);
+        }
+        .phase1-primary .panel-header {
+            background: #f3f8ff;
+        }
+        .phase1-primary .panel-body {
+            padding-top: 12px;
+        }
+        .phase1-toolbar-shell {
+            position: sticky;
+            top: 8px;
+            z-index: 5;
+            background: #ffffff;
+            border: 1px solid #d8e4f2;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(17, 55, 107, 0.08);
+        }
+        .phase1-toolbar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #2c4b72;
+            margin: 0 0 6px 0;
+        }
+        .phase1-toolbar {
+            display: grid;
+            grid-template-columns: minmax(160px, 210px) 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+        .phase1-filter-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .phase1-filter-block label {
+            margin-right: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: #314b68;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        #phase1-sport-filter {
+            border: 1px solid #c7d6e8;
+            border-radius: 7px;
+            padding: 7px 9px;
+            font-size: 13px;
+            background: #fbfdff;
+        }
+        .phase1-controls {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(165px, 1fr));
+            gap: 8px;
+            margin: 0;
+        }
+        .phase1-controls button {
+            width: 100%;
+            min-height: 34px;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #eef4fb;
+            border: 1px solid #c3d3e6;
+            border-radius: 7px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .phase1-controls button:hover {
+            background: #e2edf9;
+            border-color: #9cb9d9;
+        }
+        .phase1-status-banner {
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            background: #f7fbff;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+        }
+        .phase1-status-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4a6281;
+            margin-bottom: 4px;
+        }
+        .phase1-status {
+            font-size: 13px;
+            color: #2d4058;
+            margin: 0;
+            min-height: 18px;
+        }
+        .phase1-data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+            width: 100%;
+        }
+        .phase1-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-width: 0;
+        }
+        .phase1-box {
+            border: 1px solid #dde7f2;
+            border-radius: 9px;
+            background: #fcfdff;
+            min-height: 0;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+        .phase1-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #476288;
+            margin: 0 0 6px 0;
+        }
+        .phase1-box h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #213753;
+        }
+        .phase1-table-shell {
+            min-height: 170px;
+            max-height: 260px;
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid #e8eef6;
+            border-radius: 7px;
+            background: #fff;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .phase1-table-shell .panel-table {
+            margin-top: 0;
+            font-size: 12px;
+            table-layout: fixed;
+            width: 100%;
+        }
+        .phase1-table-shell .panel-table th,
+        .phase1-table-shell .panel-table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .phase1-table-shell .panel-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #eef4fb;
+        }
+        .phase1-empty {
+            color: #778397;
+            font-size: 13px;
+            padding: 10px;
+        }
+        .group-shell {
+            margin-bottom: 18px;
+        }
+        .group-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #223;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .legacy-monitoring-shell {
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+        .dashboard-summary-shell {
+            margin: 12px 0 20px 0;
+            text-align: left !important;
+        }
+        .dashboard-summary-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #12233d 0%, #1d3e66 100%);
+            border-radius: 14px;
+            color: #f5f9ff;
+            box-shadow: 0 6px 18px rgba(18, 35, 61, 0.18);
+            margin-bottom: 12px;
+        }
+        .dashboard-summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+        .dashboard-summary-subtitle {
+            font-size: 12px;
+            color: #d6e5fb;
+            margin: 0;
+        }
+        .dashboard-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .dashboard-summary-card {
+            background: #ffffff;
+            border: 1px solid #dce6f3;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 8px rgba(17, 55, 107, 0.06);
+        }
+        .dashboard-summary-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #58708f;
+            margin-bottom: 6px;
+        }
+        .dashboard-summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1c314a;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+        .dashboard-summary-note {
+            font-size: 12px;
+            color: #5b6674;
+            line-height: 1.35;
+        }
+        .dashboard-summary-value.is-good {
+            color: #107c10;
+        }
+        .dashboard-summary-value.is-warn {
+            color: #a15c00;
+        }
+        .dashboard-summary-value.is-bad {
+            color: #a80000;
+        }
+        .dashboard-fold {
+            border: 1px solid #dde7f2;
+            border-radius: 12px;
+            background: #fff;
+            margin-bottom: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(17, 55, 107, 0.05);
+        }
+        .dashboard-fold > summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            list-style: none;
+            padding: 12px 16px;
+            font-weight: 700;
+            color: #213753;
+            background: #f8fbff;
+        }
+        .dashboard-fold > summary::-webkit-details-marker {
+            display: none;
+        }
+        .dashboard-fold-note {
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            text-align: right;
+        }
+        .dashboard-fold-content {
+            padding: 14px 16px 2px 16px;
+        }
+        .dashboard-fold-content .panel-card {
+            margin-bottom: 16px;
+        }
+        .dashboard-fold-content .panel-card:last-child {
+            margin-bottom: 8px;
+        }
+        .operator-section-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px 0;
+        }
+        .operator-section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef4fb;
+            color: #2f527a;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .legacy-monitoring-shell > summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: #2d3f58;
+            margin-bottom: 8px;
+        }
+        .chat-panel {
+            border: 1px solid #e4e8f0;
+            border-radius: 8px;
+            background: #fbfcff;
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .chat-bubble-wrap {
+            margin: 6px 0;
+            display: flex;
+        }
+        .chat-bubble-wrap.user {
+            justify-content: flex-end;
+        }
+        .chat-bubble-wrap.assistant {
+            justify-content: flex-start;
+        }
+        .chat-bubble {
+            display: inline-block;
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.35;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            white-space: pre-wrap;
+        }
+        .chat-bubble.user {
+            background: #e9f2ff;
+            color: #12407c;
+        }
+        .chat-bubble.assistant {
+            background: #f3f5f8;
+            color: #2d2d2d;
+        }
+        .chat-meta {
+            font-size: 11px;
+            color: #6f7885;
+            margin-top: 2px;
+        }
+        .chat-status {
+            color: #2d5f2d;
+            font-size: 13px;
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+        .panel-table tbody tr:nth-child(even) {
+            background: #fbfcff;
+        }
+                .panel-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                    font-size: 14px;
+                }
+                .panel-table th, .panel-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #f0f0f0;
+                    text-align: left;
+                }
+                .panel-table th {
+                    background: #f6f7fb;
+                    font-weight: 600;
+                    color: #444;
+                }
+                .panel-row {
+                    padding: 10px 28px;
+                    font-size: 15px;
+                }
+                .error-card {
+                    color: #a80000;
+                    background: #fff0f0;
+                    border: 1px solid #f5c2c7;
+                    border-radius: 7px;
+                    margin: 14px 28px 0 28px;
+                    padding: 12px 18px;
+                    font-size: 15px;
+                }
+                .badge {
+                    display: inline-block;
+                    padding: 2px 10px;
+                    border-radius: 12px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    background: #e6e6f2;
+                    color: #4a4a7a;
+                    margin-left: 8px;
+                }
+                .panel-body {
+                    padding: 16px 28px 0 28px;
+                    flex: 1 1 auto;
+                }
+                .panel-list {
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                }
+                .panel-list li {
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                .panel-list li:last-child {
+                    border-bottom: none;
+                }
+                label {
+                    font-weight: 500;
+                    color: #555;
+                    margin-right: 8px;
+                }
+                .badge-critical { background: #d32f2f; }
+                .badge-high { background: #ff9800; }
+                .badge-medium { background: #1976d2; }
+                .badge-low { background: #388e3c; }
+                .badge-quiet { background: #888; }
+                @media (max-width: 1100px) {
+                    .phase1-controls {
+                        grid-template-columns: repeat(3, minmax(140px, 1fr));
+                    }
+                }
+                @media (max-width: 780px) {
+                    .phase1-toolbar {
+                        grid-template-columns: 1fr;
+                    }
+                    .phase1-controls {
+                        grid-template-columns: repeat(2, minmax(140px, 1fr));
+                    }
+                    .phase1-data-grid {
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                    }
+                    .phase1-toolbar-shell {
+                        position: static;
+                    }
+                    .dashboard-summary-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
+                }
+                @media (max-width: 700px) {
+                    .dashboard-container { padding: 0 2px; }
+                    .panel-card { padding: 10px 4px; }
+                    .phase1-controls {
+                        grid-template-columns: 1fr;
+                    }
+                    .phase1-table-shell {
+                        max-height: 185px;
+                    }
+                    .dashboard-summary-banner {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    .dashboard-summary-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .dashboard-fold > summary {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    .dashboard-fold-note {
+                        text-align: left;
+                    }
+                }
+                .advanced-tools-wrapper {
+                    margin-bottom: 24px;
+                    border: 1px solid #d0d5dd;
+                    border-radius: 10px;
+                    background: #f7f8fa;
+                }
+                .advanced-tools-wrapper > summary.advanced-tools-summary {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 14px 20px;
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: #3a4255;
+                    cursor: pointer;
+                    list-style: none;
+                    border-radius: 10px;
+                    user-select: none;
+                }
+                .advanced-tools-wrapper > summary.advanced-tools-summary::-webkit-details-marker { display:none; }
+                .advanced-tools-wrapper > summary.advanced-tools-summary::before {
+                    content: '\25B6';
+                    font-size: 11px;
+                    color: #7a8499;
+                    transition: transform 0.15s;
+                }
+                .advanced-tools-wrapper[open] > summary.advanced-tools-summary::before {
+                    transform: rotate(90deg);
+                }
+                .advanced-tools-note {
+                    font-size: 12px;
+                    font-weight: 400;
+                    color: #8a90a0;
+                    margin-left: 4px;
+                }
+                .advanced-tools-wrapper > summary.advanced-tools-summary:hover {
+                    background: #eef0f5;
+                    border-radius: 10px;
+                }
+                .advanced-tools-inner-fold {
+                    margin: 8px 0;
+                    border: 1px solid #e0e4ec;
+                    border-radius: 8px;
+                    background: #fbfcfd;
+                }
+                .advanced-tools-inner-fold > summary {
+                    padding: 9px 14px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #4a5568;
+                    cursor: pointer;
+                    list-style: none;
+                }
+                .advanced-tools-inner-fold > summary::-webkit-details-marker { display:none; }
+                .advanced-tools-inner-fold > summary::before { content: '\25B6  '; font-size:10px; color:#999; }
+                .advanced-tools-inner-fold[open] > summary::before { content: '\25BC  '; font-size:10px; color:#999; }
+                .advanced-tools-inner-fold > .inner-fold-content { padding: 0 4px 4px 4px; }
+            </style>
+        </head>
+        <body>
+            <div class="dashboard-container">
+                <h1>{{ dashboard_title or "AI-RISA Local Operator Dashboard" }}</h1>
+                <!-- Operator Mode panel — always at top, not moved by reorganizeLayout -->
+                <section id="operator-mode-panel" class="panel-card" style="border-left-color:#1a4fa0;">
+                    <div class="panel-header" style="background:#f0f4ff;">
+                        <h2 style="color:#1a4fa0;">AI-RISA Command Center</h2>
+                    </div>
+                    <div class="panel-body" style="padding:20px 28px;">
+                        <p style="margin:0 0 10px;color:#555;font-size:14px;">Type a plain-English command. AI-RISA will route it to a safe workflow automatically.</p>
+                        <textarea id="operator-mode-input" rows="2" style="width:100%;box-sizing:border-box;font-size:14px;padding:10px 12px;border:1px solid #b0b8cc;border-radius:8px;resize:vertical;font-family:inherit;" placeholder="Tell AI-RISA what you want to do..."></textarea>
+                        <div style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button id="operator-mode-run-btn" style="padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#1a4fa0;color:#fff;cursor:pointer;">Run Safe Check</button>
+                            <button id="operator-mode-approve-btn" style="display:none;padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#1a7a1a;color:#fff;cursor:pointer;">Approve Planned Action</button>
+                            <button id="operator-mode-cancel-btn" style="display:none;padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#f5f5f5;color:#555;cursor:pointer;">Cancel</button>
+                        </div>
+                        <div style="margin-top:10px;font-size:12px;color:#888;">
+                            <strong>Examples:</strong>
+                            <span style="display:inline-flex;flex-wrap:wrap;gap:4px;margin-left:4px;">
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">check health</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">run accuracy calibration</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">show backfill status</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">show unresolved fights</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">build Jafel Filho vs Cody Durden report</code>
+                                <code class="om-example" style="background:#f0f0f0;padding:1px 6px;border-radius:3px;cursor:pointer;">apply backfill</code>
+                            </span>
+                        </div>
+                        <div id="operator-mode-output" style="margin-top:14px;font-size:14px;min-height:10px;"></div>
+                    </div>
+                </section>
+                <section id="web-trigger-scout-panel" class="panel-card" style="border-left-color:#0b6b57;">
+                    <div class="panel-header" style="background:#eefaf6;">
+                        <h2 style="color:#0b6b57;">Find Fight Results</h2>
+                    </div>
+                    <div class="panel-body" style="padding:20px 28px;">
+                        <p style="margin:0 0 10px;color:#555;font-size:14px;">Read-only web scouting for fight/event triggers and result updates.</p>
+                        <textarea id="web-trigger-scout-input" rows="2" style="width:100%;box-sizing:border-box;font-size:14px;padding:10px 12px;border:1px solid #b0cfc7;border-radius:8px;resize:vertical;font-family:inherit;" placeholder="Search web for triggers, fights, events, and results..."></textarea>
+                        <div style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button class="wts-quick-btn" data-query="Search official results" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Search Official Results</button>
+                            <button class="wts-quick-btn" data-query="Check upcoming events" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Search Upcoming Events</button>
+                            <button class="wts-quick-btn" data-query="Check unresolved fights" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Unresolved Fights</button>
+                            <button class="wts-quick-btn" data-query="Check identity conflicts" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Identity Conflicts</button>
+                            <button class="wts-quick-btn" data-query="Check official event pages" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Official Event Pages</button>
+                            <button id="web-trigger-scout-run-btn" style="padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#0b6b57;color:#fff;cursor:pointer;">Run Web Trigger Scout</button>
+                        </div>
+                        <div id="web-trigger-scout-status" style="margin-top:10px;font-size:13px;color:#0b6b57;min-height:20px;"></div>
+                        <div id="web-trigger-scout-guardrails" style="margin-top:4px;font-size:12px;color:#666;"></div>
+                        <div id="web-trigger-scout-results" style="margin-top:12px;overflow:auto;"></div>
+                    </div>
+                </section>
+                <div id="backend-status-indicator" style="margin:12px 0 8px 0; text-align:center;"></div>
+                <details id="advanced-tools-panel" class="advanced-tools-wrapper">
+                    <summary class="advanced-tools-summary">Advanced Tools <span class="advanced-tools-note">Fight schedule, queue tools, diagnostics, and monitoring &mdash; click to expand</span></summary>
+                <!-- Panels -->
+                <section class="panel-card" style="border-left-color:#a800a8;">
+                    <div class="panel-header">
+                        <h2>Anomaly Explanation</h2>
+                        <button id="refresh-anomaly-explanation-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="anomaly-explanation-panel" style="display:none;"></div>
+                        <div id="anomaly-explanation-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#228B22;">
+                    <div class="panel-header">
+                        <h2>Response Matrix</h2>
+                        <button id="refresh-response-matrix-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="response-matrix-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#008080;">
+                    <div class="panel-header">
+                        <h2>Forecast</h2>
+                        <button id="refresh-forecast-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="forecast-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#d2691e;">
+                    <div class="panel-header">
+                        <h2>Drift</h2>
+                        <button id="refresh-drift-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="drift-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Integrity</h2>
+                        <button id="refresh-integrity-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="integrity-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#444;">
+                    <div class="panel-header">
+                        <h2>Control Summary</h2>
+                        <button id="refresh-control-summary-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="control-summary-content"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#6a329f;">
+                    <div class="panel-header">
+                        <h2>Portfolio</h2>
+                        <button id="refresh-portfolio-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="portfolio-summary"></div>
+                        <div id="portfolio-bands"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#6a329f;">
+                    <div class="panel-header">
+                        <h2>Casefile</h2>
+                        <div class="panel-actions">
+                            <input id="casefile-event-id" type="text" placeholder="Enter event id" style="width:180px;" />
+                            <button id="load-casefile-btn">Load Casefile</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="casefile-panel" style="display:none;"></div>
+                        <div id="casefile-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#228B22;">
+                    <div class="panel-header">
+                        <h2>Review Queue</h2>
+                        <button id="refresh-review-queue-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="review-queue-panel" style="display:none;"></div>
+                        <div id="review-queue-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Briefing</h2>
+                        <button id="refresh-briefing-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="briefing-panel" style="display:none;"></div>
+                        <div id="briefing-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#b8860b;">
+                    <div class="panel-header">
+                        <h2>Digest</h2>
+                        <button id="refresh-digest-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="digest-panel" style="display:none;"></div>
+                        <div id="digest-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#0078d4;">
+                    <div class="panel-header">
+                        <h2>Watchlist</h2>
+                        <button id="refresh-watchlist-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="watchlist-panel" style="display:none;"></div>
+                        <div id="watchlist-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#a80000;">
+                    <div class="panel-header">
+                        <h2>Escalations</h2>
+                        <button id="refresh-escalation-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="escalation-panel" style="display:none;"></div>
+                        <div id="escalation-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#444;">
+                    <div class="panel-header">
+                        <h2>Queue</h2>
+                        <button id="refresh-queue-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="queue-panel" style="display:none;"></div>
+                        <div id="queue-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                <section class="panel-card phase1-primary" style="border-left-color:#2e5fa0;">
+                    <div class="panel-header">
+                        <h2>Phase 1 Operations</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="phase1-toolbar-shell">
+                            <div class="phase1-toolbar-title">Controls</div>
+                            <div class="phase1-toolbar">
+                                <div class="phase1-filter-block">
+                                    <label for="phase1-sport-filter">Sport Filter</label>
+                                    <select id="phase1-sport-filter">
+                                        <option value="all">All</option>
+                                        <option value="mma">MMA</option>
+                                        <option value="boxing">Boxing</option>
+                                        <option value="kickboxing">Kickboxing</option>
+                                        <option value="muay thai">Muay Thai</option>
+                                    </select>
+                                </div>
+                                <div class="phase1-controls">
+                                    <button id="phase1-scan-upcoming-btn">Scan Upcoming Events</button>
+                                    <button id="phase1-freeze-card-btn">Freeze Approved Card</button>
+                                    <button id="phase1-create-matchups-btn">Create Matchups</button>
+                                    <button id="phase1-run-main-btn">Run Main Event Report</button>
+                                    <button id="phase1-run-full-btn">Run Full Card Reports</button>
+                                    <button id="phase1-enter-result-btn">Enter Actual Result</button>
+                                    <button id="phase1-score-accuracy-btn">Score Accuracy</button>
+                                    <button id="phase1-open-ledger-btn">Open Accuracy Ledger</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="phase1-status-banner">
+                            <div class="phase1-status-label">Status</div>
+                            <div class="phase1-status" id="phase1-status">Ready.</div>
+                        </div>
+                        <div class="phase1-data-grid">
+                            <div class="phase1-column">
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Queues</div>
+                                    <h4>Upcoming Events</h4>
+                                    <div id="phase1-upcoming-events" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Queues</div>
+                                    <h4>Event Review Queue</h4>
+                                    <div id="phase1-event-review-queue" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                            </div>
+                            <div class="phase1-column">
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Runs</div>
+                                    <h4>Fight Run Queue</h4>
+                                    <div id="phase1-fight-run-queue" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                                <div class="phase1-box">
+                                    <div class="phase1-subtitle">Results</div>
+                                    <h4>Results Ledger</h4>
+                                    <div id="phase1-results-ledger" class="phase1-table-shell">No data loaded.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="panel-card" style="border-left-color:#005fa3;">
+                    <div class="panel-header">
+                        <h2>Status</h2>
+                        <button id="refresh-status-btn">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="status-panel" style="display:none;"></div>
+                        <div id="status-error" class="error-card" style="display:none;"></div>
+                    </div>
+                </section>
+                </details><!-- /advanced-tools-panel -->
+                <section class="panel-card" style="border-left-color:#0078d4;">
+                    <div class="panel-header">
+                        <h2>Build a Report &amp; Check Accuracy</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;margin-bottom:6px;font-weight:700;">Matchup Input</label>
+                            <input id="operator-matchup-input" type="text" placeholder="Type Fighter A vs Fighter B" style="width:100%;padding:10px 12px;font-size:15px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box;" />
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin-bottom:16px;">
+                            <button id="operator-analyze-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #0078d4;background:#e8f4fd;color:#0078d4;cursor:pointer;">Analyze + Build Premium Report</button>
+                            <button id="operator-compare-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Compare With Real Result</button>
+                        </div>
+                        <div style="font-size:13px;color:#4b5563;margin:-6px 0 12px 0;">
+                            This panel uses report-scoring data only. Accuracy-ledger calibration is shown in the Model Calibration section below.
+                        </div>
+                        <div id="operator-rolling-rate" style="background:#f0f8ff;border:1px solid #d0e8f2;border-radius:6px;padding:10px;margin-bottom:12px;font-size:14px;display:none;">
+                            <strong>Rolling AI-RISA Success Rate:</strong> <span id="operator-rolling-rate-value">--</span>%
+                        </div>
+                        <details style="margin-bottom:12px;border:1px solid #eadfd4;border-radius:8px;background:#fffaf6;">
+                            <summary style="cursor:pointer;padding:10px 12px;font-size:13px;font-weight:700;color:#7a3f00;">Advanced / Report-Scoring Calibration</summary>
+                            <div style="padding:10px 12px 12px 12px;">
+                                <div id="operator-calibration-availability-note" style="font-size:12px;color:#6b7280;margin-bottom:10px;">Report-scoring calibration is unavailable until report outcomes are manually scored.</div>
+                                <button id="operator-calibrate-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #d83b01;background:#fde7e1;color:#d83b01;cursor:pointer;">Run Report-Scoring Calibration Review</button>
+                            </div>
+                        </details>
+                        <div id="operator-status" style="color:#2d5f2d;font-size:14px;margin-bottom:12px;min-height:20px;"></div>
+                        <div id="operator-result" style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:12px;display:none;max-height:400px;overflow-y:auto;font-size:13px;"></div>
+                        <details class="advanced-tools-inner-fold" style="margin-top:12px;">
+                            <summary>Waiting For Results &amp; Detail Tables</summary>
+                            <div class="inner-fold-content">
+                        <div class="phase1-box" style="margin-top:8px;">
+                            <div class="phase1-subtitle">Queue</div>
+                            <h4>Waiting For Real Results</h4>
+                            <div id="operator-waiting-results-queue" class="phase1-table-shell">No rows waiting for results.</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:8px;" id="signal-gap-breakdown-panel">
+                            <div class="phase1-subtitle">Signal Intelligence</div>
+                            <h4>Signal Gap Accuracy Breakdown</h4>
+                            <div id="signal-gap-breakdown-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:8px;" id="method-round-reliability-panel">
+                            <div class="phase1-subtitle">Model Reliability</div>
+                            <h4>Method &amp; Round Reliability</h4>
+                            <div id="method-round-reliability-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:8px;" id="stoppage-finish-tendency-panel">
+                            <div class="phase1-subtitle">Model Reliability</div>
+                            <h4>Stoppage / Finish Tendency Accuracy</h4>
+                            <div id="stoppage-finish-tendency-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                            </div>
+                        </details>
+                        <div class="phase1-box" style="margin-top:12px;" id="confidence-calibration-panel">
+                            <div class="phase1-subtitle">Model Calibration</div>
+                            <h4>Confidence Calibration</h4>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+                                <button id="accuracy-calibration-review-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #5c2d91;background:#f4ecff;color:#5c2d91;cursor:pointer;">Run Accuracy-Ledger Calibration Review</button>
+                                <span style="font-size:12px;color:#4b5563;">Report-scoring calibration uses manually scored report outcomes. Accuracy-ledger calibration uses resolved prediction-vs-result comparisons.</span>
+                            </div>
+                            <div id="accuracy-calibration-review-content" class="phase1-table-shell" style="margin-bottom:12px;">Run the accuracy-ledger review to summarize resolved prediction-vs-result calibration.</div>
+                            <div id="confidence-calibration-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <details class="advanced-tools-inner-fold" style="margin-top:12px;">
+                            <summary>Failure Patterns, Signal Coverage &amp; Data Gap Checker</summary>
+                            <div class="inner-fold-content">
+                        <div class="phase1-box" style="margin-top:8px;" id="failure-patterns-panel">
+                            <div class="phase1-subtitle">Diagnostic Intelligence</div>
+                            <h4>Failure Patterns</h4>
+                            <div id="failure-patterns-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:8px;" id="signal-coverage-panel">
+                            <div class="phase1-subtitle">Data Quality</div>
+                            <h4>Signal Coverage</h4>
+                            <div id="signal-coverage-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                        <div class="phase1-box" style="margin-top:8px;" id="structural-backfill-planner-panel">
+                            <div class="phase1-subtitle">Data Quality</div>
+                            <h4>Data Gap Checker</h4>
+                            <div id="structural-backfill-planner-content" class="phase1-table-shell">Loading…</div>
+                        </div>
+                            </div>
+                        </details>
+                        <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
+                    </div>
+                </section>
+                <details id="chat-panel-wrapper" class="advanced-tools-wrapper" style="margin-top:8px;">
+                    <summary class="advanced-tools-summary">Chat <span class="advanced-tools-note">Support chat &mdash; click to expand</span></summary>
+                <section class="panel-card" style="border-left-color:#888;">
+                    <div class="panel-header">
+                        <h2>Chat</h2>
+                        <div class="panel-actions">
+                            <button id="chat-refresh-btn">Refresh Chat</button>
+                            <button id="chat-clear-btn">Clear Chat</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="chat-status" class="chat-status"></div>
+                        <div id="chat-panel" class="chat-panel" style="display:block;"></div>
+                        <div style="display:flex;gap:8px;margin-top:12px;">
+                            <input id="chat-input" type="text" placeholder="Type a message..." style="flex:1;padding:8px 12px;font-size:15px;border-radius:6px;border:1px solid #ccc;" />
+                            <button id="chat-send-btn" style="padding:8px 18px;font-size:15px;border-radius:6px;border:1px solid #888;background:#f3f3f7;cursor:pointer;">Send</button>
+                        </div>
+                        <div id="chat-error" class="error-card" style="display:none;margin-top:10px;"></div>
+                    </div>
+                </section>
+                </details><!-- /chat-panel-wrapper -->
+            </div>
+            <script>
+            // --- Chat Panel Logic ---
+            const chatPanel = document.getElementById('chat-panel');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatRefreshBtn = document.getElementById('chat-refresh-btn');
+            const chatClearBtn = document.getElementById('chat-clear-btn');
+            const chatStatus = document.getElementById('chat-status');
+            const chatError = document.getElementById('chat-error');
+
+            function setChatStatus(msg, isError=false) {
+                if (!chatStatus) return;
+                chatStatus.textContent = msg || '';
+                chatStatus.style.color = isError ? '#a80000' : '#2d5f2d';
+            }
+
+            function collapseRepeatedMessages(messages) {
+                if (!Array.isArray(messages) || messages.length === 0) return [];
+                const out = [];
+                for (const msg of messages) {
+                    const prev = out[out.length - 1];
+                    const currentContent = String((msg && msg.content) || '').trim();
+                    const prevContent = prev ? String((prev.msg && prev.msg.content) || '').trim() : '';
+                    const isLikelyHelp = currentContent.toLowerCase().includes('available commands') || currentContent.toLowerCase().includes('try:') || currentContent.toLowerCase().includes('help');
+                    if (prev && prev.msg.role === msg.role && prevContent === currentContent && isLikelyHelp) {
+                        prev.count += 1;
+                    } else {
+                        out.push({ msg, count: 1 });
+                    }
+                }
+                return out;
+            }
+
+            function renderChat(messages) {
+                chatPanel.innerHTML = '';
+                if (!messages || !messages.length) {
+                    chatPanel.innerHTML = '<div style="color:#888;font-size:14px;">No chat history yet.</div>';
+                    return;
+                }
+                const grouped = collapseRepeatedMessages(messages);
+                for (const item of grouped) {
+                    const msg = item.msg;
+                    const role = msg.role === 'user' ? 'user' : 'assistant';
+                    const countBadge = item.count > 1 ? ` <span class="chat-meta">(repeated ${item.count}x)</span>` : '';
+                    const safeContent = String(msg.content || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+                    const bubble = `
+                        <div class="chat-bubble-wrap ${role}">
+                            <div>
+                                <div class="chat-bubble ${role}">${safeContent}</div>
+                                <div class="chat-meta">${role === 'user' ? 'You' : 'Assistant'}${countBadge}</div>
+                            </div>
+                        </div>`;
+                    chatPanel.innerHTML += bubble;
+                }
+                chatPanel.scrollTop = chatPanel.scrollHeight;
+            }
+
+            async function loadChatHistory() {
+                chatError.style.display = 'none';
+                try {
+                    const resp = await fetch('/chat/history');
+                    if (!resp.ok) throw new Error('Failed to load chat history');
+                    const data = await resp.json();
+                    setChatStatus('');
+                    renderChat(data.history || data);
+                } catch (e) {
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not load chat history.';
+                    setChatStatus('Could not refresh chat.', true);
+                }
+            }
+
+            async function clearChatHistory() {
+                chatError.style.display = 'none';
+                setChatStatus('Clearing chat...');
+                try {
+                    const resp = await fetch('/chat/clear', { method: 'POST' });
+                    const data = await resp.json();
+                    if (!resp.ok || data.ok === false) {
+                        throw new Error(data.error || 'Failed to clear chat');
+                    }
+                    await loadChatHistory();
+                    setChatStatus(data.status || 'Chat cleared.');
+                } catch (e) {
+                    setChatStatus('Could not clear chat.', true);
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not clear chat history.';
+                }
+            }
+
+            async function sendChatMessage() {
+                const msg = chatInput.value.trim();
+                if (!msg) return;
+                chatSendBtn.disabled = true;
+                chatError.style.display = 'none';
+                try {
+                    const resp = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: msg })
+                    });
+                    if (!resp.ok) throw new Error('Failed to send message');
+                    chatInput.value = '';
+                    await loadChatHistory();
+                    setChatStatus('');
+                } catch (e) {
+                    chatError.style.display = 'block';
+                    chatError.textContent = 'Could not send message.';
+                    setChatStatus('Could not send message.', true);
+                } finally {
+                    chatSendBtn.disabled = false;
+                }
+            }
+
+            chatSendBtn && (chatSendBtn.onclick = sendChatMessage);
+            chatRefreshBtn && (chatRefreshBtn.onclick = loadChatHistory);
+            chatClearBtn && (chatClearBtn.onclick = clearChatHistory);
+            chatInput && chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+            window.addEventListener('DOMContentLoaded', loadChatHistory);
+
+            function makeGroup(title) {
+                const group = document.createElement('section');
+                group.className = 'group-shell';
+                const h = document.createElement('h3');
+                h.className = 'group-title';
+                h.textContent = title;
+                group.appendChild(h);
+                return group;
+            }
+
+            function createFold(title, note = '', open = false) {
+                const details = document.createElement('details');
+                details.className = 'dashboard-fold';
+                details.open = open;
+
+                const summary = document.createElement('summary');
+                const label = document.createElement('span');
+                label.textContent = title;
+                summary.appendChild(label);
+
+                if (note) {
+                    const noteEl = document.createElement('span');
+                    noteEl.className = 'dashboard-fold-note';
+                    noteEl.textContent = note;
+                    summary.appendChild(noteEl);
+                }
+
+                const content = document.createElement('div');
+                content.className = 'dashboard-fold-content';
+
+                details.appendChild(summary);
+                details.appendChild(content);
+                return { details, content };
+            }
+
+            function findCardByTitle(title) {
+                return Array.from(document.querySelectorAll('.panel-card')).find((card) => {
+                    const h2 = card.querySelector('.panel-header h2');
+                    return h2 && h2.textContent.trim() === title;
+                });
+            }
+
+            function moveCardByTitle(title, target) {
+                const card = findCardByTitle(title);
+                if (card && target) target.appendChild(card);
+            }
+
+            function setupDashboardSummary(anchor) {
+                if (!anchor || anchor.dataset.summaryReady === 'true') return;
+                anchor.dataset.summaryReady = 'true';
+                anchor.classList.add('dashboard-summary-shell');
+                anchor.innerHTML = `
+                    <div class="dashboard-summary-banner">
+                        <div>
+                            <div class="dashboard-summary-title">System Health</div>
+                            <div class="dashboard-summary-subtitle">Live system status — health, accuracy, and guardrail checks.</div>
+                        </div>
+                        <div class="operator-section-tags">
+                            <span class="operator-section-tag">Health</span>
+                            <span class="operator-section-tag">Accuracy</span>
+                            <span class="operator-section-tag">Backfill Guardrail</span>
+                            <span class="operator-section-tag">Queue</span>
+                        </div>
+                    </div>
+                    <div class="dashboard-summary-grid">
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Health Status</div>
+                            <div class="dashboard-summary-value" id="summary-health-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-health-note">Checking dashboard health and endpoint status.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Backfill Guardrail</div>
+                            <div class="dashboard-summary-value" id="summary-backfill-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-backfill-note">Verifying READY_FOR_BACKFILL and planner state.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Accuracy Ledger</div>
+                            <div class="dashboard-summary-value" id="summary-accuracy-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-accuracy-note">Resolved comparison metrics will appear here.</div>
+                        </div>
+                        <div class="dashboard-summary-card">
+                            <div class="dashboard-summary-label">Queue Warning Count</div>
+                            <div class="dashboard-summary-value" id="summary-queue-value">Loading…</div>
+                            <div class="dashboard-summary-note" id="summary-queue-note">Waiting-for-result and unresolved pressure.</div>
+                        </div>
+                    </div>`;
+            }
+
+            async function loadDashboardSummary() {
+                const healthValue = document.getElementById('summary-health-value');
+                const healthNote = document.getElementById('summary-health-note');
+                const backfillValue = document.getElementById('summary-backfill-value');
+                const backfillNote = document.getElementById('summary-backfill-note');
+                const accuracyValue = document.getElementById('summary-accuracy-value');
+                const accuracyNote = document.getElementById('summary-accuracy-note');
+                const queueValue = document.getElementById('summary-queue-value');
+                const queueNote = document.getElementById('summary-queue-note');
+                if (!healthValue || !backfillValue || !accuracyValue || !queueValue) return;
+
+                try {
+                    const [healthResp, comparisonResp, plannerResp] = await Promise.all([
+                        fetch('/api/system/health'),
+                        fetch('/api/accuracy/comparison-summary'),
+                        fetch('/api/accuracy/structural-signal-backfill-planner')
+                    ]);
+                    const [health, comparison, plannerData] = await Promise.all([
+                        healthResp.json(),
+                        comparisonResp.json(),
+                        plannerResp.json()
+                    ]);
+
+                    const isHealthy = Boolean(health.ok);
+                    healthValue.textContent = isHealthy ? 'Online' : 'Degraded';
+                    healthValue.className = `dashboard-summary-value ${isHealthy ? 'is-good' : 'is-bad'}`;
+                    healthNote.textContent = `${health.errors_total || 0} errors. ${Object.keys(health.accuracy_endpoint_status || {}).length} accuracy endpoints checked.`;
+
+                    const planner = plannerData.planner || {};
+                    const counts = (planner.summary || {}).eligibility_counts || {};
+                    const readyForBackfill = counts.READY_FOR_BACKFILL ?? '—';
+                    const isBlocked = Number(readyForBackfill) === 0;
+                    backfillValue.textContent = `READY ${readyForBackfill}`;
+                    backfillValue.className = `dashboard-summary-value ${isBlocked ? 'is-good' : 'is-warn'}`;
+                    backfillNote.textContent = isBlocked
+                        ? `Blocked by guardrail. ${counts.BLOCKED_NEEDS_SOURCE_VALUES || 0} need source values, ${counts.UNRESOLVED_RESULT_PENDING || 0} unresolved.`
+                        : 'Backfill planner reports ready work.';
+
+                    const metrics = comparison.summary_metrics || {};
+                    const totalCompared = Number(metrics.total_compared || 0);
+                    accuracyValue.textContent = `${totalCompared} compared`;
+                    accuracyValue.className = 'dashboard-summary-value';
+                    accuracyNote.textContent = `${metrics.overall_accuracy_pct || 0}% overall accuracy. Winner hits: ${metrics.winner_hits || 0}, misses: ${metrics.winner_misses || 0}.`;
+
+                    const waitingCount = (comparison.waiting_for_results || []).length;
+                    queueValue.textContent = String(waitingCount);
+                    queueValue.className = `dashboard-summary-value ${waitingCount ? 'is-warn' : 'is-good'}`;
+                    queueNote.textContent = waitingCount
+                        ? `${waitingCount} predictions still waiting for resolved results.`
+                        : 'No waiting-for-result pressure right now.';
+                } catch (e) {
+                    healthValue.textContent = 'Unavailable';
+                    healthValue.className = 'dashboard-summary-value is-bad';
+                    healthNote.textContent = `Summary load failed: ${e.message}`;
+                    backfillValue.textContent = 'Unavailable';
+                    accuracyValue.textContent = 'Unavailable';
+                    queueValue.textContent = 'Unavailable';
+                }
+            }
+
+            function reorganizeOperatorWorkflowCard() {
+                const workflowCard = findCardByTitle('Build a Report & Check Accuracy');
+                if (!workflowCard || workflowCard.dataset.cleaned === 'true') return;
+                workflowCard.dataset.cleaned = 'true';
+
+                const panelBody = workflowCard.querySelector('.panel-body');
+                const errorDiv = panelBody.querySelector('#operator-error');
+                if (!panelBody || !errorDiv) return;
+
+                const queueBox = panelBody.querySelector('#operator-waiting-results-queue')?.closest('.phase1-box');
+                const signalGapBox = panelBody.querySelector('#signal-gap-breakdown-panel');
+                const methodRoundBox = panelBody.querySelector('#method-round-reliability-panel');
+                const stoppageBox = panelBody.querySelector('#stoppage-finish-tendency-panel');
+                const confidenceBox = panelBody.querySelector('#confidence-calibration-panel');
+                const failureBox = panelBody.querySelector('#failure-patterns-panel');
+                const signalCoverageBox = panelBody.querySelector('#signal-coverage-panel');
+                const structuralPlannerBox = panelBody.querySelector('#structural-backfill-planner-panel');
+
+                const tags = document.createElement('div');
+                tags.className = 'operator-section-tags';
+                tags.innerHTML = `
+                    <span class="operator-section-tag">Report Builder</span>
+                    <span class="operator-section-tag">Report-Scoring Calibration</span>
+                    <span class="operator-section-tag">Accuracy Ledger</span>
+                    <span class="operator-section-tag">Backfill Guardrail</span>`;
+                panelBody.insertBefore(tags, queueBox || errorDiv);
+
+                const bucketShell = document.createElement('div');
+                bucketShell.className = 'dashboard-buckets';
+                panelBody.insertBefore(bucketShell, errorDiv);
+
+                const accuracyFold = createFold('Accuracy & Calibration', 'Accuracy Ledger and report-scoring calibration stay separate.', true);
+                [signalGapBox, methodRoundBox, stoppageBox, confidenceBox].filter(Boolean).forEach((node) => accuracyFold.content.appendChild(node));
+                bucketShell.appendChild(accuracyFold.details);
+
+                const queueFold = createFold('Fight Schedule', 'Waiting-for-result detail is available on demand.', false);
+                [queueBox].filter(Boolean).forEach((node) => queueFold.content.appendChild(node));
+                bucketShell.appendChild(queueFold.details);
+
+                const qualityFold = createFold('Data Quality / Backfill', 'Coverage and planner tables stay collapsed by default.', false);
+                [signalCoverageBox, structuralPlannerBox].filter(Boolean).forEach((node) => qualityFold.content.appendChild(node));
+                bucketShell.appendChild(qualityFold.details);
+
+                const diagnosticsFold = createFold('System Checks', 'Failure patterns and troubleshooting detail.', false);
+                [failureBox].filter(Boolean).forEach((node) => diagnosticsFold.content.appendChild(node));
+                bucketShell.appendChild(diagnosticsFold.details);
+            }
+
+            function reorganizeLayout() {
+                // Layout is now handled by static HTML <details> wrappers.
+                // This function only sets up the System Health summary cards.
+                const anchor = document.getElementById('backend-status-indicator');
+                if (anchor) setupDashboardSummary(anchor);
+            }
+
+            // --- Dashboard Panel Logic ---
+            // Panel config: id, endpoint, render function
+            const panels = [
+                { id: 'anomaly-explanation-panel', btn: 'refresh-anomaly-explanation-btn', endpoint: '/api/anomalies', render: renderTextPanel },
+                { id: 'response-matrix-content', btn: 'refresh-response-matrix-btn', endpoint: '/api/response-matrix', render: renderTextPanel },
+                { id: 'forecast-content', btn: 'refresh-forecast-btn', endpoint: '/api/forecast', render: renderTextPanel },
+                { id: 'drift-content', btn: 'refresh-drift-btn', endpoint: '/api/drift', render: renderTextPanel },
+                { id: 'integrity-content', btn: 'refresh-integrity-btn', endpoint: '/api/integrity', render: renderTextPanel },
+                { id: 'control-summary-content', btn: 'refresh-control-summary-btn', endpoint: '/api/control-summary', render: renderTextPanel },
+                { id: 'portfolio-summary', btn: 'refresh-portfolio-btn', endpoint: '/api/portfolio', render: renderTextPanel },
+                { id: 'review-queue-panel', btn: 'refresh-review-queue-btn', endpoint: '/api/review-queue', render: renderListPanel },
+                { id: 'briefing-panel', btn: 'refresh-briefing-btn', endpoint: '/api/briefing', render: renderTextPanel },
+                { id: 'digest-panel', btn: 'refresh-digest-btn', endpoint: '/api/digest', render: renderTextPanel },
+                { id: 'watchlist-panel', btn: 'refresh-watchlist-btn', endpoint: '/api/watchlist', render: renderListPanel },
+                { id: 'escalation-panel', btn: 'refresh-escalation-btn', endpoint: '/api/escalations', render: renderListPanel },
+                { id: 'queue-panel', btn: 'refresh-queue-btn', endpoint: '/api/queue', render: renderQueuePanel },
+                { id: 'status-panel', btn: 'refresh-status-btn', endpoint: '/api/status', render: renderStatusPanel }
+            ];
+
+            function renderTextPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                el.innerHTML = typeof data === 'string' ? data : (data && data.text) ? data.text : JSON.stringify(data, null, 2);
+            }
+
+            function renderListPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                if (Array.isArray(data) && data.length) {
+                    el.innerHTML = '<ul class="panel-list">' + data.map(item => `<li>${typeof item === 'string' ? item : JSON.stringify(item)}</li>`).join('') + '</ul>';
+                } else {
+                    el.innerHTML = '<div style="color:#888;font-size:14px;">No items.</div>';
+                }
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
+            }
+
+            function badge(label, value, bg, fg = '#fff') {
+                return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg};">${escapeHtml(label)}: ${escapeHtml(value)}</span>`;
+            }
+
+            function metricOrNotAvailable(value, decimals = 3) {
+                if (value === null || value === undefined || value === '') {
+                    return 'Not available';
+                }
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    return value.toFixed(decimals);
+                }
+                return String(value);
+            }
+
+            async function renderQueuePanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                if (data && data.rows && data.rows.length) {
+                    const observabilityByEvent = {};
+                    await Promise.all(
+                        data.rows.map(async (row) => {
+                            const eventId = row.event_id || row.event_name;
+                            if (!eventId) {
+                                return;
+                            }
+                            try {
+                                const resp = await fetch(`/api/queue/event/${encodeURIComponent(eventId)}/observability`);
+                                observabilityByEvent[eventId] = await resp.json();
+                            } catch (_err) {
+                                observabilityByEvent[eventId] = null;
+                            }
+                        })
+                    );
+
+                    const rowsHtml = data.rows.map((row) => {
+                        const eventId = row.event_id || row.event_name || 'Unknown';
+                        const status = row.status || 'unknown';
+                        const obs = observabilityByEvent[eventId] || {};
+                        const decomposition = obs.decomposition || {};
+                        const adapter = obs.adapter || {};
+                        const intelligence = obs.intelligence || {};
+                        const riskFlags = intelligence.risk_flags || {};
+
+                        const decompositionStatus = decomposition.decomposition_status || 'unavailable';
+                        const discoveredBoutSlots = decomposition.discovered_bout_slots ?? 'n/a';
+                        const inputBoutCount = decomposition.input_bout_count ?? 'n/a';
+                        const completionMode = adapter.completion_mode || 'unavailable';
+                        const fallbackFields = Array.isArray(adapter.fallback_fields) ? adapter.fallback_fields : [];
+                        const winnerSource = adapter.winner_source || 'unavailable';
+                        const signalGap = metricOrNotAvailable(intelligence.signal_gap);
+                        const stoppagePropensity = metricOrNotAvailable(intelligence.stoppage_propensity);
+                        const roundFinishTendency = metricOrNotAvailable(intelligence.round_finish_tendency);
+                        const confidence = metricOrNotAvailable(intelligence.confidence, 2);
+                        const confidenceExplanation = (typeof intelligence.confidence_explanation === 'string' && intelligence.confidence_explanation.trim())
+                            ? intelligence.confidence_explanation.trim()
+                            : 'Not available';
+
+                        const highCollapseRisk = !!(riskFlags.high_collapse_risk_fights && riskFlags.high_collapse_risk_fights.active);
+                        const fatigueFailurePattern = !!(riskFlags.fatigue_failure_patterns && riskFlags.fatigue_failure_patterns.active);
+                        const lowConfidencePredictions = !!(riskFlags.low_confidence_predictions && riskFlags.low_confidence_predictions.active);
+                        const adapterFallbackCases = !!(riskFlags.adapter_fallback_cases && riskFlags.adapter_fallback_cases.active);
+
+                        const collapseFlagInfo = riskFlags.high_collapse_risk_fights;
+                        const fatigueFlagInfo = riskFlags.fatigue_failure_patterns;
+                        const confidenceNum = (typeof intelligence.confidence === 'number' && Number.isFinite(intelligence.confidence))
+                            ? intelligence.confidence
+                            : null;
+                        const volatilityHint = confidenceExplanation !== 'Not available' && /volatil|variance|reversal danger|fight live|swing/i.test(confidenceExplanation.toLowerCase());
+
+                        let fatigueFailureIndicator = 'Not available';
+                        if (fatigueFlagInfo && typeof fatigueFlagInfo.total === 'number' && fatigueFlagInfo.total > 0) {
+                            fatigueFailureIndicator = fatigueFailurePattern ? 'Elevated pattern risk' : 'No elevated fatigue pattern';
+                        }
+
+                        let collapseTriggerHighlight = 'Not available';
+                        if (collapseFlagInfo && typeof collapseFlagInfo.total === 'number' && collapseFlagInfo.total > 0) {
+                            collapseTriggerHighlight = highCollapseRisk ? 'High collapse trigger risk' : 'No high collapse trigger detected';
+                        }
+
+                        let mentalConditionFlag = 'Not available';
+                        if (confidenceNum !== null) {
+                            if (volatilityHint && confidenceNum < 0.55) {
+                                mentalConditionFlag = 'Fragile (low confidence + volatility)';
+                            } else if (volatilityHint) {
+                                mentalConditionFlag = 'Unsettled (volatility noted)';
+                            } else if (confidenceNum < 0.55) {
+                                mentalConditionFlag = 'Guarded (low confidence)';
+                            } else {
+                                mentalConditionFlag = 'Composed';
+                            }
+                        }
+
+                        const decompIsIncomplete = decompositionStatus !== 'decomposed';
+                        const fallbackActive = !!adapter.fallback_active;
+                        const rowBorder = fallbackActive ? '#ff9800' : (decompIsIncomplete ? '#d32f2f' : '#1f8a3d');
+
+                        const chips = [
+                            badge('status', status, '#475569'),
+                            badge('decomposition_status', decompositionStatus, decompIsIncomplete ? '#d32f2f' : '#1f8a3d'),
+                            badge('discovered_bout_slots', discoveredBoutSlots, '#0369a1'),
+                            badge('input_bout_count', inputBoutCount, '#0f766e'),
+                            badge('completion_mode', completionMode, fallbackActive ? '#ff9800' : '#334155'),
+                            badge('winner_source', winnerSource, '#6b21a8'),
+                            badge('Decision Advantage', signalGap, '#0f766e'),
+                            badge('Damage Accumulation Rate', stoppagePropensity, '#7c3aed'),
+                            badge('Collapse Timing Bias', roundFinishTendency, '#0369a1'),
+                            badge('confidence', confidence, '#065f46'),
+                        ];
+                        if (fallbackFields.length > 0) {
+                            chips.push(badge('fallback_fields', fallbackFields.join(', '), '#b45309'));
+                        }
+                        if (fallbackActive) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#ff9800;color:#111;">fallback active</span>');
+                        }
+                        if (decompIsIncomplete) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#d32f2f;color:#fff;">incomplete decomposition</span>');
+                        }
+                        if (highCollapseRisk) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#b91c1c;color:#fff;">high collapse risk fights</span>');
+                        }
+                        if (fatigueFailurePattern) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#9a3412;color:#fff;">fatigue failure patterns</span>');
+                        }
+                        if (lowConfidencePredictions) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#92400e;color:#fff;">low-confidence predictions</span>');
+                        }
+                        if (completionMode === 'adapter_fallback' || adapterFallbackCases) {
+                            chips.push('<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#dc2626;color:#fff;">adapter fallback case</span>');
+                        }
+
+                        return `<li style="border-left:4px solid ${rowBorder};padding-left:12px;">
+                            <div style="font-weight:700;margin-bottom:6px;">${escapeHtml(eventId)}</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips.join('')}</div>
+                            <div style="margin-top:8px;color:#374151;font-size:13px;"><strong>confidence_explanation:</strong> ${escapeHtml(confidenceExplanation)}</div>
+                            <div style="margin-top:4px;color:#374151;font-size:13px;"><strong>Fatigue Failure Indicator:</strong> ${escapeHtml(fatigueFailureIndicator)}</div>
+                            <div style="margin-top:2px;color:#374151;font-size:13px;"><strong>Collapse Trigger Highlight:</strong> ${escapeHtml(collapseTriggerHighlight)}</div>
+                            <div style="margin-top:2px;color:#374151;font-size:13px;"><strong>Mental Condition Flag:</strong> ${escapeHtml(mentalConditionFlag)}</div>
+                        </li>`;
+                    }).join('');
+
+                    el.innerHTML = `<ul class="panel-list">${rowsHtml}</ul>`;
+                } else {
+                    el.innerHTML = '<div style="color:#888;font-size:14px;">Queue is empty.</div>';
+                }
+            }
+
+            function renderStatusPanel(data, panelId) {
+                const el = document.getElementById(panelId);
+                el.style.display = '';
+                el.innerHTML = '<pre style="font-size:13px;">' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+
+            async function fetchAndRenderPanel(panel) {
+                const el = document.getElementById(panel.id);
+                const errEl = document.getElementById(panel.id.replace(/(-panel|-content)$/, '-error'));
+                if (errEl) errEl.style.display = 'none';
+                if (!el) return;
+                try {
+                    const resp = await fetch(panel.endpoint);
+                    const data = await resp.json();
+                    await panel.render(data, panel.id);
+                } catch (e) {
+                    if (errEl) {
+                        errEl.style.display = 'block';
+                        errEl.textContent = 'Failed to load panel: ' + e;
+                    }
+                }
+            }
+
+            function setupPanelRefresh() {
+                panels.forEach(panel => {
+                    const btn = document.getElementById(panel.btn);
+                    if (btn) btn.onclick = () => fetchAndRenderPanel(panel);
+                });
+            }
+
+            function loadAllPanels() {
+                panels.forEach(fetchAndRenderPanel);
+            }
+
+            function setPhase1Status(msg, isError=false) {
+                const el = document.getElementById('phase1-status');
+                if (!el) return;
+                el.textContent = msg;
+                el.style.color = isError ? '#a80000' : '#555';
+            }
+
+            function renderMiniTable(containerId, rows, fields) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                if (!rows || !rows.length) {
+                    el.innerHTML = '<div class="phase1-empty">No rows.</div>';
+                    return;
+                }
+                const header = fields.map(f => `<th>${f.label}</th>`).join('');
+                const body = rows.map(row => {
+                    const cells = fields.map(f => `<td>${row[f.key] ?? ''}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                el.innerHTML = `<table class="panel-table"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+            }
+
+            async function refreshPhase1Lanes() {
+                const sport = (document.getElementById('phase1-sport-filter') || {}).value || 'all';
+                try {
+                    const [upcomingResp, reviewResp, runResp, ledgerResp] = await Promise.all([
+                        fetch(`/api/phase1/upcoming-events?sport=${encodeURIComponent(sport)}`),
+                        fetch('/api/phase1/event-review-queue'),
+                        fetch('/api/phase1/fight-run-queue'),
+                        fetch('/api/phase1/results-ledger')
+                    ]);
+                    const upcoming = await upcomingResp.json();
+                    const review = await reviewResp.json();
+                    const run = await runResp.json();
+                    const ledger = await ledgerResp.json();
+
+                    renderMiniTable('phase1-upcoming-events', upcoming.rows || [], [
+                        {key: 'event_id', label: 'Event'},
+                        {key: 'sport', label: 'Sport'},
+                        {key: 'state', label: 'State'},
+                        {key: 'completeness', label: 'Completeness'}
+                    ]);
+                    renderMiniTable('phase1-event-review-queue', review.rows || [], [
+                        {key: 'event_name', label: 'Event'},
+                        {key: 'source', label: 'Source'},
+                        {key: 'date', label: 'Date'},
+                        {key: 'state', label: 'State'}
+                    ]);
+                    renderMiniTable('phase1-fight-run-queue', run.rows || [], [
+                        {key: 'matchup_slug', label: 'Matchup'},
+                        {key: 'event_id', label: 'Event'},
+                        {key: 'readiness', label: 'Ready'},
+                        {key: 'report_status', label: 'Report'}
+                    ]);
+                    renderMiniTable('phase1-results-ledger', ledger.rows || [], [
+                        {key: 'matchup_slug', label: 'Matchup'},
+                        {key: 'actual_winner', label: 'Actual Winner'},
+                        {key: 'hit_winner', label: 'Winner Hit'},
+                        {key: 'round_error', label: 'Round Error'}
+                    ]);
+                    loadDashboardSummary();
+                } catch (e) {
+                    setPhase1Status('Failed to refresh Phase 1 lanes: ' + e, true);
+                }
+            }
+
+            function askEventId() {
+                const eventId = window.prompt('Enter event_id');
+                return eventId ? eventId.trim() : '';
+            }
+
+            async function postPhase1(endpoint, payload) {
+                const resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload || {})
+                });
+                const data = await resp.json();
+                if (!resp.ok || data.ok === false) {
+                    throw new Error(data.error || 'Request failed');
+                }
+                return data;
+            }
+
+            function setupPhase1Actions() {
+                const sportFilter = document.getElementById('phase1-sport-filter');
+                sportFilter && sportFilter.addEventListener('change', refreshPhase1Lanes);
+
+                const scanBtn = document.getElementById('phase1-scan-upcoming-btn');
+                scanBtn && (scanBtn.onclick = async () => {
+                    try {
+                        setPhase1Status('Scanning upcoming events...');
+                        const sport = (document.getElementById('phase1-sport-filter') || {}).value || 'all';
+                        const data = await postPhase1('/api/phase1/scan-upcoming-events', {sport});
+                        setPhase1Status(`Scan complete. New triggers: ${data.new_triggers || 0}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Scan failed: ' + e.message, true);
+                    }
+                });
+
+                const freezeBtn = document.getElementById('phase1-freeze-card-btn');
+                freezeBtn && (freezeBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Freezing approved card...');
+                        await postPhase1('/api/phase1/freeze-approved-card', {event_id: eventId});
+                        setPhase1Status(`Card frozen: ${eventId}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Freeze failed: ' + e.message, true);
+                    }
+                });
+
+                const matchupsBtn = document.getElementById('phase1-create-matchups-btn');
+                matchupsBtn && (matchupsBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Creating matchups...');
+                        const data = await postPhase1('/api/phase1/create-matchups', {event_id: eventId});
+                        setPhase1Status(`Matchups created/updated: ${data.created_matchups || 0}`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Create matchups failed: ' + e.message, true);
+                    }
+                });
+
+                const runMainBtn = document.getElementById('phase1-run-main-btn');
+                runMainBtn && (runMainBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Dispatching main event report...');
+                        const data = await postPhase1('/api/phase1/run-main-event-report', {event_id: eventId});
+                        setPhase1Status(`Main event run processed: ${(data.runs || []).length} item(s).`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Run main event failed: ' + e.message, true);
+                    }
+                });
+
+                const runFullBtn = document.getElementById('phase1-run-full-btn');
+                runFullBtn && (runFullBtn.onclick = async () => {
+                    const eventId = askEventId();
+                    if (!eventId) return;
+                    try {
+                        setPhase1Status('Dispatching full-card reports...');
+                        const data = await postPhase1('/api/phase1/run-full-card-reports', {event_id: eventId});
+                        setPhase1Status(`Full card run processed: ${(data.runs || []).length} item(s).`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Run full card failed: ' + e.message, true);
+                    }
+                });
+
+                const enterResultBtn = document.getElementById('phase1-enter-result-btn');
+                enterResultBtn && (enterResultBtn.onclick = async () => {
+                    const matchupSlug = window.prompt('Enter matchup_slug');
+                    if (!matchupSlug) return;
+                    const actualWinner = window.prompt('Enter actual winner');
+                    const actualMethod = window.prompt('Enter actual method');
+                    const actualRound = window.prompt('Enter actual round');
+                    if (!actualWinner || !actualMethod || !actualRound) return;
+                    try {
+                        setPhase1Status('Recording actual result...');
+                        await postPhase1('/api/phase1/enter-actual-result', {
+                            matchup_slug: matchupSlug.trim(),
+                            actual_winner: actualWinner.trim(),
+                            actual_method: actualMethod.trim(),
+                            actual_round: actualRound.trim()
+                        });
+                        setPhase1Status(`Actual result recorded for ${matchupSlug.trim()}.`);
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Enter actual result failed: ' + e.message, true);
+                    }
+                });
+
+                const scoreBtn = document.getElementById('phase1-score-accuracy-btn');
+                scoreBtn && (scoreBtn.onclick = async () => {
+                    const eventId = window.prompt('Optional event_id to scope scoring (leave blank for all)', '');
+                    try {
+                        setPhase1Status('Scoring accuracy...');
+                        await postPhase1('/api/phase1/score-accuracy', {event_id: (eventId || '').trim() || null});
+                        setPhase1Status('Accuracy scoring complete.');
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Score accuracy failed: ' + e.message, true);
+                    }
+                });
+
+                const openLedgerBtn = document.getElementById('phase1-open-ledger-btn');
+                openLedgerBtn && (openLedgerBtn.onclick = async () => {
+                    try {
+                        setPhase1Status('Refreshing accuracy ledger...');
+                        await fetch('/api/phase1/open-accuracy-ledger');
+                        setPhase1Status('Accuracy ledger opened.');
+                        refreshPhase1Lanes();
+                    } catch (e) {
+                        setPhase1Status('Open ledger failed: ' + e.message, true);
+                    }
+                });
+            }
+
+            // ---------------------------------------------------------------
+            // Web Trigger Scout panel
+            // ---------------------------------------------------------------
+            function setupWebTriggerScout() {
+                const input = document.getElementById('web-trigger-scout-input');
+                const runBtn = document.getElementById('web-trigger-scout-run-btn');
+                const statusDiv = document.getElementById('web-trigger-scout-status');
+                const guardrailsDiv = document.getElementById('web-trigger-scout-guardrails');
+                const resultsDiv = document.getElementById('web-trigger-scout-results');
+
+                function setStatus(msg, isError = false) {
+                    if (!statusDiv) return;
+                    statusDiv.textContent = msg || '';
+                    statusDiv.style.color = isError ? '#a80000' : '#0b6b57';
+                }
+
+                function renderRows(rows) {
+                    if (!resultsDiv) return;
+                    if (!rows || !rows.length) {
+                        resultsDiv.innerHTML = '<div style="color:#666;">No scout results returned.</div>';
+                        return;
+                    }
+                    const body = rows.map((row) => {
+                        return `<tr>
+                            <td>${escapeHtml(row.trigger_type || '')}</td>
+                            <td>${escapeHtml(row.fight_or_event_id || '')}</td>
+                            <td>${escapeHtml(row.fighter_or_event_name || row.target || '')}</td>
+                            <td>${row.result_found ? 'yes' : 'no'}</td>
+                            <td>${escapeHtml(row.winner || '')}</td>
+                            <td>${escapeHtml(row.method || '')}</td>
+                            <td>${escapeHtml(row.round_time || '')}</td>
+                            <td>${row.official_source_url ? `<a href="${escapeHtml(row.official_source_url)}" target="_blank" rel="noreferrer">source</a>` : ''}</td>
+                            <td>${escapeHtml(row.source_confidence || '')}</td>
+                            <td>${escapeHtml(row.recommended_action || '')}</td>
+                        </tr>`;
+                    }).join('');
+
+                    resultsDiv.innerHTML = `<table class="phase1-table">
+                        <thead>
+                            <tr>
+                                <th>trigger_type</th>
+                                <th>fight_id/event_id</th>
+                                <th>fighter/event name</th>
+                                <th>result_found</th>
+                                <th>winner</th>
+                                <th>method</th>
+                                <th>round/time</th>
+                                <th>official_source_url</th>
+                                <th>source_confidence</th>
+                                <th>recommended_action</th>
+                            </tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>`;
+                }
+
+                async function runScout(overrideQuery = '') {
+                    const query = (overrideQuery || (input ? input.value : '') || '').trim();
+                    if (!query) {
+                        setStatus('Enter a web scout query first.', true);
+                        return;
+                    }
+                    setStatus('Running Web Trigger Scout...');
+                    if (resultsDiv) resultsDiv.innerHTML = '';
+
+                    try {
+                        const resp = await fetch('/api/operator/web-trigger-scout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ query, mode: 'official_first', targets: [] }),
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setStatus(data.error || 'Web Trigger Scout failed.', true);
+                            return;
+                        }
+                        renderRows(data.results || []);
+                        if (guardrailsDiv) {
+                            const guards = Array.isArray(data.blocked_actions) ? data.blocked_actions : [];
+                            guardrailsDiv.textContent = guards.join(' | ');
+                        }
+                        setStatus(`Web Trigger Scout complete (${(data.results || []).length} rows).`);
+                    } catch (e) {
+                        setStatus(`Web Trigger Scout request failed: ${e.message}`, true);
+                    }
+                }
+
+                runBtn && runBtn.addEventListener('click', () => runScout(''));
+                input && input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        runScout('');
+                    }
+                });
+
+                document.querySelectorAll('.wts-quick-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const query = btn.getAttribute('data-query') || '';
+                        if (input) input.value = query;
+                        runScout(query);
+                    });
+                });
+            }
+
+            // ---------------------------------------------------------------
+            // Operator Mode — natural-language command center
+            // ---------------------------------------------------------------
+            function setupOperatorMode() {
+                const input = document.getElementById('operator-mode-input');
+                const runBtn = document.getElementById('operator-mode-run-btn');
+                const approveBtn = document.getElementById('operator-mode-approve-btn');
+                const cancelBtn = document.getElementById('operator-mode-cancel-btn');
+                const outputDiv = document.getElementById('operator-mode-output');
+
+                let pendingPlan = null;
+
+                // Wire example chips
+                document.querySelectorAll('.om-example').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        if (input) { input.value = chip.textContent; input.focus(); }
+                    });
+                });
+
+                const safetyColors = {
+                    AUTO_READ_ONLY: '#1a7a1a',
+                    APPROVAL_REQUIRED_WRITE: '#b65f00',
+                    LOCKED_HIGH_RISK: '#a80000',
+                };
+
+                function renderPlan(data) {
+                    const color = safetyColors[data.safety_level] || '#333';
+                    let html = `<div style="margin-bottom:8px;">
+                        <span style="font-weight:700;">Intent:</span> ${escapeHtml(data.intent || 'unknown')}
+                        &nbsp;
+                        <span style="background:${color};color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">${escapeHtml(data.safety_level || '')}</span>
+                    </div>
+                    <div style="margin-bottom:6px;"><span style="font-weight:700;">Planned Action:</span> ${escapeHtml(data.planned_action || '')}</div>`;
+
+                    if (data.blocked) {
+                        html += `<div style="background:#fff0f0;border:1px solid #f5c6c6;border-radius:6px;padding:8px 12px;color:#a80000;margin-top:8px;">
+                            <strong>BLOCKED.</strong> This action is locked. A new approved checkpoint is required.
+                        </div>`;
+                    } else if (data.safety_level === 'APPROVAL_REQUIRED_WRITE') {
+                        html += `<div style="background:#fff8e6;border:1px solid #fde7b0;border-radius:6px;padding:8px 12px;color:#7a4f00;margin-top:8px;">
+                            Approval required. Review the plan above, then click <strong>Approve Planned Action</strong>.
+                        </div>`;
+                    }
+
+                    if (data.intent === 'unknown_intent' && data.examples) {
+                        html += `<div style="margin-top:10px;font-size:12px;color:#666;">Try: ${data.examples.map(e => `<code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;">${escapeHtml(e)}</code>`).join(' ')}</div>`;
+                    }
+                    outputDiv.innerHTML = html;
+                }
+
+                function appendResult(html) {
+                    outputDiv.innerHTML += html;
+                }
+
+                async function executeReadOnly(plan) {
+                    try {
+                        if (plan.intent === 'system_health') {
+                            const d = await fetch('/api/system/health').then(r => r.json());
+                            const ok = d.ok !== false;
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:${ok ? '#f0fff0' : '#fff0f0'};border-radius:6px;border:1px solid ${ok ? '#b0e0b0' : '#f5c6c6'};">
+                                <strong>System Health:</strong> <span style="color:${ok ? '#1a7a1a' : '#a80000'};">${ok ? 'OK' : 'ISSUES'}</span>
+                                ${d.health ? `<br><span style="font-size:12px;color:#555;">${escapeHtml(JSON.stringify(d.health).slice(0, 300))}</span>` : ''}
+                            </div>`);
+
+                        } else if (plan.intent === 'accuracy_calibration') {
+                            const [cs, cc] = await Promise.all([
+                                fetch('/api/accuracy/comparison-summary').then(r => r.json()),
+                                fetch('/api/accuracy/confidence-calibration').then(r => r.json()),
+                            ]);
+                            const s = cs.summary || {};
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f0f8ff;border-radius:6px;border:1px solid #c5ddf5;">
+                                <strong>Accuracy-Ledger Calibration</strong><br>
+                                Total Compared: <strong>${s.total_compared ?? '—'}</strong> &nbsp;
+                                Winner Hits: <strong>${s.winner_hit ?? '—'}</strong> &nbsp;
+                                Winner Misses: <strong>${s.winner_miss ?? '—'}</strong> &nbsp;
+                                Overall Accuracy: <strong>${s.overall_accuracy_pct ?? '—'}%</strong>
+                            </div>`);
+
+                        } else if (plan.intent === 'backfill_status_check') {
+                            const d = await fetch('/api/accuracy/structural-signal-backfill-planner').then(r => r.json());
+                            const ready = d?.planner?.summary?.eligibility_counts?.READY_FOR_BACKFILL ?? 0;
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f5f5ff;border-radius:6px;border:1px solid #d0d0f0;">
+                                <strong>Backfill Status:</strong> READY_FOR_BACKFILL = <strong>${ready}</strong>
+                                — ${ready === 0 ? '<span style="color:#1a7a1a;">BLOCKED (no eligible records)</span>' : '<span style="color:#b65f00;">Records pending review</span>'}
+                            </div>`);
+
+                        } else if (plan.intent === 'unresolved_result_review') {
+                            const d = await fetch('/api/operator/rolling-success-rate').then(r => r.json());
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Fights Scored:</strong> ${d.total_fights_scored ?? '—'} &nbsp;
+                                <strong>Rolling Success Rate:</strong> ${d.rolling_success_rate ?? '—'}%
+                            </div>`);
+
+                        } else if (plan.intent === 'event_queue_review') {
+                            const d = await fetch('/api/queue').then(r => r.json());
+                            const events = Array.isArray(d) ? d : (d.events || []);
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Events in queue:</strong> ${events.length}
+                                ${events.slice(0, 5).map(e => '<br>• ' + escapeHtml(typeof e === 'string' ? e : (e.event_id || JSON.stringify(e)))).join('')}
+                            </div>`);
+
+                        } else if (plan.intent === 'commit_readiness_check') {
+                            const d = await fetch('/api/system/health').then(r => r.json());
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                <strong>Dashboard health:</strong> ${(d.ok !== false) ? 'OK' : 'Issues found'}. For full git status, use terminal: <code>git -C C:\\ai_risa_data status</code>
+                            </div>`);
+
+                        } else if (plan.intent === 'fighter_profile_check') {
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
+                                Fighter profile lookup is available via the fighter registry. Specify a fighter name to search.
+                            </div>`);
+
+                        } else if (plan.intent === 'web_trigger_scout') {
+                            const payload = {
+                                query: plan.query_text || 'search web for fight results',
+                                mode: plan.mode || 'official_first',
+                                targets: Array.isArray(plan.targets) ? plan.targets : [],
+                            };
+                            const d = await fetch('/api/operator/web-trigger-scout', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(payload),
+                            }).then(r => r.json());
+
+                            if (!d.ok) {
+                                appendResult(`<div style="margin-top:8px;color:#a80000;">Web Trigger Scout failed: ${escapeHtml(d.error || 'Unknown error')}</div>`);
+                                return;
+                            }
+
+                            const rows = Array.isArray(d.results) ? d.results : [];
+                            const preview = rows.slice(0, 4).map((row) => {
+                                return `<tr>
+                                    <td>${escapeHtml(row.trigger_type || '')}</td>
+                                    <td>${escapeHtml(row.fighter_or_event_name || row.target || '')}</td>
+                                    <td>${row.result_found ? 'yes' : 'no'}</td>
+                                    <td>${escapeHtml(row.winner || '')}</td>
+                                    <td>${escapeHtml(row.source_confidence || '')}</td>
+                                    <td>${escapeHtml(row.recommended_action || '')}</td>
+                                </tr>`;
+                            }).join('');
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#eefaf6;border-radius:6px;border:1px solid #bfe6dd;">
+                                <strong>Web Trigger Scout</strong> returned ${rows.length} result(s).<br>
+                                <table class="phase1-table" style="margin-top:8px;">
+                                    <thead><tr><th>trigger_type</th><th>target</th><th>result_found</th><th>winner</th><th>source_confidence</th><th>recommended_action</th></tr></thead>
+                                    <tbody>${preview || '<tr><td colspan="6">No rows</td></tr>'}</tbody>
+                                </table>
+                                <div style="margin-top:6px;font-size:12px;color:#666;">${escapeHtml((d.blocked_actions || []).join(' | '))}</div>
+                            </div>`);
+                        }
+                    } catch (e) {
+                        appendResult(`<div style="color:#a80000;margin-top:6px;">Action failed: ${escapeHtml(e.message)}</div>`);
+                    }
+                }
+
+                async function executeApproved(plan) {
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    pendingPlan = null;
+
+                    if (plan.intent === 'build_premium_report' && plan.matchup) {
+                        appendResult(`<div style="margin-top:8px;color:#666;">Building report for ${escapeHtml(plan.matchup)}…</div>`);
+                        try {
+                            const resp = await fetch('/api/operator/analyze-build-report', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({matchup: plan.matchup}),
+                            });
+                            const d = await resp.json();
+                            const ok = d.ok !== false;
+                            const errorText = [d.error, ...(d.errors || [])].filter(Boolean).join(' | ');
+                            const isFighterVerificationBlocked = d.blocked_reason === 'fighter_profile_not_verified'
+                                || /ambiguous fighter name|need full fighter name|missing fighter profile after intake|fighter profile too weak for analysis/i.test(errorText);
+
+                            if (!ok && isFighterVerificationBlocked) {
+                                appendResult(`<div style="margin-top:8px;padding:10px 12px;background:#fff0f0;border-radius:6px;border:1px solid #f5c6c6;color:#8a1212;">
+                                    <strong>Report Build Blocked</strong><br>
+                                    Fighter profile not verified. Do not build report yet.<br>
+                                    Source verification required.<br>
+                                    <strong>Suggested next action:</strong> choose verified matchup or run fighter intake verification.
+                                    ${errorText ? `<div style="margin-top:6px;font-size:12px;color:#6b1a1a;">Details: ${escapeHtml(errorText).slice(0, 400)}</div>` : ''}
+                                </div>`);
+                                return;
+                            }
+
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:${ok ? '#f0fff0' : '#fff0f0'};border-radius:6px;border:1px solid ${ok ? '#b0e0b0' : '#f5c6c6'};">
+                                <strong>Report Build ${ok ? 'Succeeded' : 'Failed'}</strong><br>
+                                ${escapeHtml(d.message || d.error || JSON.stringify(d)).slice(0, 500)}
+                            </div>`);
+                        } catch (e) {
+                            appendResult(`<div style="color:#a80000;margin-top:6px;">Build failed: ${escapeHtml(e.message)}</div>`);
+                        }
+                    } else {
+                        appendResult(`<div style="color:#a80000;margin-top:6px;">Approved action not yet implemented for intent: ${escapeHtml(plan.intent)}</div>`);
+                    }
+                }
+
+                async function runCommand() {
+                    const command = (input ? input.value : '').trim();
+                    if (!command) return;
+
+                    outputDiv.innerHTML = '<span style="color:#888;">Routing command…</span>';
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    pendingPlan = null;
+
+                    try {
+                        const resp = await fetch('/api/operator/intent', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({command}),
+                        });
+                        const data = await resp.json();
+
+                        if (!data.ok) {
+                            outputDiv.innerHTML = `<span style="color:#a80000;">Router error: ${escapeHtml(data.error || 'Unknown error')}</span>`;
+                            return;
+                        }
+
+                        renderPlan(data);
+
+                        if (!data.blocked && data.safety_level === 'AUTO_READ_ONLY') {
+                            await executeReadOnly(data);
+                        } else if (data.safety_level === 'APPROVAL_REQUIRED_WRITE') {
+                            pendingPlan = data;
+                            approveBtn.style.display = '';
+                            cancelBtn.style.display = '';
+                        }
+                    } catch (e) {
+                        outputDiv.innerHTML = `<span style="color:#a80000;">Failed to route command: ${escapeHtml(e.message)}</span>`;
+                    }
+                }
+
+                if (runBtn) runBtn.addEventListener('click', runCommand);
+                if (input) {
+                    input.addEventListener('keydown', e => {
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runCommand(); }
+                    });
+                }
+                if (approveBtn) approveBtn.addEventListener('click', () => {
+                    if (pendingPlan) executeApproved(pendingPlan);
+                });
+                if (cancelBtn) cancelBtn.addEventListener('click', () => {
+                    pendingPlan = null;
+                    approveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    appendResult('<div style="color:#888;margin-top:6px;">Action cancelled.</div>');
+                });
+            }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                reorganizeLayout();
+                setupPanelRefresh();
+                loadAllPanels();
+                loadDashboardSummary();
+                setupPhase1Actions();
+                refreshPhase1Lanes();
+                setupOperatorMatchupWorkflow();
+                setupAccuracyLedgerCalibrationReview();
+                setupWebTriggerScout();
+                setupOperatorMode();
+            });
+
+            // --- Operator Matchup Workflow Logic ---
+            async function setupOperatorMatchupWorkflow() {
+                const matchupInput = document.getElementById('operator-matchup-input');
+                const analyzeBtn = document.getElementById('operator-analyze-btn');
+                const compareBtn = document.getElementById('operator-compare-btn');
+                const calibrateBtn = document.getElementById('operator-calibrate-btn');
+                const statusDiv = document.getElementById('operator-status');
+                const resultDiv = document.getElementById('operator-result');
+                const errorDiv = document.getElementById('operator-error');
+                const calibrationAvailabilityNote = document.getElementById('operator-calibration-availability-note');
+                const rollingRateDiv = document.getElementById('operator-rolling-rate');
+                const rollingRateValue = document.getElementById('operator-rolling-rate-value');
+                const waitingQueueDiv = document.getElementById('operator-waiting-results-queue');
+
+                function setStatus(msg, isError = false) {
+                    if (statusDiv) {
+                        statusDiv.textContent = msg;
+                        statusDiv.style.color = isError ? '#a80000' : '#2d5f2d';
+                    }
+                }
+
+                function setResult(content) {
+                    if (resultDiv) {
+                        resultDiv.innerHTML = content;
+                        resultDiv.style.display = content ? 'block' : 'none';
+                    }
+                }
+
+                function setError(msg) {
+                    if (errorDiv) {
+                        errorDiv.textContent = msg;
+                        errorDiv.style.display = msg ? 'block' : 'none';
+                    }
+                }
+
+                function setCalibrationAvailability(message, isWarning = false) {
+                    if (!calibrationAvailabilityNote) return;
+                    calibrationAvailabilityNote.textContent = message;
+                    calibrationAvailabilityNote.style.color = isWarning ? '#7a3f00' : '#4b5563';
+                }
+
+                function escapeHtml(value) {
+                    return String(value || '')
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;')
+                        .replaceAll("'", '&#39;');
+                }
+
+                function renderWaitingQueue(rows) {
+                    if (!waitingQueueDiv) return;
+                    if (!rows || !rows.length) {
+                        waitingQueueDiv.innerHTML = '<div style="color:#666;">No rows waiting for real-life results.</div>';
+                        return;
+                    }
+                    const body = rows.map((row) => {
+                        const fightName = escapeHtml(row.fight_name || 'UNKNOWN');
+                        const predictedWinner = escapeHtml(row.predicted_winner || 'UNKNOWN');
+                        const eventDate = escapeHtml(row.event_date || 'UNKNOWN');
+                        const filePath = escapeHtml(row.file_path || 'UNKNOWN');
+                        const status = escapeHtml(row.status || 'waiting_for_actual_result');
+                        return `<tr>
+                            <td>${fightName}</td>
+                            <td>${predictedWinner}</td>
+                            <td>${eventDate}</td>
+                            <td>${filePath}</td>
+                            <td>${status}</td>
+                        </tr>`;
+                    }).join('');
+                    waitingQueueDiv.innerHTML = `<table class="phase1-table">
+                        <thead>
+                            <tr>
+                                <th>Fight/Report</th>
+                                <th>Predicted Winner</th>
+                                <th>Event Date</th>
+                                <th>Path</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>`;
+                }
+
+                async function loadRollingSuccessRate() {
+                    try {
+                        const resp = await fetch('/api/operator/rolling-success-rate');
+                        const data = await resp.json();
+                        if (data.ok && data.rolling_success_rate !== undefined) {
+                            rollingRateValue.textContent = Math.round(data.rolling_success_rate);
+                            rollingRateDiv.style.display = 'block';
+                        }
+                        const totalScored = Number(data.total_fights_scored || 0);
+                        if (calibrateBtn) {
+                            const noScoredReports = totalScored === 0;
+                            calibrateBtn.disabled = noScoredReports;
+                            calibrateBtn.style.opacity = noScoredReports ? '0.55' : '1';
+                            calibrateBtn.style.cursor = noScoredReports ? 'not-allowed' : 'pointer';
+                        }
+                        if (totalScored === 0) {
+                            setCalibrationAvailability('Report-scoring calibration is unavailable until report outcomes are manually scored.', true);
+                        } else {
+                            setCalibrationAvailability('Report-scoring calibration is available for manually scored report outcomes.');
+                        }
+                    } catch (e) {
+                        // Silent fail on rate load
+                    }
+                }
+
+                analyzeBtn && (analyzeBtn.onclick = async () => {
+                    const matchup = matchupInput ? matchupInput.value.trim() : '';
+                    if (!matchup) {
+                        setError('Enter a matchup first (e.g., "Tim Tszyu vs Errol Spence Jr.")');
+                        return;
+                    }
+                    setStatus('Analyzing and building premium report...');
+                    setError('');
+                    setResult('');
+                    try {
+                        const resp = await fetch('/api/operator/analyze-build-report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ matchup })
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            const errorText = [data.error, ...(data.errors || [])].filter(Boolean).join('; ');
+                            const isFighterVerificationBlocked = data.blocked_reason === 'fighter_profile_not_verified'
+                                || /ambiguous fighter name|need full fighter name|missing fighter profile after intake|fighter profile too weak for analysis/i.test(errorText);
+                            if (isFighterVerificationBlocked) {
+                                setError('Fighter profile not verified. Do not build report yet. Source verification required. Suggested next action: choose verified matchup or run fighter intake verification.');
+                            } else {
+                                setError(errorText || 'Failed to build report');
+                            }
+                            setStatus('Build failed', true);
+                            return;
+                        }
+                        const html = `
+<strong>Matchup:</strong> ${data.matchup_slug || 'unknown'}<br>
+<strong>Output PDF:</strong> ${data.output_pdf_path || 'N/A'}<br>
+<strong>QA Pass:</strong> <span style="color:${data.qa_pass ? '#107c10' : '#a80000'};">${data.qa_pass ? 'YES' : 'NO'}</span><br>
+<strong>Files Written:</strong> ${(data.files_written || []).join(', ') || 'None'}<br>
+${data.errors && data.errors.length ? `<strong>Errors:</strong> ${data.errors.join('; ')}<br>` : ''}
+                        `;
+                        setResult(html);
+                        setStatus('Report built successfully!');
+                        await loadRollingSuccessRate();
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                compareBtn && (compareBtn.onclick = async () => {
+                    setStatus('Loading comparison summary...');
+                    setError('');
+                    setResult('');
+                    try {
+                        const resp = await fetch('/api/accuracy/comparison-summary');
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setError((data.errors || []).join('; ') || 'Comparison failed');
+                            setStatus('Comparison failed', true);
+                            return;
+                        }
+                        const metrics = data.summary_metrics || {};
+                        const comparedResults = data.compared_results || [];
+                        const waitingResults = data.waiting_for_results || [];
+
+                        const comparedPreview = comparedResults.slice(0, 8).map((row) => {
+                            const winnerStatus = row.winner_hit ? 'HIT' : 'MISS';
+                            return `<tr>
+                                <td>${escapeHtml(row.fight_name || 'UNKNOWN')}</td>
+                                <td>${escapeHtml(row.predicted_winner || 'UNKNOWN')}</td>
+                                <td>${escapeHtml(row.actual_winner || 'UNKNOWN')}</td>
+                                <td>${winnerStatus}</td>
+                            </tr>`;
+                        }).join('');
+
+                        const html = `
+<strong>Total Compared:</strong> ${metrics.total_compared || 0}<br>
+<strong>Winner Hits:</strong> ${metrics.winner_hits || 0}<br>
+<strong>Winner Misses:</strong> ${metrics.winner_misses || 0}<br>
+<strong>Method Hits (available):</strong> ${metrics.method_hits || 0}${metrics.method_available !== undefined ? ` / ${metrics.method_available}` : ''}<br>
+<strong>Round Hits (available):</strong> ${metrics.round_hits || 0}${metrics.round_available !== undefined ? ` / ${metrics.round_available}` : ''}<br>
+<strong>Overall Accuracy:</strong> ${metrics.overall_accuracy_pct || 0}%<br>
+<div style="margin-top:12px;"><strong>Compared Results (preview):</strong></div>
+${comparedResults.length ? `<table class="phase1-table">
+    <thead>
+        <tr>
+            <th>Fight</th>
+            <th>Predicted Winner</th>
+            <th>Actual Winner</th>
+            <th>Winner Result</th>
+        </tr>
+    </thead>
+    <tbody>${comparedPreview}</tbody>
+</table>` : '<div style="color:#666;">No compared results available yet.</div>'}
+                        `;
+                        setResult(html);
+                        renderWaitingQueue(waitingResults);
+                        setStatus(`Comparison loaded: ${metrics.total_compared || 0} compared, ${waitingResults.length} waiting.`);
+                        await loadRollingSuccessRate();
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                calibrateBtn && (calibrateBtn.onclick = async () => {
+                    setStatus('Running calibration review...');
+                    setError('');
+                    setResult('');
+                    setCalibrationAvailability('Running report-scoring calibration review...');
+                    try {
+                        const resp = await fetch('/api/operator/run-calibration-review', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setError(data.recommendation || 'Calibration review failed');
+                            setStatus('Calibration review failed', true);
+                            return;
+                        }
+
+                        const fightsAnalyzed = Number(data.fights_analyzed || 0);
+                        if (fightsAnalyzed === 0) {
+                            setResult('');
+                            setCalibrationAvailability('Report-scoring calibration is unavailable until report outcomes are manually scored.', true);
+                            setStatus('Report-scoring calibration unavailable: no manually scored report outcomes yet.');
+                            return;
+                        }
+                        
+                        let calibsHtml = '';
+                        if (data.proposed_calibrations && data.proposed_calibrations.length) {
+                            for (const cal of data.proposed_calibrations) {
+                                calibsHtml += `<div style="margin:8px 0;padding:10px;background:#e8f4fd;border-radius:4px;border-left:3px solid #0078d4;">
+<strong>${cal.title}</strong> [${cal.priority}]<br>
+${cal.description}<br>
+<em>Expected Impact: +${Math.round(cal.estimated_impact * 100)}%</em>
+</div>`;
+                            }
+                        }
+                        
+                        const backtest = data.backtest_summary || {};
+                        const html = `
+<strong>Fights Analyzed:</strong> ${data.fights_analyzed || 0}<br>
+<strong>Confidence in Calibration:</strong> ${Math.round((data.confidence_in_calibration || 0) * 100)}%<br>
+<strong>Current Success Rate:</strong> ${backtest.success_rate_current || 0}%<br>
+<strong>Projected Success Rate:</strong> ${backtest.success_rate_projected || 0}%<br>
+<strong>Projected Improvement:</strong> +${backtest.projected_improvement || 0}%<br>
+<strong>Approval Required:</strong> YES (no silent auto-apply)<br>
+<div style="margin-top:12px;"><strong>Recommendation:</strong></div>
+<div style="padding:10px;background:#fffbf0;border-radius:4px;border-left:3px solid #d83b01;">${data.recommendation || 'N/A'}</div>
+${calibsHtml ? `<div style="margin-top:12px;"><strong>Proposed Calibrations:</strong></div>${calibsHtml}` : ''}
+                        `;
+                        setResult(html);
+                        setCalibrationAvailability('Report-scoring calibration is available for manually scored report outcomes.');
+                        setStatus('Calibration review complete');
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Request failed', true);
+                    }
+                });
+
+                // Load rolling success rate on page load
+                await loadRollingSuccessRate();
+                renderWaitingQueue([]);
+                await loadSignalGapBreakdown();
+                await loadMethodRoundBreakdown();
+                await loadConfidenceCalibration();
+                await loadFailurePatterns();
+                await loadSignalCoverage();
+                await loadStructuralBackfillPlanner();
+            }
+
+            async function setupAccuracyLedgerCalibrationReview() {
+                const reviewBtn = document.getElementById('accuracy-calibration-review-btn');
+                const container = document.getElementById('accuracy-calibration-review-content');
+                if (!reviewBtn || !container) return;
+
+                const formatPct = (value) => {
+                    if (value === null || value === undefined || value === '') return '—';
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric)) return '—';
+                    return `${numeric}%`;
+                };
+
+                const formatRatioPct = (value) => {
+                    if (value === null || value === undefined) return '—';
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric)) return '—';
+                    return `${(numeric * 100).toFixed(1)}%`;
+                };
+
+                const buildRecommendation = (comparison, calibration, errorPatterns) => {
+                    const summaryMetrics = comparison.summary_metrics || {};
+                    const compared = Number(summaryMetrics.total_compared || 0);
+                    if (!compared) {
+                        return 'No resolved prediction-vs-result comparisons are available yet.';
+                    }
+
+                    const buckets = calibration.calibration || [];
+                    const significantGap = buckets
+                        .filter((bucket) => bucket.calibration_gap !== null && bucket.calibration_gap !== undefined)
+                        .sort((left, right) => Math.abs(right.calibration_gap) - Math.abs(left.calibration_gap))[0];
+
+                    if (significantGap && Math.abs(significantGap.calibration_gap) >= 0.1) {
+                        const direction = significantGap.calibration_gap > 0 ? 'under-confident' : 'over-confident';
+                        return `Review the ${significantGap.bucket} bucket first: actual win rate is ${direction} versus predictions by ${formatRatioPct(Math.abs(significantGap.calibration_gap))}.`;
+                    }
+
+                    const topPattern = (errorPatterns.top_failure_patterns || [])[0];
+                    if (topPattern && topPattern.pattern) {
+                        return `Focus next review on the top miss pattern: ${topPattern.pattern} (${topPattern.miss_count} misses).`;
+                    }
+
+                    return 'Accuracy-ledger calibration is populated and does not show a dominant calibration gap right now.';
+                };
+
+                reviewBtn.onclick = async () => {
+                    container.innerHTML = 'Loading accuracy-ledger calibration review...';
+                    try {
+                        const [comparisonResp, calibrationResp, errorResp] = await Promise.all([
+                            fetch('/api/accuracy/comparison-summary'),
+                            fetch('/api/accuracy/confidence-calibration'),
+                            fetch('/api/accuracy/error-patterns')
+                        ]);
+
+                        const [comparison, calibration, errorPatterns] = await Promise.all([
+                            comparisonResp.json(),
+                            calibrationResp.json(),
+                            errorResp.json()
+                        ]);
+
+                        if (!comparison.ok) {
+                            throw new Error('Comparison summary failed to load.');
+                        }
+                        if (!calibration.ok) {
+                            throw new Error('Confidence calibration failed to load.');
+                        }
+
+                        const summaryMetrics = comparison.summary_metrics || {};
+                        const buckets = calibration.calibration || [];
+                        const bucketRows = buckets.map((bucket) => {
+                            const gap = bucket.calibration_gap;
+                            const gapLabel = gap !== null && gap !== undefined ? `${gap >= 0 ? '+' : ''}${(gap * 100).toFixed(1)}%` : '—';
+                            const gapColor = gap === null || gap === undefined ? '' : gap >= 0 ? 'color:#107c10;' : 'color:#a80000;';
+                            return `<tr>
+                                <td>${escapeHtml(bucket.bucket)}</td>
+                                <td>${bucket.total_compared ?? 0}</td>
+                                <td>${bucket.predicted_confidence_avg !== null && bucket.predicted_confidence_avg !== undefined ? formatRatioPct(bucket.predicted_confidence_avg) : '—'}</td>
+                                <td>${bucket.actual_win_rate !== null && bucket.actual_win_rate !== undefined ? formatRatioPct(bucket.actual_win_rate) : '—'}</td>
+                                <td style="${gapColor}">${gapLabel}</td>
+                            </tr>`;
+                        }).join('');
+
+                        const recommendation = buildRecommendation(comparison, calibration, errorPatterns.ok ? errorPatterns : {});
+
+                        container.innerHTML = `
+                            <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;margin-bottom:12px;">
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Total Compared:</strong><br>${summaryMetrics.total_compared ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Winner Hits:</strong><br>${summaryMetrics.winner_hits ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Winner Misses:</strong><br>${summaryMetrics.winner_misses ?? 0}</div>
+                                <div style="background:#fafbfc;border:1px solid #e0e0e0;border-radius:6px;padding:10px;"><strong>Overall Accuracy:</strong><br>${formatPct(summaryMetrics.overall_accuracy_pct)}</div>
+                            </div>
+                            <div style="margin-bottom:10px;padding:10px;background:#f5f9ff;border:1px solid #d0e8f2;border-radius:6px;">
+                                <strong>Recommendation:</strong> ${escapeHtml(recommendation)}
+                            </div>
+                            <table class="phase1-table">
+                                <thead><tr>
+                                    <th>Confidence</th>
+                                    <th>Total</th>
+                                    <th>Predicted Conf Avg</th>
+                                    <th>Actual Win Rate</th>
+                                    <th>Calibration Gap</th>
+                                </tr></thead>
+                                <tbody>${bucketRows || '<tr><td colspan="5" style="color:#888;">No confidence calibration data available.</td></tr>'}</tbody>
+                            </table>`;
+                    } catch (e) {
+                        container.innerHTML = `<span style="color:#a80000;">Failed to load accuracy-ledger review: ${escapeHtml(e.message)}</span>`;
+                    }
+                };
+            }
+
+            async function loadSignalGapBreakdown() {
+                const container = document.getElementById('signal-gap-breakdown-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/signal-breakdown');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    const rows = (data.breakdown || []).map(b => `<tr>
+                        <td>${escapeHtml(b.bucket)}</td>
+                        <td>${b.total_compared}</td>
+                        <td>${b.winner_hits}</td>
+                        <td>${b.winner_misses}</td>
+                        <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                    </tr>`).join('');
+                    container.innerHTML = `<table class="phase1-table">
+                        <thead><tr>
+                            <th>Signal Gap</th>
+                            <th>Total</th>
+                            <th>Hits</th>
+                            <th>Misses</th>
+                            <th>Accuracy</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load signal breakdown.</span>';
+                }
+            }
+
+            async function loadMethodRoundBreakdown() {
+                const mrContainer = document.getElementById('method-round-reliability-content');
+                const sfContainer = document.getElementById('stoppage-finish-tendency-content');
+                try {
+                    const resp = await fetch('/api/accuracy/method-round-breakdown');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        if (mrContainer) mrContainer.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        if (sfContainer) sfContainer.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    // Method & Round panel
+                    if (mrContainer) {
+                        const m = data.method_accuracy || {};
+                        const r = data.round_accuracy || {};
+                        mrContainer.innerHTML = `<table class="phase1-table">
+                            <thead><tr><th>Signal</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>Method</td>
+                                    <td>${m.total_available || 0}</td>
+                                    <td>${m.method_hits || 0}</td>
+                                    <td>${m.method_misses || 0}</td>
+                                    <td>${m.method_accuracy_pct !== null && m.method_accuracy_pct !== undefined ? m.method_accuracy_pct + '%' : '—'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Round</td>
+                                    <td>${r.total_available || 0}</td>
+                                    <td>${r.round_hits || 0}</td>
+                                    <td>${r.round_misses || 0}</td>
+                                    <td>${r.round_accuracy_pct !== null && r.round_accuracy_pct !== undefined ? r.round_accuracy_pct + '%' : '—'}</td>
+                                </tr>
+                            </tbody>
+                        </table>`;
+                    }
+                    // Stoppage / Finish Tendency panel
+                    if (sfContainer) {
+                        const stopRows = (data.stoppage_propensity_buckets || []).map(b => `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.winner_hits}</td>
+                            <td>${b.winner_misses}</td>
+                            <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                        </tr>`).join('');
+                        const rftRows = (data.round_finish_tendency_buckets || []).map(b => `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.winner_hits}</td>
+                            <td>${b.winner_misses}</td>
+                            <td>${b.accuracy_pct !== null ? b.accuracy_pct + '%' : '—'}</td>
+                        </tr>`).join('');
+                        sfContainer.innerHTML = `
+                            <div style="margin-bottom:10px;font-weight:600;font-size:13px;">Stoppage Propensity</div>
+                            <table class="phase1-table" style="margin-bottom:16px;">
+                                <thead><tr><th>Bucket</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                                <tbody>${stopRows}</tbody>
+                            </table>
+                            <div style="margin-bottom:10px;font-weight:600;font-size:13px;">Round Finish Tendency</div>
+                            <table class="phase1-table">
+                                <thead><tr><th>Bucket</th><th>Total</th><th>Hits</th><th>Misses</th><th>Accuracy</th></tr></thead>
+                                <tbody>${rftRows}</tbody>
+                            </table>`;
+                    }
+                } catch (e) {
+                    if (mrContainer) mrContainer.innerHTML = '<span style="color:#a80000;">Failed to load method/round breakdown.</span>';
+                    if (sfContainer) sfContainer.innerHTML = '<span style="color:#a80000;">Failed to load tendency breakdown.</span>';
+                }
+            }
+
+            async function loadConfidenceCalibration() {
+                const container = document.getElementById('confidence-calibration-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/confidence-calibration');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">Not enough resolved results yet.</span>';
+                        return;
+                    }
+                    const rows = (data.calibration || []).map(b => {
+                        const gap = b.calibration_gap;
+                        const gapLabel = gap !== null ? (gap >= 0 ? '+' : '') + (gap * 100).toFixed(1) + '%' : '—';
+                        const gapColor = gap === null ? '' : gap >= 0 ? 'color:#107c10;' : 'color:#a80000;';
+                        return `<tr>
+                            <td>${escapeHtml(b.bucket)}</td>
+                            <td>${b.total_compared}</td>
+                            <td>${b.predicted_confidence_avg !== null ? (b.predicted_confidence_avg * 100).toFixed(1) + '%' : '—'}</td>
+                            <td>${b.actual_win_rate !== null ? (b.actual_win_rate * 100).toFixed(1) + '%' : '—'}</td>
+                            <td style="${gapColor}">${gapLabel}</td>
+                        </tr>`;
+                    }).join('');
+                    container.innerHTML = `<table class="phase1-table">
+                        <thead><tr>
+                            <th>Confidence</th>
+                            <th>Total</th>
+                            <th>Predicted Conf Avg</th>
+                            <th>Actual Win Rate</th>
+                            <th>Calibration Gap</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load confidence calibration.</span>';
+                }
+            }
+
+            async function loadSignalCoverage() {
+                const container = document.getElementById('signal-coverage-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/signal-coverage');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No data available.</span>';
+                        return;
+                    }
+                    const cov = data.coverage || {};
+                    const fields = [
+                        { key: 'signal_gap_coverage_pct', label: 'Signal Gap' },
+                        { key: 'stoppage_propensity_coverage_pct', label: 'Stoppage Propensity' },
+                        { key: 'round_finish_tendency_coverage_pct', label: 'Round Finish Tendency' },
+                        { key: 'predicted_method_coverage_pct', label: 'Predicted Method' },
+                        { key: 'predicted_round_coverage_pct', label: 'Predicted Round' },
+                    ];
+                    const fmtPct = (v) => {
+                        if (v === null || v === undefined) return '<span style="color:#888;">—</span>';
+                        const color = v < 60 ? '#a80000' : '#1a7a1a';
+                        return `<span style="color:${color};font-weight:600;">${v}%</span>`;
+                    };
+                    const rows = fields.map(f => `<tr>
+                        <td>${escapeHtml(f.label)}</td>
+                        <td>${fmtPct((cov.overall || {})[f.key])}</td>
+                        <td>${fmtPct((cov.resolved || {})[f.key])}</td>
+                        <td>${fmtPct((cov.unresolved || {})[f.key])}</td>
+                    </tr>`).join('');
+                    const totals = `<tr style="font-size:11px;color:#888;">
+                        <td>Total predictions</td>
+                        <td>${(cov.overall || {}).total_predictions ?? '—'}</td>
+                        <td>${(cov.resolved || {}).total_predictions ?? '—'}</td>
+                        <td>${(cov.unresolved || {}).total_predictions ?? '—'}</td>
+                    </tr>`;
+                    container.innerHTML = `
+                        <table class="phase1-table">
+                            <thead><tr><th>Signal</th><th>Overall</th><th>Resolved</th><th>Unresolved</th></tr></thead>
+                            <tbody>${totals}${rows}</tbody>
+                        </table>
+                        <div style="font-size:11px;color:#888;margin-top:6px;">Red = &lt;60% coverage</div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load signal coverage.</span>';
+                }
+            }
+
+            async function loadStructuralBackfillPlanner() {
+                const container = document.getElementById('structural-backfill-planner-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/structural-signal-backfill-planner');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No data available.</span>';
+                        return;
+                    }
+
+                    const planner = data.planner || {};
+                    const queue = planner.priority_queue || [];
+                    const summary = planner.summary || {};
+
+                    if (!queue.length) {
+                        container.innerHTML = '<span style="color:#888;">No structural signal backfill needed.</span>';
+                        return;
+                    }
+
+                    const tierColor = (tier) => {
+                        if (tier === 'critical') return '#a80000';
+                        if (tier === 'high') return '#b65f00';
+                        return '#1a7a1a';
+                    };
+
+                    const rows = queue.slice(0, 25).map(item => `<tr>
+                        <td><span style="color:${tierColor(item.priority_tier)};font-weight:600;">${escapeHtml(item.priority_tier)}</span></td>
+                        <td>${escapeHtml(item.fight_id || 'unknown')}</td>
+                        <td>${item.resolved_result ? 'resolved' : 'unresolved'}</td>
+                        <td>${item.missing_count}</td>
+                        <td>${escapeHtml((item.missing_signals || []).join(', '))}</td>
+                        <td>${item.priority_score}</td>
+                    </tr>`).join('');
+
+                    container.innerHTML = `
+                        <div style="margin-bottom:8px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap;">
+                            <span><strong>Total:</strong> ${planner.total_predictions ?? 0}</span>
+                            <span><strong>Need Backfill:</strong> ${planner.predictions_needing_backfill ?? 0}</span>
+                            <span><strong>Unresolved:</strong> ${summary.unresolved_needing_backfill ?? 0}</span>
+                            <span><strong>Resolved Misses:</strong> ${summary.resolved_miss_needing_backfill ?? 0}</span>
+                        </div>
+                        <table class="phase1-table">
+                            <thead><tr><th>Priority</th><th>Fight</th><th>Status</th><th>Missing</th><th>Signals</th><th>Score</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                        <div style="font-size:11px;color:#888;margin-top:6px;">Showing top 25 by priority score.</div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load backfill planner.</span>';
+                }
+            }
+
+            async function loadFailurePatterns() {
+                const container = document.getElementById('failure-patterns-content');
+                if (!container) return;
+                try {
+                    const resp = await fetch('/api/accuracy/error-patterns');
+                    const data = await resp.json();
+                    if (!data.ok || !data.has_data) {
+                        container.innerHTML = '<span style="color:#888;">No failure patterns available yet.</span>';
+                        return;
+                    }
+                    const bd = data.miss_breakdowns || {};
+
+                    const topRows = (data.top_failure_patterns || []).map(p => `<tr>
+                        <td>${escapeHtml(p.pattern)}</td>
+                        <td>${p.miss_count}</td>
+                    </tr>`).join('');
+
+                    const sgRows = (bd.by_signal_gap || []).map(b => `<tr><td>${escapeHtml(b.bucket)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const confRows = (bd.by_confidence || []).map(b => `<tr><td>${escapeHtml(b.bucket)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const methodRows = (bd.by_method || []).map(b => `<tr><td>${escapeHtml(b.predicted_method)}</td><td>${b.miss_count}</td></tr>`).join('');
+                    const rrRows = (bd.by_round_range || []).map(b => `<tr><td>${escapeHtml(b.round_range)}</td><td>${b.miss_count}</td></tr>`).join('');
+
+                    container.innerHTML = `
+                        <div style="margin-bottom:6px;font-size:13px;"><strong>Total Misses: ${data.total_misses}</strong></div>
+                        <div style="margin-bottom:8px;font-weight:600;font-size:13px;">Top Failure Patterns</div>
+                        <table class="phase1-table" style="margin-bottom:16px;">
+                            <thead><tr><th>Pattern</th><th>Misses</th></tr></thead>
+                            <tbody>${topRows || '<tr><td colspan="2" style="color:#888;">None</td></tr>'}</tbody>
+                        </table>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Signal Gap</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Bucket</th><th>Misses</th></tr></thead>
+                                    <tbody>${sgRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Confidence</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Bucket</th><th>Misses</th></tr></thead>
+                                    <tbody>${confRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Predicted Method</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Method</th><th>Misses</th></tr></thead>
+                                    <tbody>${methodRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:12px;margin-bottom:4px;">By Round Range</div>
+                                <table class="phase1-table">
+                                    <thead><tr><th>Range</th><th>Misses</th></tr></thead>
+                                    <tbody>${rrRows || '<tr><td colspan="2" style="color:#888;">—</td></tr>'}</tbody>
+                                </table>
+                            </div>
+                        </div>`;
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#a80000;">Failed to load failure patterns.</span>';
+                }
+            }
+            </script>
+        </body>
+</html>

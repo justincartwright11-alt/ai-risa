@@ -1629,6 +1629,12 @@ def index():
     return render_template("index.html", dashboard_title="AI-RISA Local Operator Dashboard")
 
 
+@app.route("/advanced-dashboard")
+def advanced_dashboard():
+    # Render the advanced/full dashboard with all panels and monitoring tools
+    return render_template("advanced_dashboard.html", dashboard_title="AI-RISA Advanced Dashboard")
+
+
 # --- Restore /run_local_ai and /open_file for test_app_backend ---
 @app.route("/run_local_ai", methods=["POST"])
 def run_local_ai():
