@@ -14,6 +14,7 @@ import json
 from datetime import datetime, timezone
 from time import perf_counter, time
 import uuid
+import hashlib
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
@@ -483,10 +484,43 @@ def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> 
         }
 
 
-def _build_batch_preview_execution_token() -> tuple:
+def _build_selected_keys_digest(selected_keys: list) -> str:
+    canonical = "|".join(sorted(selected_keys))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _build_batch_preview_execution_token(selected_keys: list) -> tuple:
     token_ttl_seconds = 300
-    token = f"batch_preview_{int(time())}_{uuid.uuid4().hex}"
+    keys_digest = _build_selected_keys_digest(selected_keys)
+    nonce = uuid.uuid4().hex
+    token = f"batch_preview_{int(time())}_{keys_digest}_{nonce}"
     return token, token_ttl_seconds
+
+
+def _validate_batch_preview_token(token: str, selected_keys: list) -> tuple:
+    if not token or not isinstance(token, str):
+        return False, "execution_token is required", 0.0
+    if not token.startswith("batch_preview_"):
+        return False, "execution_token format invalid", 0.0
+    parts = token.split("_")
+    if len(parts) != 5:
+        return False, "execution_token format invalid", 0.0
+    try:
+        issued_at = int(parts[2])
+    except (ValueError, IndexError):
+        return False, "execution_token format invalid", 0.0
+    age_seconds = float(time() - issued_at)
+    if age_seconds < 0:
+        return False, "execution_token timestamp invalid", age_seconds
+    if age_seconds > 300:
+        return False, "execution_token expired", age_seconds
+    token_digest = parts[3]
+    if len(token_digest) != 16:
+        return False, "execution_token format invalid", age_seconds
+    expected_digest = _build_selected_keys_digest(selected_keys)
+    if token_digest != expected_digest:
+        return False, "execution_token selected_keys digest mismatch", age_seconds
+    return True, "ok", age_seconds
 
 
 def operator_error_response(message: str, status_code: int = 500, **extra):
@@ -1238,7 +1272,7 @@ def api_operator_actual_result_lookup_batch_guarded_local_preview():
             "reason_code": "local_result_found",
         })
 
-    execution_token, token_ttl_seconds = _build_batch_preview_execution_token()
+    execution_token, token_ttl_seconds = _build_batch_preview_execution_token(selected_keys)
     return jsonify({
         "ok": True,
         "mode": "batch_local_preview",
@@ -1252,6 +1286,199 @@ def api_operator_actual_result_lookup_batch_guarded_local_preview():
         "scoring_semantics_changed": False,
         "execution_token": execution_token,
         "token_ttl_seconds": token_ttl_seconds,
+        "selected_keys_digest": _build_selected_keys_digest(selected_keys),
+    })
+
+
+@app.route("/api/operator/actual-result-lookup/batch/guarded-local-apply", methods=["POST"])
+def api_operator_actual_result_lookup_batch_guarded_local_apply():
+    data = request.get_json(silent=True) or {}
+    selected_keys_raw = data.get("selected_keys")
+    mode = str(data.get("mode") or "local_only").strip() or "local_only"
+    approval_granted = bool(data.get("approval_granted"))
+    execution_token = str(data.get("execution_token") or "").strip()
+
+    selected_keys = []
+    if isinstance(selected_keys_raw, list):
+        selected_keys = [str(key or "").strip() for key in selected_keys_raw if str(key or "").strip()]
+
+    base_payload = {
+        "ok": False,
+        "mode": "batch_local_apply",
+        "batch_size_requested": len(selected_keys),
+        "batch_size_accepted": 0,
+        "hard_cap": 5,
+        "total_written": 0,
+        "total_skipped": 0,
+        "rows": [],
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "partial_rollback_performed": False,
+        "execution_token_used": execution_token or None,
+        "token_age_seconds": None,
+        "selected_keys_digest": None,
+    }
+
+    if mode != "local_only":
+        return jsonify({**base_payload, "error": "mode must be local_only"}), 400
+
+    if not approval_granted:
+        return jsonify({**base_payload, "error": "approval_granted must be true for apply endpoint"}), 400
+
+    if not execution_token:
+        return jsonify({**base_payload, "error": "execution_token is required"}), 400
+
+    if not selected_keys:
+        return jsonify({**base_payload, "error": "selected_keys must contain at least one selected_key"}), 400
+
+    if len(set(selected_keys)) != len(selected_keys):
+        return jsonify({**base_payload, "error": "selected_keys must not contain duplicates"}), 400
+
+    if len(selected_keys) > 5:
+        return jsonify({**base_payload, "error": "selected_keys exceeds hard cap of 5"}), 400
+
+    valid, token_reason, age_seconds = _validate_batch_preview_token(execution_token, selected_keys)
+    if not valid:
+        return jsonify({**base_payload, "error": token_reason}), 400
+
+    keys_digest = _build_selected_keys_digest(selected_keys)
+
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+    waiting_by_selected_key = {}
+    for row in waiting_rows:
+        waiting_by_selected_key[_build_waiting_row_selected_key(row)] = row
+
+    local_actual_map, accuracy_dir = _load_local_actual_result_map()
+
+    manual_path = accuracy_dir / "actual_results_manual.json"
+    try:
+        snapshot_bytes = manual_path.read_bytes()
+    except Exception:
+        snapshot_bytes = b"[]\n"
+
+    row_results = []
+    total_written = 0
+    total_skipped = 0
+
+    for selected_key in selected_keys:
+        waiting_row = waiting_by_selected_key.get(selected_key)
+        if waiting_row is None:
+            row_results.append({
+                "selected_key": selected_key,
+                "row_found": False,
+                "local_result_found": False,
+                "write_performed": False,
+                "proposed_write": None,
+                "write_target": None,
+                "before_row_count": None,
+                "after_row_count": None,
+                "reason_code": "selected_key_not_found",
+            })
+            total_skipped += 1
+            continue
+
+        selected_row = dict(waiting_row)
+        selected_row["selected_key"] = selected_key
+        if not _is_known_value(selected_row.get("fight_id")):
+            selected_row["fight_id"] = _normalize_token(selected_row.get("fight_name")) or None
+
+        local_actual = None
+        local_actual_source = None
+        for key in _build_waiting_row_candidate_fight_keys(selected_row):
+            matched = local_actual_map.get(key)
+            if matched and _is_known_value(matched["record"].get("actual_winner")):
+                local_actual = dict(matched["record"])
+                local_actual_source = matched["source_file"]
+                break
+
+        if local_actual is None:
+            row_results.append({
+                "selected_key": selected_key,
+                "row_found": True,
+                "local_result_found": False,
+                "write_performed": False,
+                "proposed_write": None,
+                "write_target": None,
+                "before_row_count": None,
+                "after_row_count": None,
+                "reason_code": "local_result_not_found",
+            })
+            total_skipped += 1
+            continue
+
+        proposed_write = {
+            "fight_id": local_actual.get("fight_id") or selected_row.get("fight_id"),
+            "actual_winner": local_actual.get("actual_winner") or "UNKNOWN",
+            "actual_method": local_actual.get("actual_method") or "UNKNOWN",
+            "actual_round": local_actual.get("actual_round") or "UNKNOWN",
+            "event_date": local_actual.get("event_date") or selected_row.get("event_date") or "UNKNOWN",
+            "source": "guarded_batch_local_apply",
+            "copied_from": local_actual_source,
+        }
+
+        write_result = _upsert_single_manual_actual_result(accuracy_dir, proposed_write)
+        if not write_result.get("ok"):
+            try:
+                manual_path.write_bytes(snapshot_bytes)
+            except Exception:
+                pass
+            return jsonify({
+                **base_payload,
+                "ok": False,
+                "total_written": 0,
+                "partial_rollback_performed": True,
+                "mutation_performed": False,
+                "rows": row_results + [{
+                    "selected_key": selected_key,
+                    "row_found": True,
+                    "local_result_found": True,
+                    "write_performed": False,
+                    "proposed_write": proposed_write,
+                    "write_target": write_result.get("write_target"),
+                    "before_row_count": write_result.get("before_row_count"),
+                    "after_row_count": write_result.get("after_row_count"),
+                    "reason_code": "write_failed_rollback_performed",
+                }],
+                "selected_keys_digest": keys_digest,
+                "token_age_seconds": round(age_seconds, 3),
+                "execution_token_used": execution_token,
+                "error": "Write failed. Manual file restored to pre-batch snapshot.",
+            }), 500
+
+        row_results.append({
+            "selected_key": selected_key,
+            "row_found": True,
+            "local_result_found": True,
+            "write_performed": True,
+            "proposed_write": proposed_write,
+            "write_target": write_result.get("write_target"),
+            "before_row_count": write_result.get("before_row_count"),
+            "after_row_count": write_result.get("after_row_count"),
+            "reason_code": "local_result_applied",
+        })
+        total_written += 1
+
+    mutation_performed = total_written >= 1
+    return jsonify({
+        "ok": True,
+        "mode": "batch_local_apply",
+        "batch_size_requested": len(selected_keys),
+        "batch_size_accepted": len(selected_keys),
+        "hard_cap": 5,
+        "total_written": total_written,
+        "total_skipped": total_skipped,
+        "rows": row_results,
+        "mutation_performed": mutation_performed,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "partial_rollback_performed": False,
+        "execution_token_used": execution_token,
+        "token_age_seconds": round(age_seconds, 3),
+        "selected_keys_digest": keys_digest,
     })
 
 

@@ -3,9 +3,11 @@ import json
 import os
 import tempfile
 import hashlib
+import uuid
 from pathlib import Path
 from unittest.mock import patch
-from app import app, _build_structural_signal_backfill_planner
+from time import time
+from app import app, _build_structural_signal_backfill_planner, _build_batch_preview_execution_token, _build_selected_keys_digest
 
 class DashboardBackendTest(unittest.TestCase):
     def setUp(self):
@@ -712,6 +714,492 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'/api/accuracy/structural-signal-backfill-planner', resp.data)
 
 
+    # â”€â”€ batch/guarded-local-apply tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    APPLY_URL = '/api/operator/actual-result-lookup/batch/guarded-local-apply'
+
+    def _valid_apply_token(self, selected_keys):
+        token, _ = _build_batch_preview_execution_token(selected_keys)
+        return token
+
+    def _expired_apply_token(self, selected_keys):
+        digest = _build_selected_keys_digest(selected_keys)
+        return f"batch_preview_{int(time()) - 400}_{digest}_{uuid.uuid4().hex}"
+
+    def _future_apply_token(self, selected_keys):
+        digest = _build_selected_keys_digest(selected_keys)
+        return f"batch_preview_{int(time()) + 400}_{digest}_{uuid.uuid4().hex}"
+
+    # Test 1: rejects approval_granted=false
+    def test_batch_local_apply_rejects_approval_false(self):
+        token = self._valid_apply_token(['k1'])
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': False,
+            'selected_keys': ['k1'],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+
+    # Test 2: rejects missing execution_token
+    def test_batch_local_apply_rejects_missing_token(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1'],
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('execution_token', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 3: rejects malformed token
+    def test_batch_local_apply_rejects_malformed_token(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1'],
+            'execution_token': 'garbage_not_valid',
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertIn('format invalid', (data.get('error') or '').lower())
+
+    # Test 4: rejects expired token
+    def test_batch_local_apply_rejects_expired_token(self):
+        token = self._expired_apply_token(['k1'])
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1'],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('expired', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 5: rejects future-issued token
+    def test_batch_local_apply_rejects_future_token(self):
+        token = self._future_apply_token(['k1'])
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1'],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('invalid', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 6: rejects selected_keys digest mismatch
+    def test_batch_local_apply_rejects_digest_mismatch(self):
+        # Token was issued for ['k1'], but apply submits ['k2']
+        token = self._valid_apply_token(['k1'])
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k2'],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('mismatch', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 7: rejects empty selected_keys
+    def test_batch_local_apply_rejects_empty_selected_keys(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': [],
+            'execution_token': 'some_nonempty_token',
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('selected_keys', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 8: rejects duplicate selected_keys
+    def test_batch_local_apply_rejects_duplicate_selected_keys(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1', 'k1'],
+            'execution_token': 'some_nonempty_token',
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('duplicates', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 9: rejects over hard cap
+    def test_batch_local_apply_rejects_over_hard_cap(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': ['k1', 'k2', 'k3', 'k4', 'k5', 'k6'],
+            'execution_token': 'some_nonempty_token',
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('hard cap', (data.get('error') or '').lower())
+        self.assertFalse(data.get('mutation_performed'))
+
+    # Test 10: valid token + no local result â†’ no mutation, real files unchanged
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_valid_token_no_local_result_no_mutation(self, mock_summary, mock_local_map):
+        selected_key = 'ghost_fight|predictions_ghost_fight_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Ghost Fight',
+                'predicted_winner': 'fighter_a',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/ghost_fight.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        root = Path(__file__).resolve().parent.parent
+        mock_local_map.return_value = ({}, root / 'ops' / 'accuracy')
+        token = self._valid_apply_token([selected_key])
+        before = self._actual_results_file_hashes()
+
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': [selected_key],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('total_written'), 0)
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertFalse(data.get('partial_rollback_performed'))
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    # Test 11: valid token + local result found â†’ writes exactly one row to manual file only
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_valid_token_writes_one_row_to_manual_only(self, mock_summary, mock_local_map):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            accuracy_dir = Path(tmp) / 'ops' / 'accuracy'
+            accuracy_dir.mkdir(parents=True, exist_ok=True)
+            manual_path = accuracy_dir / 'actual_results_manual.json'
+            manual_path.write_text('[]\n', encoding='utf-8')
+            (accuracy_dir / 'actual_results.json').write_text('[]\n', encoding='utf-8')
+            (accuracy_dir / 'actual_results_unresolved.json').write_text('[]\n', encoding='utf-8')
+
+            mock_local_map.return_value = ({
+                'alpha_vs_beta': {
+                    'record': {
+                        'fight_id': 'alpha_vs_beta',
+                        'actual_winner': 'alpha',
+                        'actual_method': 'Decision',
+                        'actual_round': '3',
+                        'event_date': '2026-01-01',
+                        'source': 'manual',
+                    },
+                    'source_file': 'actual_results_manual.json',
+                }
+            }, accuracy_dir)
+
+            token = self._valid_apply_token([selected_key])
+            before_repo = self._actual_results_file_hashes()
+
+            resp = self.client.post(self.APPLY_URL, json={
+                'mode': 'local_only',
+                'approval_granted': True,
+                'selected_keys': [selected_key],
+                'execution_token': token,
+            })
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertEqual(data.get('total_written'), 1)
+            self.assertEqual(data.get('total_skipped'), 0)
+            self.assertTrue(data.get('mutation_performed'))
+            self.assertFalse(data.get('external_lookup_performed'))
+            self.assertFalse(data.get('bulk_lookup_performed'))
+            self.assertFalse(data.get('scoring_semantics_changed'))
+            self.assertFalse(data.get('partial_rollback_performed'))
+            self.assertEqual(data.get('mode'), 'batch_local_apply')
+
+            rows = data.get('rows') or []
+            self.assertEqual(len(rows), 1)
+            row = rows[0]
+            self.assertTrue(row.get('write_performed'))
+            self.assertEqual(row.get('reason_code'), 'local_result_applied')
+            self.assertEqual(row.get('proposed_write', {}).get('source'), 'guarded_batch_local_apply')
+
+            written = json.loads(manual_path.read_text(encoding='utf-8'))
+            matched = [r for r in written if r.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched), 1)
+
+            # Real repo files untouched
+            after_repo = self._actual_results_file_hashes()
+            self.assertEqual(before_repo, after_repo)
+
+    # Test 12: actual_results.json and actual_results_unresolved.json never written
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_no_writes_to_non_manual_files(self, mock_summary, mock_local_map):
+        selected_key = 'bravo_vs_charlie|predictions_bravo_vs_charlie_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Bravo vs Charlie',
+                'predicted_winner': 'Bravo',
+                'event_date': '2026-02-01',
+                'file_path': 'predictions/bravo_vs_charlie.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            accuracy_dir = Path(tmp) / 'ops' / 'accuracy'
+            accuracy_dir.mkdir(parents=True, exist_ok=True)
+            (accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
+            ar_path = accuracy_dir / 'actual_results.json'
+            ur_path = accuracy_dir / 'actual_results_unresolved.json'
+            ar_path.write_text('[]\n', encoding='utf-8')
+            ur_path.write_text('[]\n', encoding='utf-8')
+            hash_ar_before = hashlib.sha256(ar_path.read_bytes()).hexdigest()
+            hash_ur_before = hashlib.sha256(ur_path.read_bytes()).hexdigest()
+
+            mock_local_map.return_value = ({
+                'bravo_vs_charlie': {
+                    'record': {
+                        'fight_id': 'bravo_vs_charlie',
+                        'actual_winner': 'bravo',
+                        'actual_method': 'KO',
+                        'actual_round': '1',
+                        'event_date': '2026-02-01',
+                        'source': 'manual',
+                    },
+                    'source_file': 'actual_results_manual.json',
+                }
+            }, accuracy_dir)
+
+            token = self._valid_apply_token([selected_key])
+            self.client.post(self.APPLY_URL, json={
+                'mode': 'local_only',
+                'approval_granted': True,
+                'selected_keys': [selected_key],
+                'execution_token': token,
+            })
+            self.assertEqual(hashlib.sha256(ar_path.read_bytes()).hexdigest(), hash_ar_before)
+            self.assertEqual(hashlib.sha256(ur_path.read_bytes()).hexdigest(), hash_ur_before)
+
+    # Test 13: rollback restores manual file when write fails mid-batch
+    @patch('app._upsert_single_manual_actual_result')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_rollback_on_write_failure(self, mock_summary, mock_local_map, mock_upsert):
+        selected_key = 'delta_vs_echo|predictions_delta_vs_echo_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Delta vs Echo',
+                'predicted_winner': 'Delta',
+                'event_date': '2026-03-01',
+                'file_path': 'predictions/delta_vs_echo.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            accuracy_dir = Path(tmp) / 'ops' / 'accuracy'
+            accuracy_dir.mkdir(parents=True, exist_ok=True)
+            manual_path = accuracy_dir / 'actual_results_manual.json'
+            original_bytes = b'[]\n'
+            manual_path.write_bytes(original_bytes)
+
+            mock_local_map.return_value = ({
+                'delta_vs_echo': {
+                    'record': {
+                        'fight_id': 'delta_vs_echo',
+                        'actual_winner': 'delta',
+                        'actual_method': 'TKO',
+                        'actual_round': '2',
+                        'event_date': '2026-03-01',
+                        'source': 'manual',
+                    },
+                    'source_file': 'actual_results_manual.json',
+                }
+            }, accuracy_dir)
+
+            def corrupt_then_fail(acc_dir, write_row):
+                (acc_dir / 'actual_results_manual.json').write_text(
+                    '[{"corrupt": "partial_write"}]\n', encoding='utf-8'
+                )
+                return {
+                    'ok': False,
+                    'before_row_count': 0,
+                    'after_row_count': 0,
+                    'write_target': str(acc_dir / 'actual_results_manual.json'),
+                }
+            mock_upsert.side_effect = corrupt_then_fail
+
+            token = self._valid_apply_token([selected_key])
+            resp = self.client.post(self.APPLY_URL, json={
+                'mode': 'local_only',
+                'approval_granted': True,
+                'selected_keys': [selected_key],
+                'execution_token': token,
+            })
+            self.assertEqual(resp.status_code, 500)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            self.assertTrue(data.get('partial_rollback_performed'))
+            self.assertEqual(data.get('total_written'), 0)
+            self.assertFalse(data.get('mutation_performed'))
+            # Rollback must have restored the original content
+            self.assertEqual(manual_path.read_bytes(), original_bytes)
+
+    # Test 14: verify new preview token format (5 parts, digest bound to keys)
+    def test_batch_local_preview_token_format_includes_keys_digest(self):
+        selected_keys = ['k1', 'k2']
+        token, _ = _build_batch_preview_execution_token(selected_keys)
+        parts = token.split('_')
+        self.assertEqual(len(parts), 5)
+        self.assertEqual(parts[0], 'batch')
+        self.assertEqual(parts[1], 'preview')
+        digest_in_token = parts[3]
+        expected_digest = _build_selected_keys_digest(selected_keys)
+        self.assertEqual(digest_in_token, expected_digest)
+
+    # Test 15: apply rejects mode != local_only with all guardrail flags false
+    def test_batch_local_apply_rejects_mode_not_local_only(self):
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'web',
+            'approval_granted': True,
+            'selected_keys': ['k1'],
+            'execution_token': 'some_token',
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+
+    # Test 16: success response contains all required top-level fields
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_success_response_has_required_fields(self, mock_summary, mock_local_map):
+        selected_key = 'foxtrot_vs_golf|predictions_foxtrot_vs_golf_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        root = Path(__file__).resolve().parent.parent
+        mock_local_map.return_value = ({}, root / 'ops' / 'accuracy')
+        token = self._valid_apply_token([selected_key])
+
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': [selected_key],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        for field in (
+            'ok', 'mode', 'batch_size_requested', 'batch_size_accepted', 'hard_cap',
+            'total_written', 'total_skipped', 'mutation_performed',
+            'external_lookup_performed', 'bulk_lookup_performed',
+            'scoring_semantics_changed', 'partial_rollback_performed',
+            'execution_token_used', 'token_age_seconds', 'selected_keys_digest', 'rows',
+        ):
+            self.assertIn(field, data, f"Missing required field: {field}")
+        self.assertEqual(data.get('mode'), 'batch_local_apply')
+        self.assertEqual(data.get('hard_cap'), 5)
+        self.assertIsInstance(data.get('rows'), list)
+
+    # Test 17: each row in response contains all required per-row audit fields
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_apply_per_row_audit_fields_present(self, mock_summary, mock_local_map):
+        selected_key = 'hotel_vs_india|predictions_hotel_vs_india_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        root = Path(__file__).resolve().parent.parent
+        mock_local_map.return_value = ({}, root / 'ops' / 'accuracy')
+        token = self._valid_apply_token([selected_key])
+
+        resp = self.client.post(self.APPLY_URL, json={
+            'mode': 'local_only',
+            'approval_granted': True,
+            'selected_keys': [selected_key],
+            'execution_token': token,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        rows = data.get('rows') or []
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        for field in (
+            'selected_key', 'row_found', 'local_result_found', 'write_performed',
+            'proposed_write', 'write_target', 'before_row_count', 'after_row_count',
+            'reason_code',
+        ):
+            self.assertIn(field, row, f"Missing per-row field: {field}")
+
+    # Test 18: preview response now includes selected_keys_digest bound to the submitted keys
+    def test_batch_local_preview_response_includes_selected_keys_digest(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/batch/guarded-local-preview',
+            json={
+                'mode': 'local_only',
+                'approval_granted': False,
+                'selected_keys': ['k1', 'k2'],
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertIn('selected_keys_digest', data)
+        self.assertIsNotNone(data.get('selected_keys_digest'))
+        expected = _build_selected_keys_digest(['k1', 'k2'])
+        self.assertEqual(data.get('selected_keys_digest'), expected)
+
+
 # ---------------------------------------------------------------------------
 # Unit tests for planner eligibility classification logic
 # These tests inject a synthetic ledger directly to isolate classification.
@@ -871,6 +1359,5 @@ class TestPlannerEligibilityClassification(unittest.TestCase):
         for key in ('unresolved_needing_backfill', 'resolved_needing_backfill',
                     'resolved_miss_needing_backfill', 'eligibility_counts'):
             self.assertIn(key, summary, f"Missing backwards-compat key: {key}")
-
 if __name__ == '__main__':
     unittest.main()
