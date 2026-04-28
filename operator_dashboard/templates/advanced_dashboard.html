@@ -1001,6 +1001,11 @@
                             <span style="font-size:12px;color:#5a6374;">No web lookup or result write is performed by this preview.</span>
                         </div>
                         <div id="operator-dry-run-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 10px 0;">
+                            <button id="operator-batch-local-preview-btn" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #1f5f93;background:#edf5ff;color:#1f5f93;cursor:pointer;">Batch Local Preview</button>
+                            <span style="font-size:12px;color:#5a6374;">Preview only. No web lookup, no result write, no scoring change.</span>
+                        </div>
+                        <div id="operator-batch-local-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
                         <div style="border:1px solid #dbe3ef;border-radius:8px;padding:10px;background:#fbfdff;margin-bottom:12px;">
                             <div style="font-size:12px;font-weight:700;color:#314b68;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Guarded Single Lookup (v1b)</div>
                             <div style="display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:8px;align-items:center;">
@@ -2313,6 +2318,8 @@
                 const guardedApprovalCheckbox = document.getElementById('operator-guarded-approval-checkbox');
                 const guardedSingleLookupBtn = document.getElementById('operator-guarded-single-lookup-btn');
                 const guardedSingleOutputDiv = document.getElementById('operator-guarded-single-output');
+                const batchLocalPreviewBtn = document.getElementById('operator-batch-local-preview-btn');
+                const batchLocalPreviewOutputDiv = document.getElementById('operator-batch-local-preview-output');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2393,12 +2400,14 @@
                         return;
                     }
 
-                    const body = rows.map((row) => {
+                    const body = rows.map((row, idx) => {
                         const missing = Array.isArray(row.missing_fields) && row.missing_fields.length
                             ? escapeHtml(row.missing_fields.join(', '))
                             : 'none';
                         const selectedKey = escapeHtml(row.selected_key || '');
+                        const checkedAttr = idx < 3 ? 'checked' : '';
                         return `<tr>
+                            <td><input type="checkbox" class="operator-batch-preview-row-checkbox" data-selected-key="${selectedKey}" ${checkedAttr} /></td>
                             <td>${escapeHtml(row.fight_name || 'UNKNOWN')}</td>
                             <td>${escapeHtml(row.fight_id || 'N/A')}</td>
                             <td>${escapeHtml(row.predicted_winner || 'UNKNOWN')}</td>
@@ -2417,6 +2426,7 @@
                         <table class="phase1-table">
                             <thead>
                                 <tr>
+                                    <th>Select</th>
                                     <th>Fight</th>
                                     <th>Fight ID</th>
                                     <th>Predicted Winner</th>
@@ -2439,6 +2449,50 @@
                             setStatus('Selected preview row key copied for guarded lookup.');
                         });
                     });
+                }
+
+                function getSelectedBatchPreviewKeys() {
+                    if (!dryRunPreviewOutputDiv) return [];
+                    const selected = [];
+                    dryRunPreviewOutputDiv.querySelectorAll('.operator-batch-preview-row-checkbox:checked').forEach((checkbox) => {
+                        const key = checkbox.getAttribute('data-selected-key') || '';
+                        if (key) selected.push(key);
+                    });
+                    return selected;
+                }
+
+                function renderBatchLocalPreviewOutput(data) {
+                    if (!batchLocalPreviewOutputDiv) return;
+                    const rows = Array.isArray(data.rows) ? data.rows : [];
+                    const body = rows.map((row) => {
+                        return `<tr>
+                            <td>${escapeHtml(row.selected_key || 'UNKNOWN')}</td>
+                            <td>${row.row_found ? 'YES' : 'NO'}</td>
+                            <td>${row.local_result_found ? 'YES' : 'NO'}</td>
+                            <td>${row.manual_review_required ? 'YES' : 'NO'}</td>
+                            <td>${escapeHtml(row.reason_code || '')}</td>
+                            <td><pre style="margin:0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:6px;font-size:11px;">${escapeHtml(JSON.stringify(row.proposed_write, null, 2))}</pre></td>
+                        </tr>`;
+                    }).join('');
+
+                    batchLocalPreviewOutputDiv.style.display = 'block';
+                    batchLocalPreviewOutputDiv.innerHTML = `
+                        <div style="margin-bottom:8px;"><strong>Mode:</strong> ${escapeHtml(data.mode || 'batch_local_preview')} | <strong>Requested:</strong> ${Number(data.batch_size_requested || 0)} | <strong>Accepted:</strong> ${Number(data.batch_size_accepted || 0)} | <strong>Hard Cap:</strong> ${Number(data.hard_cap || 5)}</div>
+                        <div style="margin-bottom:8px;"><strong>Mutation Performed:</strong> ${data.mutation_performed ? 'YES' : 'NO'} | <strong>External Lookup:</strong> ${data.external_lookup_performed ? 'YES' : 'NO'} | <strong>Bulk Lookup:</strong> ${data.bulk_lookup_performed ? 'YES' : 'NO'} | <strong>Scoring Semantics Changed:</strong> ${data.scoring_semantics_changed ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Execution Token:</strong> ${escapeHtml(data.execution_token || 'N/A')} | <strong>Token TTL:</strong> ${Number(data.token_ttl_seconds || 0)} second(s)</div>
+                        <table class="phase1-table">
+                            <thead>
+                                <tr>
+                                    <th>Selected Key</th>
+                                    <th>Row Found</th>
+                                    <th>Local Result Found</th>
+                                    <th>Manual Review Required</th>
+                                    <th>Reason</th>
+                                    <th>Proposed Write</th>
+                                </tr>
+                            </thead>
+                            <tbody>${body || '<tr><td colspan="6" style="color:#666;">No rows returned.</td></tr>'}</tbody>
+                        </table>`;
                 }
 
                 function renderGuardedSingleOutput(data) {
@@ -2590,6 +2644,10 @@ ${comparedResults.length ? `<table class="phase1-table">
                         dryRunPreviewOutputDiv.style.display = 'none';
                         dryRunPreviewOutputDiv.innerHTML = '';
                     }
+                    if (batchLocalPreviewOutputDiv) {
+                        batchLocalPreviewOutputDiv.style.display = 'none';
+                        batchLocalPreviewOutputDiv.innerHTML = '';
+                    }
                     if (guardedSingleOutputDiv) {
                         guardedSingleOutputDiv.style.display = 'none';
                         guardedSingleOutputDiv.innerHTML = '';
@@ -2607,6 +2665,38 @@ ${comparedResults.length ? `<table class="phase1-table">
                     } catch (e) {
                         setError('Request error: ' + e.message);
                         setStatus('Dry-run preview request failed.', true);
+                    }
+                });
+
+                batchLocalPreviewBtn && (batchLocalPreviewBtn.onclick = async () => {
+                    const selectedKeys = getSelectedBatchPreviewKeys();
+                    setStatus('Running batch local preview...');
+                    setError('');
+                    if (batchLocalPreviewOutputDiv) {
+                        batchLocalPreviewOutputDiv.style.display = 'none';
+                        batchLocalPreviewOutputDiv.innerHTML = '';
+                    }
+                    try {
+                        const resp = await fetch('/api/operator/actual-result-lookup/batch/guarded-local-preview', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                selected_keys: selectedKeys,
+                                mode: 'local_only',
+                                approval_granted: false,
+                            })
+                        });
+                        const data = await resp.json();
+                        renderBatchLocalPreviewOutput(data);
+                        if (!resp.ok || !data.ok) {
+                            setError(data.error || 'Batch local preview failed');
+                            setStatus('Batch local preview failed.', true);
+                            return;
+                        }
+                        setStatus(`Batch local preview completed: ${Number(data.batch_size_accepted || 0)} row(s).`);
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Batch local preview request failed.', true);
                     }
                 });
 

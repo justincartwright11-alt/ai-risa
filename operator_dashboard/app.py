@@ -483,6 +483,12 @@ def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> 
         }
 
 
+def _build_batch_preview_execution_token() -> tuple:
+    token_ttl_seconds = 300
+    token = f"batch_preview_{int(time())}_{uuid.uuid4().hex}"
+    return token, token_ttl_seconds
+
+
 def operator_error_response(message: str, status_code: int = 500, **extra):
     payload = {
         "ok": False,
@@ -1109,6 +1115,144 @@ def api_operator_actual_result_lookup_dry_run_preview():
             "external_lookup_performed": False,
             "bulk_lookup_performed": False,
         }), 500
+
+
+@app.route("/api/operator/actual-result-lookup/batch/guarded-local-preview", methods=["POST"])
+def api_operator_actual_result_lookup_batch_guarded_local_preview():
+    data = request.get_json(silent=True) or {}
+    selected_keys_raw = data.get("selected_keys")
+    mode = str(data.get("mode") or "local_only").strip() or "local_only"
+    approval_granted = bool(data.get("approval_granted"))
+
+    selected_keys = []
+    if isinstance(selected_keys_raw, list):
+        selected_keys = [str(key or "").strip() for key in selected_keys_raw if str(key or "").strip()]
+
+    base_payload = {
+        "ok": False,
+        "mode": "batch_local_preview",
+        "batch_size_requested": len(selected_keys),
+        "batch_size_accepted": 0,
+        "hard_cap": 5,
+        "rows": [],
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "execution_token": None,
+        "token_ttl_seconds": None,
+    }
+
+    if mode != "local_only":
+        return jsonify({
+            **base_payload,
+            "error": "mode must be local_only",
+        }), 400
+
+    if approval_granted:
+        return jsonify({
+            **base_payload,
+            "error": "approval_granted must be false for preview-only endpoint",
+        }), 400
+
+    if not selected_keys:
+        return jsonify({
+            **base_payload,
+            "error": "selected_keys must contain at least one selected_key",
+        }), 400
+
+    if len(set(selected_keys)) != len(selected_keys):
+        return jsonify({
+            **base_payload,
+            "error": "selected_keys must not contain duplicates",
+        }), 400
+
+    if len(selected_keys) > 5:
+        return jsonify({
+            **base_payload,
+            "error": "selected_keys exceeds hard cap of 5",
+        }), 400
+
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+    waiting_by_selected_key = {}
+    for row in waiting_rows:
+        waiting_by_selected_key[_build_waiting_row_selected_key(row)] = row
+
+    local_actual_map, _accuracy_dir = _load_local_actual_result_map()
+    row_results = []
+
+    for selected_key in selected_keys:
+        waiting_row = waiting_by_selected_key.get(selected_key)
+        if waiting_row is None:
+            row_results.append({
+                "selected_key": selected_key,
+                "row_found": False,
+                "local_result_found": False,
+                "proposed_write": None,
+                "manual_review_required": True,
+                "reason_code": "selected_key_not_found",
+            })
+            continue
+
+        selected_row = dict(waiting_row)
+        selected_row["selected_key"] = selected_key
+        if not _is_known_value(selected_row.get("fight_id")):
+            selected_row["fight_id"] = _normalize_token(selected_row.get("fight_name")) or None
+
+        local_actual = None
+        local_actual_source = None
+        for key in _build_waiting_row_candidate_fight_keys(selected_row):
+            matched = local_actual_map.get(key)
+            if matched and _is_known_value(matched["record"].get("actual_winner")):
+                local_actual = dict(matched["record"])
+                local_actual_source = matched["source_file"]
+                break
+
+        if local_actual is None:
+            row_results.append({
+                "selected_key": selected_key,
+                "row_found": True,
+                "local_result_found": False,
+                "proposed_write": None,
+                "manual_review_required": True,
+                "reason_code": "local_result_not_found",
+            })
+            continue
+
+        proposed_write = {
+            "fight_id": local_actual.get("fight_id") or selected_row.get("fight_id"),
+            "actual_winner": local_actual.get("actual_winner") or "UNKNOWN",
+            "actual_method": local_actual.get("actual_method") or "UNKNOWN",
+            "actual_round": local_actual.get("actual_round") or "UNKNOWN",
+            "event_date": local_actual.get("event_date") or selected_row.get("event_date") or "UNKNOWN",
+            "source": "guarded_batch_local_actual_preview",
+            "copied_from": local_actual_source,
+        }
+        row_results.append({
+            "selected_key": selected_key,
+            "row_found": True,
+            "local_result_found": True,
+            "proposed_write": proposed_write,
+            "manual_review_required": False,
+            "reason_code": "local_result_found",
+        })
+
+    execution_token, token_ttl_seconds = _build_batch_preview_execution_token()
+    return jsonify({
+        "ok": True,
+        "mode": "batch_local_preview",
+        "batch_size_requested": len(selected_keys),
+        "batch_size_accepted": len(selected_keys),
+        "hard_cap": 5,
+        "rows": row_results,
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "execution_token": execution_token,
+        "token_ttl_seconds": token_ttl_seconds,
+    })
 
 
 @app.route("/api/operator/actual-result-lookup/guarded-single", methods=["POST"])

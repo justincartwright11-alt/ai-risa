@@ -170,6 +170,124 @@ class DashboardBackendTest(unittest.TestCase):
         dom_ready_slice = page[dom_ready_start:dom_ready_start + 900]
         self.assertNotIn('/api/operator/actual-result-lookup/dry-run-preview', dom_ready_slice)
 
+    def test_batch_local_preview_endpoint_exists(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={})
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('mode'), 'batch_local_preview')
+
+    def test_batch_local_preview_rejects_empty_selected_keys(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={
+            'selected_keys': [],
+            'mode': 'local_only',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('selected_keys', data.get('error') or '')
+
+    def test_batch_local_preview_rejects_duplicate_selected_keys(self):
+        selected_key = 'dup_key|path'
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={
+            'selected_keys': [selected_key, selected_key],
+            'mode': 'local_only',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('duplicates', (data.get('error') or '').lower())
+
+    def test_batch_local_preview_rejects_more_than_hard_cap(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={
+            'selected_keys': ['k1', 'k2', 'k3', 'k4', 'k5', 'k6'],
+            'mode': 'local_only',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('hard cap', (data.get('error') or '').lower())
+
+    def test_batch_local_preview_rejects_approval_true(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={
+            'selected_keys': ['k1'],
+            'mode': 'local_only',
+            'approval_granted': True,
+        })
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('preview-only', (data.get('error') or '').lower())
+
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_batch_local_preview_valid_selection_returns_no_mutation_and_token(self, mock_summary, mock_local_map):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({
+            'alpha_vs_beta': {
+                'record': {
+                    'fight_id': 'alpha_vs_beta',
+                    'actual_winner': 'alpha',
+                    'actual_method': 'Decision',
+                    'actual_round': '3',
+                    'event_date': '2026-01-01',
+                },
+                'source_file': 'actual_results_manual.json',
+            }
+        }, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/operator/actual-result-lookup/batch/guarded-local-preview', json={
+            'selected_keys': [selected_key],
+            'mode': 'local_only',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'batch_local_preview')
+        self.assertEqual(data.get('batch_size_requested'), 1)
+        self.assertEqual(data.get('batch_size_accepted'), 1)
+        self.assertEqual(data.get('hard_cap'), 5)
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertIsInstance(data.get('rows'), list)
+        self.assertTrue(data.get('execution_token'))
+        self.assertGreater(int(data.get('token_ttl_seconds') or 0), 0)
+
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    def test_advanced_dashboard_has_batch_local_preview_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'operator-batch-local-preview-btn', resp.data)
+        self.assertIn(b'operator-batch-local-preview-output', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/batch/guarded-local-preview', resp.data)
+        self.assertIn(b'Preview only. No web lookup, no result write, no scoring change.', resp.data)
+
+    def test_advanced_batch_local_preview_not_called_on_page_load(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 1800]
+        self.assertNotIn('/api/operator/actual-result-lookup/batch/guarded-local-preview', dom_ready_slice)
+
     def test_guarded_single_lookup_endpoint_exists(self):
         resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={'selected_key': 'missing|missing'})
         self.assertIn(resp.status_code, (200, 404))
