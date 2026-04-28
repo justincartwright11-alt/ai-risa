@@ -1019,6 +1019,15 @@
                             <div style="font-size:12px;color:#5a6374;margin-top:8px;">No web lookup, no bulk lookup, and no write without explicit approval.</div>
                         </div>
                         <div id="operator-guarded-single-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
+                        <div style="border:1px solid #dbe3ef;border-radius:8px;padding:10px;background:#fbfdff;margin-bottom:12px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Official Source One-Record Preview (v1b)</div>
+                            <div style="display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:8px;align-items:center;">
+                                <input id="operator-official-source-selected-key" type="text" placeholder="Select a preview row or paste selected_key" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                <button id="operator-official-source-preview-btn" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #1f5f93;background:#edf5ff;color:#1f5f93;cursor:pointer;">Official Source Preview</button>
+                            </div>
+                            <div style="font-size:12px;color:#5a6374;margin-top:8px;">Preview only. No write, no mutation, no batch, no page-load lookup.</div>
+                        </div>
+                        <div id="operator-official-source-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
                         <div style="font-size:13px;color:#4b5563;margin:-6px 0 12px 0;">
                             This panel uses report-scoring data only. Accuracy-ledger calibration is shown in the Model Calibration section below.
                         </div>
@@ -2320,6 +2329,9 @@
                 const guardedSingleOutputDiv = document.getElementById('operator-guarded-single-output');
                 const batchLocalPreviewBtn = document.getElementById('operator-batch-local-preview-btn');
                 const batchLocalPreviewOutputDiv = document.getElementById('operator-batch-local-preview-output');
+                const officialSourceSelectedKeyInput = document.getElementById('operator-official-source-selected-key');
+                const officialSourcePreviewBtn = document.getElementById('operator-official-source-preview-btn');
+                const officialSourcePreviewOutputDiv = document.getElementById('operator-official-source-preview-output');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2443,10 +2455,14 @@
 
                     dryRunPreviewOutputDiv.querySelectorAll('.operator-select-preview-row-btn').forEach((btn) => {
                         btn.addEventListener('click', () => {
+                            const key = btn.getAttribute('data-selected-key') || '';
                             if (guardedSelectedKeyInput) {
-                                guardedSelectedKeyInput.value = btn.getAttribute('data-selected-key') || '';
+                                guardedSelectedKeyInput.value = key;
                             }
-                            setStatus('Selected preview row key copied for guarded lookup.');
+                            if (officialSourceSelectedKeyInput) {
+                                officialSourceSelectedKeyInput.value = key;
+                            }
+                            setStatus('Selected preview row key copied for guarded lookup and official source preview.');
                         });
                     });
                 }
@@ -2493,6 +2509,20 @@
                             </thead>
                             <tbody>${body || '<tr><td colspan="6" style="color:#666;">No rows returned.</td></tr>'}</tbody>
                         </table>`;
+                }
+
+                function renderOfficialSourcePreviewOutput(data) {
+                    if (!officialSourcePreviewOutputDiv) return;
+                    officialSourcePreviewOutputDiv.style.display = 'block';
+                    const citation = data.source_citation || null;
+                    const auditObj = data.audit || {};
+                    officialSourcePreviewOutputDiv.innerHTML = `
+                        <div style="margin-bottom:8px;"><strong>Mode:</strong> ${escapeHtml(data.mode || '')} | <strong>Phase:</strong> ${escapeHtml(data.phase || '')} | <strong>OK:</strong> ${data.ok ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Mutation Performed:</strong> ${data.mutation_performed ? 'YES' : 'NO'} | <strong>External Lookup:</strong> ${data.external_lookup_performed ? 'YES' : 'NO'} | <strong>Local Result Found:</strong> ${data.local_result_found ? 'YES' : 'NO'} | <strong>Manual Review Required:</strong> ${data.manual_review_required ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Reason Code:</strong> ${escapeHtml(auditObj.reason_code || 'N/A')} | <strong>Provider Attempted:</strong> ${auditObj.provider_attempted ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Message:</strong> ${escapeHtml(data.message || '')}</div>
+                        ${citation ? `<div style="margin-bottom:4px;"><strong>Source Citation:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(citation, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;">No source citation returned.</div>'}
+                    `;
                 }
 
                 function renderGuardedSingleOutput(data) {
@@ -2652,6 +2682,10 @@ ${comparedResults.length ? `<table class="phase1-table">
                         guardedSingleOutputDiv.style.display = 'none';
                         guardedSingleOutputDiv.innerHTML = '';
                     }
+                    if (officialSourcePreviewOutputDiv) {
+                        officialSourcePreviewOutputDiv.style.display = 'none';
+                        officialSourcePreviewOutputDiv.innerHTML = '';
+                    }
                     try {
                         const resp = await fetch('/api/operator/actual-result-lookup/dry-run-preview');
                         const data = await resp.json();
@@ -2697,6 +2731,39 @@ ${comparedResults.length ? `<table class="phase1-table">
                     } catch (e) {
                         setError('Request error: ' + e.message);
                         setStatus('Batch local preview request failed.', true);
+                    }
+                });
+
+                officialSourcePreviewBtn && (officialSourcePreviewBtn.onclick = async () => {
+                    const selectedKey = officialSourceSelectedKeyInput ? officialSourceSelectedKeyInput.value.trim() : '';
+                    setStatus('Running official source one-record preview...');
+                    setError('');
+                    if (officialSourcePreviewOutputDiv) {
+                        officialSourcePreviewOutputDiv.style.display = 'none';
+                        officialSourcePreviewOutputDiv.innerHTML = '';
+                    }
+                    try {
+                        const resp = await fetch('/api/operator/actual-result-lookup/official-source-one-record-preview', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                selected_key: selectedKey,
+                                mode: 'official_source_one_record',
+                                lookup_intent: 'preview_only',
+                                approval_granted: false,
+                            })
+                        });
+                        const data = await resp.json();
+                        renderOfficialSourcePreviewOutput(data);
+                        if (!resp.ok || !data.ok) {
+                            setError(data.error || data.message || 'Official source preview failed');
+                            setStatus('Official source preview failed.', true);
+                            return;
+                        }
+                        setStatus('Official source preview completed.');
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Official source preview request failed.', true);
                     }
                 });
 

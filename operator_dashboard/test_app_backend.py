@@ -1027,14 +1027,33 @@ class DashboardBackendTest(unittest.TestCase):
             _build_citation_fingerprint('alpha|beta', citation),
         )
 
-    def test_no_ui_template_references_official_source_preview_endpoint_yet(self):
-        index_resp = self.client.get('/')
-        self.assertEqual(index_resp.status_code, 200)
-        self.assertNotIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', index_resp.data)
+    def test_advanced_dashboard_has_official_source_preview_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'operator-official-source-selected-key', resp.data)
+        self.assertIn(b'operator-official-source-preview-btn', resp.data)
+        self.assertIn(b'operator-official-source-preview-output', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', resp.data)
 
-        advanced_resp = self.client.get('/advanced-dashboard')
-        self.assertEqual(advanced_resp.status_code, 200)
-        self.assertNotIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', advanced_resp.data)
+    def test_official_source_preview_not_called_on_page_load(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 1300]
+        self.assertNotIn('/api/operator/actual-result-lookup/official-source-one-record-preview', dom_ready_slice)
+
+    def test_official_source_preview_ui_no_approval_granted_wired(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+        # Confirm approval_granted: false is wired in the fetch body (not true)
+        idx = page.find('official-source-one-record-preview')
+        self.assertNotEqual(idx, -1)
+        surrounding = page[idx:idx + 600]
+        self.assertIn('approval_granted', surrounding)
+        self.assertNotIn('approval_granted: true', surrounding)
 
     def test_advanced_dashboard_has_guarded_single_lookup_controls(self):
         resp = self.client.get('/advanced-dashboard')
