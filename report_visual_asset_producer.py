@@ -63,23 +63,102 @@ def produce_radar_chart(report_payload):
     if not radar or not isinstance(radar, dict):
         return None
     labels = radar.get("labels")
+    series = radar.get("series") or []
     values = radar.get("values")
     scale_min = radar.get("scale_min", 0.0)
     scale_max = radar.get("scale_max", 1.0)
-    if not labels or not values or len(labels) != 6 or len(values) != 6:
+    if not labels:
         return None
     import numpy as np
     angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-    values = list(values) + [values[0]]
     angles += [angles[0]]
     fig, ax = plt.subplots(figsize=(16, 9), subplot_kw=dict(polar=True), dpi=100)
-    ax.plot(angles, values, color="#2a3a5e", linewidth=2)
-    ax.fill(angles, values, color="#2a3a5e", alpha=0.25)
+    if series:
+        palette = ["#b22222", "#2a3a5e"]
+        for index, entry in enumerate(series[:2]):
+            series_values = entry.get("values") or []
+            if len(series_values) != len(labels):
+                plt.close(fig)
+                return None
+            series_values = list(series_values) + [series_values[0]]
+            color = palette[index % len(palette)]
+            ax.plot(angles, series_values, color=color, linewidth=2, label=entry.get("label", f"Series {index + 1}"))
+            ax.fill(angles, series_values, color=color, alpha=0.20)
+        ax.legend(loc="upper right")
+    else:
+        if not values or len(labels) != len(values):
+            plt.close(fig)
+            return None
+        values = list(values) + [values[0]]
+        ax.plot(angles, values, color="#2a3a5e", linewidth=2)
+        ax.fill(angles, values, color="#2a3a5e", alpha=0.25)
     ax.set_yticks(np.linspace(scale_min, scale_max, 5))
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(labels, fontsize=18)
     ax.set_title("Fighter Attribute Radar", fontsize=24, pad=24)
     ax.set_ylim(scale_min, scale_max)
+    fig.tight_layout()
+    fig.patch.set_facecolor('white')
+    plt.savefig(asset_path, format="png", dpi=100, bbox_inches='tight', facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return asset_path
+
+
+def produce_heat_map(report_payload):
+    """Generate heat map PNG if heat_map_data is available. Returns asset_path or None."""
+    fixture_id = get_fixture_id(report_payload)
+    asset_path = get_asset_path(fixture_id, "heat_map")
+    heat_map = report_payload.get("heat_map_data") or {}
+    values = heat_map.get("values")
+    x_labels = heat_map.get("x_labels") or []
+    y_labels = heat_map.get("y_labels") or []
+    if not values or not x_labels or not y_labels:
+        return None
+    import numpy as np
+    array = np.array(values, dtype=float)
+    fig, ax = plt.subplots(figsize=(16, 9), dpi=100)
+    heat = ax.imshow(array, cmap="coolwarm", vmin=0.0, vmax=1.0, aspect="auto")
+    ax.set_xticks(range(len(x_labels)))
+    ax.set_xticklabels(x_labels, fontsize=14)
+    ax.set_yticks(range(len(y_labels)))
+    ax.set_yticklabels(y_labels, fontsize=14)
+    ax.set_title(heat_map.get("title", "Round Heat Map"), fontsize=24, pad=24)
+    for row_index in range(array.shape[0]):
+        for col_index in range(array.shape[1]):
+            ax.text(col_index, row_index, f"{array[row_index, col_index] * 100:.0f}%", ha="center", va="center", fontsize=12)
+    fig.colorbar(heat, ax=ax, fraction=0.046, pad=0.04)
+    fig.tight_layout()
+    fig.patch.set_facecolor('white')
+    plt.savefig(asset_path, format="png", dpi=100, bbox_inches='tight', facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return asset_path
+
+
+def produce_control_shift_chart(report_payload):
+    """Generate control shift PNG if control_shift_data is available. Returns asset_path or None."""
+    fixture_id = get_fixture_id(report_payload)
+    asset_path = get_asset_path(fixture_id, "control_shift")
+    control_shift = report_payload.get("control_shift_data") or {}
+    rounds = control_shift.get("rounds") or []
+    series = control_shift.get("series") or []
+    if not rounds or len(series) < 2:
+        return None
+    x = list(range(len(rounds)))
+    fig, ax = plt.subplots(figsize=(16, 9), dpi=100)
+    palette = ["#b22222", "#2a3a5e"]
+    for index, entry in enumerate(series[:2]):
+        series_values = entry.get("values") or []
+        if len(series_values) != len(rounds):
+            plt.close(fig)
+            return None
+        color = palette[index % len(palette)]
+        ax.plot(x, series_values, marker="o", linewidth=2, color=color, label=entry.get("label", f"Series {index + 1}"))
+    ax.set_xticks(x)
+    ax.set_xticklabels(rounds, fontsize=14)
+    ax.set_ylim(0.0, 1.0)
+    ax.set_ylabel("Control Share", fontsize=18)
+    ax.set_title(control_shift.get("title", "Control Shift Graph"), fontsize=24, pad=24)
+    ax.legend(loc="upper right")
     fig.tight_layout()
     fig.patch.set_facecolor('white')
     plt.savefig(asset_path, format="png", dpi=100, bbox_inches='tight', facecolor=fig.get_facecolor())
@@ -100,9 +179,10 @@ def build_visual_manifest(report_payload):
         manifest["radar"] = {"asset_path": radar_chart_path, "caption": "Fighter attribute radar"}
     else:
         manifest["radar"] = None
-    # Other slots remain empty (placeholders)
-    for slot in ["heat_map", "control_shift"]:
-        manifest[slot] = None
+    heat_map_path = produce_heat_map(report_payload)
+    manifest["heat_map"] = {"asset_path": heat_map_path, "caption": "Round leverage heat map"} if heat_map_path else None
+    control_shift_path = produce_control_shift_chart(report_payload)
+    manifest["control_shift"] = {"asset_path": control_shift_path, "caption": "Projected control share by round"} if control_shift_path else None
     # Write manifest
     manifest_path = get_manifest_path(fixture_id)
     with open(manifest_path, "w", encoding="utf-8") as f:
