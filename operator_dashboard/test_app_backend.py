@@ -16,6 +16,16 @@ class DashboardBackendTest(unittest.TestCase):
             return None
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
+    def _actual_results_file_hashes(self):
+        root = Path(__file__).resolve().parent.parent
+        accuracy_dir = root / 'ops' / 'accuracy'
+        targets = [
+            accuracy_dir / 'actual_results.json',
+            accuracy_dir / 'actual_results_manual.json',
+            accuracy_dir / 'actual_results_unresolved.json',
+        ]
+        return {str(p): self._sha256_or_none(p) for p in targets}
+
     def test_index(self):
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)
@@ -159,6 +169,145 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertNotEqual(dom_ready_start, -1)
         dom_ready_slice = page[dom_ready_start:dom_ready_start + 900]
         self.assertNotIn('/api/operator/actual-result-lookup/dry-run-preview', dom_ready_slice)
+
+    def test_guarded_single_lookup_endpoint_exists(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={'selected_key': 'missing|missing'})
+        self.assertIn(resp.status_code, (200, 404))
+        data = resp.get_json()
+        self.assertIn('mode', data)
+        self.assertEqual(data.get('mode'), 'guarded_single_lookup')
+
+    def test_guarded_single_lookup_missing_selected_key_returns_400_no_mutation(self):
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={})
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertFalse(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'guarded_single_lookup')
+        self.assertTrue(data.get('approval_required'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    def test_guarded_single_lookup_unknown_selected_key_returns_404_manual_review_no_mutation(self):
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={
+            'selected_key': 'unknown_fight|unknown_path',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 404)
+        data = resp.get_json()
+        self.assertFalse(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'guarded_single_lookup')
+        self.assertTrue(data.get('approval_required'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertTrue(data.get('manual_review_required'))
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    @patch('app._load_json_records')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_guarded_single_lookup_approval_false_never_mutates(self, mock_summary, mock_load_json_records):
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+
+        def _fake_load(_path):
+            return [{
+                'fight_id': 'alpha_vs_beta',
+                'actual_winner': 'alpha',
+                'actual_method': 'Decision',
+                'actual_round': '3',
+                'event_date': '2026-01-01',
+                'source': 'manual',
+            }]
+
+        mock_load_json_records.side_effect = _fake_load
+
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={
+            'selected_key': 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json',
+            'approval_granted': False,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertTrue(data.get('approval_required'))
+        self.assertFalse(data.get('approval_granted'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertTrue(data.get('local_result_found'))
+        self.assertIn('proposed_write', data)
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    @patch('app._load_json_records', return_value=[])
+    @patch('app._build_accuracy_comparison_summary')
+    def test_guarded_single_lookup_approval_true_no_local_result_no_mutation(self, mock_summary, _mock_load_json_records):
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Gamma vs Delta',
+                'predicted_winner': 'Gamma',
+                'event_date': '2026-01-02',
+                'file_path': 'predictions/gamma_vs_delta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={
+            'selected_key': 'gamma_vs_delta|predictions_gamma_vs_delta_prediction_json',
+            'approval_granted': True,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertTrue(data.get('approval_required'))
+        self.assertTrue(data.get('approval_granted'))
+        self.assertFalse(data.get('local_result_found'))
+        self.assertTrue(data.get('manual_review_required'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertIn('No local actual result found', data.get('message') or '')
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    def test_advanced_dashboard_has_guarded_single_lookup_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'operator-guarded-selected-key', resp.data)
+        self.assertIn(b'operator-guarded-approval-checkbox', resp.data)
+        self.assertIn(b'operator-guarded-single-lookup-btn', resp.data)
+        self.assertIn(b'operator-guarded-single-output', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/guarded-single', resp.data)
+
+    def test_advanced_guarded_single_not_called_on_page_load(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 1300]
+        self.assertNotIn('/api/operator/actual-result-lookup/guarded-single', dom_ready_slice)
 
     def test_manual_review_empty_state_message_present(self):
         expected = b'External result lookup is not connected for automatic queue resolution yet. Manual review required.'

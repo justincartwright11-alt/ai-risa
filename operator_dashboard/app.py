@@ -361,6 +361,7 @@ def _build_actual_result_lookup_dry_run_preview(limit_value=None) -> dict:
     missing_by_row = []
     for row in waiting_rows[:preview_limit]:
         missing_fields = [field for field in required_fields if not _is_known_value(row.get(field))]
+        selected_key = f"{_normalize_token(row.get('fight_name'))}|{_normalize_token(row.get('file_path'))}"
         preview_row = {
             "fight_name": row.get("fight_name") or "UNKNOWN",
             "fight_id": row.get("fight_id") if _is_known_value(row.get("fight_id")) else None,
@@ -368,12 +369,14 @@ def _build_actual_result_lookup_dry_run_preview(limit_value=None) -> dict:
             "event_date": row.get("event_date") or "UNKNOWN",
             "file_path": row.get("file_path") or "UNKNOWN",
             "status": row.get("status") or "waiting_for_actual_result",
+            "selected_key": selected_key,
             "missing_fields": missing_fields,
         }
         preview_rows.append(preview_row)
         missing_by_row.append({
             "fight_name": preview_row["fight_name"],
             "fight_id": preview_row["fight_id"],
+            "selected_key": selected_key,
             "missing_fields": missing_fields,
         })
 
@@ -389,6 +392,84 @@ def _build_actual_result_lookup_dry_run_preview(limit_value=None) -> dict:
         "external_lookup_performed": False,
         "bulk_lookup_performed": False,
     }
+
+
+def _build_waiting_row_selected_key(row: dict) -> str:
+    return f"{_normalize_token(row.get('fight_name'))}|{_normalize_token(row.get('file_path'))}"
+
+
+def _build_waiting_row_candidate_fight_keys(row: dict) -> list:
+    keys = []
+
+    def add_key(value):
+        token = _normalize_token(value)
+        if token and token not in keys:
+            keys.append(token)
+
+    add_key(row.get("fight_id"))
+    add_key(row.get("fight_name"))
+
+    file_path = str(row.get("file_path") or "")
+    if file_path:
+        stem = Path(file_path.replace("\\", "/")).stem
+        add_key(stem)
+        if stem.endswith("_prediction"):
+            add_key(stem[: -len("_prediction")])
+        if stem.startswith("pred_"):
+            add_key(stem[len("pred_"):])
+        if stem.startswith("canonical_"):
+            add_key(stem[len("canonical_"):])
+
+    return keys
+
+
+def _load_local_actual_result_map() -> tuple:
+    base_dir = Path(__file__).resolve().parent.parent
+    accuracy_dir = base_dir / "ops" / "accuracy"
+
+    records_by_key = {}
+    for filename in [
+        "actual_results.json",
+        "actual_results_manual.json",
+        "actual_results_unresolved.json",
+    ]:
+        source_path = accuracy_dir / filename
+        for row in _load_json_records(source_path):
+            fight_key = _normalize_token(row.get("fight_id"))
+            if not fight_key:
+                continue
+            # Prefer rows with known actual winner over unknown placeholders.
+            if fight_key not in records_by_key or _is_known_value(row.get("actual_winner")):
+                records_by_key[fight_key] = {
+                    "record": row,
+                    "source_file": filename,
+                }
+
+    return records_by_key, accuracy_dir
+
+
+def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> bool:
+    target_path = accuracy_dir / "actual_results_manual.json"
+    manual_rows = _load_json_records(target_path)
+
+    fight_key = _normalize_token(write_row.get("fight_id"))
+    updated = False
+    for idx, row in enumerate(manual_rows):
+        if _normalize_token(row.get("fight_id")) == fight_key:
+            manual_rows[idx] = write_row
+            updated = True
+            break
+
+    if not updated:
+        manual_rows.append(write_row)
+
+    try:
+        with open(target_path, "w", encoding="utf-8") as handle:
+            json.dump(manual_rows, handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+        return True
+    except Exception:
+        return False
 
 
 def operator_error_response(message: str, status_code: int = 500, **extra):
@@ -1017,6 +1098,128 @@ def api_operator_actual_result_lookup_dry_run_preview():
             "external_lookup_performed": False,
             "bulk_lookup_performed": False,
         }), 500
+
+
+@app.route("/api/operator/actual-result-lookup/guarded-single", methods=["POST"])
+def api_operator_actual_result_lookup_guarded_single():
+    data = request.get_json(silent=True) or {}
+    selected_key = str(data.get("selected_key") or "").strip()
+    approval_granted = bool(data.get("approval_granted"))
+
+    if not selected_key:
+        return jsonify({
+            "ok": False,
+            "mode": "guarded_single_lookup",
+            "error": "selected_key is required",
+            "approval_required": True,
+            "approval_granted": approval_granted,
+            "mutation_performed": False,
+            "resolved_count": 0,
+            "external_lookup_performed": False,
+            "bulk_lookup_performed": False,
+            "manual_review_required": True,
+            "selected_row": None,
+            "local_result_found": False,
+            "proposed_write": None,
+            "message": "Preview only. Approval required before any write.",
+        }), 400
+
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+    selected_row = None
+    for row in waiting_rows:
+        if _build_waiting_row_selected_key(row) == selected_key:
+            selected_row = dict(row)
+            break
+
+    if selected_row is None:
+        return jsonify({
+            "ok": False,
+            "mode": "guarded_single_lookup",
+            "error": "selected_key not found in waiting rows",
+            "approval_required": True,
+            "approval_granted": approval_granted,
+            "mutation_performed": False,
+            "resolved_count": 0,
+            "external_lookup_performed": False,
+            "bulk_lookup_performed": False,
+            "manual_review_required": True,
+            "selected_row": None,
+            "local_result_found": False,
+            "proposed_write": None,
+            "message": "Selected row was not found. Manual review required.",
+        }), 404
+
+    selected_row["selected_key"] = selected_key
+    if not _is_known_value(selected_row.get("fight_id")):
+        selected_row["fight_id"] = _normalize_token(selected_row.get("fight_name")) or None
+
+    local_actual_map, accuracy_dir = _load_local_actual_result_map()
+    candidate_keys = _build_waiting_row_candidate_fight_keys(selected_row)
+    local_actual = None
+    local_actual_source = None
+    for key in candidate_keys:
+        matched = local_actual_map.get(key)
+        if matched and _is_known_value(matched["record"].get("actual_winner")):
+            local_actual = dict(matched["record"])
+            local_actual_source = matched["source_file"]
+            break
+
+    local_result_found = local_actual is not None
+    proposed_write = None
+    if local_result_found:
+        proposed_write = {
+            "fight_id": local_actual.get("fight_id") or selected_row.get("fight_id"),
+            "actual_winner": local_actual.get("actual_winner") or "UNKNOWN",
+            "actual_method": local_actual.get("actual_method") or "UNKNOWN",
+            "actual_round": local_actual.get("actual_round") or "UNKNOWN",
+            "event_date": local_actual.get("event_date") or selected_row.get("event_date") or "UNKNOWN",
+            "source": "guarded_single_local_actual",
+            "copied_from": local_actual_source,
+        }
+
+    base_payload = {
+        "ok": True,
+        "mode": "guarded_single_lookup",
+        "approval_required": True,
+        "approval_granted": approval_granted,
+        "mutation_performed": False,
+        "resolved_count": 0,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "manual_review_required": not local_result_found,
+        "selected_row": selected_row,
+        "local_result_found": local_result_found,
+        "proposed_write": proposed_write,
+    }
+
+    if not approval_granted:
+        return jsonify({
+            **base_payload,
+            "message": "Preview only. Approval required before any write.",
+        })
+
+    if not local_result_found:
+        return jsonify({
+            **base_payload,
+            "message": "No local actual result found. Manual review required. No write performed.",
+        })
+
+    write_ok = _upsert_single_manual_actual_result(accuracy_dir, proposed_write)
+    if not write_ok:
+        return jsonify({
+            **base_payload,
+            "ok": False,
+            "message": "Failed to write approved local actual result.",
+        }), 500
+
+    return jsonify({
+        **base_payload,
+        "mutation_performed": True,
+        "resolved_count": 1,
+        "manual_review_required": False,
+        "message": "Approved local actual result written for selected row.",
+    })
 
 
 @app.route("/api/accuracy/signal-breakdown", methods=["GET"])

@@ -1001,6 +1001,19 @@
                             <span style="font-size:12px;color:#5a6374;">No web lookup or result write is performed by this preview.</span>
                         </div>
                         <div id="operator-dry-run-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
+                        <div style="border:1px solid #dbe3ef;border-radius:8px;padding:10px;background:#fbfdff;margin-bottom:12px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Guarded Single Lookup (v1b)</div>
+                            <div style="display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:8px;align-items:center;">
+                                <input id="operator-guarded-selected-key" type="text" placeholder="Select a preview row or paste selected_key" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                <label for="operator-guarded-approval-checkbox" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;margin:0;white-space:nowrap;">
+                                    <input id="operator-guarded-approval-checkbox" type="checkbox" />
+                                    Approval granted for one explicit write
+                                </label>
+                                <button id="operator-guarded-single-lookup-btn" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #1f5f93;background:#edf5ff;color:#1f5f93;cursor:pointer;">Guarded Single Lookup</button>
+                            </div>
+                            <div style="font-size:12px;color:#5a6374;margin-top:8px;">No web lookup, no bulk lookup, and no write without explicit approval.</div>
+                        </div>
+                        <div id="operator-guarded-single-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
                         <div style="font-size:13px;color:#4b5563;margin:-6px 0 12px 0;">
                             This panel uses report-scoring data only. Accuracy-ledger calibration is shown in the Model Calibration section below.
                         </div>
@@ -2296,6 +2309,10 @@
                 const waitingQueueDiv = document.getElementById('operator-waiting-results-queue');
                 const dryRunPreviewBtn = document.getElementById('operator-dry-run-preview-btn');
                 const dryRunPreviewOutputDiv = document.getElementById('operator-dry-run-preview-output');
+                const guardedSelectedKeyInput = document.getElementById('operator-guarded-selected-key');
+                const guardedApprovalCheckbox = document.getElementById('operator-guarded-approval-checkbox');
+                const guardedSingleLookupBtn = document.getElementById('operator-guarded-single-lookup-btn');
+                const guardedSingleOutputDiv = document.getElementById('operator-guarded-single-output');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2380,6 +2397,7 @@
                         const missing = Array.isArray(row.missing_fields) && row.missing_fields.length
                             ? escapeHtml(row.missing_fields.join(', '))
                             : 'none';
+                        const selectedKey = escapeHtml(row.selected_key || '');
                         return `<tr>
                             <td>${escapeHtml(row.fight_name || 'UNKNOWN')}</td>
                             <td>${escapeHtml(row.fight_id || 'N/A')}</td>
@@ -2388,6 +2406,8 @@
                             <td>${escapeHtml(row.file_path || 'UNKNOWN')}</td>
                             <td>${escapeHtml(row.status || 'waiting_for_actual_result')}</td>
                             <td>${missing}</td>
+                            <td><span style="font-size:11px;color:#425466;">${selectedKey || 'N/A'}</span></td>
+                            <td><button type="button" class="operator-select-preview-row-btn" data-selected-key="${selectedKey}" style="padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid #8aa4c4;background:#f4f8ff;color:#1f4f82;cursor:pointer;">Select Row</button></td>
                         </tr>`;
                     }).join('');
 
@@ -2404,10 +2424,38 @@
                                     <th>Path</th>
                                     <th>Status</th>
                                     <th>Missing Fields</th>
+                                    <th>Selected Key</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>${body}</tbody>
                         </table>`;
+
+                    dryRunPreviewOutputDiv.querySelectorAll('.operator-select-preview-row-btn').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            if (guardedSelectedKeyInput) {
+                                guardedSelectedKeyInput.value = btn.getAttribute('data-selected-key') || '';
+                            }
+                            setStatus('Selected preview row key copied for guarded lookup.');
+                        });
+                    });
+                }
+
+                function renderGuardedSingleOutput(data) {
+                    if (!guardedSingleOutputDiv) return;
+                    guardedSingleOutputDiv.style.display = 'block';
+
+                    const selected = data.selected_row || {};
+                    const proposed = data.proposed_write;
+                    guardedSingleOutputDiv.innerHTML = `
+                        <div style="margin-bottom:8px;"><strong>Mode:</strong> ${escapeHtml(data.mode || 'guarded_single_lookup')} | <strong>Approval Required:</strong> ${data.approval_required ? 'YES' : 'NO'} | <strong>Approval Granted:</strong> ${data.approval_granted ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Mutation Performed:</strong> ${data.mutation_performed ? 'YES' : 'NO'} | <strong>Local Result Found:</strong> ${data.local_result_found ? 'YES' : 'NO'} | <strong>Manual Review Required:</strong> ${data.manual_review_required ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Message:</strong> ${escapeHtml(data.message || '')}</div>
+                        <div style="margin-bottom:8px;"><strong>Selected Row:</strong></div>
+                        <pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(selected, null, 2))}</pre>
+                        <div style="margin-bottom:8px;"><strong>Proposed Write:</strong></div>
+                        <pre style="margin:0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(proposed, null, 2))}</pre>
+                    `;
                 }
 
                 async function loadRollingSuccessRate() {
@@ -2542,6 +2590,10 @@ ${comparedResults.length ? `<table class="phase1-table">
                         dryRunPreviewOutputDiv.style.display = 'none';
                         dryRunPreviewOutputDiv.innerHTML = '';
                     }
+                    if (guardedSingleOutputDiv) {
+                        guardedSingleOutputDiv.style.display = 'none';
+                        guardedSingleOutputDiv.innerHTML = '';
+                    }
                     try {
                         const resp = await fetch('/api/operator/actual-result-lookup/dry-run-preview');
                         const data = await resp.json();
@@ -2555,6 +2607,39 @@ ${comparedResults.length ? `<table class="phase1-table">
                     } catch (e) {
                         setError('Request error: ' + e.message);
                         setStatus('Dry-run preview request failed.', true);
+                    }
+                });
+
+                guardedSingleLookupBtn && (guardedSingleLookupBtn.onclick = async () => {
+                    const selectedKey = guardedSelectedKeyInput ? guardedSelectedKeyInput.value.trim() : '';
+                    const approvalGranted = Boolean(guardedApprovalCheckbox && guardedApprovalCheckbox.checked);
+                    setStatus('Running guarded single lookup...');
+                    setError('');
+                    if (guardedSingleOutputDiv) {
+                        guardedSingleOutputDiv.style.display = 'none';
+                        guardedSingleOutputDiv.innerHTML = '';
+                    }
+
+                    try {
+                        const resp = await fetch('/api/operator/actual-result-lookup/guarded-single', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                selected_key: selectedKey,
+                                approval_granted: approvalGranted,
+                            })
+                        });
+                        const data = await resp.json();
+                        renderGuardedSingleOutput(data);
+                        if (!resp.ok || !data.ok) {
+                            setError(data.error || data.message || 'Guarded single lookup failed');
+                            setStatus('Guarded single lookup failed.', true);
+                            return;
+                        }
+                        setStatus('Guarded single lookup completed.');
+                    } catch (e) {
+                        setError('Request error: ' + e.message);
+                        setStatus('Guarded single lookup request failed.', true);
                     }
                 });
 
