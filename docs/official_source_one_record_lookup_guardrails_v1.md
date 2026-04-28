@@ -17,28 +17,48 @@ This slice is design-only and introduces no code, no runtime wiring, and no beha
 
 ## 3. Allowed sources
 Allowed source classes for external confirmation (after explicit operator action only):
-- Tier A (official): promotion or sanctioning body domains.
-  - `ufc.com`
-  - `onefc.com`
-  - `glorykickboxing.com`
-  - `toprank.com`
-  - `matchroomboxing.com`
-  - `queensberry.co.uk`
-  - `nolimitboxing.com.au`
-- Tier B (highly reliable secondary, review-gated):
+- Tier A0 (authoritative official result page, highest priority):
+  - Official promotion event/fight result pages on allowlisted hosts.
+- Tier A1 (authoritative official supporting page):
+  - Official promotion newsroom/press pages on allowlisted hosts.
+- Tier B (high-reliability secondary, review-gated):
   - `espn.com`
   - `tapology.com`
   - `sherdog.com`
   - `boxrec.com`
   - `mmadecisions.com`
 
-Design rule: Tier B can support preview evidence, but must default to manual review unless corroborated by Tier A or operator-approved conflict resolution.
+Official host allowlist (deny by default):
+- `ufc.com`
+- `onefc.com`
+- `glorykickboxing.com`
+- `toprank.com`
+- `matchroomboxing.com`
+- `queensberry.co.uk`
+- `nolimitboxing.com.au`
+
+Domain matching policy:
+- Exact host or vetted subdomain of an allowlisted host only.
+- Scheme must be `https`.
+- Redirected final URL must still satisfy allowlist checks.
+
+Source hierarchy and tie-break:
+- A0 overrides A1 and B.
+- A1 overrides B.
+- If two sources at the same tier disagree on winner/method/round, outcome is `manual_review_required` with reason `source_conflict_same_tier`.
+- B-only evidence is never write-eligible by itself.
 
 ## 4. Disallowed sources
 - Social posts as sole source (X, Instagram, Facebook, Reddit, etc.).
 - User-generated forums, blogs, or scraping mirrors with unknown provenance.
 - AI summaries without direct source citation.
 - Any source without stable URL/title/date metadata.
+- URL shorteners, redirect wrappers, or hosts that hide final publisher identity.
+- Pages requiring dynamic execution where canonical citation metadata cannot be deterministically extracted.
+
+Low-confidence sources (allowed for exploratory preview text only, never accepted for result state):
+- Aggregator mirrors and republished snippets without canonical source attribution.
+- Community-edited entries without revision provenance and event-level citation.
 
 ## 5. One-record-only rule
 Request must include exactly one `selected_key`.
@@ -64,6 +84,13 @@ Two-step approval model (consistent with guarded local apply patterns):
 
 Write path remains blocked unless all guardrails pass.
 
+Approval binding requirements:
+- Approval must bind to exactly one `selected_key` and one citation fingerprint.
+- Citation fingerprint is computed over normalized fields: `selected_key|source_url|source_title|source_date|winner|method|round_time`.
+- Any change to any bound field invalidates prior approval.
+- Approval token TTL must be 300 seconds maximum.
+- Expired or replayed approval attempts must be rejected with deterministic error.
+
 ## 8. Dry-run before lookup model
 Dry-run is mandatory and must execute before external lookup is permitted.
 
@@ -75,6 +102,12 @@ Dry-run responsibilities:
 - Guarantee `mutation_performed=false`.
 
 If local actual is already found with sufficient confidence, external lookup should be skipped and response should indicate no external action required.
+
+Explicit non-automation rules in dry-run/preview:
+- No page-load lookup trigger.
+- No automatic retry.
+- No batch execution path.
+- No background polling.
 
 ## 9. Request schema
 Proposed design contract (for future implementation):
@@ -117,7 +150,9 @@ Proposed response shape aligned to current guarded payload patterns:
     "url": "",
     "title": "",
     "published_or_event_date": "",
-    "source_confidence": "none | official | secondary | conflict"
+    "source_confidence": "none | tier_a0 | tier_a1 | tier_b | conflict",
+    "confidence_score": 0.0,
+    "citation_fingerprint": "string"
   },
   "audit": {
     "write_target": null,
@@ -134,6 +169,11 @@ Proposed response shape aligned to current guarded payload patterns:
 }
 ```
 
+Acceptance threshold mapping:
+- `accepted_for_preview`: confidence_score >= 0.70 with valid citation fields.
+- `manual_review_required`: 0.40 <= confidence_score < 0.70, or any conflict/ambiguity.
+- `rejected`: confidence_score < 0.40, or disallowed source, or missing required citation fields.
+
 ## 11. Manual-review states
 Manual review must be required for any of the following:
 - `selected_key` not found.
@@ -143,6 +183,23 @@ Manual review must be required for any of the following:
 - Source confidence below threshold.
 - Missing source citation fields.
 - Any parsing ambiguity in winner/method/round.
+- B-tier-only evidence with no corroborating A-tier evidence.
+- Citation date older than 30 days from lookup timestamp unless operator supplies documented exception.
+- Entity mismatch between selected record context and citation content.
+- Approval token expired or citation fingerprint mismatch after preview.
+
+Manual-review reason codes (minimum set):
+- `selected_key_not_found`
+- `local_result_not_found`
+- `source_conflict`
+- `source_conflict_same_tier`
+- `identity_conflict`
+- `citation_incomplete`
+- `confidence_below_threshold`
+- `tier_b_without_corroboration`
+- `stale_source_date`
+- `approval_binding_mismatch`
+- `approval_expired`
 
 ## 12. Audit fields
 Minimum audit envelope (building on existing guarded-single audit style):
@@ -182,10 +239,11 @@ All failures must return:
 ## 14. Rate-limit and timeout rules
 For future implementation defaults:
 - One-record external lookup only.
-- Max external source pages per request: 3 official-first, then optional 2 secondary.
-- Per-source timeout: 6 seconds.
-- Total request timeout budget: 20 seconds.
-- No automatic retries.
+- Max external source pages per request: 3 Tier A attempts, then optional 2 Tier B attempts.
+- Per-source timeout: 6 seconds hard timeout.
+- Total request timeout budget: 20 seconds wall-clock.
+- Retry count: 0 automatic retries.
+- Manual re-run is allowed only by explicit operator action.
 - No background polling.
 
 ## 15. Source-citation requirements
@@ -194,6 +252,20 @@ External result evidence is valid only when all are present:
 - Source title (or authoritative page label)
 - Source date (published date or event date)
 - Extracted winner value
+
+Minimum citation fields required before any result is accepted into preview output:
+- `source_url` (https, allowlisted or approved Tier B host)
+- `source_title` (non-empty)
+- `source_date` (ISO date or RFC3339 timestamp)
+- `publisher_host`
+- `source_confidence` and numeric `confidence_score`
+- `citation_fingerprint`
+- `extracted_winner`
+
+Optional but recommended fields:
+- `extracted_method`
+- `extracted_round_or_time`
+- `retrieved_at_utc`
 
 If any required citation field is missing, response is rejected for apply and forced to manual review.
 
@@ -204,6 +276,7 @@ Design guarantees for preview and lookup phases:
 - no score recalculation side effects
 - no queue status mutation
 - no prediction record mutation
+- no scoring semantics change (`scoring_semantics_changed=false`)
 
 Write phase (future implementation) must remain approval-gated and single-record only.
 
@@ -222,20 +295,26 @@ Required tests before enabling any runtime wiring:
   - reject missing/empty/multi-key payloads.
   - reject mode mismatch.
   - reject apply without prior approval flow.
+  - reject execute/apply when approval binding fields do not match preview snapshot.
 - Guardrail tests:
   - local-first check always runs before external lookup.
   - no page-load invocation.
   - no batch invocation accepted.
   - no retry behavior.
+  - deny-by-default domain policy and vetted-subdomain behavior.
 - Citation tests:
   - reject missing URL/title/date.
   - require confidence classification.
   - force manual review on conflict/ambiguity.
+  - enforce confidence thresholds for accepted/manual-review/rejected outcomes.
+  - reject stale citation dates beyond policy threshold.
 - Mutation safety tests:
   - verify no writes in dry-run and lookup-preview phases.
   - verify `scoring_semantics_changed=false` always.
 - Audit tests:
   - ensure required audit fields are present on success and failure.
+  - verify citation fingerprint stability and approval invalidation on field change.
+  - verify approval TTL expiry and replay rejection.
 - UI contract tests (future UI slice):
   - apply disabled until approval.
   - no auto-lookup on page load.
