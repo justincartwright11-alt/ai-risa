@@ -1233,6 +1233,7 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn('No scoring semantics change', html)
         self.assertIn('Maximum 5 selected rows', html)
         self.assertIn('Fresh token', html)
+        self.assertIn('explicit approval required', html)
 
     def test_index_html_batch_endpoint_references(self):
         resp = self.client.get('/')
@@ -1251,12 +1252,20 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn('batch-size-accepted', html)
         self.assertIn('batch-hard-cap', html)
         self.assertIn('batch-token-ttl', html)
+        self.assertIn('batch-execution-token', html)
         self.assertIn('batch-token-digest', html)
+        self.assertIn('batch-preview-rows', html)
+        self.assertIn('batch-preview-status', html)
         # Apply result fields
         self.assertIn('batch-total-written', html)
         self.assertIn('batch-total-skipped', html)
         self.assertIn('batch-mutation-performed', html)
         self.assertIn('batch-partial-rollback', html)
+        self.assertIn('batch-external-lookup-performed', html)
+        self.assertIn('batch-bulk-lookup-performed', html)
+        self.assertIn('batch-scoring-semantics-changed', html)
+        self.assertIn('batch-apply-rows', html)
+        self.assertIn('batch-apply-status', html)
 
     def test_index_html_no_auto_batch_calls_on_page_load(self):
         """Verify DOMContentLoaded does not invoke batch endpoints."""
