@@ -16,6 +16,7 @@ from time import perf_counter, time
 import uuid
 import hashlib
 from urllib.parse import urlparse
+from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
@@ -1427,15 +1428,58 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             "message": "Local actual result already exists. Official-source preview did not mutate any files in v1a.",
         })
 
+    provider_result = {
+        "provider_attempted": False,
+        "external_lookup_performed": False,
+        "source_citation": None,
+        "manual_review_required": True,
+        "reason_code": "official_source_lookup_not_connected",
+        "attempted_sources": [],
+        "timeout_budget_seconds": 20,
+        "per_source_timeout_seconds": 6,
+        "auto_retry_count": 0,
+    }
+    try:
+        provider = OfficialSourceLookupProvider()
+        provider_result = provider.run_preview_lookup(
+            selected_key=selected_key,
+            selected_row=selected_row,
+            timeout_budget_seconds=20,
+            per_source_timeout_seconds=6,
+            auto_retry_count=0,
+        )
+    except Exception:
+        provider_result = {
+            "provider_attempted": True,
+            "external_lookup_performed": False,
+            "source_citation": None,
+            "manual_review_required": True,
+            "reason_code": "official_source_lookup_not_connected",
+            "attempted_sources": [],
+            "timeout_budget_seconds": 20,
+            "per_source_timeout_seconds": 6,
+            "auto_retry_count": 0,
+        }
+
+    reason_code = str(provider_result.get("reason_code") or "official_source_lookup_not_connected")
     return jsonify({
         **base_payload,
         "ok": True,
         "selected_row": selected_row,
+        "external_lookup_performed": bool(provider_result.get("external_lookup_performed")),
+        "source_citation": provider_result.get("source_citation"),
+        "manual_review_required": bool(provider_result.get("manual_review_required", True)),
         "audit": {
             **base_payload["audit"],
-            "reason_code": "official_source_lookup_not_connected",
+            "reason_code": reason_code,
             "record_fight_id": selected_row.get("fight_id"),
+            "provider_attempted": bool(provider_result.get("provider_attempted")),
+            "attempted_sources": provider_result.get("attempted_sources") or [],
+            "timeout_budget_seconds": int(provider_result.get("timeout_budget_seconds") or 20),
+            "per_source_timeout_seconds": int(provider_result.get("per_source_timeout_seconds") or 6),
+            "auto_retry_count": int(provider_result.get("auto_retry_count") or 0),
         },
+        "message": "Official-source preview evaluated. No mutation performed.",
     })
 
 
