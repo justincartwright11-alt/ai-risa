@@ -1199,6 +1199,90 @@ class DashboardBackendTest(unittest.TestCase):
         expected = _build_selected_keys_digest(['k1', 'k2'])
         self.assertEqual(data.get('selected_keys_digest'), expected)
 
+    # --- UI Template Tests for Batch Local Apply ---
+
+    def test_index_html_contains_batch_preview_section(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('Controlled Batch Local Apply', html)
+        self.assertIn('batch-selected-keys-input', html)
+        self.assertIn('batch-preview-btn', html)
+
+    def test_index_html_contains_batch_apply_button(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('batch-apply-btn', html)
+        self.assertIn('Apply Changes', html)
+
+    def test_index_html_contains_batch_approval_checkbox(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('batch-approval-checkbox', html)
+        self.assertIn('I approve applying this exact previewed selected-key batch', html)
+
+    def test_index_html_contains_batch_safety_messages(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        # Safety message requirements
+        self.assertIn('Local-only apply', html)
+        self.assertIn('No web lookup', html)
+        self.assertIn('No scoring semantics change', html)
+        self.assertIn('Maximum 5 selected rows', html)
+        self.assertIn('Fresh token', html)
+
+    def test_index_html_batch_endpoint_references(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        # Check for endpoint URLs in JavaScript
+        self.assertIn('/api/operator/actual-result-lookup/batch/guarded-local-preview', html)
+        self.assertIn('/api/operator/actual-result-lookup/batch/guarded-local-apply', html)
+
+    def test_index_html_batch_result_display_fields(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        # Preview result fields
+        self.assertIn('batch-size-requested', html)
+        self.assertIn('batch-size-accepted', html)
+        self.assertIn('batch-hard-cap', html)
+        self.assertIn('batch-token-ttl', html)
+        self.assertIn('batch-token-digest', html)
+        # Apply result fields
+        self.assertIn('batch-total-written', html)
+        self.assertIn('batch-total-skipped', html)
+        self.assertIn('batch-mutation-performed', html)
+        self.assertIn('batch-partial-rollback', html)
+
+    def test_index_html_no_auto_batch_calls_on_page_load(self):
+        """Verify DOMContentLoaded does not invoke batch endpoints."""
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        # DOMContentLoaded should only call accuracy and health
+        # Check that batch calls are NOT in the DOMContentLoaded block
+        lines = html.split('\n')
+        dom_content_start = None
+        dom_content_end = None
+        for i, line in enumerate(lines):
+            if "DOMContentLoaded" in line:
+                dom_content_start = i
+            if dom_content_start is not None and ('});' in line or '</script>' in line):
+                dom_content_end = i
+                break
+        
+        self.assertIsNotNone(dom_content_start, "DOMContentLoaded block not found")
+        dom_block = '\n'.join(lines[dom_content_start:dom_content_end + 1])
+        # These calls should NOT be in DOMContentLoaded
+        self.assertNotIn('guarded-local-preview', dom_block, 
+                        "batch preview should not be called on DOMContentLoaded")
+        self.assertNotIn('guarded-local-apply', dom_block,
+                        "batch apply should not be called on DOMContentLoaded")
+
 
 # ---------------------------------------------------------------------------
 # Unit tests for planner eligibility classification logic

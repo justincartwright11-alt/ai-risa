@@ -306,6 +306,72 @@
             </div>
         </section>
 
+        <!-- Controlled Batch Local Apply -->
+        <section class="section-card" style="border-left-color: #8764b8;">
+            <div class="section-header" style="background: #f9f5ff;">
+                <h2 style="color: #8764b8;">Controlled Batch Local Apply</h2>
+            </div>
+            <div class="section-body">
+                <p style="margin: 0 0 10px 0; color: #555; font-size: 14px;">Preview and apply local actual results for selected predictions. Local-only, no web lookup.</p>
+                <div class="command-input-group">
+                    <label for="batch-selected-keys-input">Selected Keys (newline or comma-separated)</label>
+                    <textarea id="batch-selected-keys-input" placeholder="Paste selected_keys from dry-run preview&#10;Maximum 5 keys&#10;Local actuals only" style="min-height: 60px;"></textarea>
+                    <div class="help-text">Paste selected_keys from dry-run preview. Maximum 5. Local actuals only.</div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                    <button id="batch-preview-btn" class="btn-primary">Preview Batch</button>
+                </div>
+
+                <div id="batch-preview-result" style="background: #f7fbff; border: 1px solid #d0e8f2; border-radius: 6px; padding: 12px; margin-bottom: 12px; font-size: 13px; display: none;">
+                    <div style="margin-bottom: 10px;"><strong>Preview Results:</strong></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px;">
+                        <div><span style="color:#666;">Requested:</span> <strong id="batch-size-requested">—</strong></div>
+                        <div><span style="color:#666;">Accepted:</span> <strong id="batch-size-accepted">—</strong></div>
+                        <div><span style="color:#666;">Hard Cap:</span> <strong id="batch-hard-cap">—</strong></div>
+                        <div><span style="color:#666;">TTL (sec):</span> <strong id="batch-token-ttl">—</strong></div>
+                    </div>
+                    <div style="background:#fff;padding:8px;border-radius:4px;border:1px solid #e0e0e0;margin-bottom:10px;font-size:12px;word-break:break-all;">
+                        <div style="color:#666;margin-bottom:4px;"><strong>Token Digest:</strong></div>
+                        <div id="batch-token-digest" style="font-family:monospace;color:#2d4058;">—</div>
+                    </div>
+                    <div style="border-top:1px solid #d0e8f2;padding-top:8px;">
+                        <div style="color:#666;margin-bottom:4px;"><strong>Per-Row Status:</strong></div>
+                        <div id="batch-preview-rows" style="font-size:12px;"></div>
+                    </div>
+                </div>
+
+                <div id="batch-approval-section" style="background: #fff8e6; border: 1px solid #f3d9a4; border-radius: 6px; padding: 12px; margin-bottom: 12px; display: none;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="batch-approval-checkbox" />
+                        <label for="batch-approval-checkbox" style="margin: 0; font-weight: 600; color: #5a4a1a;">
+                            I approve applying this exact previewed selected-key batch to local manual actual results.
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                    <button id="batch-apply-btn" class="btn-success" disabled>Apply Changes</button>
+                </div>
+
+                <div id="batch-apply-result" style="background: #f0f8f0; border: 1px solid #c2f5c2; border-radius: 6px; padding: 12px; display: none; font-size: 13px;">
+                    <div style="margin-bottom: 10px;"><strong>Apply Results:</strong></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px;">
+                        <div><span style="color:#666;">Written:</span> <strong id="batch-total-written">—</strong></div>
+                        <div><span style="color:#666;">Skipped:</span> <strong id="batch-total-skipped">—</strong></div>
+                        <div><span style="color:#666;">Mutation:</span> <strong id="batch-mutation-performed">—</strong></div>
+                        <div><span style="color:#666;">Rollback:</span> <strong id="batch-partial-rollback">—</strong></div>
+                    </div>
+                    <div style="border-top:1px solid #c2f5c2;padding-top:8px;">
+                        <div id="batch-apply-rows" style="font-size:12px;"></div>
+                    </div>
+                </div>
+
+                <div style="background: #f0f4ff; border-left: 4px solid #1a4fa0; padding: 10px 12px; margin-top: 12px; border-radius: 4px; font-size: 12px; color: #2d4058;">
+                    <strong>Safety:</strong> Local-only apply • No web lookup • No scoring semantics change • Maximum 5 selected rows • Fresh token + explicit approval required.
+                </div>
+            </div>
+        </section>
+
         <!-- Check Accuracy -->
         <section class="section-card" style="border-left-color: #5c2d91;">
             <div class="section-header" style="background: #f4ecff;">
@@ -663,10 +729,195 @@
             }
         }
 
+        // --- Controlled Batch Local Apply Logic ---
+        const batchSelectedKeysInput = document.getElementById('batch-selected-keys-input');
+        const batchPreviewBtn = document.getElementById('batch-preview-btn');
+        const batchApplyBtn = document.getElementById('batch-apply-btn');
+        const batchApprovalCheckbox = document.getElementById('batch-approval-checkbox');
+        const batchPreviewResult = document.getElementById('batch-preview-result');
+        const batchApprovalSection = document.getElementById('batch-approval-section');
+        const batchApplyResult = document.getElementById('batch-apply-result');
+
+        // JS state for batch apply (not persisted, cleared on preview reset)
+        let batchState = {
+            executionToken: null,
+            selectedKeysList: [],
+            selectedKeysDigest: null,
+            tokenTtlSeconds: null,
+            previewSucceeded: false
+        };
+
+        function _parseBatchSelectedKeys(input) {
+            // Accept newline or comma-separated
+            const raw = (input || '').trim();
+            if (!raw) return [];
+            // Try split by newline first, then comma
+            let parts = raw.split('\n').map(s => s.trim()).filter(s => s);
+            if (parts.length === 1) {
+                parts = raw.split(',').map(s => s.trim()).filter(s => s);
+            }
+            return parts;
+        }
+
+        function _resetBatchState() {
+            batchState = {
+                executionToken: null,
+                selectedKeysList: [],
+                selectedKeysDigest: null,
+                tokenTtlSeconds: null,
+                previewSucceeded: false
+            };
+            batchPreviewResult.style.display = 'none';
+            batchApprovalSection.style.display = 'none';
+            batchApplyResult.style.display = 'none';
+            batchApplyBtn.disabled = true;
+            batchApprovalCheckbox.checked = false;
+            document.getElementById('batch-token-digest').textContent = '—';
+        }
+
+        function _updateApplyButtonState() {
+            const canApply = batchState.previewSucceeded && 
+                             batchState.executionToken && 
+                             batchApprovalCheckbox.checked;
+            batchApplyBtn.disabled = !canApply;
+        }
+
+        batchSelectedKeysInput.addEventListener('input', () => {
+            // If input changes after preview, reset state and disable apply
+            if (batchState.previewSucceeded) {
+                const newKeys = _parseBatchSelectedKeys(batchSelectedKeysInput.value);
+                if (JSON.stringify(newKeys) !== JSON.stringify(batchState.selectedKeysList)) {
+                    _resetBatchState();
+                }
+            }
+        });
+
+        batchApprovalCheckbox.addEventListener('change', _updateApplyButtonState);
+
+        batchPreviewBtn.addEventListener('click', async () => {
+            _resetBatchState();
+            const selectedKeys = _parseBatchSelectedKeys(batchSelectedKeysInput.value);
+            
+            if (selectedKeys.length === 0) {
+                batchPreviewResult.style.display = 'block';
+                batchPreviewResult.innerHTML = '<span style="color:#a80000;">Please enter at least one selected_key.</span>';
+                return;
+            }
+
+            batchPreviewResult.style.display = 'block';
+            batchPreviewResult.innerHTML = '<span style="color:#888;">Loading preview...</span>';
+
+            try {
+                const res = await fetch('/api/operator/actual-result-lookup/batch/guarded-local-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'local_only',
+                        approval_granted: false,
+                        selected_keys: selectedKeys
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    batchPreviewResult.innerHTML = '<span style="color:#a80000;">Preview failed: ' + _escapeHtml(data.error || 'unknown error') + '</span>';
+                    return;
+                }
+
+                // Store token and keys for apply
+                batchState.executionToken = data.execution_token;
+                batchState.selectedKeysList = selectedKeys;
+                batchState.selectedKeysDigest = data.selected_keys_digest;
+                batchState.tokenTtlSeconds = data.token_ttl_seconds;
+                batchState.previewSucceeded = true;
+
+                // Render preview results
+                document.getElementById('batch-size-requested').textContent = data.batch_size_requested || 0;
+                document.getElementById('batch-size-accepted').textContent = data.batch_size_accepted || 0;
+                document.getElementById('batch-hard-cap').textContent = data.hard_cap || 5;
+                document.getElementById('batch-token-ttl').textContent = data.token_ttl_seconds || 0;
+                document.getElementById('batch-token-digest').textContent = (data.selected_keys_digest || '—').substring(0, 16);
+
+                const rows = data.rows || [];
+                let rowsHtml = '';
+                rows.forEach((row, idx) => {
+                    const status = row.local_result_found ? 
+                        '<span style="color:#107c10;">✓ Local result found</span>' :
+                        '<span style="color:#d83b01;">✗ ' + (row.reason_code || 'not found') + '</span>';
+                    rowsHtml += '<div style="margin:4px 0;padding:6px;background:#f9f9f9;border-radius:3px;">' +
+                        '<strong>' + _escapeHtml(row.selected_key || '—') + '</strong>: ' + status + '</div>';
+                });
+                document.getElementById('batch-preview-rows').innerHTML = rowsHtml || '<div style="color:#666;">No rows.</div>';
+
+                batchApprovalSection.style.display = 'block';
+                _updateApplyButtonState();
+            } catch (e) {
+                batchPreviewResult.innerHTML = '<span style="color:#a80000;">Error: ' + _escapeHtml(e.message) + '</span>';
+            }
+        });
+
+        batchApplyBtn.addEventListener('click', async () => {
+            if (!batchState.executionToken || batchState.selectedKeysList.length === 0) {
+                batchApplyResult.style.display = 'block';
+                batchApplyResult.innerHTML = '<span style="color:#a80000;">Invalid state: no token or selected_keys.</span>';
+                return;
+            }
+
+            batchApplyResult.style.display = 'block';
+            batchApplyResult.innerHTML = '<span style="color:#888;">Applying...</span>';
+
+            try {
+                const res = await fetch('/api/operator/actual-result-lookup/batch/guarded-local-apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'local_only',
+                        approval_granted: true,
+                        selected_keys: batchState.selectedKeysList,
+                        execution_token: batchState.executionToken
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    batchApplyResult.innerHTML = '<span style="color:#a80000;">Apply failed: ' + _escapeHtml(data.error || 'unknown error') + '</span>';
+                    return;
+                }
+
+                // Render apply results
+                document.getElementById('batch-total-written').textContent = data.total_written || 0;
+                document.getElementById('batch-total-skipped').textContent = data.total_skipped || 0;
+                document.getElementById('batch-mutation-performed').textContent = data.mutation_performed ? 'Yes' : 'No';
+                document.getElementById('batch-partial-rollback').textContent = data.partial_rollback_performed ? 'Yes' : 'No';
+
+                const applyRows = data.rows || [];
+                let applyRowsHtml = '';
+                applyRows.forEach((row, idx) => {
+                    const written = row.write_performed ? 
+                        '<span style="color:#107c10;">✓ Written</span>' :
+                        '<span style="color:#d83b01;">✗ ' + (row.reason_code || 'not written') + '</span>';
+                    applyRowsHtml += '<div style="margin:4px 0;padding:6px;background:#f9f9f9;border-radius:3px;">' +
+                        '<strong>' + _escapeHtml(row.selected_key || '—') + '</strong>: ' + written;
+                    if (row.before_row_count !== null && row.after_row_count !== null) {
+                        applyRowsHtml += ' <span style="color:#666;">(rows: ' + row.before_row_count + ' → ' + row.after_row_count + ')</span>';
+                    }
+                    applyRowsHtml += '</div>';
+                });
+                document.getElementById('batch-apply-rows').innerHTML = applyRowsHtml || '<div style="color:#666;">No rows.</div>';
+
+                // Reset state after successful apply
+                _resetBatchState();
+                batchApplyResult.style.backgroundColor = '#f0f8f0';
+            } catch (e) {
+                batchApplyResult.innerHTML = '<span style="color:#a80000;">Error: ' + _escapeHtml(e.message) + '</span>';
+            }
+        });
+
         // Load on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadAccuracySummary();
             loadSystemHealth();
+            // NOTE: Batch preview/apply are NOT called on page load (per requirements)
         });
 
         // Reload health every 10 seconds
