@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from time import perf_counter, time
 import uuid
 import hashlib
+from urllib.parse import urlparse
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
@@ -447,6 +448,174 @@ def _load_local_actual_result_map() -> tuple:
                 }
 
     return records_by_key, accuracy_dir
+
+
+_OFFICIAL_SOURCE_TIER_A0_HOSTS = {
+    "ufc.com",
+    "www.ufc.com",
+    "onefc.com",
+    "www.onefc.com",
+    "onechampionship.com",
+    "www.onechampionship.com",
+}
+
+_OFFICIAL_SOURCE_TIER_A1_HOSTS = {
+    "m.ufc.com",
+    "results.ufc.com",
+    "watch.onefc.com",
+}
+
+_OFFICIAL_SOURCE_TIER_B_HOSTS = {
+    "tapology.com",
+    "www.tapology.com",
+    "sherdog.com",
+    "www.sherdog.com",
+    "boxrec.com",
+    "www.boxrec.com",
+}
+
+_DISALLOWED_REDIRECT_HOSTS = {
+    "bit.ly",
+    "tinyurl.com",
+    "t.co",
+    "ow.ly",
+    "buff.ly",
+    "lnk.to",
+    "linktr.ee",
+    "goo.gl",
+}
+
+
+def _classify_official_source_host(url: str) -> str:
+    try:
+        parsed = urlparse(str(url or "").strip())
+    except Exception:
+        return "denied"
+
+    host = (parsed.netloc or "").strip().lower()
+    if ":" in host:
+        host = host.split(":", 1)[0]
+
+    if parsed.scheme.lower() != "https" or not host:
+        return "denied"
+    if host in _DISALLOWED_REDIRECT_HOSTS:
+        return "denied"
+    if host in _OFFICIAL_SOURCE_TIER_A0_HOSTS:
+        return "tier_a0"
+    if host in _OFFICIAL_SOURCE_TIER_A1_HOSTS:
+        return "tier_a1"
+    if host in _OFFICIAL_SOURCE_TIER_B_HOSTS:
+        return "tier_b"
+    return "denied"
+
+
+def _is_allowed_official_source_url(url: str) -> bool:
+    return _classify_official_source_host(url) in {"tier_a0", "tier_a1", "tier_b"}
+
+
+def _build_citation_fingerprint(selected_key: str, citation: dict) -> str:
+    citation = citation if isinstance(citation, dict) else {}
+    parts = [
+        str(selected_key or "").strip(),
+        str(citation.get("source_url") or "").strip(),
+        str(citation.get("source_title") or "").strip(),
+        str(citation.get("source_date") or "").strip(),
+        str(citation.get("winner") or citation.get("extracted_winner") or "").strip(),
+        str(citation.get("method") or "").strip(),
+        str(citation.get("round_time") or "").strip(),
+    ]
+    canonical = "|".join(parts)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:24]
+
+
+def _classify_source_confidence(citation: dict) -> dict:
+    citation = citation if isinstance(citation, dict) else {}
+    source_url = str(citation.get("source_url") or "").strip()
+    source_confidence = _classify_official_source_host(source_url)
+
+    confidence_score_map = {
+        "tier_a0": 0.85,
+        "tier_a1": 0.72,
+        "tier_b": 0.55,
+        "denied": 0.0,
+    }
+    confidence_score = confidence_score_map.get(source_confidence, 0.0)
+
+    if confidence_score >= 0.70:
+        classification = "accepted_preview"
+    elif confidence_score >= 0.40:
+        classification = "manual_review"
+    else:
+        classification = "rejected_manual_review"
+
+    return {
+        "source_confidence": source_confidence,
+        "confidence_score": confidence_score,
+        "classification": classification,
+    }
+
+
+def _validate_official_source_citation(citation: dict) -> dict:
+    citation = citation if isinstance(citation, dict) else {}
+    source_url = str(citation.get("source_url") or "").strip()
+
+    try:
+        parsed = urlparse(source_url)
+    except Exception:
+        parsed = urlparse("")
+
+    parsed_host = (parsed.netloc or "").strip().lower()
+    if ":" in parsed_host:
+        parsed_host = parsed_host.split(":", 1)[0]
+
+    provided_host = str(citation.get("publisher_host") or "").strip().lower()
+    effective_host = provided_host or parsed_host
+    confidence = _classify_source_confidence({**citation, "source_url": source_url})
+
+    missing_fields = [
+        field for field in ("source_url", "source_title", "source_date", "publisher_host")
+        if not str(citation.get(field) or "").strip()
+    ]
+
+    reason_code = "accepted_preview"
+    manual_review_required = False
+    accepted_preview = True
+
+    if not _is_allowed_official_source_url(source_url):
+        reason_code = "source_url_not_allowed"
+        manual_review_required = True
+        accepted_preview = False
+    elif provided_host and parsed_host and provided_host != parsed_host:
+        reason_code = "publisher_host_mismatch"
+        manual_review_required = True
+        accepted_preview = False
+    elif missing_fields:
+        reason_code = "citation_incomplete"
+        manual_review_required = True
+        accepted_preview = False
+    elif confidence["source_confidence"] == "tier_b":
+        reason_code = "tier_b_preview_only"
+        manual_review_required = True
+        accepted_preview = False
+    elif confidence["classification"] != "accepted_preview":
+        reason_code = "confidence_below_threshold"
+        manual_review_required = True
+        accepted_preview = False
+
+    return {
+        "ok": accepted_preview,
+        "source_url": source_url or None,
+        "publisher_host": effective_host or None,
+        "source_confidence": confidence["source_confidence"],
+        "confidence_score": confidence["confidence_score"],
+        "classification": confidence["classification"],
+        "citation_fingerprint": _build_citation_fingerprint(citation.get("selected_key") or "", citation) if not missing_fields and source_url else None,
+        "manual_review_required": manual_review_required,
+        "accepted_preview": accepted_preview,
+        "missing_fields": missing_fields,
+        "reason_code": reason_code,
+        "write_eligible": accepted_preview and confidence["source_confidence"] in {"tier_a0", "tier_a1"},
+    }
 
 
 def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> dict:
@@ -1149,6 +1318,125 @@ def api_operator_actual_result_lookup_dry_run_preview():
             "external_lookup_performed": False,
             "bulk_lookup_performed": False,
         }), 500
+
+
+@app.route("/api/operator/actual-result-lookup/official-source-one-record-preview", methods=["POST"])
+def api_operator_actual_result_lookup_official_source_one_record_preview():
+    data = request.get_json(silent=True) or {}
+    selected_key_raw = data.get("selected_key")
+    mode = str(data.get("mode") or "").strip()
+    lookup_intent = str(data.get("lookup_intent") or "").strip()
+    approval_granted = bool(data.get("approval_granted"))
+
+    selected_key = ""
+    if isinstance(selected_key_raw, str):
+        selected_key = selected_key_raw.strip()
+
+    base_payload = {
+        "ok": False,
+        "mode": "official_source_one_record",
+        "phase": "lookup_preview",
+        "selected_key": selected_key or None,
+        "approval_required": True,
+        "approval_granted": False,
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "selected_row": None,
+        "local_result_found": False,
+        "proposed_write": None,
+        "source_citation": None,
+        "manual_review_required": True,
+        "audit": {
+            "selected_key": selected_key or None,
+            "operator_note_present": bool(str(data.get("operator_note") or "").strip()),
+            "reason_code": None,
+            "matched_local_source_file": None,
+            "record_fight_id": None,
+            "write_performed": False,
+        },
+        "message": "Preview contract only. Live official-source lookup is not executed in v1a.",
+    }
+
+    if isinstance(selected_key_raw, (list, tuple, dict)):
+        return jsonify({**base_payload, "error": "selected_key must be a string"}), 400
+
+    if not selected_key:
+        return jsonify({**base_payload, "error": "selected_key is required"}), 400
+
+    if mode != "official_source_one_record":
+        return jsonify({**base_payload, "error": "mode must be official_source_one_record"}), 400
+
+    if lookup_intent != "preview_only":
+        return jsonify({**base_payload, "error": "lookup_intent must be preview_only"}), 400
+
+    if approval_granted:
+        return jsonify({**base_payload, "error": "approval_granted must be false for preview-only endpoint"}), 400
+
+    for forbidden_field in ("targets", "selected_keys", "batch_size", "execution_token"):
+        if forbidden_field in data:
+            return jsonify({**base_payload, "error": f"{forbidden_field} is not allowed for one-record preview endpoint"}), 400
+
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+    selected_row = None
+    for row in waiting_rows:
+        if _build_waiting_row_selected_key(row) == selected_key:
+            selected_row = dict(row)
+            break
+
+    if selected_row is None:
+        return jsonify({
+            **base_payload,
+            "error": "selected_key not found in waiting rows",
+            "audit": {
+                **base_payload["audit"],
+                "reason_code": "selected_key_not_found",
+            },
+            "message": "Selected row was not found. Manual review required.",
+        }), 404
+
+    selected_row["selected_key"] = selected_key
+    if not _is_known_value(selected_row.get("fight_id")):
+        selected_row["fight_id"] = _normalize_token(selected_row.get("fight_name")) or None
+
+    local_actual_map, _accuracy_dir = _load_local_actual_result_map()
+    local_actual = None
+    local_actual_source = None
+    for key in _build_waiting_row_candidate_fight_keys(selected_row):
+        matched = local_actual_map.get(key)
+        if matched and _is_known_value(matched["record"].get("actual_winner")):
+            local_actual = dict(matched["record"])
+            local_actual_source = matched["source_file"]
+            break
+
+    if local_actual is not None:
+        return jsonify({
+            **base_payload,
+            "ok": True,
+            "selected_row": selected_row,
+            "local_result_found": True,
+            "manual_review_required": False,
+            "audit": {
+                **base_payload["audit"],
+                "reason_code": "local_result_found_preview_only",
+                "matched_local_source_file": local_actual_source,
+                "record_fight_id": local_actual.get("fight_id") or selected_row.get("fight_id"),
+            },
+            "message": "Local actual result already exists. Official-source preview did not mutate any files in v1a.",
+        })
+
+    return jsonify({
+        **base_payload,
+        "ok": True,
+        "selected_row": selected_row,
+        "audit": {
+            **base_payload["audit"],
+            "reason_code": "official_source_lookup_not_connected",
+            "record_fight_id": selected_row.get("fight_id"),
+        },
+    })
 
 
 @app.route("/api/operator/actual-result-lookup/batch/guarded-local-preview", methods=["POST"])

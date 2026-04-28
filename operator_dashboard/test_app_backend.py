@@ -7,11 +7,31 @@ import uuid
 from pathlib import Path
 from unittest.mock import patch
 from time import time
-from app import app, _build_structural_signal_backfill_planner, _build_batch_preview_execution_token, _build_selected_keys_digest
+from app import (
+    app,
+    _build_structural_signal_backfill_planner,
+    _build_batch_preview_execution_token,
+    _build_selected_keys_digest,
+    _is_allowed_official_source_url,
+    _classify_official_source_host,
+    _build_citation_fingerprint,
+    _classify_source_confidence,
+    _validate_official_source_citation,
+)
 
 class DashboardBackendTest(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
+
+    def _official_preview_payload(self, selected_key='alpha_vs_beta|predictions_alpha_vs_beta_prediction_json', **overrides):
+        payload = {
+            'selected_key': selected_key,
+            'mode': 'official_source_one_record',
+            'lookup_intent': 'preview_only',
+            'approval_granted': False,
+        }
+        payload.update(overrides)
+        return payload
 
     def _sha256_or_none(self, path: Path):
         if not path.exists():
@@ -490,6 +510,225 @@ class DashboardBackendTest(unittest.TestCase):
 
         repo_hash_after = self._actual_results_file_hashes()
         self.assertEqual(repo_hash_before, repo_hash_after)
+
+    def test_official_source_one_record_preview_endpoint_exists(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-one-record-preview', json={})
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('mode'), 'official_source_one_record')
+        self.assertEqual(data.get('phase'), 'lookup_preview')
+
+    def test_official_source_one_record_preview_missing_selected_key_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key=''),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('selected_key is required', data.get('error') or '')
+
+    def test_official_source_one_record_preview_selected_key_array_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key=['bad', 'shape']),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('selected_key must be a string', data.get('error') or '')
+
+    def test_official_source_one_record_preview_mode_mismatch_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(mode='local_only'),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('mode must be official_source_one_record', data.get('error') or '')
+
+    def test_official_source_one_record_preview_lookup_intent_mismatch_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(lookup_intent='apply_now'),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('lookup_intent must be preview_only', data.get('error') or '')
+
+    def test_official_source_one_record_preview_approval_true_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(approval_granted=True),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('approval_granted must be false', data.get('error') or '')
+
+    def test_official_source_one_record_preview_batch_like_fields_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_keys=['one'], targets=['two']),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('not allowed', data.get('error') or '')
+
+    @patch('app._upsert_single_manual_actual_result')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_official_source_one_record_preview_valid_selected_key_returns_preview_only_flags(self, mock_summary, mock_local_map, mock_upsert):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({}, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key=selected_key),
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'official_source_one_record')
+        self.assertEqual(data.get('phase'), 'lookup_preview')
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertTrue(data.get('manual_review_required'))
+        self.assertFalse(data.get('local_result_found'))
+        self.assertIsNone(data.get('proposed_write'))
+        self.assertIsNone(data.get('source_citation'))
+        self.assertEqual((data.get('audit') or {}).get('reason_code'), 'official_source_lookup_not_connected')
+        mock_upsert.assert_not_called()
+
+    @patch('app._upsert_single_manual_actual_result')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_official_source_one_record_preview_local_result_found_still_does_not_mutate(self, mock_summary, mock_local_map, mock_upsert):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({
+            'alpha_vs_beta': {
+                'record': {
+                    'fight_id': 'alpha_vs_beta',
+                    'actual_winner': 'Alpha',
+                    'actual_method': 'Decision',
+                    'actual_round': '3',
+                    'event_date': '2026-01-01',
+                },
+                'source_file': 'actual_results_manual.json',
+            }
+        }, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key=selected_key),
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertTrue(data.get('local_result_found'))
+        self.assertFalse(data.get('manual_review_required'))
+        self.assertIsNone(data.get('proposed_write'))
+        self.assertIn('did not mutate', data.get('message') or '')
+        mock_upsert.assert_not_called()
+
+    def test_official_source_one_record_preview_does_not_change_actual_results_files(self):
+        before = self._actual_results_file_hashes()
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key='unknown_fight|unknown_path'),
+        )
+        self.assertEqual(resp.status_code, 404)
+        after = self._actual_results_file_hashes()
+        root = Path(__file__).resolve().parent.parent / 'ops' / 'accuracy'
+        self.assertEqual(before[str(root / 'actual_results.json')], after[str(root / 'actual_results.json')])
+        self.assertEqual(before[str(root / 'actual_results_manual.json')], after[str(root / 'actual_results_manual.json')])
+        self.assertEqual(before[str(root / 'actual_results_unresolved.json')], after[str(root / 'actual_results_unresolved.json')])
+
+    def test_official_source_helpers_accept_official_https_allowlist_hosts(self):
+        self.assertTrue(_is_allowed_official_source_url('https://ufc.com/event/test-card'))
+        self.assertTrue(_is_allowed_official_source_url('https://results.ufc.com/event/test-card'))
+        self.assertTrue(_is_allowed_official_source_url('https://tapology.com/fightcenter/events/test-card'))
+
+    def test_official_source_helpers_reject_non_https(self):
+        self.assertFalse(_is_allowed_official_source_url('http://ufc.com/event/test-card'))
+
+    def test_official_source_helpers_reject_shorteners_and_opaque_wrappers(self):
+        self.assertFalse(_is_allowed_official_source_url('https://bit.ly/test-card'))
+        self.assertFalse(_is_allowed_official_source_url('https://t.co/test-card'))
+
+    def test_official_source_host_classification_covers_all_tiers(self):
+        self.assertEqual(_classify_official_source_host('https://ufc.com/event/test-card'), 'tier_a0')
+        self.assertEqual(_classify_official_source_host('https://results.ufc.com/event/test-card'), 'tier_a1')
+        self.assertEqual(_classify_official_source_host('https://tapology.com/fightcenter/events/test-card'), 'tier_b')
+
+    def test_official_source_citation_incomplete_forces_manual_review(self):
+        result = _validate_official_source_citation({
+            'selected_key': 'alpha|beta',
+            'source_url': 'https://ufc.com/event/test-card',
+            'source_title': 'UFC Test Card',
+            'publisher_host': 'ufc.com',
+        })
+        self.assertTrue(result.get('manual_review_required'))
+        self.assertEqual(result.get('reason_code'), 'citation_incomplete')
+        self.assertFalse(result.get('accepted_preview'))
+
+    def test_official_source_confidence_thresholds_classify_accepted_manual_review_and_rejected(self):
+        accepted = _classify_source_confidence({'source_url': 'https://ufc.com/event/test-card'})
+        manual_review = _classify_source_confidence({'source_url': 'https://tapology.com/fightcenter/events/test-card'})
+        rejected = _classify_source_confidence({'source_url': 'http://unknown.example/test-card'})
+        self.assertEqual(accepted.get('classification'), 'accepted_preview')
+        self.assertEqual(manual_review.get('classification'), 'manual_review')
+        self.assertEqual(rejected.get('classification'), 'rejected_manual_review')
+
+    def test_official_source_citation_fingerprint_is_stable_for_same_inputs(self):
+        citation = {
+            'source_url': 'https://ufc.com/event/test-card',
+            'source_title': 'UFC Test Card',
+            'source_date': '2026-01-01',
+            'winner': 'Alpha',
+            'method': 'Decision',
+            'round_time': 'R3 5:00',
+        }
+        self.assertEqual(
+            _build_citation_fingerprint('alpha|beta', citation),
+            _build_citation_fingerprint('alpha|beta', citation),
+        )
+
+    def test_no_ui_template_references_official_source_preview_endpoint_yet(self):
+        index_resp = self.client.get('/')
+        self.assertEqual(index_resp.status_code, 200)
+        self.assertNotIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', index_resp.data)
+
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertNotIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', advanced_resp.data)
 
     def test_advanced_dashboard_has_guarded_single_lookup_controls(self):
         resp = self.client.get('/advanced-dashboard')
