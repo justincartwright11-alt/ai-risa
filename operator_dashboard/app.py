@@ -1591,6 +1591,38 @@ def api_operator_intent():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
+@app.route("/api/operator/web-trigger-scout", methods=["GET", "POST"])
+def api_operator_web_trigger_scout():
+    """Read-only web trigger scouting endpoint.
+
+    This endpoint returns a review packet only and performs no writes.
+    """
+    try:
+        if request.method == "GET":
+            query = str(request.args.get("query", "")).strip()
+            mode = str(request.args.get("mode", "official_first")).strip() or "official_first"
+            targets_raw = request.args.get("targets", "")
+            targets = [t.strip() for t in targets_raw.split(",") if t.strip()]
+        else:
+            data = request.get_json(silent=True) or {}
+            query = str(data.get("query", "")).strip()
+            mode = str(data.get("mode", "official_first")).strip() or "official_first"
+            targets = data.get("targets") or []
+            if not isinstance(targets, list):
+                targets = []
+
+        if not query and not targets:
+            return jsonify({"ok": False, "error": "Provide query or targets"}), 400
+
+        from operator_dashboard.web_trigger_scout import WebTriggerScout
+
+        scout = WebTriggerScout()
+        result = scout.run(query=query, mode=mode, targets=targets)
+        return jsonify(result)
+    except Exception as e:
+        return operator_error_response(str(e), 500)
+
+
 @app.route("/")
 def index():
     # Render the dashboard UI, preserving the expected text in the HTML title if needed

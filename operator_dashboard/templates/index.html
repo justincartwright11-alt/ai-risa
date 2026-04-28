@@ -682,6 +682,26 @@
                         <div id="operator-mode-output" style="margin-top:14px;font-size:14px;min-height:10px;"></div>
                     </div>
                 </section>
+                <section id="web-trigger-scout-panel" class="panel-card" style="border-left-color:#0b6b57;">
+                    <div class="panel-header" style="background:#eefaf6;">
+                        <h2 style="color:#0b6b57;">AI-RISA Web Trigger Scout</h2>
+                    </div>
+                    <div class="panel-body" style="padding:20px 28px;">
+                        <p style="margin:0 0 10px;color:#555;font-size:14px;">Read-only web scouting for fight/event triggers and result updates.</p>
+                        <textarea id="web-trigger-scout-input" rows="2" style="width:100%;box-sizing:border-box;font-size:14px;padding:10px 12px;border:1px solid #b0cfc7;border-radius:8px;resize:vertical;font-family:inherit;" placeholder="Search web for triggers, fights, events, and results..."></textarea>
+                        <div style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button class="wts-quick-btn" data-query="Search official results" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Search Official Results</button>
+                            <button class="wts-quick-btn" data-query="Check upcoming events" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Search Upcoming Events</button>
+                            <button class="wts-quick-btn" data-query="Check unresolved fights" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Unresolved Fights</button>
+                            <button class="wts-quick-btn" data-query="Check identity conflicts" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Identity Conflicts</button>
+                            <button class="wts-quick-btn" data-query="Check official event pages" style="padding:8px 14px;font-size:13px;border-radius:6px;border:1px solid #0b6b57;background:#f0faf7;color:#0b6b57;cursor:pointer;">Check Official Event Pages</button>
+                            <button id="web-trigger-scout-run-btn" style="padding:8px 18px;font-size:14px;font-weight:700;border-radius:6px;border:none;background:#0b6b57;color:#fff;cursor:pointer;">Run Web Trigger Scout</button>
+                        </div>
+                        <div id="web-trigger-scout-status" style="margin-top:10px;font-size:13px;color:#0b6b57;min-height:20px;"></div>
+                        <div id="web-trigger-scout-guardrails" style="margin-top:4px;font-size:12px;color:#666;"></div>
+                        <div id="web-trigger-scout-results" style="margin-top:12px;overflow:auto;"></div>
+                    </div>
+                </section>
                 <div id="backend-status-indicator" style="margin:12px 0 8px 0; text-align:center;"></div>
                 <!-- Panels -->
                 <section class="panel-card" style="border-left-color:#a800a8;">
@@ -1791,6 +1811,110 @@
             }
 
             // ---------------------------------------------------------------
+            // Web Trigger Scout panel
+            // ---------------------------------------------------------------
+            function setupWebTriggerScout() {
+                const input = document.getElementById('web-trigger-scout-input');
+                const runBtn = document.getElementById('web-trigger-scout-run-btn');
+                const statusDiv = document.getElementById('web-trigger-scout-status');
+                const guardrailsDiv = document.getElementById('web-trigger-scout-guardrails');
+                const resultsDiv = document.getElementById('web-trigger-scout-results');
+
+                function setStatus(msg, isError = false) {
+                    if (!statusDiv) return;
+                    statusDiv.textContent = msg || '';
+                    statusDiv.style.color = isError ? '#a80000' : '#0b6b57';
+                }
+
+                function renderRows(rows) {
+                    if (!resultsDiv) return;
+                    if (!rows || !rows.length) {
+                        resultsDiv.innerHTML = '<div style="color:#666;">No scout results returned.</div>';
+                        return;
+                    }
+                    const body = rows.map((row) => {
+                        return `<tr>
+                            <td>${escapeHtml(row.trigger_type || '')}</td>
+                            <td>${escapeHtml(row.fight_or_event_id || '')}</td>
+                            <td>${escapeHtml(row.fighter_or_event_name || row.target || '')}</td>
+                            <td>${row.result_found ? 'yes' : 'no'}</td>
+                            <td>${escapeHtml(row.winner || '')}</td>
+                            <td>${escapeHtml(row.method || '')}</td>
+                            <td>${escapeHtml(row.round_time || '')}</td>
+                            <td>${row.official_source_url ? `<a href="${escapeHtml(row.official_source_url)}" target="_blank" rel="noreferrer">source</a>` : ''}</td>
+                            <td>${escapeHtml(row.source_confidence || '')}</td>
+                            <td>${escapeHtml(row.recommended_action || '')}</td>
+                        </tr>`;
+                    }).join('');
+
+                    resultsDiv.innerHTML = `<table class="phase1-table">
+                        <thead>
+                            <tr>
+                                <th>trigger_type</th>
+                                <th>fight_id/event_id</th>
+                                <th>fighter/event name</th>
+                                <th>result_found</th>
+                                <th>winner</th>
+                                <th>method</th>
+                                <th>round/time</th>
+                                <th>official_source_url</th>
+                                <th>source_confidence</th>
+                                <th>recommended_action</th>
+                            </tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>`;
+                }
+
+                async function runScout(overrideQuery = '') {
+                    const query = (overrideQuery || (input ? input.value : '') || '').trim();
+                    if (!query) {
+                        setStatus('Enter a web scout query first.', true);
+                        return;
+                    }
+                    setStatus('Running Web Trigger Scout...');
+                    if (resultsDiv) resultsDiv.innerHTML = '';
+
+                    try {
+                        const resp = await fetch('/api/operator/web-trigger-scout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ query, mode: 'official_first', targets: [] }),
+                        });
+                        const data = await resp.json();
+                        if (!data.ok) {
+                            setStatus(data.error || 'Web Trigger Scout failed.', true);
+                            return;
+                        }
+                        renderRows(data.results || []);
+                        if (guardrailsDiv) {
+                            const guards = Array.isArray(data.blocked_actions) ? data.blocked_actions : [];
+                            guardrailsDiv.textContent = guards.join(' | ');
+                        }
+                        setStatus(`Web Trigger Scout complete (${(data.results || []).length} rows).`);
+                    } catch (e) {
+                        setStatus(`Web Trigger Scout request failed: ${e.message}`, true);
+                    }
+                }
+
+                runBtn && runBtn.addEventListener('click', () => runScout(''));
+                input && input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        runScout('');
+                    }
+                });
+
+                document.querySelectorAll('.wts-quick-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const query = btn.getAttribute('data-query') || '';
+                        if (input) input.value = query;
+                        runScout(query);
+                    });
+                });
+            }
+
+            // ---------------------------------------------------------------
             // Operator Mode — natural-language command center
             // ---------------------------------------------------------------
             function setupOperatorMode() {
@@ -1900,6 +2024,43 @@
                         } else if (plan.intent === 'fighter_profile_check') {
                             appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
                                 Fighter profile lookup is available via the fighter registry. Specify a fighter name to search.
+                            </div>`);
+
+                        } else if (plan.intent === 'web_trigger_scout') {
+                            const payload = {
+                                query: plan.query_text || 'search web for fight results',
+                                mode: plan.mode || 'official_first',
+                                targets: Array.isArray(plan.targets) ? plan.targets : [],
+                            };
+                            const d = await fetch('/api/operator/web-trigger-scout', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(payload),
+                            }).then(r => r.json());
+
+                            if (!d.ok) {
+                                appendResult(`<div style="margin-top:8px;color:#a80000;">Web Trigger Scout failed: ${escapeHtml(d.error || 'Unknown error')}</div>`);
+                                return;
+                            }
+
+                            const rows = Array.isArray(d.results) ? d.results : [];
+                            const preview = rows.slice(0, 4).map((row) => {
+                                return `<tr>
+                                    <td>${escapeHtml(row.trigger_type || '')}</td>
+                                    <td>${escapeHtml(row.fighter_or_event_name || row.target || '')}</td>
+                                    <td>${row.result_found ? 'yes' : 'no'}</td>
+                                    <td>${escapeHtml(row.winner || '')}</td>
+                                    <td>${escapeHtml(row.source_confidence || '')}</td>
+                                    <td>${escapeHtml(row.recommended_action || '')}</td>
+                                </tr>`;
+                            }).join('');
+                            appendResult(`<div style="margin-top:8px;padding:8px 12px;background:#eefaf6;border-radius:6px;border:1px solid #bfe6dd;">
+                                <strong>Web Trigger Scout</strong> returned ${rows.length} result(s).<br>
+                                <table class="phase1-table" style="margin-top:8px;">
+                                    <thead><tr><th>trigger_type</th><th>target</th><th>result_found</th><th>winner</th><th>source_confidence</th><th>recommended_action</th></tr></thead>
+                                    <tbody>${preview || '<tr><td colspan="6">No rows</td></tr>'}</tbody>
+                                </table>
+                                <div style="margin-top:6px;font-size:12px;color:#666;">${escapeHtml((d.blocked_actions || []).join(' | '))}</div>
                             </div>`);
                         }
                     } catch (e) {
@@ -2011,6 +2172,7 @@
                 refreshPhase1Lanes();
                 setupOperatorMatchupWorkflow();
                 setupAccuracyLedgerCalibrationReview();
+                setupWebTriggerScout();
                 setupOperatorMode();
             });
 

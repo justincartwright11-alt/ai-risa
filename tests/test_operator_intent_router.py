@@ -130,6 +130,19 @@ class TestAutoReadOnly:
         assert r["safety_level"] == "AUTO_READ_ONLY"
         assert r["blocked"] is False
 
+    def test_search_web_for_fight_results_routes_to_web_trigger_scout(self, router):
+        r = _route(router, "search web for fight results")
+        _assert_base_shape(r)
+        assert r["intent"] == "web_trigger_scout"
+        assert r["safety_level"] == "AUTO_READ_ONLY"
+        assert r["blocked"] is False
+        assert r.get("endpoint") == "/api/operator/web-trigger-scout"
+
+    def test_check_specific_result_routes_to_web_trigger_scout(self, router):
+        r = _route(router, "check Jafel Filho vs Cody Durden result")
+        assert r["intent"] == "web_trigger_scout"
+        assert r["safety_level"] == "AUTO_READ_ONLY"
+
 
 # ===========================================================================
 # 2. APPROVAL_REQUIRED_WRITE intents
@@ -169,6 +182,14 @@ class TestApprovalRequiredWrite:
         r = _route(router, "score a finished report")
         assert r["intent"] == "report_scoring_calibration"
         assert r["safety_level"] == "APPROVAL_REQUIRED_WRITE"
+
+    def test_apply_result_to_ledger_requires_approval(self, router):
+        r = _route(router, "apply result to ledger")
+        _assert_base_shape(r)
+        assert r["intent"] == "result_ledger_update"
+        assert r["safety_level"] == "APPROVAL_REQUIRED_WRITE"
+        assert r["requires_approval"] is True
+        assert r["blocked"] is False
 
     def test_commit_checkpoint(self, router):
         r = _route(router, "commit checkpoint")

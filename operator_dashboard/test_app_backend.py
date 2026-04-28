@@ -43,6 +43,43 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'Waiting For Real Results', resp.data)
         self.assertIn(b'/api/accuracy/comparison-summary', resp.data)
 
+    def test_web_trigger_scout_panel_present(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'AI-RISA Web Trigger Scout', resp.data)
+        self.assertIn(b'/api/operator/web-trigger-scout', resp.data)
+
+    def test_web_trigger_scout_endpoint_contract(self):
+        resp = self.client.post(
+            '/api/operator/web-trigger-scout',
+            json={
+                'query': 'check Jafel Filho vs Cody Durden result',
+                'mode': 'official_first',
+                'targets': [],
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('results', data)
+        self.assertIn('blocked_actions', data)
+        self.assertIsInstance(data.get('results'), list)
+        self.assertIsInstance(data.get('blocked_actions'), list)
+        if data['results']:
+            row = data['results'][0]
+            for key in (
+                'trigger_type',
+                'fighter_or_event_name',
+                'result_found',
+                'winner',
+                'method',
+                'round_time',
+                'official_source_url',
+                'source_confidence',
+                'recommended_action',
+            ):
+                self.assertIn(key, row)
+
     def test_signal_breakdown_contract(self):
         resp = self.client.get('/api/accuracy/signal-breakdown')
         self.assertEqual(resp.status_code, 200)

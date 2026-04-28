@@ -102,6 +102,22 @@ _INTENT_MAP = [
         ],
     ),
     (
+        "web_trigger_scout",
+        "AUTO_READ_ONLY",
+        [
+            r"search\s+web\s+for\s+(fight\s+results?|event\s+triggers?|triggers?)",
+            r"search\s+web\s+for",
+            r"check\s+.*\s+result",
+            r"check\s+event\s+results?\s+for",
+            r"verify\s+fighter\s+identity\s+for",
+            r"check\s+identity\s+conflicts?",
+            r"check\s+official\s+event\s+pages?",
+            r"search\s+official\s+results?",
+            r"check\s+upcoming\s+events?",
+            r"check\s+unresolved\s+fights?",
+        ],
+    ),
+    (
         "build_premium_report",
         "APPROVAL_REQUIRED_WRITE",
         [
@@ -109,6 +125,16 @@ _INTENT_MAP = [
             r"generate\s+.*report",
             r"create\s+.*report",
             r"\bvs\.?\s+\w",
+        ],
+    ),
+    (
+        "result_ledger_update",
+        "APPROVAL_REQUIRED_WRITE",
+        [
+            r"apply\s+result\s+to\s+ledger",
+            r"update\s+result\s+ledger",
+            r"write\s+result\s+to\s+ledger",
+            r"record\s+result\s+in\s+ledger",
         ],
     ),
     (
@@ -146,6 +172,8 @@ _EXAMPLES = [
     "run accuracy calibration",
     "show backfill status",
     "show unresolved fights",
+    "search web for fight results",
+    "check Jafel Filho vs Cody Durden result",
     "build Jafel Filho vs Cody Durden report",
     "show dashboard warnings",
     "show last action",
@@ -285,6 +313,28 @@ def _enrich(result: dict, text: str) -> None:
             "No scored reports are currently available. Review the Advanced / "
             "Report-Scoring Calibration panel."
         )
+
+    elif intent == "result_ledger_update":
+        result["planned_action"] = (
+            "Prepare a result-ledger update checkpoint. This is a write action and "
+            "requires explicit approval before any ledger mutation can occur."
+        )
+
+    elif intent == "web_trigger_scout":
+        target_match = re.search(
+            r"(?:check\s+|verify\s+fighter\s+identity\s+for\s+)(.+?)(?:\s+result)?$",
+            text,
+        )
+        target = target_match.group(1).strip() if target_match else ""
+        result["planned_action"] = (
+            "Run read-only Web Trigger Scout and search official-first sources for "
+            "fight/event result triggers. No files or ledgers will be mutated."
+        )
+        result["endpoint"] = "/api/operator/web-trigger-scout"
+        result["mode"] = "official_first"
+        result["query_text"] = text
+        if target and len(target) > 2:
+            result["targets"] = [target.title()]
 
     elif intent == "report_qa_review":
         result["planned_action"] = (
