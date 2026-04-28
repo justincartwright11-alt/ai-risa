@@ -406,12 +406,12 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
             ))
             styles.add(ParagraphStyle(
                 name="DashPanelHead",
-                fontSize=9, leading=11, spaceAfter=3, spaceBefore=3,
+                fontSize=10, leading=13, spaceAfter=3, spaceBefore=6,
                 textColor=gold_highlight, fontName="Helvetica-Bold",
             ))
             styles.add(ParagraphStyle(
                 name="DashPanelBody",
-                fontSize=8, leading=10, spaceAfter=2,
+                fontSize=9, leading=11, spaceAfter=3,
                 textColor=text_primary,
             ))
             styles.add(ParagraphStyle(
@@ -422,7 +422,7 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
 
             def _panel_box(contents, border_color=None):
                 """Wrap a list of flowables in a styled panel cell."""
-                inner = Table([[c] for c in contents], colWidths=[2.88 * inch])
+                inner = Table([[c] for c in contents], colWidths=[2.76 * inch])
                 inner.setStyle(TableStyle([
                     ("LEFTPADDING", (0, 0), (-1, -1), 0),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 0),
@@ -486,7 +486,7 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
                 ("Deception & Unpredictability", "deception_unpredictability"),
             ]
             arch_lines = [Paragraph("FIGHTER ARCHITECTURE", styles["DashPanelHead"])]
-            arch_data = [["Metric", fa_name[:12], fb_name[:12]]]
+            arch_data = [["Metric", fa_name[:16], fb_name[:16]]]
             for label, key in arch_labels:
                 arch_data.append([label, fa_arch.get(key, "N/A"), fb_arch.get(key, "N/A")])
             arch_table = Table(arch_data, colWidths=[1.32 * inch, 0.72 * inch, 0.72 * inch])
@@ -542,7 +542,7 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
                 if rcs_fa.get("values") and rcs_rounds:
                     pairs = list(zip(rcs_rounds, rcs_fa.get("values", []), rcs_fb.get("values", [])))
                     row_data = [["Round", fa_name[:10], fb_name[:10]]] + [[r, a, b] for r, a, b in pairs]
-                    rcs_table = Table(row_data, colWidths=[0.55 * inch] * 3)
+                    rcs_table = Table(row_data, colWidths=[0.70 * inch, 0.55 * inch, 0.55 * inch])
                     rcs_table.setStyle(TableStyle([
                         ("BACKGROUND", (0, 0), (-1, 0), panel_fill_alt),
                         ("TEXTCOLOR", (0, 0), (-1, 0), gold_highlight),
@@ -650,6 +650,7 @@ def export_report(report_payload, out_path=None, fmt="pdf"):
             ]))
             story.append(row4)
             story.append(Spacer(1, 0.07 * inch))
+            story.append(PageBreak())
 
         except Exception as _dash_exc:
             # Dashboard page must never crash the report — degrade gracefully
