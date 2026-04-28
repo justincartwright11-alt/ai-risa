@@ -984,7 +984,7 @@
                         </div>
                         <div class="phase1-box" style="margin-top:12px;" id="structural-backfill-planner-panel">
                             <div class="phase1-subtitle">Data Quality</div>
-                            <h4>Structural Signal Backfill Planner</h4>
+                            <h4>Data Gap Checker</h4>
                             <div id="structural-backfill-planner-content" class="phase1-table-shell">Loading…</div>
                         </div>
                         <div id="operator-error" class="error-card" style="display:none;margin-top:10px;"></div>
@@ -1314,7 +1314,7 @@
                 [signalGapBox, methodRoundBox, stoppageBox, confidenceBox].filter(Boolean).forEach((node) => accuracyFold.content.appendChild(node));
                 bucketShell.appendChild(accuracyFold.details);
 
-                const queueFold = createFold('Queues & Events', 'Waiting-for-result detail is available on demand.', false);
+                const queueFold = createFold('Fight Schedule', 'Waiting-for-result detail is available on demand.', false);
                 [queueBox].filter(Boolean).forEach((node) => queueFold.content.appendChild(node));
                 bucketShell.appendChild(queueFold.details);
 
@@ -1322,7 +1322,7 @@
                 [signalCoverageBox, structuralPlannerBox].filter(Boolean).forEach((node) => qualityFold.content.appendChild(node));
                 bucketShell.appendChild(qualityFold.details);
 
-                const diagnosticsFold = createFold('Diagnostics / Logs', 'Failure patterns and troubleshooting detail.', false);
+                const diagnosticsFold = createFold('System Checks', 'Failure patterns and troubleshooting detail.', false);
                 [failureBox].filter(Boolean).forEach((node) => diagnosticsFold.content.appendChild(node));
                 bucketShell.appendChild(diagnosticsFold.details);
             }
@@ -1333,10 +1333,10 @@
                 container.dataset.reorganized = 'true';
 
                 const primaryGroup = makeGroup('Primary Operator Panel');
-                const queueGroup = makeGroup('Queues & Events');
-                const diagnosticsGroup = makeGroup('Diagnostics / Logs');
+                const queueGroup = makeGroup('Fight Schedule');
+                const diagnosticsGroup = makeGroup('System Checks');
 
-                const legacyFold = createFold('Legacy Monitoring', 'Forecasting, drift, integrity, watchlists, and escalations.', false);
+                const legacyFold = createFold('Advanced System Monitoring', 'Advanced checks for system reliability, saved watchlists, and alerts.', false);
 
                 const anchor = document.getElementById('backend-status-indicator');
                 if (anchor && anchor.parentNode === container) {
@@ -1350,17 +1350,17 @@
                 moveCardByTitle('Operator Matchup Workflow', primaryGroup);
                 reorganizeOperatorWorkflowCard();
 
-                const eventIntakeFold = createFold('Event Intake', 'Operations controls and high-volume intake tables.', false);
+                const eventIntakeFold = createFold('Find Upcoming Fights', 'Search for upcoming fight cards and decide what AI-RISA should watch.', false);
                 queueGroup.appendChild(eventIntakeFold.details);
                 moveCardByTitle('Phase 1 Operations', eventIntakeFold.content);
 
-                const queueToolsFold = createFold('Queue Tools', 'Queue board, review queue, and casefile are available here.', false);
+                const queueToolsFold = createFold('Fight List Tools', 'Review fight lists, saved cards, and matchup files.', false);
                 queueGroup.appendChild(queueToolsFold.details);
                 moveCardByTitle('Queue', queueToolsFold.content);
                 moveCardByTitle('Review Queue', queueToolsFold.content);
                 moveCardByTitle('Casefile', queueToolsFold.content);
 
-                const diagnosticsFold = createFold('Diagnostics', 'Status JSON and chat are collapsed by default.', false);
+                const diagnosticsFold = createFold('System Health Details', 'Technical details are hidden unless you need them.', false);
                 diagnosticsGroup.appendChild(diagnosticsFold.details);
                 moveCardByTitle('Status', diagnosticsFold.content);
                 moveCardByTitle('Chat', diagnosticsFold.content);
