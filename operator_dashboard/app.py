@@ -448,9 +448,10 @@ def _load_local_actual_result_map() -> tuple:
     return records_by_key, accuracy_dir
 
 
-def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> bool:
+def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> dict:
     target_path = accuracy_dir / "actual_results_manual.json"
     manual_rows = _load_json_records(target_path)
+    before_row_count = len(manual_rows)
 
     fight_key = _normalize_token(write_row.get("fight_id"))
     updated = False
@@ -467,9 +468,19 @@ def _upsert_single_manual_actual_result(accuracy_dir: Path, write_row: dict) -> 
         with open(target_path, "w", encoding="utf-8") as handle:
             json.dump(manual_rows, handle, ensure_ascii=False, indent=2)
             handle.write("\n")
-        return True
+        return {
+            "ok": True,
+            "before_row_count": before_row_count,
+            "after_row_count": len(manual_rows),
+            "write_target": str(target_path),
+        }
     except Exception:
-        return False
+        return {
+            "ok": False,
+            "before_row_count": before_row_count,
+            "after_row_count": before_row_count,
+            "write_target": str(target_path),
+        }
 
 
 def operator_error_response(message: str, status_code: int = 500, **extra):
@@ -1106,6 +1117,17 @@ def api_operator_actual_result_lookup_guarded_single():
     selected_key = str(data.get("selected_key") or "").strip()
     approval_granted = bool(data.get("approval_granted"))
 
+    base_audit = {
+        "write_target": None,
+        "write_action": "insert_or_update_single_record",
+        "selected_key": selected_key or None,
+        "matched_local_source_file": None,
+        "record_fight_id": None,
+        "before_row_count": None,
+        "after_row_count": None,
+        "write_performed": False,
+    }
+
     if not selected_key:
         return jsonify({
             "ok": False,
@@ -1121,6 +1143,8 @@ def api_operator_actual_result_lookup_guarded_single():
             "selected_row": None,
             "local_result_found": False,
             "proposed_write": None,
+            "scoring_semantics_changed": False,
+            "audit": base_audit,
             "message": "Preview only. Approval required before any write.",
         }), 400
 
@@ -1147,6 +1171,8 @@ def api_operator_actual_result_lookup_guarded_single():
             "selected_row": None,
             "local_result_found": False,
             "proposed_write": None,
+            "scoring_semantics_changed": False,
+            "audit": base_audit,
             "message": "Selected row was not found. Manual review required.",
         }), 404
 
@@ -1178,6 +1204,13 @@ def api_operator_actual_result_lookup_guarded_single():
             "copied_from": local_actual_source,
         }
 
+    audit_payload = {
+        **base_audit,
+        "selected_key": selected_key,
+        "matched_local_source_file": local_actual_source,
+        "record_fight_id": proposed_write.get("fight_id") if proposed_write else selected_row.get("fight_id"),
+    }
+
     base_payload = {
         "ok": True,
         "mode": "guarded_single_lookup",
@@ -1191,6 +1224,8 @@ def api_operator_actual_result_lookup_guarded_single():
         "selected_row": selected_row,
         "local_result_found": local_result_found,
         "proposed_write": proposed_write,
+        "scoring_semantics_changed": False,
+        "audit": audit_payload,
     }
 
     if not approval_granted:
@@ -1205,11 +1240,18 @@ def api_operator_actual_result_lookup_guarded_single():
             "message": "No local actual result found. Manual review required. No write performed.",
         })
 
-    write_ok = _upsert_single_manual_actual_result(accuracy_dir, proposed_write)
-    if not write_ok:
+    write_result = _upsert_single_manual_actual_result(accuracy_dir, proposed_write)
+    if not write_result.get("ok"):
         return jsonify({
             **base_payload,
             "ok": False,
+            "audit": {
+                **audit_payload,
+                "write_target": write_result.get("write_target"),
+                "before_row_count": write_result.get("before_row_count"),
+                "after_row_count": write_result.get("after_row_count"),
+                "write_performed": False,
+            },
             "message": "Failed to write approved local actual result.",
         }), 500
 
@@ -1218,6 +1260,13 @@ def api_operator_actual_result_lookup_guarded_single():
         "mutation_performed": True,
         "resolved_count": 1,
         "manual_review_required": False,
+        "audit": {
+            **audit_payload,
+            "write_target": write_result.get("write_target"),
+            "before_row_count": write_result.get("before_row_count"),
+            "after_row_count": write_result.get("after_row_count"),
+            "write_performed": True,
+        },
         "message": "Approved local actual result written for selected row.",
     })
 

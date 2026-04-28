@@ -290,6 +290,87 @@ class DashboardBackendTest(unittest.TestCase):
         after = self._actual_results_file_hashes()
         self.assertEqual(before, after)
 
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_guarded_single_lookup_approval_true_local_result_writes_once_with_audit(self, mock_summary, mock_load_local_map):
+        selected_key = 'don_madge_vs_tba_prediction|predictions_don_madge_vs_tba_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'don_madge_vs_tba_prediction',
+                'predicted_winner': 'don_madge',
+                'event_date': 'UNKNOWN',
+                'file_path': 'predictions/don_madge_vs_tba_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+
+        repo_hash_before = self._actual_results_file_hashes()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            accuracy_dir = tmp_root / 'ops' / 'accuracy'
+            accuracy_dir.mkdir(parents=True, exist_ok=True)
+
+            manual_path = accuracy_dir / 'actual_results_manual.json'
+            manual_path.write_text('[]\n', encoding='utf-8')
+            (accuracy_dir / 'actual_results.json').write_text('[]\n', encoding='utf-8')
+            (accuracy_dir / 'actual_results_unresolved.json').write_text('[]\n', encoding='utf-8')
+
+            local_actual = {
+                'fight_id': 'don_madge_vs_tba',
+                'actual_winner': 'don_madge',
+                'actual_method': 'TKO',
+                'actual_round': '1',
+                'event_date': '2023-08-05',
+                'source': 'manual',
+            }
+            mock_load_local_map.return_value = ({
+                'don_madge_vs_tba': {
+                    'record': local_actual,
+                    'source_file': 'actual_results_manual.json',
+                }
+            }, accuracy_dir)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/guarded-single', json={
+                'selected_key': selected_key,
+                'approval_granted': True,
+            })
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data.get('ok'))
+            self.assertTrue(data.get('approval_required'))
+            self.assertTrue(data.get('approval_granted'))
+            self.assertTrue(data.get('local_result_found'))
+            self.assertFalse(data.get('manual_review_required'))
+            self.assertTrue(data.get('mutation_performed'))
+            self.assertEqual(data.get('resolved_count'), 1)
+            self.assertFalse(data.get('external_lookup_performed'))
+            self.assertFalse(data.get('bulk_lookup_performed'))
+            self.assertFalse(data.get('scoring_semantics_changed'))
+
+            audit = data.get('audit') or {}
+            self.assertTrue(audit.get('write_performed'))
+            self.assertEqual(audit.get('write_action'), 'insert_or_update_single_record')
+            self.assertEqual(audit.get('selected_key'), selected_key)
+            self.assertEqual(audit.get('matched_local_source_file'), 'actual_results_manual.json')
+            self.assertEqual(audit.get('record_fight_id'), 'don_madge_vs_tba')
+            self.assertEqual(audit.get('write_target'), str(manual_path))
+
+            before_count = int(audit.get('before_row_count'))
+            after_count = int(audit.get('after_row_count'))
+            self.assertIn(after_count - before_count, (0, 1))
+
+            written_rows = json.loads(manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in written_rows if row.get('fight_id') == 'don_madge_vs_tba']
+            self.assertEqual(len(matched_rows), 1)
+
+        repo_hash_after = self._actual_results_file_hashes()
+        self.assertEqual(repo_hash_before, repo_hash_after)
+
     def test_advanced_dashboard_has_guarded_single_lookup_controls(self):
         resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
