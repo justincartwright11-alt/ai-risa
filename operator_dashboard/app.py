@@ -18,6 +18,8 @@ import hashlib
 from urllib.parse import urlparse
 from operator_dashboard.official_source_acceptance_gate import evaluate_official_source_acceptance_gate
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
+from operator_dashboard.official_source_approved_apply_schema import validate_official_source_approved_apply_request
+from operator_dashboard.official_source_approved_apply_guard import evaluate_official_source_approved_apply_guard
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
@@ -1548,6 +1550,96 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         "message": "Official-source preview evaluated. No mutation performed.",
     }
     response_payload["acceptance_gate"] = evaluate_official_source_acceptance_gate(response_payload)
+    return jsonify(response_payload)
+
+
+@app.route("/api/operator/actual-result-lookup/official-source-approved-apply", methods=["POST"])
+def api_operator_actual_result_lookup_official_source_approved_apply():
+    if not request.is_json:
+        return jsonify({
+            "ok": False,
+            "mode": "official_source_approved_apply",
+            "phase": "approved_apply",
+            "request_valid": False,
+            "token_valid": False,
+            "guard_allowed": False,
+            "manual_review_required": True,
+            "mutation_performed": False,
+            "write_performed": False,
+            "bulk_lookup_performed": False,
+            "scoring_semantics_changed": False,
+            "reason_code": "invalid_request_body",
+            "errors": ["request content-type must be application/json"],
+            "selected_key": None,
+            "acceptance_gate": None,
+            "binding_digest_expected": None,
+            "binding_digest_actual": None,
+            "message": "Approved apply endpoint skeleton is decision-only and non-mutating.",
+        }), 400
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({
+            "ok": False,
+            "mode": "official_source_approved_apply",
+            "phase": "approved_apply",
+            "request_valid": False,
+            "token_valid": False,
+            "guard_allowed": False,
+            "manual_review_required": True,
+            "mutation_performed": False,
+            "write_performed": False,
+            "bulk_lookup_performed": False,
+            "scoring_semantics_changed": False,
+            "reason_code": "invalid_request_body",
+            "errors": ["request JSON body must be an object"],
+            "selected_key": None,
+            "acceptance_gate": None,
+            "binding_digest_expected": None,
+            "binding_digest_actual": None,
+            "message": "Approved apply endpoint skeleton is decision-only and non-mutating.",
+        }), 400
+
+    schema_result = validate_official_source_approved_apply_request(data)
+    preview_snapshot = data.get("preview_snapshot") if isinstance(data, dict) else None
+    authoritative_preview_result = dict(preview_snapshot) if isinstance(preview_snapshot, dict) else {}
+    authoritative_preview_result.setdefault("selected_key", data.get("selected_key"))
+    authoritative_preview_result.setdefault("reason_code", "accepted_preview_write_eligible")
+    authoritative_preview_result.setdefault("manual_review_required", False)
+    authoritative_preview_result.setdefault("mutation_performed", False)
+    authoritative_preview_result.setdefault("bulk_lookup_performed", False)
+    authoritative_preview_result.setdefault("scoring_semantics_changed", False)
+    authoritative_preview_result.setdefault("write_performed", False)
+
+    guard_result = evaluate_official_source_approved_apply_guard(
+        data,
+        authoritative_preview_result=authoritative_preview_result,
+        now_epoch=int(time()),
+        consumed_token_ids=set(),
+        replayed_token_ids=set(),
+        allowed_clock_skew_seconds=5,
+    )
+
+    response_payload = {
+        "ok": bool(guard_result.get("ok")),
+        "mode": "official_source_approved_apply",
+        "phase": "approved_apply",
+        "request_valid": bool(guard_result.get("request_valid") and schema_result.get("request_valid")),
+        "token_valid": bool(guard_result.get("token_valid")),
+        "guard_allowed": bool(guard_result.get("guard_allowed")),
+        "manual_review_required": bool(guard_result.get("manual_review_required")),
+        "mutation_performed": False,
+        "write_performed": False,
+        "bulk_lookup_performed": False,
+        "scoring_semantics_changed": False,
+        "reason_code": str(guard_result.get("reason_code") or schema_result.get("reason_code") or "invalid_request_body"),
+        "errors": list(guard_result.get("errors") or schema_result.get("errors") or []),
+        "selected_key": guard_result.get("selected_key"),
+        "acceptance_gate": guard_result.get("acceptance_gate"),
+        "binding_digest_expected": guard_result.get("binding_digest_expected"),
+        "binding_digest_actual": guard_result.get("binding_digest_actual"),
+        "message": "Approved apply endpoint skeleton is decision-only and non-mutating.",
+    }
     return jsonify(response_payload)
 
 

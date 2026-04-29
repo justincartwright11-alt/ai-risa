@@ -19,6 +19,7 @@ from app import (
     _classify_source_confidence,
     _validate_official_source_citation,
 )
+from official_source_approved_apply_token import issue_official_source_approved_apply_token
 from official_source_acceptance_gate import evaluate_official_source_acceptance_gate
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 
@@ -35,6 +36,64 @@ class DashboardBackendTest(unittest.TestCase):
         }
         payload.update(overrides)
         return payload
+
+    def _official_approved_apply_payload(self, selected_key='alpha_vs_beta|predictions_alpha_vs_beta_prediction_json', **overrides):
+        source_date = datetime.now(timezone.utc).date().isoformat()
+        payload = {
+            'mode': 'official_source_approved_apply',
+            'lookup_intent': 'apply_write',
+            'selected_key': selected_key,
+            'approval_granted': True,
+            'approval_binding': {
+                'selected_key': selected_key,
+                'citation_fingerprint': 'fp_alpha_beta_123',
+                'source_url': 'https://ufc.com/event/test-card',
+                'source_date': source_date,
+                'extracted_winner': 'Alpha',
+                'record_fight_id': 'alpha_vs_beta',
+                'selected_row_identity': {
+                    'fight_name': 'Alpha vs Beta',
+                    'fight_id': 'alpha_vs_beta',
+                },
+            },
+            'preview_snapshot': {
+                'selected_key': selected_key,
+                'reason_code': 'accepted_preview_write_eligible',
+                'manual_review_required': False,
+                'source_citation': {
+                    'source_url': 'https://ufc.com/event/test-card',
+                    'source_title': 'UFC Test Card',
+                    'source_date': source_date,
+                    'publisher_host': 'ufc.com',
+                    'source_confidence': 'tier_a0',
+                    'confidence_score': 0.85,
+                    'citation_fingerprint': 'fp_alpha_beta_123',
+                    'extracted_winner': 'Alpha',
+                    'method': 'Decision',
+                    'round_time': 'R3 5:00',
+                },
+                'acceptance_gate': {
+                    'state': 'write_eligible',
+                    'write_eligible': True,
+                    'reason_code': 'accepted_preview_write_eligible',
+                    'selected_key': selected_key,
+                    'citation_fingerprint': 'fp_alpha_beta_123',
+                },
+                'audit': {
+                    'record_fight_id': 'alpha_vs_beta',
+                    'provider_attempted': True,
+                    'attempted_sources': [],
+                },
+            },
+            'operator_note': 'endpoint skeleton test',
+        }
+        payload.update(overrides)
+        return payload
+
+    def _issue_approved_apply_token(self, payload):
+        result = issue_official_source_approved_apply_token(payload['approval_binding'], now_epoch=int(time()), ttl_seconds=300)
+        self.assertTrue(result.get('ok'))
+        return result.get('token')
 
     def _sha256_or_none(self, path: Path):
         if not path.exists():
@@ -654,6 +713,163 @@ class DashboardBackendTest(unittest.TestCase):
         data = resp.get_json()
         self.assertEqual(data.get('mode'), 'official_source_one_record')
         self.assertEqual(data.get('phase'), 'lookup_preview')
+
+    def test_official_source_approved_apply_endpoint_exists(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json={})
+        self.assertIn(resp.status_code, (200, 400))
+        data = resp.get_json()
+        self.assertEqual(data.get('mode'), 'official_source_approved_apply')
+        self.assertEqual(data.get('phase'), 'approved_apply')
+
+    def test_official_source_approved_apply_non_json_or_malformed_json_rejected_without_mutation(self):
+        before = self._actual_results_file_hashes()
+
+        non_json_resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-approved-apply',
+            data='not-json',
+            content_type='text/plain',
+        )
+        self.assertEqual(non_json_resp.status_code, 400)
+        non_json_data = non_json_resp.get_json()
+        self.assertFalse(non_json_data.get('request_valid'))
+        self.assertFalse(non_json_data.get('mutation_performed'))
+
+        malformed_json_resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-approved-apply',
+            data='{"bad_json": ',
+            content_type='application/json',
+        )
+        self.assertEqual(malformed_json_resp.status_code, 400)
+        malformed_json_data = malformed_json_resp.get_json()
+        self.assertFalse(malformed_json_data.get('request_valid'))
+        self.assertFalse(malformed_json_data.get('mutation_performed'))
+
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
+    def test_official_source_approved_apply_invalid_schema_returns_request_invalid(self):
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json={
+            'mode': 'official_source_approved_apply',
+            'lookup_intent': 'apply_write',
+            'selected_key': '',
+            'approval_granted': True,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('request_valid'))
+        self.assertFalse(data.get('guard_allowed'))
+        self.assertFalse(data.get('mutation_performed'))
+
+    def test_official_source_approved_apply_rejects_batch_fields(self):
+        payload = self._official_approved_apply_payload(selected_keys=['k1'], queue_wide=True)
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('request_valid'))
+        self.assertFalse(data.get('guard_allowed'))
+        self.assertEqual(data.get('reason_code'), 'batch_field_not_allowed')
+
+    def test_official_source_approved_apply_missing_token_rejected(self):
+        payload = self._official_approved_apply_payload()
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('request_valid'))
+        self.assertFalse(data.get('token_valid'))
+        self.assertFalse(data.get('guard_allowed'))
+
+    def test_official_source_approved_apply_valid_payload_returns_guard_allowed_true(self):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('request_valid'))
+        self.assertTrue(data.get('token_valid'))
+        self.assertTrue(data.get('guard_allowed'))
+
+    def test_official_source_approved_apply_guard_allowed_true_still_non_mutating_flags(self):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('guard_allowed'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('write_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+
+    def test_official_source_approved_apply_manual_review_gate_returns_guard_denied(self):
+        payload = self._official_approved_apply_payload()
+        payload['preview_snapshot']['source_citation']['source_confidence'] = 'tier_b'
+        payload['preview_snapshot']['source_citation']['confidence_score'] = 0.55
+        payload['preview_snapshot']['acceptance_gate']['state'] = 'manual_review'
+        payload['preview_snapshot']['acceptance_gate']['write_eligible'] = False
+        payload['preview_snapshot']['acceptance_gate']['reason_code'] = 'tier_b_without_corroboration'
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('guard_allowed'))
+
+    def test_official_source_approved_apply_rejected_gate_returns_guard_denied(self):
+        payload = self._official_approved_apply_payload()
+        payload['preview_snapshot']['reason_code'] = 'identity_conflict'
+        payload['preview_snapshot']['acceptance_gate']['state'] = 'rejected'
+        payload['preview_snapshot']['acceptance_gate']['write_eligible'] = False
+        payload['preview_snapshot']['acceptance_gate']['reason_code'] = 'identity_conflict'
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('guard_allowed'))
+
+    @patch('app._upsert_single_manual_actual_result')
+    def test_official_source_approved_apply_never_calls_upsert(self, mock_upsert):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        mock_upsert.assert_not_called()
+
+    def test_official_source_approved_apply_keeps_actual_results_json_unchanged(self):
+        root = Path(__file__).resolve().parent.parent / 'ops' / 'accuracy'
+        target = str(root / 'actual_results.json')
+        before = self._actual_results_file_hashes()
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        _ = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before[target], after[target])
+
+    def test_official_source_approved_apply_keeps_actual_results_manual_json_unchanged(self):
+        root = Path(__file__).resolve().parent.parent / 'ops' / 'accuracy'
+        target = str(root / 'actual_results_manual.json')
+        before = self._actual_results_file_hashes()
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        _ = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before[target], after[target])
+
+    def test_official_source_approved_apply_keeps_actual_results_unresolved_json_unchanged(self):
+        root = Path(__file__).resolve().parent.parent / 'ops' / 'accuracy'
+        target = str(root / 'actual_results_unresolved.json')
+        before = self._actual_results_file_hashes()
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        _ = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before[target], after[target])
+
+    def test_official_source_approved_apply_no_dashboard_template_changes(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn(b'/api/operator/actual-result-lookup/official-source-approved-apply', resp.data)
 
     def test_official_source_one_record_preview_missing_selected_key_rejected(self):
         resp = self.client.post(
