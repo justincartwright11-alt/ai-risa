@@ -574,6 +574,222 @@ class DashboardBackendTest(unittest.TestCase):
         data = resp.get_json()
         self.assertIn('not allowed', data.get('error') or '')
 
+    @patch('app.OfficialSourceLookupProvider')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_official_source_preview_candidate_urls_absent_preserves_v1b_behavior(self, mock_summary, mock_local_map, mock_provider_cls):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({}, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+        mock_provider_cls.return_value.run_preview_lookup.return_value = {
+            'provider_attempted': True,
+            'external_lookup_performed': False,
+            'source_citation': None,
+            'manual_review_required': True,
+            'reason_code': 'no_acceptable_official_source_found',
+            'attempted_sources': [],
+            'timeout_budget_seconds': 20,
+            'per_source_timeout_seconds': 6,
+            'auto_retry_count': 0,
+        }
+
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key=selected_key),
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertFalse(data.get('candidate_urls_supplied'))
+        self.assertEqual(data.get('candidate_url_count'), 0)
+
+        kwargs = mock_provider_cls.return_value.run_preview_lookup.call_args.kwargs
+        self.assertIn('candidate_urls', kwargs)
+        self.assertIsNone(kwargs.get('candidate_urls'))
+
+    def test_official_source_preview_candidate_urls_non_list_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(candidate_urls='https://ufc.com/event/test-card'),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertIn('candidate_urls must be a list', data.get('error') or '')
+
+    def test_official_source_preview_candidate_urls_empty_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(candidate_urls=[]),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'candidate_urls_empty')
+
+    def test_official_source_preview_candidate_urls_exceeds_limit_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(candidate_urls=[
+                'https://ufc.com/event/one',
+                'https://ufc.com/event/two',
+                'https://ufc.com/event/three',
+                'https://ufc.com/event/four',
+            ]),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'candidate_urls_exceeds_limit')
+
+    def test_official_source_preview_candidate_urls_non_https_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(candidate_urls=['http://ufc.com/event/test-card']),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'source_url_not_allowed')
+
+    def test_official_source_preview_candidate_urls_shortener_rejected(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(candidate_urls=['https://bit.ly/test-card']),
+        )
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'source_url_not_allowed')
+
+    @patch('app.OfficialSourceLookupProvider')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_official_source_preview_candidate_urls_deduped_deterministically(self, mock_summary, mock_local_map, mock_provider_cls):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({}, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+        mock_provider_cls.return_value.run_preview_lookup.return_value = {
+            'provider_attempted': True,
+            'external_lookup_performed': False,
+            'source_citation': None,
+            'manual_review_required': True,
+            'reason_code': 'no_acceptable_official_source_found',
+            'attempted_sources': [],
+            'timeout_budget_seconds': 20,
+            'per_source_timeout_seconds': 6,
+            'auto_retry_count': 0,
+            'candidate_urls_supplied': True,
+            'candidate_url_count': 2,
+        }
+
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(
+                selected_key=selected_key,
+                candidate_urls=[
+                    'https://ufc.com/event/test-card',
+                    ' https://ufc.com/event/test-card ',
+                    'https://onefc.com/events/test-card',
+                ],
+            ),
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('candidate_urls_supplied'))
+        self.assertEqual(data.get('candidate_url_count'), 2)
+
+        kwargs = mock_provider_cls.return_value.run_preview_lookup.call_args.kwargs
+        self.assertEqual(kwargs.get('candidate_urls'), [
+            'https://ufc.com/event/test-card',
+            'https://onefc.com/events/test-card',
+        ])
+
+    @patch('app._upsert_single_manual_actual_result')
+    @patch('app.OfficialSourceLookupProvider')
+    @patch('app._load_local_actual_result_map')
+    @patch('app._build_accuracy_comparison_summary')
+    def test_official_source_preview_candidate_urls_valid_can_return_accepted_preview(self, mock_summary, mock_local_map, mock_provider_cls, mock_upsert):
+        selected_key = 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json'
+        mock_summary.return_value = {
+            'ok': True,
+            'waiting_for_results': [{
+                'fight_name': 'Alpha vs Beta',
+                'predicted_winner': 'Alpha',
+                'event_date': '2026-01-01',
+                'file_path': 'predictions/alpha_vs_beta_prediction.json',
+                'status': 'waiting_for_actual_result',
+            }],
+            'compared_results': [],
+            'summary_metrics': {},
+        }
+        mock_local_map.return_value = ({}, Path(__file__).resolve().parent.parent / 'ops' / 'accuracy')
+        mock_provider_cls.return_value.run_preview_lookup.return_value = {
+            'provider_attempted': True,
+            'external_lookup_performed': True,
+            'source_citation': {
+                'source_url': 'https://ufc.com/event/test-card',
+                'source_title': 'UFC Test Card',
+                'source_date': '2026-01-01',
+                'publisher_host': 'ufc.com',
+                'source_confidence': 'tier_a0',
+                'confidence_score': 0.85,
+                'citation_fingerprint': 'abc123',
+                'extracted_winner': 'Alpha',
+                'method': 'DECISION',
+                'round_time': 'R3 5:00',
+            },
+            'manual_review_required': False,
+            'reason_code': 'accepted_preview',
+            'attempted_sources': ['https://ufc.com/event/test-card'],
+            'timeout_budget_seconds': 20,
+            'per_source_timeout_seconds': 6,
+            'auto_retry_count': 0,
+            'candidate_urls_supplied': True,
+            'candidate_url_count': 1,
+        }
+
+        before_hashes = self._actual_results_file_hashes()
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(
+                selected_key=selected_key,
+                candidate_urls=['https://ufc.com/event/test-card'],
+            ),
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'accepted_preview')
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertTrue(data.get('candidate_urls_supplied'))
+        self.assertEqual(data.get('candidate_url_count'), 1)
+        self.assertIsNotNone(data.get('source_citation'))
+        mock_upsert.assert_not_called()
+        self.assertEqual(before_hashes, self._actual_results_file_hashes())
+
+    def test_no_ui_template_references_candidate_urls_yet(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertNotIn(b'candidate_urls', advanced_resp.data)
+
     @patch('app._upsert_single_manual_actual_result')
     @patch('app.OfficialSourceLookupProvider')
     @patch('app._load_local_actual_result_map')
@@ -976,6 +1192,57 @@ class DashboardBackendTest(unittest.TestCase):
             selected_row={'fight_name': 'Alpha vs Beta'},
         )
         self.assertEqual(result.get('reason_code'), 'no_acceptable_official_source_found')
+
+    def test_provider_candidate_urls_bypass_search_provider_and_use_mocked_fetch_only(self):
+        calls = {'search_called': False, 'fetch_calls': []}
+
+        def _search_provider(_q):
+            calls['search_called'] = True
+            raise AssertionError('search_provider should not be called when candidate_urls are supplied')
+
+        def _fetch_provider(url, timeout):
+            calls['fetch_calls'].append((url, timeout))
+            return {
+                'final_url': str(url),
+                'title': 'UFC Test Card',
+                'source_date': '2026-01-01',
+                'html': '<html><body>Alpha defeated Beta by decision in round 3</body></html>',
+            }
+
+        provider = OfficialSourceLookupProvider(
+            search_provider=_search_provider,
+            fetch_provider=_fetch_provider,
+            now_provider=lambda: datetime(2026, 1, 15, tzinfo=timezone.utc),
+        )
+        result = provider.run_preview_lookup(
+            selected_key='alpha|beta',
+            selected_row={'fight_name': 'Alpha vs Beta'},
+            candidate_urls=['https://ufc.com/event/test-card'],
+        )
+        self.assertFalse(calls['search_called'])
+        self.assertEqual(calls['fetch_calls'], [('https://ufc.com/event/test-card', 6)])
+        self.assertEqual(result.get('reason_code'), 'accepted_preview')
+        self.assertTrue(result.get('external_lookup_performed'))
+        self.assertTrue(result.get('candidate_urls_supplied'))
+        self.assertEqual(result.get('candidate_url_count'), 1)
+
+    def test_provider_candidate_urls_rejects_disallowed_without_fetch(self):
+        calls = {'fetch_called': False}
+
+        provider = OfficialSourceLookupProvider(
+            search_provider=lambda _q: (_ for _ in ()).throw(AssertionError('search_provider should not run')),
+            fetch_provider=lambda _url, _timeout: calls.__setitem__('fetch_called', True),
+            now_provider=lambda: datetime(2026, 1, 15, tzinfo=timezone.utc),
+        )
+        result = provider.run_preview_lookup(
+            selected_key='alpha|beta',
+            selected_row={'fight_name': 'Alpha vs Beta'},
+            candidate_urls=['https://bad.example.com/result'],
+        )
+        self.assertFalse(calls['fetch_called'])
+        self.assertEqual(result.get('reason_code'), 'source_url_not_allowed')
+        self.assertTrue(result.get('candidate_urls_supplied'))
+        self.assertEqual(result.get('candidate_url_count'), 1)
 
     def test_official_source_helpers_accept_official_https_allowlist_hosts(self):
         self.assertTrue(_is_allowed_official_source_url('https://ufc.com/event/test-card'))

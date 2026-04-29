@@ -92,10 +92,12 @@ class OfficialSourceLookupProvider:
         timeout_budget_seconds: int = 20,
         per_source_timeout_seconds: int = 6,
         auto_retry_count: int = 0,
+        candidate_urls: Optional[List[str]] = None,
     ) -> Dict:
         fight_name = str(selected_row.get("fight_name") or "").strip()
         query = f"{fight_name} official result".strip()
 
+        candidate_urls_supplied = candidate_urls is not None
         result = {
             "provider_attempted": False,
             "external_lookup_performed": False,
@@ -106,10 +108,15 @@ class OfficialSourceLookupProvider:
             "timeout_budget_seconds": int(timeout_budget_seconds),
             "per_source_timeout_seconds": int(per_source_timeout_seconds),
             "auto_retry_count": int(auto_retry_count),
+            "candidate_urls_supplied": candidate_urls_supplied,
+            "candidate_url_count": len(candidate_urls) if candidate_urls else 0,
         }
 
         started = monotonic()
-        urls = self.search_provider(query)
+        if candidate_urls_supplied:
+            urls = list(candidate_urls)
+        else:
+            urls = self.search_provider(query)
         ranked_urls = self._rank_urls(urls)
 
         if not ranked_urls:

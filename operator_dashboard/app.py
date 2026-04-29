@@ -1328,6 +1328,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
     mode = str(data.get("mode") or "").strip()
     lookup_intent = str(data.get("lookup_intent") or "").strip()
     approval_granted = bool(data.get("approval_granted"))
+    candidate_urls_raw = data.get("candidate_urls")  # optional
 
     selected_key = ""
     if isinstance(selected_key_raw, str):
@@ -1349,6 +1350,8 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         "proposed_write": None,
         "source_citation": None,
         "manual_review_required": True,
+        "candidate_urls_supplied": False,
+        "candidate_url_count": 0,
         "audit": {
             "selected_key": selected_key or None,
             "operator_note_present": bool(str(data.get("operator_note") or "").strip()),
@@ -1379,6 +1382,54 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         if forbidden_field in data:
             return jsonify({**base_payload, "error": f"{forbidden_field} is not allowed for one-record preview endpoint"}), 400
 
+    # candidate_urls validation
+    candidate_urls_for_provider = None  # None = use provider discovery
+    if candidate_urls_raw is not None:
+        if not isinstance(candidate_urls_raw, list):
+            return jsonify({**base_payload, "error": "candidate_urls must be a list"}), 400
+        if len(candidate_urls_raw) == 0:
+            return jsonify({
+                **base_payload,
+                "error": "candidate_urls must not be empty when supplied",
+                "audit": {**base_payload["audit"], "reason_code": "candidate_urls_empty"},
+                "reason_code": "candidate_urls_empty",
+            }), 400
+        if len(candidate_urls_raw) > 3:
+            return jsonify({
+                **base_payload,
+                "error": "candidate_urls exceeds limit of 3",
+                "audit": {**base_payload["audit"], "reason_code": "candidate_urls_exceeds_limit"},
+                "reason_code": "candidate_urls_exceeds_limit",
+            }), 400
+        # Validate each URL is a string, dedupe preserving order
+        seen_urls = set()
+        validated_urls = []
+        for raw_url in candidate_urls_raw:
+            if not isinstance(raw_url, str):
+                return jsonify({**base_payload, "error": "each candidate_url must be a string"}), 400
+            stripped = raw_url.strip()
+            if stripped and stripped not in seen_urls:
+                seen_urls.add(stripped)
+                validated_urls.append(stripped)
+        if not validated_urls:
+            return jsonify({
+                **base_payload,
+                "error": "candidate_urls must not be empty when supplied",
+                "audit": {**base_payload["audit"], "reason_code": "candidate_urls_empty"},
+                "reason_code": "candidate_urls_empty",
+            }), 400
+        for candidate_url in validated_urls:
+            if not _is_allowed_official_source_url(candidate_url):
+                return jsonify({
+                    **base_payload,
+                    "error": "candidate_urls contains a disallowed URL",
+                    "audit": {**base_payload["audit"], "reason_code": "source_url_not_allowed"},
+                    "reason_code": "source_url_not_allowed",
+                }), 400
+        candidate_urls_for_provider = validated_urls
+        base_payload["candidate_urls_supplied"] = True
+        base_payload["candidate_url_count"] = len(validated_urls)
+
     summary = _build_accuracy_comparison_summary()
     waiting_rows = summary.get("waiting_for_results") or []
     selected_row = None
@@ -1391,6 +1442,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         return jsonify({
             **base_payload,
             "error": "selected_key not found in waiting rows",
+            "reason_code": "selected_key_not_found",
             "audit": {
                 **base_payload["audit"],
                 "reason_code": "selected_key_not_found",
@@ -1419,6 +1471,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             "selected_row": selected_row,
             "local_result_found": True,
             "manual_review_required": False,
+            "reason_code": "local_result_found_preview_only",
             "audit": {
                 **base_payload["audit"],
                 "reason_code": "local_result_found_preview_only",
@@ -1438,6 +1491,8 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         "timeout_budget_seconds": 20,
         "per_source_timeout_seconds": 6,
         "auto_retry_count": 0,
+        "candidate_urls_supplied": bool(candidate_urls_for_provider is not None),
+        "candidate_url_count": len(candidate_urls_for_provider) if candidate_urls_for_provider else 0,
     }
     try:
         provider = OfficialSourceLookupProvider()
@@ -1447,6 +1502,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             timeout_budget_seconds=20,
             per_source_timeout_seconds=6,
             auto_retry_count=0,
+            candidate_urls=candidate_urls_for_provider,
         )
     except Exception:
         provider_result = {
@@ -1459,6 +1515,8 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             "timeout_budget_seconds": 20,
             "per_source_timeout_seconds": 6,
             "auto_retry_count": 0,
+            "candidate_urls_supplied": bool(candidate_urls_for_provider is not None),
+            "candidate_url_count": len(candidate_urls_for_provider) if candidate_urls_for_provider else 0,
         }
 
     reason_code = str(provider_result.get("reason_code") or "official_source_lookup_not_connected")
@@ -1469,6 +1527,9 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         "external_lookup_performed": bool(provider_result.get("external_lookup_performed")),
         "source_citation": provider_result.get("source_citation"),
         "manual_review_required": bool(provider_result.get("manual_review_required", True)),
+        "reason_code": reason_code,
+        "candidate_urls_supplied": bool(provider_result.get("candidate_urls_supplied", base_payload["candidate_urls_supplied"])),
+        "candidate_url_count": int(provider_result.get("candidate_url_count") or base_payload["candidate_url_count"]),
         "audit": {
             **base_payload["audit"],
             "reason_code": reason_code,
