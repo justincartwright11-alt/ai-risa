@@ -1025,6 +1025,11 @@
                                 <input id="operator-official-source-selected-key" type="text" placeholder="Select a preview row or paste selected_key" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
                                 <button id="operator-official-source-preview-btn" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #1f5f93;background:#edf5ff;color:#1f5f93;cursor:pointer;">Official Source Preview</button>
                             </div>
+                            <div style="margin-top:8px;">
+                                <label for="operator-official-source-candidate-urls" style="font-size:11px;color:#314b68;font-weight:600;display:block;margin-bottom:4px;">Candidate URLs (optional, 1&#x2013;3, one per line):</label>
+                                <textarea id="operator-official-source-candidate-urls" rows="3" placeholder="https://www.ufc.com/event/example&#10;https://www.onefc.com/events/example&#10;https://www.matchroomboxing.com/events/example" style="width:100%;font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;resize:vertical;"></textarea>
+                                <div style="font-size:11px;color:#5a6374;margin-top:2px;">Optional candidate official-source URLs. Maximum 3. HTTPS official/promoter sources only.</div>
+                            </div>
                             <div style="font-size:12px;color:#5a6374;margin-top:8px;">Preview only. No write, no mutation, no batch, no page-load lookup.</div>
                         </div>
                         <div id="operator-official-source-preview-output" class="phase1-table-shell" style="margin-bottom:12px;display:none;"></div>
@@ -2332,6 +2337,7 @@
                 const officialSourceSelectedKeyInput = document.getElementById('operator-official-source-selected-key');
                 const officialSourcePreviewBtn = document.getElementById('operator-official-source-preview-btn');
                 const officialSourcePreviewOutputDiv = document.getElementById('operator-official-source-preview-output');
+                const officialSourceCandidateUrlsTextarea = document.getElementById('operator-official-source-candidate-urls');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2519,7 +2525,7 @@
                     officialSourcePreviewOutputDiv.innerHTML = `
                         <div style="margin-bottom:8px;"><strong>Mode:</strong> ${escapeHtml(data.mode || '')} | <strong>Phase:</strong> ${escapeHtml(data.phase || '')} | <strong>OK:</strong> ${data.ok ? 'YES' : 'NO'}</div>
                         <div style="margin-bottom:8px;"><strong>Mutation Performed:</strong> ${data.mutation_performed ? 'YES' : 'NO'} | <strong>External Lookup:</strong> ${data.external_lookup_performed ? 'YES' : 'NO'} | <strong>Local Result Found:</strong> ${data.local_result_found ? 'YES' : 'NO'} | <strong>Manual Review Required:</strong> ${data.manual_review_required ? 'YES' : 'NO'}</div>
-                        <div style="margin-bottom:8px;"><strong>Reason Code:</strong> ${escapeHtml(auditObj.reason_code || 'N/A')} | <strong>Provider Attempted:</strong> ${auditObj.provider_attempted ? 'YES' : 'NO'}</div>
+                        <div style="margin-bottom:8px;"><strong>Reason Code:</strong> ${escapeHtml(auditObj.reason_code || 'N/A')} | <strong>Provider Attempted:</strong> ${auditObj.provider_attempted ? 'YES' : 'NO'} | <strong>Candidate URLs Supplied:</strong> ${data.candidate_urls_supplied ? 'YES' : 'NO'} (${Number(data.candidate_url_count || 0)})</div>
                         <div style="margin-bottom:8px;"><strong>Message:</strong> ${escapeHtml(data.message || '')}</div>
                         ${citation ? `<div style="margin-bottom:4px;"><strong>Source Citation:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(citation, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;">No source citation returned.</div>'}
                     `;
@@ -2742,6 +2748,25 @@ ${comparedResults.length ? `<table class="phase1-table">
                         officialSourcePreviewOutputDiv.style.display = 'none';
                         officialSourcePreviewOutputDiv.innerHTML = '';
                     }
+                    const rawCandidateText = officialSourceCandidateUrlsTextarea ? officialSourceCandidateUrlsTextarea.value : '';
+                    const parsedUrls = (() => {
+                        const seen = new Set();
+                        const result = [];
+                        for (const token of rawCandidateText.split(/[\n,]/)) {
+                            const u = token.trim();
+                            if (u && !seen.has(u)) { seen.add(u); result.push(u); }
+                        }
+                        return result;
+                    })();
+                    if (parsedUrls.length > 3) {
+                        if (officialSourcePreviewOutputDiv) {
+                            officialSourcePreviewOutputDiv.style.display = 'block';
+                            officialSourcePreviewOutputDiv.innerHTML = '<div style="color:#a80000;padding:8px;">Candidate URLs: maximum 3 allowed. Found ' + parsedUrls.length + '.</div>';
+                        }
+                        setError('Candidate URLs: maximum 3 allowed. Found ' + parsedUrls.length + '.');
+                        setStatus('Official source preview blocked: too many candidate URLs.', true);
+                        return;
+                    }
                     try {
                         const resp = await fetch('/api/operator/actual-result-lookup/official-source-one-record-preview', {
                             method: 'POST',
@@ -2751,6 +2776,7 @@ ${comparedResults.length ? `<table class="phase1-table">
                                 mode: 'official_source_one_record',
                                 lookup_intent: 'preview_only',
                                 approval_granted: false,
+                                ...(parsedUrls.length ? { candidate_urls: parsedUrls } : {}),
                             })
                         });
                         const data = await resp.json();

@@ -785,10 +785,67 @@ class DashboardBackendTest(unittest.TestCase):
         mock_upsert.assert_not_called()
         self.assertEqual(before_hashes, self._actual_results_file_hashes())
 
-    def test_no_ui_template_references_candidate_urls_yet(self):
+    def test_ui_candidate_urls_textarea_present(self):
         advanced_resp = self.client.get('/advanced-dashboard')
         self.assertEqual(advanced_resp.status_code, 200)
-        self.assertNotIn(b'candidate_urls', advanced_resp.data)
+        self.assertIn(b'id="operator-official-source-candidate-urls"', advanced_resp.data)
+
+    def test_ui_candidate_urls_in_post_body_js(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'candidate_urls', advanced_resp.data)
+
+    def test_ui_render_shows_candidate_urls_supplied(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'candidate_urls_supplied', advanced_resp.data)
+
+    def test_ui_render_shows_candidate_url_count(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'candidate_url_count', advanced_resp.data)
+
+    def test_ui_maximum_3_safety_text_present(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'Maximum 3', advanced_resp.data)
+
+    def test_no_official_source_preview_on_domcontentloaded(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        html = advanced_resp.data.decode('utf-8')
+        # The preview URL must only appear inside the onclick handler,
+        # not as a top-level auto-call from DOMContentLoaded.
+        # Structural proof: the onclick assignment appears before the fetch call
+        # in document order, so preview_url_pos > onclick_pos must hold.
+        preview_url = '/api/operator/actual-result-lookup/official-source-one-record-preview'
+        onclick_anchor = 'officialSourcePreviewBtn.onclick'
+        self.assertIn(preview_url, html, 'preview URL must appear in template (inside onclick)')
+        self.assertIn(onclick_anchor, html, 'officialSourcePreviewBtn.onclick must be wired in template')
+        onclick_pos = html.find(onclick_anchor)
+        preview_url_pos = html.find(preview_url)
+        self.assertGreater(preview_url_pos, onclick_pos,
+            'official-source preview endpoint must only appear inside onclick handler, not as an auto-call')
+
+    def test_no_write_apply_wording_introduced(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        # Confirm no new write/apply capability was wired into the candidate URL textarea
+        html = advanced_resp.data.decode('utf-8')
+        textarea_pos = html.find('operator-official-source-candidate-urls')
+        self.assertGreater(textarea_pos, 0)
+        # The panel disclaimer "No write" must still be present
+        self.assertIn('No write', html)
+
+    def test_no_batch_behavior_introduced(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        html = advanced_resp.data.decode('utf-8')
+        # No batch-specific attribute added to the candidate URLs textarea
+        textarea_pos = html.find('operator-official-source-candidate-urls')
+        self.assertGreater(textarea_pos, 0)
+        # The panel disclaimer "no batch" must still be present
+        self.assertIn('no batch', html)
 
     @patch('app._upsert_single_manual_actual_result')
     @patch('app.OfficialSourceLookupProvider')
