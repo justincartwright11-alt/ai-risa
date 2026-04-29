@@ -1008,7 +1008,7 @@ class DashboardBackendTest(unittest.TestCase):
             'source_citation': {
                 'source_url': 'https://ufc.com/event/test-card',
                 'source_title': 'UFC Test Card',
-                'source_date': '2026-01-01',
+                'source_date': datetime.now(timezone.utc).date().isoformat(),
                 'publisher_host': 'ufc.com',
                 'source_confidence': 'tier_a0',
                 'confidence_score': 0.85,
@@ -1043,6 +1043,8 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIsNone(data.get('proposed_write'))
         self.assertIsNotNone(data.get('source_citation'))
         self.assertEqual((data.get('audit') or {}).get('reason_code'), 'accepted_preview')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('state'), 'write_eligible')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('reason_code'), 'accepted_preview_write_eligible')
         mock_provider.run_preview_lookup.assert_called_once()
         mock_upsert.assert_not_called()
 
@@ -1092,6 +1094,8 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertFalse(data.get('manual_review_required'))
         self.assertIsNone(data.get('proposed_write'))
         self.assertIn('did not mutate', data.get('message') or '')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('state'), 'rejected')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('reason_code'), 'citation_incomplete')
         mock_provider_cls.assert_not_called()
         mock_upsert.assert_not_called()
 
@@ -1132,6 +1136,8 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
         self.assertTrue(data.get('manual_review_required'))
+        self.assertEqual((data.get('acceptance_gate') or {}).get('state'), 'rejected')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('reason_code'), 'citation_incomplete')
         mock_provider_cls.return_value.run_preview_lookup.assert_called_once()
 
     @patch('app._upsert_single_manual_actual_result')
@@ -1166,10 +1172,25 @@ class DashboardBackendTest(unittest.TestCase):
             'no_acceptable_official_source_found',
         ]
         for reason_code in reason_codes:
+            source_citation = None
+            if reason_code == 'tier_b_without_corroboration':
+                source_citation = {
+                    'source_url': 'https://www.espn.com/mma/fight/_/id/test-card',
+                    'source_title': 'ESPN Test Card',
+                    'source_date': datetime.now(timezone.utc).date().isoformat(),
+                    'publisher_host': 'www.espn.com',
+                    'source_confidence': 'tier_b',
+                    'confidence_score': 0.55,
+                    'citation_fingerprint': 'tierb123',
+                    'extracted_winner': 'Alpha',
+                    'method': None,
+                    'round_time': None,
+                    'identity_matches_selected_row': True,
+                }
             mock_provider_cls.return_value.run_preview_lookup.return_value = {
                 'provider_attempted': True,
                 'external_lookup_performed': reason_code != 'no_acceptable_official_source_found',
-                'source_citation': None,
+                'source_citation': source_citation,
                 'manual_review_required': True,
                 'reason_code': reason_code,
                 'attempted_sources': ['https://example.com/source'],
@@ -1185,6 +1206,14 @@ class DashboardBackendTest(unittest.TestCase):
             data = resp.get_json()
             self.assertEqual((data.get('audit') or {}).get('reason_code'), reason_code)
             self.assertTrue(data.get('manual_review_required'))
+
+            acceptance_gate = data.get('acceptance_gate') or {}
+            if reason_code == 'tier_b_without_corroboration':
+                self.assertEqual(acceptance_gate.get('state'), 'manual_review')
+                self.assertEqual(acceptance_gate.get('reason_code'), 'tier_b_without_corroboration')
+            else:
+                self.assertEqual(acceptance_gate.get('state'), 'rejected')
+                self.assertEqual(acceptance_gate.get('reason_code'), 'citation_incomplete')
 
         mock_upsert.assert_not_called()
 
@@ -1237,6 +1266,19 @@ class DashboardBackendTest(unittest.TestCase):
         data = resp.get_json()
         self.assertEqual((data.get('audit') or {}).get('reason_code'), 'stale_source_date')
         self.assertTrue(data.get('manual_review_required'))
+        self.assertEqual((data.get('acceptance_gate') or {}).get('state'), 'manual_review')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('reason_code'), 'stale_source_date')
+
+    def test_official_source_one_record_preview_selected_key_not_found_includes_acceptance_gate(self):
+        resp = self.client.post(
+            '/api/operator/actual-result-lookup/official-source-one-record-preview',
+            json=self._official_preview_payload(selected_key='unknown_fight|unknown_path'),
+        )
+        self.assertEqual(resp.status_code, 404)
+        data = resp.get_json()
+        self.assertEqual(data.get('reason_code'), 'selected_key_not_found')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('state'), 'rejected')
+        self.assertEqual((data.get('acceptance_gate') or {}).get('reason_code'), 'citation_incomplete')
 
     def test_official_source_one_record_preview_does_not_change_actual_results_files(self):
         before = self._actual_results_file_hashes()

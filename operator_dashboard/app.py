@@ -16,6 +16,7 @@ from time import perf_counter, time
 import uuid
 import hashlib
 from urllib.parse import urlparse
+from operator_dashboard.official_source_acceptance_gate import evaluate_official_source_acceptance_gate
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 
 from operator_dashboard.forecast_utils import get_operator_forecast
@@ -1439,7 +1440,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             break
 
     if selected_row is None:
-        return jsonify({
+        response_payload = {
             **base_payload,
             "error": "selected_key not found in waiting rows",
             "reason_code": "selected_key_not_found",
@@ -1448,7 +1449,9 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
                 "reason_code": "selected_key_not_found",
             },
             "message": "Selected row was not found. Manual review required.",
-        }), 404
+        }
+        response_payload["acceptance_gate"] = evaluate_official_source_acceptance_gate(response_payload)
+        return jsonify(response_payload), 404
 
     selected_row["selected_key"] = selected_key
     if not _is_known_value(selected_row.get("fight_id")):
@@ -1465,7 +1468,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             break
 
     if local_actual is not None:
-        return jsonify({
+        response_payload = {
             **base_payload,
             "ok": True,
             "selected_row": selected_row,
@@ -1479,7 +1482,9 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
                 "record_fight_id": local_actual.get("fight_id") or selected_row.get("fight_id"),
             },
             "message": "Local actual result already exists. Official-source preview did not mutate any files in v1a.",
-        })
+        }
+        response_payload["acceptance_gate"] = evaluate_official_source_acceptance_gate(response_payload)
+        return jsonify(response_payload)
 
     provider_result = {
         "provider_attempted": False,
@@ -1520,7 +1525,7 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
         }
 
     reason_code = str(provider_result.get("reason_code") or "official_source_lookup_not_connected")
-    return jsonify({
+    response_payload = {
         **base_payload,
         "ok": True,
         "selected_row": selected_row,
@@ -1541,7 +1546,9 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
             "auto_retry_count": int(provider_result.get("auto_retry_count") or 0),
         },
         "message": "Official-source preview evaluated. No mutation performed.",
-    })
+    }
+    response_payload["acceptance_gate"] = evaluate_official_source_acceptance_gate(response_payload)
+    return jsonify(response_payload)
 
 
 @app.route("/api/operator/actual-result-lookup/batch/guarded-local-preview", methods=["POST"])
