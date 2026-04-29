@@ -2521,12 +2521,17 @@
                     if (!officialSourcePreviewOutputDiv) return;
                     officialSourcePreviewOutputDiv.style.display = 'block';
                     const citation = data.source_citation || null;
+                        const acceptanceGate = data.acceptance_gate || null;
                     const auditObj = data.audit || {};
                     officialSourcePreviewOutputDiv.innerHTML = `
                         <div style="margin-bottom:8px;"><strong>Mode:</strong> ${escapeHtml(data.mode || '')} | <strong>Phase:</strong> ${escapeHtml(data.phase || '')} | <strong>OK:</strong> ${data.ok ? 'YES' : 'NO'}</div>
                         <div style="margin-bottom:8px;"><strong>Mutation Performed:</strong> ${data.mutation_performed ? 'YES' : 'NO'} | <strong>External Lookup:</strong> ${data.external_lookup_performed ? 'YES' : 'NO'} | <strong>Local Result Found:</strong> ${data.local_result_found ? 'YES' : 'NO'} | <strong>Manual Review Required:</strong> ${data.manual_review_required ? 'YES' : 'NO'}</div>
                         <div style="margin-bottom:8px;"><strong>Reason Code:</strong> ${escapeHtml(auditObj.reason_code || 'N/A')} | <strong>Provider Attempted:</strong> ${auditObj.provider_attempted ? 'YES' : 'NO'} | <strong>Candidate URLs Supplied:</strong> ${data.candidate_urls_supplied ? 'YES' : 'NO'} (${Number(data.candidate_url_count || 0)})</div>
                         <div style="margin-bottom:8px;"><strong>Message:</strong> ${escapeHtml(data.message || '')}</div>
+                            ${acceptanceGate ? `<div style="margin-bottom:8px;"><strong>Acceptance Gate:</strong> ${escapeHtml(acceptanceGate.state || 'N/A')} | <strong>Write Eligible:</strong> ${acceptanceGate.write_eligible ? 'YES' : 'NO'} | <strong>Reason:</strong> ${escapeHtml(acceptanceGate.reason_code || 'N/A')}</div>
+                            <div style="margin-bottom:8px;"><strong>Citation Fingerprint:</strong> ${escapeHtml(acceptanceGate.citation_fingerprint || 'N/A')}</div>
+                            <div style="margin-bottom:4px;"><strong>Reasons:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(acceptanceGate.reasons || [], null, 2))}</pre>
+                            <div style="margin-bottom:4px;"><strong>Checks Summary:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(acceptanceGate.checks || {}, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;"><strong>Acceptance Gate:</strong> Not available</div>'}
                         ${citation ? `<div style="margin-bottom:4px;"><strong>Source Citation:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(citation, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;">No source citation returned.</div>'}
                     `;
                 }

@@ -940,6 +940,22 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(advanced_resp.status_code, 200)
         self.assertIn(b'candidate_url_count', advanced_resp.data)
 
+    def test_ui_render_shows_acceptance_gate_fields(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'Acceptance Gate', advanced_resp.data)
+        self.assertIn(b'acceptance_gate', advanced_resp.data)
+        self.assertIn(b'acceptanceGate.state', advanced_resp.data)
+        self.assertIn(b'acceptanceGate.reason_code', advanced_resp.data)
+        self.assertIn(b'acceptanceGate.write_eligible', advanced_resp.data)
+        self.assertIn(b'acceptanceGate.checks', advanced_resp.data)
+        self.assertIn(b'acceptanceGate.citation_fingerprint', advanced_resp.data)
+
+    def test_ui_render_shows_acceptance_gate_fallback_text(self):
+        advanced_resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(advanced_resp.status_code, 200)
+        self.assertIn(b'Not available', advanced_resp.data)
+
     def test_ui_maximum_3_safety_text_present(self):
         advanced_resp = self.client.get('/advanced-dashboard')
         self.assertEqual(advanced_resp.status_code, 200)
