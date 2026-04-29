@@ -56,6 +56,7 @@ Required preconditions:
 - approval binding fields present and matching preview snapshot
 - preview snapshot matches authoritative server-side revalidation
 - acceptance gate remains write_eligible at apply time
+- approval_token_status=valid at endpoint envelope level
 - no token replay/expired/consumed state
 - no manual-review or rejected gate state
 
@@ -134,13 +135,21 @@ Future atomic write strategy:
 1. Read current bytes from ops/accuracy/actual_results_manual.json.
 2. Compute and store pre_write_file_sha256.
 3. Build deterministic candidate output with exactly one record insert/update effect.
-4. Write candidate output to a temporary file in the same filesystem boundary.
-5. Atomic replace target with temporary file.
-6. Verify replace success and compute post_write_file_sha256.
-7. Only after step 6, proceed to token consume persistence.
+4. Acquire exclusive mutation lock for target manual file scope.
+5. Write candidate output to a temporary file in the same directory/filesystem boundary as target.
+6. Flush temporary file content and metadata to durable storage policy before replace.
+7. Atomic replace target with temporary file.
+8. Flush target directory metadata according to durability policy after replace.
+9. Verify replace success and compute post_write_file_sha256.
+10. Release exclusive mutation lock.
+11. Only after step 9, proceed to token consume persistence.
 
+Durability policy requirement:
+- The future implementation must define platform-specific flush behavior for file and directory durability.
+- The policy must be deterministic and testable under interruption simulations.
 Atomicity requirement:
 - No partial bytes or torn writes may survive.
+- Temporary file must never cross filesystems.
 
 ## 11. Rollback strategy
 Rollback must restore exact prior bytes if any failure occurs after write start.
@@ -154,6 +163,11 @@ Future rollback flow:
 Failure must fail closed:
 - write_performed=false in final response if rollback restores pre-write state.
 
+Rollback-failed terminal classification:
+- If rollback restore fails, classify terminal outcome as rollback_failed_terminal.
+- rollback_failed_terminal must include deterministic escalation_required=true and operator_escalation_action=manual_file_recovery_required.
+- rollback_failed_terminal must block token consume persistence.
+
 ## 12. Rollback proof metadata
 Required rollback proof fields:
 - pre_write_file_sha256
@@ -163,6 +177,9 @@ Required rollback proof fields:
 - post_rollback_file_sha256
 - rollback_reason_code
 - rollback_error_detail (if any)
+- rollback_started_at_utc
+- rollback_finished_at_utc
+- rollback_terminal_state
 
 Proof requirement:
 - post_rollback_file_sha256 must equal pre_write_file_sha256 when rollback_succeeded=true.
@@ -170,6 +187,10 @@ Proof requirement:
 ## 13. Audit response fields
 Future mutation-capable envelope must include current decision fields plus write/rollback audit fields:
 - correlation_id
+- operation_id
+- write_attempt_id
+- contract_version
+- endpoint_version
 - phase
 - selected_key
 - approval_required
@@ -198,6 +219,10 @@ Future mutation-capable envelope must include current decision fields plus write
 - reason_code
 - errors
 
+Audit correlation requirements:
+- operation_id must remain stable across precondition, write, rollback, and token-consume stages for one request.
+- write_attempt_id must uniquely identify each mutation attempt, including retries.
+
 ## 14. Failure states
 Failure states requiring fail-closed handling:
 - pre-write file read error
@@ -207,12 +232,21 @@ Failure states requiring fail-closed handling:
 - post-write verification hash mismatch
 - token consume persistence error after write success
 - rollback restore failure
+- mutation_lock_acquire_failed
+- contention_timeout
+- crash_interruption_recovery_required
 
 Failure state outcomes:
 - deterministic reason_code
 - no scoring changes
 - no batch side effects
 - explicit rollback metadata fields
+
+Write-success/token-consume-failure ordering model:
+- Write commit and verification occur before token consume persistence.
+- If write is committed but token consume persistence fails, classify as token_consume_post_write_failed.
+- token_consume_post_write_failed must not re-run write.
+- Recovery path must retry consume idempotently using operation_id/write_attempt_id linkage.
 
 ## 15. Deny states
 Deny states remain non-mutating and include (not exhaustive):
@@ -281,6 +315,17 @@ Before any write implementation, tests must prove:
 - rollback proof metadata correctness.
 - No batch, no page-load apply, no auto-apply behavior.
 - scoring_semantics_changed remains false in all outcomes.
+- Contention and lock acquisition behavior is deterministic (including timeout paths).
+- Crash/interruption simulations preserve atomicity and recovery invariants.
+- Write committed plus token consume persistence failed path is deterministic and recoverable.
+- Idempotency identity selection is deterministic for one-record upsert.
+
+Deterministic idempotency identity rule:
+- Future upsert identity precedence must be fixed and documented as:
+  1. selected_key
+  2. citation_fingerprint
+  3. record_fight_id (when present)
+- Duplicate attempts with same identity tuple must not produce duplicate records.
 
 ## 20. Future implementation micro-slices
 1. Mutation boundary fixture lock (tests/docs only)
