@@ -19,6 +19,7 @@ from app import (
     _classify_source_confidence,
     _validate_official_source_citation,
 )
+from official_source_acceptance_gate import evaluate_official_source_acceptance_gate
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 
 class DashboardBackendTest(unittest.TestCase):
@@ -49,6 +50,140 @@ class DashboardBackendTest(unittest.TestCase):
             accuracy_dir / 'actual_results_unresolved.json',
         ]
         return {str(p): self._sha256_or_none(p) for p in targets}
+
+    def _acceptance_gate_preview_result(self, **overrides):
+        base = {
+            'ok': True,
+            'mode': 'official_source_one_record',
+            'phase': 'lookup_preview',
+            'selected_key': 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json',
+            'approval_required': True,
+            'approval_granted': False,
+            'mutation_performed': False,
+            'external_lookup_performed': True,
+            'bulk_lookup_performed': False,
+            'scoring_semantics_changed': False,
+            'manual_review_required': False,
+            'reason_code': 'accepted_preview',
+            'source_citation': {
+                'source_url': 'https://ufc.com/event/test-card',
+                'source_title': 'UFC Test Card',
+                'source_date': datetime.now(timezone.utc).date().isoformat(),
+                'publisher_host': 'ufc.com',
+                'source_confidence': 'tier_a0',
+                'confidence_score': 0.85,
+                'citation_fingerprint': 'abc123fingerprint',
+                'extracted_winner': 'Alpha',
+                'identity_matches_selected_row': True,
+            },
+        }
+        base.update(overrides)
+        return base
+
+    def test_acceptance_gate_tier_a0_happy_path_write_eligible(self):
+        result = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result())
+        self.assertEqual(result.get('state'), 'write_eligible')
+        self.assertTrue(result.get('write_eligible'))
+        self.assertEqual(result.get('reason_code'), 'accepted_preview_write_eligible')
+
+    def test_acceptance_gate_tier_a1_happy_path_write_eligible(self):
+        payload = self._acceptance_gate_preview_result(source_citation={
+            **self._acceptance_gate_preview_result()['source_citation'],
+            'source_confidence': 'tier_a1',
+            'confidence_score': 0.72,
+        })
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'write_eligible')
+        self.assertEqual(result.get('reason_code'), 'accepted_preview_write_eligible')
+
+    def test_acceptance_gate_tier_b_manual_review(self):
+        payload = self._acceptance_gate_preview_result(source_citation={
+            **self._acceptance_gate_preview_result()['source_citation'],
+            'source_confidence': 'tier_b',
+            'confidence_score': 0.55,
+        })
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'manual_review')
+        self.assertEqual(result.get('reason_code'), 'tier_b_without_corroboration')
+
+    def test_acceptance_gate_stale_source_manual_review(self):
+        payload = self._acceptance_gate_preview_result(reason_code='stale_source_date')
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'manual_review')
+        self.assertEqual(result.get('reason_code'), 'stale_source_date')
+
+    def test_acceptance_gate_source_conflict_manual_review(self):
+        payload = self._acceptance_gate_preview_result(reason_code='source_conflict')
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'manual_review')
+        self.assertEqual(result.get('reason_code'), 'source_conflict')
+
+    def test_acceptance_gate_confidence_below_threshold_manual_review(self):
+        payload = self._acceptance_gate_preview_result(source_citation={
+            **self._acceptance_gate_preview_result()['source_citation'],
+            'confidence_score': 0.69,
+        })
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'manual_review')
+        self.assertEqual(result.get('reason_code'), 'confidence_below_threshold')
+
+    def test_acceptance_gate_identity_conflict_rejected(self):
+        payload = self._acceptance_gate_preview_result(reason_code='identity_conflict')
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'rejected')
+        self.assertEqual(result.get('reason_code'), 'identity_conflict')
+
+    def test_acceptance_gate_publisher_host_mismatch_rejected(self):
+        payload = self._acceptance_gate_preview_result(reason_code='publisher_host_mismatch')
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'rejected')
+        self.assertEqual(result.get('reason_code'), 'publisher_host_mismatch')
+
+    def test_acceptance_gate_incomplete_citation_rejected(self):
+        payload = self._acceptance_gate_preview_result(source_citation={
+            **self._acceptance_gate_preview_result()['source_citation'],
+            'source_title': '',
+        })
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'rejected')
+        self.assertEqual(result.get('reason_code'), 'citation_incomplete')
+
+    def test_acceptance_gate_missing_fingerprint_rejected(self):
+        payload = self._acceptance_gate_preview_result(source_citation={
+            **self._acceptance_gate_preview_result()['source_citation'],
+            'citation_fingerprint': '',
+        })
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'rejected')
+        self.assertEqual(result.get('reason_code'), 'missing_citation_fingerprint')
+
+    def test_acceptance_gate_preview_boundary_violation_rejected(self):
+        payload = self._acceptance_gate_preview_result(mutation_performed=True)
+        result = evaluate_official_source_acceptance_gate(payload)
+        self.assertEqual(result.get('state'), 'rejected')
+        self.assertEqual(result.get('reason_code'), 'preview_only_boundary_violation')
+
+    @patch('urllib.request.urlopen')
+    @patch('operator_dashboard.official_source_lookup_provider.OfficialSourceLookupProvider.run_preview_lookup')
+    @patch('app._upsert_single_manual_actual_result')
+    def test_acceptance_gate_read_only_no_provider_network_or_upsert_calls(self, mock_upsert, mock_provider_lookup, mock_urlopen):
+        mock_upsert.side_effect = AssertionError('upsert should not be called by evaluator')
+        mock_provider_lookup.side_effect = AssertionError('provider lookup should not be called by evaluator')
+        mock_urlopen.side_effect = AssertionError('network should not be called by evaluator')
+
+        result = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result())
+        self.assertEqual(result.get('state'), 'write_eligible')
+        mock_upsert.assert_not_called()
+        mock_provider_lookup.assert_not_called()
+        mock_urlopen.assert_not_called()
+
+    def test_acceptance_gate_does_not_mutate_actual_results_files(self):
+        before_hashes = self._actual_results_file_hashes()
+        _ = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result())
+        _ = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result(reason_code='source_conflict'))
+        _ = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result(reason_code='identity_conflict'))
+        after_hashes = self._actual_results_file_hashes()
+        self.assertEqual(before_hashes, after_hashes)
 
     def test_index(self):
         resp = self.client.get('/')
