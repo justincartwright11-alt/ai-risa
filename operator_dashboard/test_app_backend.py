@@ -95,6 +95,44 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertTrue(result.get('ok'))
         return result.get('token')
 
+    def _assert_approved_apply_normalized_envelope(self, data):
+        required_fields = [
+            'ok',
+            'mode',
+            'phase',
+            'request_valid',
+            'token_valid',
+            'guard_allowed',
+            'manual_review_required',
+            'approval_required',
+            'approval_granted',
+            'approval_binding_valid',
+            'token_status',
+            'approval_token_status',
+            'mutation_performed',
+            'write_performed',
+            'bulk_lookup_performed',
+            'scoring_semantics_changed',
+            'external_lookup_performed',
+            'reason_code',
+            'errors',
+            'selected_key',
+            'acceptance_gate',
+            'binding_digest_expected',
+            'binding_digest_actual',
+            'message',
+        ]
+        for field in required_fields:
+            self.assertIn(field, data)
+        self.assertEqual(data.get('mode'), 'official_source_approved_apply')
+        self.assertEqual(data.get('phase'), 'approved_apply')
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('write_performed'))
+        self.assertFalse(data.get('bulk_lookup_performed'))
+        self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertFalse(data.get('external_lookup_performed'))
+        self.assertEqual(data.get('token_status'), data.get('approval_token_status'))
+
     def _sha256_or_none(self, path: Path):
         if not path.exists():
             return None
@@ -731,6 +769,7 @@ class DashboardBackendTest(unittest.TestCase):
         )
         self.assertEqual(non_json_resp.status_code, 400)
         non_json_data = non_json_resp.get_json()
+        self._assert_approved_apply_normalized_envelope(non_json_data)
         self.assertFalse(non_json_data.get('request_valid'))
         self.assertFalse(non_json_data.get('mutation_performed'))
 
@@ -741,6 +780,7 @@ class DashboardBackendTest(unittest.TestCase):
         )
         self.assertEqual(malformed_json_resp.status_code, 400)
         malformed_json_data = malformed_json_resp.get_json()
+        self._assert_approved_apply_normalized_envelope(malformed_json_data)
         self.assertFalse(malformed_json_data.get('request_valid'))
         self.assertFalse(malformed_json_data.get('mutation_performed'))
 
@@ -756,9 +796,30 @@ class DashboardBackendTest(unittest.TestCase):
         })
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertFalse(data.get('request_valid'))
         self.assertFalse(data.get('guard_allowed'))
         self.assertFalse(data.get('mutation_performed'))
+
+    def test_official_source_approved_apply_invalid_mode_returns_normalized_envelope(self):
+        payload = self._official_approved_apply_payload(mode='official_source_one_record')
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertFalse(data.get('request_valid'))
+        self.assertEqual(data.get('reason_code'), 'invalid_apply_mode')
+
+    def test_official_source_approved_apply_invalid_lookup_intent_returns_normalized_envelope(self):
+        payload = self._official_approved_apply_payload(lookup_intent='preview_only')
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertFalse(data.get('request_valid'))
+        self.assertEqual(data.get('reason_code'), 'invalid_lookup_intent')
 
     def test_official_source_approved_apply_rejects_batch_fields(self):
         payload = self._official_approved_apply_payload(selected_keys=['k1'], queue_wide=True)
@@ -766,6 +827,7 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertFalse(data.get('request_valid'))
         self.assertFalse(data.get('guard_allowed'))
         self.assertEqual(data.get('reason_code'), 'batch_field_not_allowed')
@@ -775,9 +837,22 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertFalse(data.get('request_valid'))
         self.assertFalse(data.get('token_valid'))
         self.assertFalse(data.get('guard_allowed'))
+
+    def test_official_source_approved_apply_token_binding_mismatch_rejected(self):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        payload['approval_binding']['source_date'] = '1999-01-01'
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertFalse(data.get('token_valid'))
+        self.assertFalse(data.get('guard_allowed'))
+        self.assertEqual(data.get('reason_code'), 'approval_binding_mismatch')
 
     def test_official_source_approved_apply_valid_payload_returns_guard_allowed_true(self):
         payload = self._official_approved_apply_payload()
@@ -785,9 +860,15 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertTrue(data.get('request_valid'))
         self.assertTrue(data.get('token_valid'))
         self.assertTrue(data.get('guard_allowed'))
+        self.assertTrue(data.get('approval_required'))
+        self.assertTrue(data.get('approval_granted'))
+        self.assertTrue(data.get('approval_binding_valid'))
+        self.assertEqual(data.get('token_status'), 'valid')
+        self.assertEqual(data.get('approval_token_status'), 'valid')
 
     def test_official_source_approved_apply_guard_allowed_true_still_non_mutating_flags(self):
         payload = self._official_approved_apply_payload()
@@ -795,11 +876,13 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertTrue(data.get('guard_allowed'))
         self.assertFalse(data.get('mutation_performed'))
         self.assertFalse(data.get('write_performed'))
         self.assertFalse(data.get('bulk_lookup_performed'))
         self.assertFalse(data.get('scoring_semantics_changed'))
+        self.assertFalse(data.get('external_lookup_performed'))
 
     def test_official_source_approved_apply_manual_review_gate_returns_guard_denied(self):
         payload = self._official_approved_apply_payload()
@@ -813,6 +896,7 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertFalse(data.get('guard_allowed'))
 
     def test_official_source_approved_apply_rejected_gate_returns_guard_denied(self):
@@ -826,6 +910,7 @@ class DashboardBackendTest(unittest.TestCase):
         resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
         self.assertFalse(data.get('guard_allowed'))
 
     @patch('app._upsert_single_manual_actual_result')
