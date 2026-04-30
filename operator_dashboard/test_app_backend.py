@@ -21,6 +21,7 @@ from app import (
     _validate_official_source_citation,
 )
 from official_source_approved_apply_token import issue_official_source_approved_apply_token
+from operator_dashboard.official_source_approved_apply_operation_id_persistence_helper import OfficialSourceApprovedApplyOperationIdPersistenceHelper
 from official_source_acceptance_gate import evaluate_official_source_acceptance_gate
 from official_source_approved_apply_token_consume_helper import OfficialSourceApprovedApplyTokenConsumeHelper
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
@@ -30,16 +31,22 @@ class DashboardBackendTest(unittest.TestCase):
         self.client = app.test_client()
         self._original_mutation_enabled = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED')
         self._original_accuracy_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE')
+        self._original_operation_id_audit_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE')
         self._original_consume_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER
+        self._original_operation_id_persistence_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER
 
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = False
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = None
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = None
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = OfficialSourceApprovedApplyOperationIdPersistenceHelper()
 
     def tearDown(self):
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = self._original_mutation_enabled
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = self._original_accuracy_override
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = self._original_operation_id_audit_override
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = self._original_consume_helper
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = self._original_operation_id_persistence_helper
 
     def _official_preview_payload(self, selected_key='alpha_vs_beta|predictions_alpha_vs_beta_prediction_json', **overrides):
         payload = {
@@ -190,6 +197,11 @@ class DashboardBackendTest(unittest.TestCase):
             accuracy_dir / 'actual_results_unresolved.json',
         ]
         return {str(p): self._sha256_or_none(p) for p in targets}
+
+    def _read_operation_id_audit_rows(self, audit_path: Path):
+        if not audit_path.exists():
+            return []
+        return app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER.read_records(str(audit_path))
 
     def _acceptance_gate_preview_result(self, **overrides):
         base = {
@@ -927,6 +939,157 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(data.get('reason_code'), 'mutation_disabled_after_guard')
         self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
 
+    def test_official_source_approved_apply_without_operation_id_remains_backward_compatible_and_no_audit_row(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload()
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self._assert_approved_apply_normalized_envelope(data)
+            self.assertEqual(data.get('reason_code'), 'mutation_disabled_after_guard')
+            self.assertIsNone(data.get('operation_id'))
+            self.assertEqual(self._read_operation_id_audit_rows(audit_path), [])
+
+    def test_official_source_approved_apply_first_operation_id_request_records_append_only_audit_row(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
+            self.assertEqual(rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
+            self.assertIsNone(rows[0].get('internal_mutation_operation_id'))
+            self.assertEqual(rows[0].get('request_parse_status'), 'schema_valid')
+            self.assertEqual(rows[0].get('guard_or_authorization_outcome'), 'guard_allowed')
+            self.assertEqual(rows[0].get('apply_or_write_outcome'), 'not_attempted')
+            self.assertEqual(rows[0].get('token_consume_outcome'), 'not_attempted')
+            self.assertEqual(rows[0].get('deterministic_status'), 'guard_allowed_no_write')
+
+    def test_official_source_approved_apply_retry_after_success_is_deterministic_and_does_not_double_apply(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_accuracy_dir = Path(temp_dir) / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            first_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(first_resp.status_code, 200)
+            first_data = first_resp.get_json()
+            self.assertTrue(first_data.get('write_performed'))
+
+            second_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(second_resp.status_code, 200)
+            second_data = second_resp.get_json()
+            self.assertEqual(second_data.get('reason_code'), 'operation_id_already_applied')
+            self.assertFalse(second_data.get('write_performed'))
+            self.assertFalse(second_data.get('mutation_performed'))
+
+            rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0].get('deterministic_status'), 'write_applied')
+            self.assertEqual(rows[1].get('deterministic_status'), 'already_applied_replay')
+            self.assertNotEqual(rows[0].get('internal_mutation_operation_id'), payload.get('operation_id'))
+            self.assertEqual(rows[1].get('internal_mutation_operation_id'), rows[0].get('internal_mutation_operation_id'))
+
+            manual_rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+
+    def test_official_source_approved_apply_retry_after_deny_is_deterministic_and_does_not_bypass_guard(self):
+        real_guard = app_module.evaluate_official_source_approved_apply_guard
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            payload['preview_snapshot']['source_citation']['source_confidence'] = 'tier_b'
+            payload['preview_snapshot']['source_citation']['confidence_score'] = 0.55
+            payload['preview_snapshot']['acceptance_gate']['state'] = 'manual_review'
+            payload['preview_snapshot']['acceptance_gate']['write_eligible'] = False
+            payload['preview_snapshot']['acceptance_gate']['reason_code'] = 'tier_b_without_corroboration'
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            with patch('app.evaluate_official_source_approved_apply_guard', side_effect=real_guard) as mock_guard:
+                first_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+                second_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+
+            self.assertEqual(mock_guard.call_count, 2)
+            first_data = first_resp.get_json()
+            second_data = second_resp.get_json()
+            self.assertFalse(first_data.get('guard_allowed'))
+            self.assertFalse(second_data.get('guard_allowed'))
+            self.assertEqual(first_data.get('reason_code'), second_data.get('reason_code'))
+
+            rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0].get('deterministic_status'), 'guard_denied')
+            self.assertEqual(rows[1].get('deterministic_status'), 'guard_denied')
+
+    def test_official_source_approved_apply_duplicate_operation_id_conflict_is_handled_deterministically(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            first_payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            first_payload['approval_token'] = self._issue_approved_apply_token(first_payload)
+            first_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=first_payload)
+            self.assertEqual(first_resp.status_code, 200)
+
+            second_payload = self._official_approved_apply_payload(
+                selected_key='gamma_vs_delta|predictions_gamma_vs_delta_prediction_json',
+                operation_id='op_retry_20260430_abcdef',
+            )
+            second_payload['approval_token'] = self._issue_approved_apply_token(second_payload)
+            second_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=second_payload)
+            self.assertEqual(second_resp.status_code, 200)
+            second_data = second_resp.get_json()
+
+            self.assertFalse(second_data.get('guard_allowed'))
+            self.assertEqual(second_data.get('reason_code'), 'operation_id_conflict')
+            self.assertFalse(second_data.get('write_performed'))
+
+            rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0].get('deterministic_status'), 'guard_allowed_no_write')
+            self.assertEqual(rows[1].get('deterministic_status'), 'duplicate_conflict')
+
+    def test_official_source_approved_apply_malformed_operation_id_does_not_corrupt_audit_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            audit_path = Path(temp_dir) / 'approved_apply_operation_id_audit.jsonl'
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload(operation_id='short-id')
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertFalse(data.get('request_valid'))
+            self.assertEqual(data.get('reason_code'), 'operation_id_format_invalid')
+            self.assertEqual(self._read_operation_id_audit_rows(audit_path), [])
+
     def test_official_source_approved_apply_with_operation_id_surfaces_on_deny_response(self):
         payload = self._official_approved_apply_payload(mode='official_source_one_record', operation_id='  op_retry_20260430_abcdef  ')
         payload['approval_token'] = self._issue_approved_apply_token(payload)
@@ -1075,15 +1238,19 @@ class DashboardBackendTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_accuracy_dir = Path(temp_dir)
+            audit_path = temp_accuracy_dir / 'approved_apply_operation_id_audit.jsonl'
             (temp_accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
 
             resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
             self.assertEqual(resp.status_code, 200)
             data = resp.get_json()
             self.assertTrue(data.get('write_performed'))
             self.assertTrue(data.get('token_consume_performed'))
+            rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(rows), 1)
 
         self.assertEqual(mock_consume.call_count, 1)
         call_args = mock_consume.call_args
@@ -1096,6 +1263,7 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertNotEqual(call_args.kwargs.get('operation_id'), data.get('operation_id'))
         self.assertEqual(len(call_args.kwargs.get('operation_id') or ''), 32)
         self.assertEqual(call_args.kwargs.get('write_attempt_id'), data.get('write_attempt_id'))
+        self.assertEqual(rows[0].get('internal_mutation_operation_id'), call_args.kwargs.get('operation_id'))
 
     def test_official_source_approved_apply_consume_failure_after_write_keeps_committed_temp_write(self):
         payload = self._official_approved_apply_payload()

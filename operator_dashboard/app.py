@@ -21,6 +21,7 @@ from operator_dashboard.official_source_lookup_provider import OfficialSourceLoo
 from operator_dashboard.official_source_approved_apply_schema import validate_official_source_approved_apply_request
 from operator_dashboard.official_source_approved_apply_guard import evaluate_official_source_approved_apply_guard
 from operator_dashboard.official_source_approved_apply_mutation_adapter import apply_official_source_approved_apply_mutation
+from operator_dashboard.official_source_approved_apply_operation_id_persistence_helper import OfficialSourceApprovedApplyOperationIdPersistenceHelper
 from operator_dashboard.official_source_approved_apply_token_consume_helper import OfficialSourceApprovedApplyTokenConsumeHelper
 
 from operator_dashboard.forecast_utils import get_operator_forecast
@@ -42,8 +43,10 @@ from operator_dashboard.phase1_ops import (
 app = Flask(__name__)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE", None)
+app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE", None)
 
 OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
+OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = OfficialSourceApprovedApplyOperationIdPersistenceHelper()
 
 _RUNTIME_METRICS = {
     "started_at_epoch": time(),
@@ -1561,6 +1564,52 @@ def api_operator_actual_result_lookup_official_source_one_record_preview():
 
 @app.route("/api/operator/actual-result-lookup/official-source-approved-apply", methods=["POST"])
 def api_operator_actual_result_lookup_official_source_approved_apply():
+    def _append_operation_id_audit_record(
+        *,
+        operation_id: str | None,
+        request_fingerprint: str | None,
+        request_parse_status: str,
+        guard_or_authorization_outcome: str,
+        apply_or_write_outcome: str,
+        token_consume_outcome: str,
+        deterministic_status: str,
+        selected_key: str | None,
+        token_id: str | None,
+        terminal_reason_code: str | None,
+        internal_mutation_operation_id: str | None = None,
+        write_attempt_id: str | None = None,
+        contract_version: str | None = None,
+        endpoint_version: str | None = None,
+    ) -> None:
+        if not operation_id or not request_fingerprint:
+            return
+        OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER.append_record(
+            operation_id=operation_id,
+            internal_mutation_operation_id=internal_mutation_operation_id,
+            write_attempt_id=write_attempt_id,
+            request_parse_status=request_parse_status,
+            guard_or_authorization_outcome=guard_or_authorization_outcome,
+            apply_or_write_outcome=apply_or_write_outcome,
+            token_consume_outcome=token_consume_outcome,
+            deterministic_status=deterministic_status,
+            timestamp_utc=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            selected_key=selected_key,
+            token_id=token_id,
+            terminal_reason_code=terminal_reason_code,
+            contract_version=contract_version,
+            endpoint_version=endpoint_version,
+            request_fingerprint=request_fingerprint,
+            audit_path=app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE"),
+        )
+
+    def _operation_id_is_persistable(schema_result: dict) -> bool:
+        operation_id = schema_result.get("operation_id")
+        if not isinstance(operation_id, str) or not operation_id:
+            return False
+        if str(schema_result.get("reason_code") or "") == "operation_id_format_invalid":
+            return False
+        return True
+
     def _normalized_response(
         *,
         ok: bool,
@@ -1723,6 +1772,18 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         allowed_clock_skew_seconds=5,
     )
     request_operation_id = guard_result.get("operation_id") or schema_result.get("operation_id")
+    persistable_operation_id = request_operation_id if _operation_id_is_persistable(schema_result) else None
+    request_fingerprint = None
+    operation_id_lookup = None
+    if persistable_operation_id:
+        request_fingerprint = OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER.build_request_fingerprint(data)
+
+    if persistable_operation_id and bool(schema_result.get("request_valid")):
+        operation_id_lookup = OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER.lookup(
+            persistable_operation_id,
+            request_fingerprint,
+            audit_path=app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE"),
+        )
 
     response_payload = _normalized_response(
         ok=bool(guard_result.get("ok")),
@@ -1744,12 +1805,83 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         mutation_enabled=bool(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)),
     )
 
+    if operation_id_lookup and operation_id_lookup.get("state") == "conflict":
+        response_payload["ok"] = False
+        response_payload["guard_allowed"] = False
+        response_payload["manual_review_required"] = True
+        response_payload["reason_code"] = "operation_id_conflict"
+        response_payload["errors"] = ["operation_id already used with different request payload"]
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed" if bool(guard_result.get("guard_allowed")) else "guard_denied",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="duplicate_conflict",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code="operation_id_conflict",
+        )
+        return jsonify(response_payload)
+
     if not bool(guard_result.get("guard_allowed")):
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid" if bool(schema_result.get("request_valid")) else "schema_invalid",
+            guard_or_authorization_outcome="guard_denied",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="guard_denied" if bool(schema_result.get("request_valid")) else "schema_invalid",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+        )
+        return jsonify(response_payload)
+
+    if operation_id_lookup and operation_id_lookup.get("state") == "already_applied":
+        response_payload["ok"] = True
+        response_payload["reason_code"] = "operation_id_already_applied"
+        response_payload["errors"] = []
+        response_payload["mutation_performed"] = False
+        response_payload["write_performed"] = False
+        response_payload["token_consume_performed"] = False
+        response_payload["message"] = "Approved apply already recorded for this operation_id."
+        previous_record = operation_id_lookup.get("record") or {}
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="already_applied_replay",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code="operation_id_already_applied",
+            internal_mutation_operation_id=previous_record.get("internal_mutation_operation_id"),
+            write_attempt_id=previous_record.get("write_attempt_id"),
+            contract_version=previous_record.get("contract_version"),
+            endpoint_version=previous_record.get("endpoint_version"),
+        )
         return jsonify(response_payload)
 
     if not bool(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)):
         response_payload["reason_code"] = "mutation_disabled_after_guard"
         response_payload["message"] = "Approved apply mutation remains disabled unless dark/test config is enabled."
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="guard_allowed_no_write",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+        )
         return jsonify(response_payload)
 
     accuracy_dir_override = app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE")
@@ -1759,6 +1891,18 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         response_payload["reason_code"] = "mutation_accuracy_dir_not_configured"
         response_payload["errors"] = ["OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE is required when mutation is enabled"]
         response_payload["message"] = "Approved apply mutation failed closed: accuracy dir override is not configured."
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="write_not_attempted",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+        )
         return jsonify(response_payload)
 
     accuracy_dir = Path(accuracy_dir_text)
@@ -1767,6 +1911,18 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         response_payload["reason_code"] = "mutation_accuracy_dir_not_configured"
         response_payload["errors"] = ["configured accuracy dir override does not exist"]
         response_payload["message"] = "Approved apply mutation failed closed: configured accuracy dir override is invalid."
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="write_not_attempted",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+        )
         return jsonify(response_payload)
 
     internal_operation_id = uuid.uuid4().hex
@@ -1819,6 +1975,22 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
     response_payload["approval_token_id"] = adapter_result.get("approval_token_id") or response_payload.get("approval_token_id")
 
     if not response_payload.get("write_performed"):
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="write_failed",
+            token_consume_outcome="not_attempted",
+            deterministic_status="write_failed",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+            internal_mutation_operation_id=internal_operation_id,
+            write_attempt_id=write_attempt_id,
+            contract_version=contract_version,
+            endpoint_version=endpoint_version,
+        )
         return jsonify(response_payload)
 
     consume_attempted_at_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -1845,6 +2017,23 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         response_payload["ok"] = False
         response_payload["reason_code"] = "token_consume_post_write_failed"
         response_payload["errors"] = list(consume_result.get("errors") or [])
+
+    _append_operation_id_audit_record(
+        operation_id=persistable_operation_id,
+        request_fingerprint=request_fingerprint,
+        request_parse_status="schema_valid",
+        guard_or_authorization_outcome="guard_allowed",
+        apply_or_write_outcome="write_applied",
+        token_consume_outcome="consumed" if bool(consume_result.get("ok")) else "consume_failed",
+        deterministic_status="write_applied" if bool(consume_result.get("ok")) else "consume_failed_after_write",
+        selected_key=response_payload.get("selected_key"),
+        token_id=response_payload.get("token_id"),
+        terminal_reason_code=response_payload.get("reason_code"),
+        internal_mutation_operation_id=internal_operation_id,
+        write_attempt_id=write_attempt_id,
+        contract_version=contract_version,
+        endpoint_version=endpoint_version,
+    )
 
     return jsonify(response_payload)
 
