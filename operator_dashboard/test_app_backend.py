@@ -1497,6 +1497,164 @@ class DashboardBackendTest(unittest.TestCase):
             matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
             self.assertEqual(len(matched_rows), 1)
 
+    def test_global_ledger_summary_endpoint_returns_safe_empty_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            resp = self.client.get('/api/operator/actual-result-lookup/global-ledger-summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            for key in ('ok', 'generated_at', 'ledger_available', 'total_rows', 'latest_rows', 'status_counts', 'errors'):
+                self.assertIn(key, data)
+            self.assertTrue(data.get('ok'))
+            self.assertFalse(data.get('ledger_available'))
+            self.assertEqual(data.get('total_rows'), 0)
+            self.assertEqual(data.get('latest_rows'), [])
+            self.assertEqual(data.get('status_counts'), {})
+            self.assertEqual(data.get('errors'), [])
+
+    def test_global_ledger_summary_endpoint_latest_rows_and_status_counts_are_deterministic(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            rows = [
+                {
+                    'global_ledger_record_id': 'r1',
+                    'local_result_key': 'fight_alpha',
+                    'event_id': 'evt1',
+                    'bout_id': 'bout1',
+                    'official_source_reference': {'source_url': 'https://ufc.com/event/1'},
+                    'approved_actual_result': {'actual_winner': 'Alpha'},
+                    'operation_id': 'op1',
+                    'deterministic_status': 'write_applied',
+                    'timestamp_utc': '2026-01-01T00:00:00Z',
+                    'local_audit_reference': {'selected_key': 'fight_alpha|predictions_1'},
+                },
+                {
+                    'global_ledger_record_id': 'r2',
+                    'local_result_key': 'fight_beta',
+                    'event_id': 'evt2',
+                    'bout_id': 'bout2',
+                    'official_source_reference': {'source_url': 'https://ufc.com/event/2'},
+                    'approved_actual_result': {'actual_winner': 'Beta'},
+                    'operation_id': None,
+                    'deterministic_status': 'global_ledger_already_recorded',
+                    'timestamp_utc': '2026-01-02T00:00:00Z',
+                    'local_audit_reference': {'selected_key': 'fight_beta|predictions_2'},
+                },
+                {
+                    'global_ledger_record_id': 'r3',
+                    'local_result_key': 'fight_gamma',
+                    'event_id': 'evt3',
+                    'bout_id': 'bout3',
+                    'official_source_reference': {'source_url': 'https://ufc.com/event/3'},
+                    'approved_actual_result': {'actual_winner': 'Gamma'},
+                    'operation_id': 'op3',
+                    'deterministic_status': 'global_ledger_write_failed',
+                    'timestamp_utc': '2026-01-03T00:00:00Z',
+                    'local_audit_reference': {'selected_key': 'fight_gamma|predictions_3'},
+                },
+            ]
+            ledger_path.write_text(''.join(json.dumps(row) + '\n' for row in rows), encoding='utf-8')
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            first_resp = self.client.get('/api/operator/actual-result-lookup/global-ledger-summary?limit=2')
+            second_resp = self.client.get('/api/operator/actual-result-lookup/global-ledger-summary?limit=2')
+            self.assertEqual(first_resp.status_code, 200)
+            self.assertEqual(second_resp.status_code, 200)
+
+            first_data = first_resp.get_json()
+            second_data = second_resp.get_json()
+            self.assertEqual(first_data.get('latest_rows'), second_data.get('latest_rows'))
+
+            self.assertTrue(first_data.get('ledger_available'))
+            self.assertEqual(first_data.get('total_rows'), 3)
+            self.assertEqual(len(first_data.get('latest_rows') or []), 2)
+            self.assertEqual(first_data['latest_rows'][0].get('global_ledger_record_id'), 'r3')
+            self.assertEqual(first_data['latest_rows'][1].get('global_ledger_record_id'), 'r2')
+            self.assertEqual(first_data.get('status_counts'), {
+                'global_ledger_already_recorded': 1,
+                'global_ledger_write_failed': 1,
+                'write_applied': 1,
+            })
+
+            row_keys = set(first_data['latest_rows'][0].keys())
+            expected_row_keys = {
+                'global_ledger_record_id',
+                'local_result_key',
+                'event_id',
+                'bout_id',
+                'official_source_reference',
+                'approved_actual_result',
+                'operation_id',
+                'deterministic_status',
+                'timestamp_utc',
+                'local_audit_reference',
+            }
+            self.assertEqual(row_keys, expected_row_keys)
+
+    def test_global_ledger_summary_endpoint_reports_malformed_rows_without_breaking_response(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            lines = [
+                json.dumps({
+                    'global_ledger_record_id': 'r1',
+                    'local_result_key': 'fight_alpha',
+                    'deterministic_status': 'write_applied',
+                    'timestamp_utc': '2026-01-01T00:00:00Z',
+                }),
+                '{ malformed json',
+                json.dumps(['not', 'an', 'object']),
+                json.dumps({
+                    'global_ledger_record_id': 'r2',
+                    'local_result_key': 'fight_beta',
+                    'deterministic_status': 'global_ledger_already_recorded',
+                    'timestamp_utc': '2026-01-02T00:00:00Z',
+                }),
+            ]
+            ledger_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            resp = self.client.get('/api/operator/actual-result-lookup/global-ledger-summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data.get('ok'))
+            self.assertTrue(data.get('ledger_available'))
+            self.assertEqual(data.get('total_rows'), 2)
+            self.assertEqual(len(data.get('latest_rows') or []), 2)
+            self.assertGreaterEqual(len(data.get('errors') or []), 2)
+            error_text = ' | '.join(data.get('errors') or [])
+            self.assertIn('malformed_row_line_2', error_text)
+            self.assertIn('malformed_row_line_3', error_text)
+
+    def test_advanced_dashboard_has_global_ledger_read_only_panel(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Approved-Apply Global Ledger (Read-Only)', resp.data)
+        self.assertIn(b'refresh-global-ledger-summary-btn', resp.data)
+        self.assertIn(b'global-ledger-summary-panel', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/global-ledger-summary', resp.data)
+        self.assertIn(b'No write controls', resp.data)
+
     @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
     def test_official_source_approved_apply_token_consume_called_only_after_successful_write(self, mock_consume):
         mock_consume.return_value = {

@@ -174,6 +174,74 @@ def _resolve_global_ledger_path(accuracy_dir: Path) -> str:
     return str(accuracy_dir / "official_source_approved_apply_global_ledger.jsonl")
 
 
+def _project_global_ledger_summary_row(row: dict) -> dict:
+    return {
+        "global_ledger_record_id": row.get("global_ledger_record_id"),
+        "local_result_key": row.get("local_result_key"),
+        "event_id": row.get("event_id"),
+        "bout_id": row.get("bout_id"),
+        "official_source_reference": row.get("official_source_reference"),
+        "approved_actual_result": row.get("approved_actual_result"),
+        "operation_id": row.get("operation_id"),
+        "deterministic_status": row.get("deterministic_status"),
+        "timestamp_utc": row.get("timestamp_utc"),
+        "local_audit_reference": row.get("local_audit_reference"),
+    }
+
+
+def _build_official_source_approved_apply_global_ledger_summary(limit_raw=None) -> dict:
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    payload = {
+        "ok": True,
+        "generated_at": generated_at,
+        "ledger_available": False,
+        "total_rows": 0,
+        "latest_rows": [],
+        "status_counts": {},
+        "errors": [],
+    }
+
+    try:
+        limit = int(limit_raw) if str(limit_raw or "").strip() else 10
+    except Exception:
+        limit = 10
+    limit = max(1, min(limit, 100))
+
+    accuracy_dir = _resolve_accuracy_dir()
+    ledger_path = Path(_resolve_global_ledger_path(accuracy_dir))
+    if not ledger_path.exists():
+        return payload
+
+    payload["ledger_available"] = True
+    ledger_rows = []
+    with ledger_path.open("r", encoding="utf-8") as handle:
+        for line_number, line_text in enumerate(handle, start=1):
+            stripped = line_text.strip()
+            if not stripped:
+                continue
+            try:
+                row = json.loads(stripped)
+            except Exception as exc:
+                payload["errors"].append(f"malformed_row_line_{line_number}: {exc}")
+                continue
+            if not isinstance(row, dict):
+                payload["errors"].append(f"malformed_row_line_{line_number}: row is not a JSON object")
+                continue
+            ledger_rows.append(row)
+
+    payload["total_rows"] = len(ledger_rows)
+    status_counts: dict[str, int] = {}
+    for row in ledger_rows:
+        status = str(row.get("deterministic_status") or "").strip() or "unknown"
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    latest_rows = ledger_rows[-limit:]
+    latest_rows.reverse()
+    payload["latest_rows"] = [_project_global_ledger_summary_row(row) for row in latest_rows]
+    payload["status_counts"] = {key: status_counts[key] for key in sorted(status_counts.keys())}
+    return payload
+
+
 def _build_accuracy_comparison_summary() -> dict:
     base_dir = Path(__file__).resolve().parent.parent
     accuracy_dir = _resolve_accuracy_dir()
@@ -1327,6 +1395,26 @@ def api_accuracy_comparison_summary():
         return jsonify(_build_accuracy_comparison_summary())
     except Exception as e:
         return jsonify({"ok": False, "error": str(e), "compared_results": [], "waiting_for_results": [], "summary_metrics": {}}), 500
+
+
+@app.route("/api/operator/actual-result-lookup/global-ledger-summary", methods=["GET"])
+def api_operator_actual_result_lookup_global_ledger_summary():
+    try:
+        return jsonify(
+            _build_official_source_approved_apply_global_ledger_summary(
+                request.args.get("limit")
+            )
+        )
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "ledger_available": False,
+            "total_rows": 0,
+            "latest_rows": [],
+            "status_counts": {},
+            "errors": [str(exc)],
+        }), 500
 
 
 @app.route("/api/operator/actual-result-lookup/dry-run-preview", methods=["GET"])
