@@ -1722,6 +1722,7 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         replayed_token_ids=set(),
         allowed_clock_skew_seconds=5,
     )
+    request_operation_id = guard_result.get("operation_id") or schema_result.get("operation_id")
 
     response_payload = _normalized_response(
         ok=bool(guard_result.get("ok")),
@@ -1739,6 +1740,7 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         binding_digest_expected=guard_result.get("binding_digest_expected"),
         binding_digest_actual=guard_result.get("binding_digest_actual"),
         token_id=guard_result.get("token_id"),
+        operation_id=request_operation_id,
         mutation_enabled=bool(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)),
     )
 
@@ -1767,7 +1769,7 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         response_payload["message"] = "Approved apply mutation failed closed: configured accuracy dir override is invalid."
         return jsonify(response_payload)
 
-    operation_id = uuid.uuid4().hex
+    internal_operation_id = uuid.uuid4().hex
     write_attempt_id = uuid.uuid4().hex
     contract_version = "official_source_approved_apply_contract_v1"
     endpoint_version = "official_source_approved_apply_endpoint_mutation_v1"
@@ -1778,7 +1780,7 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         accuracy_dir=accuracy_dir,
         consumed_token_ids=set(),
         lock_timeout_seconds=10,
-        operation_id=operation_id,
+        operation_id=internal_operation_id,
         write_attempt_id=write_attempt_id,
         contract_version=contract_version,
         endpoint_version=endpoint_version,
@@ -1803,7 +1805,6 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         "escalation_required",
         "operator_escalation_action",
         "approval_token_id",
-        "operation_id",
         "write_attempt_id",
         "contract_version",
         "endpoint_version",
@@ -1825,7 +1826,7 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
 
     consume_result = OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume(
         response_payload.get("token_id"),
-        operation_id=operation_id,
+        operation_id=internal_operation_id,
         write_attempt_id=write_attempt_id,
         selected_key=response_payload.get("selected_key"),
         reason_code_at_consume=str(adapter_result.get("reason_code") or "official_source_write_applied"),

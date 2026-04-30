@@ -912,6 +912,48 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertTrue(data.get('approval_binding_valid'))
         self.assertEqual(data.get('token_status'), 'valid')
         self.assertEqual(data.get('approval_token_status'), 'valid')
+        self.assertIsNone(data.get('operation_id'))
+
+    def test_official_source_approved_apply_with_operation_id_surfaces_on_success_response(self):
+        payload = self._official_approved_apply_payload(operation_id='  op_retry_20260430_abcdef  ')
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertTrue(data.get('guard_allowed'))
+        self.assertEqual(data.get('reason_code'), 'mutation_disabled_after_guard')
+        self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
+
+    def test_official_source_approved_apply_with_operation_id_surfaces_on_deny_response(self):
+        payload = self._official_approved_apply_payload(mode='official_source_one_record', operation_id='  op_retry_20260430_abcdef  ')
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertFalse(data.get('request_valid'))
+        self.assertFalse(data.get('guard_allowed'))
+        self.assertEqual(data.get('reason_code'), 'invalid_apply_mode')
+        self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
+
+    def test_official_source_approved_apply_operation_id_does_not_change_token_binding(self):
+        payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertTrue(data.get('request_valid'))
+        self.assertTrue(data.get('token_valid'))
+        self.assertTrue(data.get('approval_binding_valid'))
+        self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
 
     def test_official_source_approved_apply_guard_allowed_true_still_non_mutating_flags(self):
         payload = self._official_approved_apply_payload()
@@ -1028,7 +1070,7 @@ class DashboardBackendTest(unittest.TestCase):
             'idempotent': False,
             'errors': [],
         }
-        payload = self._official_approved_apply_payload()
+        payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
         payload['approval_token'] = self._issue_approved_apply_token(payload)
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1050,7 +1092,9 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(call_args.kwargs.get('binding_digest_expected'), data.get('binding_digest_expected'))
         self.assertEqual(call_args.kwargs.get('contract_version'), 'official_source_approved_apply_contract_v1')
         self.assertEqual(call_args.kwargs.get('endpoint_version'), 'official_source_approved_apply_endpoint_mutation_v1')
-        self.assertEqual(call_args.kwargs.get('operation_id'), data.get('operation_id'))
+        self.assertEqual(data.get('operation_id'), 'op_retry_20260430_abcdef')
+        self.assertNotEqual(call_args.kwargs.get('operation_id'), data.get('operation_id'))
+        self.assertEqual(len(call_args.kwargs.get('operation_id') or ''), 32)
         self.assertEqual(call_args.kwargs.get('write_attempt_id'), data.get('write_attempt_id'))
 
     def test_official_source_approved_apply_consume_failure_after_write_keeps_committed_temp_write(self):
