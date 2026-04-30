@@ -21,6 +21,7 @@ from operator_dashboard.official_source_lookup_provider import OfficialSourceLoo
 from operator_dashboard.official_source_approved_apply_schema import validate_official_source_approved_apply_request
 from operator_dashboard.official_source_approved_apply_guard import evaluate_official_source_approved_apply_guard
 from operator_dashboard.official_source_approved_apply_mutation_adapter import apply_official_source_approved_apply_mutation
+from operator_dashboard.official_source_approved_apply_global_ledger_helper import OfficialSourceApprovedApplyGlobalLedgerHelper
 from operator_dashboard.official_source_approved_apply_operation_id_persistence_helper import OfficialSourceApprovedApplyOperationIdPersistenceHelper
 from operator_dashboard.official_source_approved_apply_token_consume_helper import OfficialSourceApprovedApplyTokenConsumeHelper
 
@@ -44,8 +45,10 @@ app = Flask(__name__)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE", None)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE", None)
+app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE", None)
 
 OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
+OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER = OfficialSourceApprovedApplyGlobalLedgerHelper()
 OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = OfficialSourceApprovedApplyOperationIdPersistenceHelper()
 
 _RUNTIME_METRICS = {
@@ -162,6 +165,13 @@ def _resolve_accuracy_dir() -> Path:
         return Path(override)
     base_dir = Path(__file__).resolve().parent.parent
     return base_dir / "ops" / "accuracy"
+
+
+def _resolve_global_ledger_path(accuracy_dir: Path) -> str:
+    override = str(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE") or "").strip()
+    if override:
+        return override
+    return str(accuracy_dir / "official_source_approved_apply_global_ledger.jsonl")
 
 
 def _build_accuracy_comparison_summary() -> dict:
@@ -1617,6 +1627,76 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
             return False
         return True
 
+    def _build_global_ledger_record(
+        *,
+        payload: dict,
+        preview_snapshot: dict,
+        operation_id: str | None,
+        internal_mutation_uuid: str,
+        approval_token_status: str | None,
+        selected_key: str | None,
+        write_target: str | None,
+    ) -> dict:
+        approval_binding = payload.get("approval_binding") if isinstance(payload, dict) else {}
+        approval_binding = approval_binding if isinstance(approval_binding, dict) else {}
+        selected_row_identity = approval_binding.get("selected_row_identity") if isinstance(approval_binding, dict) else {}
+        selected_row_identity = selected_row_identity if isinstance(selected_row_identity, dict) else {}
+        source_citation = preview_snapshot.get("source_citation") if isinstance(preview_snapshot, dict) else {}
+        source_citation = source_citation if isinstance(source_citation, dict) else {}
+        audit = preview_snapshot.get("audit") if isinstance(preview_snapshot, dict) else {}
+        audit = audit if isinstance(audit, dict) else {}
+
+        fight_id = str(audit.get("record_fight_id") or selected_row_identity.get("fight_id") or approval_binding.get("record_fight_id") or "").strip() or None
+        fight_name = str(audit.get("fight_name") or selected_row_identity.get("fight_name") or "").strip()
+        fighter_names = [name.strip() for name in fight_name.split(" vs ") if name.strip()] if fight_name else []
+
+        extracted_winner = str(
+            source_citation.get("extracted_winner")
+            or approval_binding.get("extracted_winner")
+            or ""
+        ).strip() or None
+        extracted_method = str(source_citation.get("extracted_method") or source_citation.get("method") or "").strip() or "UNKNOWN"
+        extracted_round = str(source_citation.get("extracted_round") or source_citation.get("round_time") or "").strip() or "UNKNOWN"
+        source_date = str(source_citation.get("source_date") or approval_binding.get("source_date") or "").strip() or None
+
+        return {
+            "global_ledger_record_id": uuid.uuid4().hex,
+            "local_result_key": fight_id or (str(selected_key or "").strip() or None),
+            "event_id": None,
+            "bout_id": fight_id,
+            "fighter_ids": [fight_id] if fight_id else [],
+            "fighter_names": fighter_names,
+            "official_source_reference": {
+                "source_url": str(source_citation.get("source_url") or "").strip() or None,
+                "source_title": str(source_citation.get("source_title") or "").strip() or None,
+                "source_date": source_date,
+                "publisher_host": str(source_citation.get("publisher_host") or "").strip() or None,
+                "source_confidence": str(source_citation.get("source_confidence") or "").strip() or None,
+                "citation_fingerprint": str(source_citation.get("citation_fingerprint") or "").strip() or None,
+            },
+            "approved_actual_result": {
+                "fight_id": fight_id,
+                "fight_name": fight_name or None,
+                "actual_winner": extracted_winner,
+                "actual_method": extracted_method,
+                "actual_round": extracted_round,
+                "event_date": source_date,
+            },
+            "operation_id": str(operation_id or "").strip() or None,
+            "internal_mutation_uuid": internal_mutation_uuid,
+            "approval_token_status": str(approval_token_status or "").strip() or None,
+            "guard_outcome": "guard_allowed",
+            "apply_or_write_outcome": "write_applied",
+            "token_consume_outcome": "not_attempted",
+            "local_audit_reference": {
+                "operation_id_audit_path": app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE"),
+                "selected_key": str(selected_key or "").strip() or None,
+                "write_target": str(write_target or "").strip() or None,
+            },
+            "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "deterministic_status": "write_applied_pending_token_consume",
+        }
+
     def _normalized_response(
         *,
         ok: bool,
@@ -1932,10 +2012,81 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         )
         return jsonify(response_payload)
 
+    global_ledger_path = _resolve_global_ledger_path(accuracy_dir)
+
     internal_operation_id = uuid.uuid4().hex
     write_attempt_id = uuid.uuid4().hex
     contract_version = "official_source_approved_apply_contract_v1"
     endpoint_version = "official_source_approved_apply_endpoint_mutation_v1"
+
+    prospective_global_ledger_record = _build_global_ledger_record(
+        payload=data,
+        preview_snapshot=authoritative_preview_result,
+        operation_id=persistable_operation_id,
+        internal_mutation_uuid=internal_operation_id,
+        approval_token_status=response_payload.get("token_status"),
+        selected_key=response_payload.get("selected_key"),
+        write_target=None,
+    )
+    global_ledger_fingerprint = OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.build_request_fingerprint(prospective_global_ledger_record)
+    global_ledger_lookup = OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.lookup(
+        prospective_global_ledger_record.get("local_result_key"),
+        global_ledger_fingerprint,
+        ledger_path=global_ledger_path,
+    )
+
+    if global_ledger_lookup.get("state") == "conflict":
+        response_payload["ok"] = False
+        response_payload["reason_code"] = "global_ledger_conflict"
+        response_payload["errors"] = ["global ledger already contains a conflicting approved result for this local result key"]
+        response_payload["global_ledger_write_performed"] = False
+        response_payload["global_ledger_reason_code"] = "global_ledger_conflict"
+        response_payload["global_ledger_path"] = global_ledger_path
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="global_ledger_conflict",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+            internal_mutation_operation_id=internal_operation_id,
+            write_attempt_id=write_attempt_id,
+            contract_version=contract_version,
+            endpoint_version=endpoint_version,
+        )
+        return jsonify(response_payload)
+
+    if global_ledger_lookup.get("state") == "already_recorded":
+        response_payload["ok"] = True
+        response_payload["mutation_performed"] = False
+        response_payload["write_performed"] = False
+        response_payload["reason_code"] = "global_ledger_already_recorded"
+        response_payload["errors"] = []
+        response_payload["global_ledger_write_performed"] = False
+        response_payload["global_ledger_reason_code"] = "global_ledger_already_recorded"
+        response_payload["global_ledger_path"] = global_ledger_path
+        previous_record = global_ledger_lookup.get("record") or {}
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="not_attempted",
+            token_consume_outcome="not_attempted",
+            deterministic_status="global_ledger_already_recorded",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+            internal_mutation_operation_id=previous_record.get("internal_mutation_uuid"),
+            write_attempt_id=write_attempt_id,
+            contract_version=contract_version,
+            endpoint_version=endpoint_version,
+        )
+        return jsonify(response_payload)
 
     adapter_result = apply_official_source_approved_apply_mutation(
         guard_result=guard_result,
@@ -1990,6 +2141,51 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
             apply_or_write_outcome="write_failed",
             token_consume_outcome="not_attempted",
             deterministic_status="write_failed",
+            selected_key=response_payload.get("selected_key"),
+            token_id=response_payload.get("token_id"),
+            terminal_reason_code=response_payload.get("reason_code"),
+            internal_mutation_operation_id=internal_operation_id,
+            write_attempt_id=write_attempt_id,
+            contract_version=contract_version,
+            endpoint_version=endpoint_version,
+        )
+        return jsonify(response_payload)
+
+    global_ledger_record = _build_global_ledger_record(
+        payload=data,
+        preview_snapshot=authoritative_preview_result,
+        operation_id=persistable_operation_id,
+        internal_mutation_uuid=internal_operation_id,
+        approval_token_status=response_payload.get("token_status"),
+        selected_key=response_payload.get("selected_key"),
+        write_target=response_payload.get("write_target"),
+    )
+
+    try:
+        appended_global_ledger_record = OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.append_record(
+            record=global_ledger_record,
+            request_fingerprint=global_ledger_fingerprint,
+            ledger_path=global_ledger_path,
+        )
+        response_payload["global_ledger_write_performed"] = True
+        response_payload["global_ledger_reason_code"] = "global_ledger_write_applied"
+        response_payload["global_ledger_record_id"] = appended_global_ledger_record.get("global_ledger_record_id")
+        response_payload["global_ledger_path"] = global_ledger_path
+    except Exception as exc:
+        response_payload["ok"] = False
+        response_payload["reason_code"] = "global_ledger_write_failed"
+        response_payload["errors"] = [str(exc)]
+        response_payload["global_ledger_write_performed"] = False
+        response_payload["global_ledger_reason_code"] = "global_ledger_write_failed"
+        response_payload["global_ledger_path"] = global_ledger_path
+        _append_operation_id_audit_record(
+            operation_id=persistable_operation_id,
+            request_fingerprint=request_fingerprint,
+            request_parse_status="schema_valid",
+            guard_or_authorization_outcome="guard_allowed",
+            apply_or_write_outcome="write_applied",
+            token_consume_outcome="not_attempted",
+            deterministic_status="global_ledger_write_failed_after_local_write",
             selected_key=response_payload.get("selected_key"),
             token_id=response_payload.get("token_id"),
             terminal_reason_code=response_payload.get("reason_code"),

@@ -20,6 +20,7 @@ from app import (
     _classify_source_confidence,
     _validate_official_source_citation,
 )
+from operator_dashboard.official_source_approved_apply_global_ledger_helper import OfficialSourceApprovedApplyGlobalLedgerHelper
 from official_source_approved_apply_token import issue_official_source_approved_apply_token
 from operator_dashboard.official_source_approved_apply_operation_id_persistence_helper import OfficialSourceApprovedApplyOperationIdPersistenceHelper
 from official_source_acceptance_gate import evaluate_official_source_acceptance_gate
@@ -32,20 +33,26 @@ class DashboardBackendTest(unittest.TestCase):
         self._original_mutation_enabled = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED')
         self._original_accuracy_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE')
         self._original_operation_id_audit_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE')
+        self._original_global_ledger_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE')
         self._original_consume_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER
+        self._original_global_ledger_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER
         self._original_operation_id_persistence_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER
 
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = False
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = None
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = None
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = None
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER = OfficialSourceApprovedApplyGlobalLedgerHelper()
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = OfficialSourceApprovedApplyOperationIdPersistenceHelper()
 
     def tearDown(self):
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = self._original_mutation_enabled
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = self._original_accuracy_override
         app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = self._original_operation_id_audit_override
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = self._original_global_ledger_override
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = self._original_consume_helper
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER = self._original_global_ledger_helper
         app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER = self._original_operation_id_persistence_helper
 
     def _official_preview_payload(self, selected_key='alpha_vs_beta|predictions_alpha_vs_beta_prediction_json', **overrides):
@@ -202,6 +209,11 @@ class DashboardBackendTest(unittest.TestCase):
         if not audit_path.exists():
             return []
         return app_module.OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_PERSISTENCE_HELPER.read_records(str(audit_path))
+
+    def _read_global_ledger_rows(self, ledger_path: Path):
+        if not ledger_path.exists():
+            return []
+        return app_module.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.read_records(str(ledger_path))
 
     def _acceptance_gate_preview_result(self, **overrides):
         base = {
@@ -1241,10 +1253,12 @@ class DashboardBackendTest(unittest.TestCase):
                 }
             ]), encoding='utf-8')
             audit_path = temp_root / 'approved_apply_operation_id_audit.jsonl'
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
 
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
 
             before_resp = self.client.get('/api/accuracy/comparison-summary')
             self.assertEqual(before_resp.status_code, 200)
@@ -1281,6 +1295,13 @@ class DashboardBackendTest(unittest.TestCase):
             self.assertEqual(audit_rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
             self.assertEqual(audit_rows[0].get('deterministic_status'), 'write_applied')
 
+            ledger_rows = self._read_global_ledger_rows(ledger_path)
+            self.assertEqual(len(ledger_rows), 1)
+            self.assertEqual(ledger_rows[0].get('local_result_key'), 'alpha_vs_beta')
+            self.assertEqual(ledger_rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
+            self.assertNotEqual(ledger_rows[0].get('internal_mutation_uuid'), payload.get('operation_id'))
+            self.assertEqual(ledger_rows[0].get('approved_actual_result', {}).get('actual_winner'), 'Alpha')
+
     def test_official_source_approved_apply_guard_deny_leaves_local_summary_waiting_and_audits_operation_id(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
@@ -1298,10 +1319,12 @@ class DashboardBackendTest(unittest.TestCase):
                 }
             ]), encoding='utf-8')
             audit_path = temp_root / 'approved_apply_operation_id_audit.jsonl'
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
 
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
 
             payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
             payload['preview_snapshot']['source_citation']['source_confidence'] = 'tier_b'
@@ -1334,6 +1357,145 @@ class DashboardBackendTest(unittest.TestCase):
             self.assertEqual(len(audit_rows), 1)
             self.assertEqual(audit_rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
             self.assertEqual(audit_rows[0].get('deterministic_status'), 'guard_denied')
+            self.assertEqual(self._read_global_ledger_rows(ledger_path), [])
+
+    def test_official_source_approved_apply_success_mirrors_once_to_global_ledger_without_operation_id(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            payload = self._official_approved_apply_payload()
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data.get('write_performed'))
+            self.assertIsNone(data.get('operation_id'))
+
+            ledger_rows = self._read_global_ledger_rows(ledger_path)
+            self.assertEqual(len(ledger_rows), 1)
+            self.assertIsNone(ledger_rows[0].get('operation_id'))
+            self.assertEqual(ledger_rows[0].get('local_result_key'), 'alpha_vs_beta')
+
+            manual_rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+
+    def test_official_source_approved_apply_duplicate_global_ledger_same_payload_is_deterministic(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            payload = self._official_approved_apply_payload()
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            first_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(first_resp.status_code, 200)
+            self.assertTrue(first_resp.get_json().get('write_performed'))
+
+            second_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(second_resp.status_code, 200)
+            second_data = second_resp.get_json()
+            self.assertEqual(second_data.get('reason_code'), 'global_ledger_already_recorded')
+            self.assertFalse(second_data.get('write_performed'))
+            self.assertFalse(second_data.get('mutation_performed'))
+
+            ledger_rows = self._read_global_ledger_rows(ledger_path)
+            self.assertEqual(len(ledger_rows), 1)
+
+            manual_rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+
+    def test_official_source_approved_apply_duplicate_global_ledger_conflict_returns_explicit_conflict(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            first_payload = self._official_approved_apply_payload()
+            first_payload['approval_token'] = self._issue_approved_apply_token(first_payload)
+            first_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=first_payload)
+            self.assertEqual(first_resp.status_code, 200)
+            self.assertTrue(first_resp.get_json().get('write_performed'))
+
+            second_payload = self._official_approved_apply_payload()
+            second_payload['approval_binding'] = dict(second_payload['approval_binding'])
+            second_payload['preview_snapshot'] = dict(second_payload['preview_snapshot'])
+            second_payload['preview_snapshot']['source_citation'] = dict(second_payload['preview_snapshot']['source_citation'])
+            second_payload['preview_snapshot']['source_citation']['extracted_winner'] = 'Beta'
+            second_payload['approval_binding']['extracted_winner'] = 'Beta'
+            second_payload['approval_token'] = self._issue_approved_apply_token(second_payload)
+
+            second_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=second_payload)
+            self.assertEqual(second_resp.status_code, 200)
+            second_data = second_resp.get_json()
+            self.assertEqual(second_data.get('reason_code'), 'global_ledger_conflict')
+            self.assertFalse(second_data.get('token_consume_performed'))
+
+            ledger_rows = self._read_global_ledger_rows(ledger_path)
+            self.assertEqual(len(ledger_rows), 1)
+            self.assertEqual(ledger_rows[0].get('approved_actual_result', {}).get('actual_winner'), 'Alpha')
+
+            manual_rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+            self.assertEqual(matched_rows[0].get('actual_winner'), 'Alpha')
+
+    def test_official_source_approved_apply_global_ledger_write_failure_does_not_corrupt_local_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+            ledger_path = temp_root / 'approved_apply_global_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            payload = self._official_approved_apply_payload()
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            with patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.append_record', side_effect=OSError('global ledger unavailable')):
+                resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('write_performed'))
+            self.assertFalse(data.get('token_consume_performed'))
+            self.assertEqual(data.get('reason_code'), 'global_ledger_write_failed')
+            self.assertEqual(self._read_global_ledger_rows(ledger_path), [])
+
+            manual_rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
 
     @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
     def test_official_source_approved_apply_token_consume_called_only_after_successful_write(self, mock_consume):
@@ -1350,10 +1512,12 @@ class DashboardBackendTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_accuracy_dir = Path(temp_dir)
             audit_path = temp_accuracy_dir / 'approved_apply_operation_id_audit.jsonl'
+            ledger_path = temp_accuracy_dir / 'approved_apply_global_ledger.jsonl'
             (temp_accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
             app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
 
             resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
             self.assertEqual(resp.status_code, 200)
@@ -1362,6 +1526,8 @@ class DashboardBackendTest(unittest.TestCase):
             self.assertTrue(data.get('token_consume_performed'))
             rows = self._read_operation_id_audit_rows(audit_path)
             self.assertEqual(len(rows), 1)
+            ledger_rows = self._read_global_ledger_rows(ledger_path)
+            self.assertEqual(len(ledger_rows), 1)
 
         self.assertEqual(mock_consume.call_count, 1)
         call_args = mock_consume.call_args
@@ -1375,6 +1541,7 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(len(call_args.kwargs.get('operation_id') or ''), 32)
         self.assertEqual(call_args.kwargs.get('write_attempt_id'), data.get('write_attempt_id'))
         self.assertEqual(rows[0].get('internal_mutation_operation_id'), call_args.kwargs.get('operation_id'))
+        self.assertEqual(ledger_rows[0].get('internal_mutation_uuid'), call_args.kwargs.get('operation_id'))
 
     def test_official_source_approved_apply_consume_failure_after_write_keeps_committed_temp_write(self):
         payload = self._official_approved_apply_payload()
