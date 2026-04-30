@@ -109,6 +109,15 @@ The future wired endpoint sequence is:
 
 This design does not authorize step 8 implementation. It only defines the future boundary.
 
+Routing boundary for implementation authorization:
+
+- No routable write-capable endpoint implementation is allowed until
+  official-source-approved-apply-token-consume-design-v1 is locked.
+- If endpoint-to-adapter wiring is implemented before token-consume design lock, it must run in
+  dark/non-routable mode only for internal tests.
+- Dark/non-routable mode means no public route exposure, no operator-triggerable runtime path, and
+  no production request reachability.
+
 ---
 
 ## 6. Endpoint-to-adapter input contract
@@ -148,12 +157,51 @@ Required policy:
 - The endpoint must continue reconstituting or revalidating an authoritative preview result first.
 - The guard must compare request payload against that authoritative preview.
 - The adapter must receive the authoritative preview result, not the raw user payload copy.
+- Raw client `preview_snapshot` is never authoritative for mutation.
 
 Reason:
 
 - this preserves the already locked binding-verification model
 - this avoids client-controlled mutation input after guard approval
 - this keeps `source_citation` and `acceptance_gate` values authoritative at write time
+
+Authoritative preview source contract:
+
+- Source must be server-side and trusted (not client supplied).
+- Source must be sufficient to reconstruct, at minimum:
+  - selected_key
+  - source_citation.citation_fingerprint
+  - source_citation.source_url
+  - source_citation.source_date
+  - source_citation.extracted_winner
+  - acceptance_gate.state
+  - acceptance_gate.write_eligible
+  - acceptance_gate.reason_code
+  - audit.record_fight_id
+- Source must be tied to the same selected_key and record identity as the request binding.
+
+Server-side rebuild and revalidation requirements:
+
+1. Rebuild authoritative preview from trusted server-side source.
+2. Re-evaluate acceptance gate on rebuilt authoritative preview.
+3. Verify authoritative binding-critical fields remain equal to request binding-critical fields.
+4. Run guard against request payload plus rebuilt authoritative preview.
+5. Call adapter only if all revalidation checks remain write-eligible and guard_allowed=true.
+
+Fail-closed deny requirements:
+
+- If authoritative preview cannot be rebuilt server-side:
+  - reason_code: authoritative_preview_unavailable
+  - adapter must not be called
+  - write_performed=false and mutation_performed=false
+- If authoritative preview rebuild succeeds but revalidation fails:
+  - reason_code: authoritative_preview_revalidation_failed
+  - adapter must not be called
+  - write_performed=false and mutation_performed=false
+- If authoritative preview and request binding-critical fields mismatch:
+  - reason_code: authoritative_preview_binding_mismatch
+  - adapter must not be called
+  - write_performed=false and mutation_performed=false
 
 ---
 
@@ -289,6 +337,14 @@ Therefore, the future endpoint-mutation implementation slice must still return:
 
 unless a separate, later token-consume slice is also approved and wired.
 
+Implementation authorization gate:
+
+- A routable write-capable endpoint implementation requires token-consume design to be locked
+  first.
+- If token-consume design is not yet locked, endpoint-mutation wiring is allowed only as dark/
+  non-routable internal test integration.
+- Dark/non-routable internal integration must not be exposed through any production operator route.
+
 ---
 
 ## 11. No direct use of legacy upsert helper
@@ -410,6 +466,16 @@ Before runtime wiring is considered complete, tests must prove:
 13. Endpoint continues to keep `bulk_lookup_performed=false` and `scoring_semantics_changed=false`.
 14. Endpoint does not touch `actual_results.json` or `actual_results_unresolved.json`.
 15. Endpoint does not enable batch semantics.
+16. Endpoint denies with reason_code authoritative_preview_unavailable when server-side authoritative
+  preview cannot be rebuilt.
+17. Endpoint denies with reason_code authoritative_preview_revalidation_failed when rebuilt
+  authoritative preview fails required server-side revalidation.
+18. Endpoint denies with reason_code authoritative_preview_binding_mismatch when authoritative
+  preview and request binding-critical fields diverge.
+19. Endpoint implementation cannot enter routable write-capable mode when token-consume design is
+  absent.
+20. If dark/non-routable mode is used before token-consume design lock, tests prove route remains
+  non-routable and internal-only.
 
 ---
 
@@ -418,17 +484,23 @@ Before runtime wiring is considered complete, tests must prove:
 1. `official-source-approved-apply-endpoint-mutation-review-v1`
 - docs-only review of this design
 
-2. `official-source-approved-apply-endpoint-mutation-implementation-v1`
-- wire adapter into endpoint
-- no token consume persistence
+2. `official-source-approved-apply-endpoint-mutation-design-amendment-v1`
+- docs-only amendment to close review blockers
 
-3. `official-source-approved-apply-endpoint-mutation-hardening-v1`
+3. `official-source-approved-apply-token-consume-design-v1`
+- docs-only token-consume persistence design
+- must lock before any routable write-capable endpoint implementation
+
+4. `official-source-approved-apply-endpoint-mutation-implementation-v1`
+- wire adapter into endpoint
+- no token consume persistence implementation in this slice
+- routable mode allowed only after token-consume design lock
+- otherwise dark/non-routable internal-test mode only
+
+5. `official-source-approved-apply-endpoint-mutation-hardening-v1`
 - lock status mapping and final response shape
 
-4. `official-source-approved-apply-token-consume-design-v1`
-- docs-only token-consume persistence design
-
-5. `official-source-approved-apply-token-consume-implementation-v1`
+6. `official-source-approved-apply-token-consume-implementation-v1`
 - add idempotent consume registration after confirmed write success
 
 ---
