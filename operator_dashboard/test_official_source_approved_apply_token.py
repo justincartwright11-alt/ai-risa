@@ -277,5 +277,67 @@ class OfficialSourceApprovedApplyTokenTest(unittest.TestCase):
         self.assertEqual(before, after)
 
 
+    def test_validate_valid_token_surfaces_token_id_matching_issued(self):
+        issued = issue_official_source_approved_apply_token(self._valid_binding(), now_epoch=1700000000, ttl_seconds=120)
+        result = validate_official_source_approved_apply_token(
+            issued.get("token"),
+            self._valid_binding(),
+            now_epoch=1700000001,
+        )
+        self.assertTrue(result.get("token_valid"))
+        self.assertIn("token_id", result)
+        self.assertEqual(result.get("token_id"), issued.get("token_id"))
+        self.assertEqual(len(result.get("token_id") or ""), 32)
+
+    def test_validate_pre_parse_deny_has_no_token_id(self):
+        # Missing token (pre-parse) and malformed token (pre-parse) must return token_id=None
+        missing_result = validate_official_source_approved_apply_token(
+            "", self._valid_binding(), now_epoch=1700000001
+        )
+        malformed_result = validate_official_source_approved_apply_token(
+            "bad.token", self._valid_binding(), now_epoch=1700000001
+        )
+        self.assertFalse(missing_result.get("token_valid"))
+        self.assertIsNone(missing_result.get("token_id"))
+        self.assertFalse(malformed_result.get("token_valid"))
+        self.assertIsNone(malformed_result.get("token_id"))
+
+    def test_validate_post_parse_deny_surfaces_token_id(self):
+        # expired, replayed, consumed, binding_mismatch all have a parseable token_id
+        issued = issue_official_source_approved_apply_token(self._valid_binding(), now_epoch=1700000000, ttl_seconds=1)
+        token = issued.get("token")
+        token_id = issued.get("token_id")
+
+        expired = validate_official_source_approved_apply_token(
+            token, self._valid_binding(), now_epoch=1700000010
+        )
+        replayed = validate_official_source_approved_apply_token(
+            token, self._valid_binding(), now_epoch=1700000000,
+            replayed_token_ids={token_id},
+        )
+        issued2 = issue_official_source_approved_apply_token(self._valid_binding(), now_epoch=1700000000, ttl_seconds=120)
+        consumed = validate_official_source_approved_apply_token(
+            issued2.get("token"), self._valid_binding(), now_epoch=1700000001,
+            consumed_token_ids={issued2.get("token_id")},
+        )
+        issued3 = issue_official_source_approved_apply_token(self._valid_binding(), now_epoch=1700000000, ttl_seconds=120)
+        changed = self._valid_binding()
+        changed["source_date"] = "2026-04-21"
+        binding_mismatch = validate_official_source_approved_apply_token(
+            issued3.get("token"), changed, now_epoch=1700000001
+        )
+
+        for label, result, expected_id in [
+            ("expired", expired, token_id),
+            ("replayed", replayed, token_id),
+            ("consumed", consumed, issued2.get("token_id")),
+            ("binding_mismatch", binding_mismatch, issued3.get("token_id")),
+        ]:
+            with self.subTest(label=label):
+                self.assertFalse(result.get("token_valid"))
+                self.assertIn("token_id", result)
+                self.assertEqual(result.get("token_id"), expected_id)
+
+
 if __name__ == "__main__":
     unittest.main()

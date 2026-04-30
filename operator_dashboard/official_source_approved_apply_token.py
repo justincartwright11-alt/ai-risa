@@ -64,6 +64,7 @@ def _build_validation_response(
     issued_at_epoch: int | None,
     expires_at_epoch: int | None,
     now_epoch: int,
+    token_id: str | None = None,
 ) -> dict:
     return {
         "ok": bool(token_valid),
@@ -77,6 +78,7 @@ def _build_validation_response(
         "approval_granted": bool(approval_granted),
         "token_valid": bool(token_valid),
         "token_status": token_status,
+        "token_id": token_id,
         "reason_code": reason_code,
         "errors": list(errors or []),
         "selected_key": selected_key,
@@ -468,6 +470,7 @@ def validate_official_source_approved_apply_token(
             issued_at_epoch=issued_at_epoch,
             expires_at_epoch=expires_at_epoch,
             now_epoch=now_epoch_int,
+            token_id=token_id,
         )
 
     if now_epoch_int > expires_at_epoch:
@@ -483,6 +486,7 @@ def validate_official_source_approved_apply_token(
             issued_at_epoch=issued_at_epoch,
             expires_at_epoch=expires_at_epoch,
             now_epoch=now_epoch_int,
+            token_id=token_id,
         )
 
     replayed_ids = replayed_token_ids or set()
@@ -501,6 +505,7 @@ def validate_official_source_approved_apply_token(
             issued_at_epoch=issued_at_epoch,
             expires_at_epoch=expires_at_epoch,
             now_epoch=now_epoch_int,
+            token_id=token_id,
         )
 
     if token_id in consumed_ids:
@@ -516,6 +521,7 @@ def validate_official_source_approved_apply_token(
             issued_at_epoch=issued_at_epoch,
             expires_at_epoch=expires_at_epoch,
             now_epoch=now_epoch_int,
+            token_id=token_id,
         )
 
     if binding_digest_actual != binding_digest_expected:
@@ -531,6 +537,7 @@ def validate_official_source_approved_apply_token(
             issued_at_epoch=issued_at_epoch,
             expires_at_epoch=expires_at_epoch,
             now_epoch=now_epoch_int,
+            token_id=token_id,
         )
 
     return _build_validation_response(
@@ -545,6 +552,7 @@ def validate_official_source_approved_apply_token(
         issued_at_epoch=issued_at_epoch,
         expires_at_epoch=expires_at_epoch,
         now_epoch=now_epoch_int,
+        token_id=token_id,
     )
 
 

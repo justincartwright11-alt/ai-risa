@@ -26,6 +26,7 @@ def _build_guard_response(
     binding_digest_expected: str | None,
     binding_digest_actual: str | None,
     manual_review_required: bool,
+    token_id: str | None = None,
 ) -> dict:
     return {
         "ok": bool(guard_allowed),
@@ -44,6 +45,7 @@ def _build_guard_response(
         "guard_allowed": bool(guard_allowed),
         "manual_review_required": bool(manual_review_required),
         "reason_code": reason_code,
+        "token_id": token_id,
         "errors": list(errors or []),
         "selected_key": selected_key,
         "acceptance_gate": acceptance_gate,
@@ -197,6 +199,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
+                token_id=token_result.get("token_id"),
             )
 
         binding_mismatch_code, binding_mismatch_error = _extract_binding_mismatch(payload)
@@ -215,6 +218,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
+                token_id=token_result.get("token_id"),
             )
 
         payload_preview = payload.get("preview_snapshot") if isinstance(payload, dict) else None
@@ -233,6 +237,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
+                token_id=token_result.get("token_id"),
             )
 
         if not _preview_matches_authoritative(payload_preview, authoritative_preview_result):
@@ -249,6 +254,7 @@ def evaluate_official_source_approved_apply_guard(
                 acceptance_gate=None,
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
+                token_id=token_result.get("token_id"),
                 manual_review_required=True,
             )
 
@@ -271,6 +277,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
+                token_id=token_result.get("token_id"),
             )
 
         if gate_state in {"manual_review", "rejected"}:
@@ -288,6 +295,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=token_result.get("binding_digest_expected"),
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
+                token_id=token_result.get("token_id"),
             )
 
         return _build_guard_response(
@@ -304,6 +312,7 @@ def evaluate_official_source_approved_apply_guard(
             binding_digest_expected=token_result.get("binding_digest_expected"),
             binding_digest_actual=token_result.get("binding_digest_actual"),
             manual_review_required=False,
+            token_id=token_result.get("token_id"),
         )
     except Exception as exc:
         return _build_guard_response(

@@ -379,5 +379,57 @@ class OfficialSourceApprovedApplyGuardTest(unittest.TestCase):
         self.assertNotIn("_upsert_single_manual_actual_result", source)
 
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_guard_allowed_surfaces_token_id(self):
+        payload, issued = self._with_token(self._valid_request_payload())
+        result = evaluate_official_source_approved_apply_guard(
+            payload,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        self.assertTrue(result.get("guard_allowed"))
+        self.assertIn("token_id", result)
+        self.assertEqual(result.get("token_id"), issued.get("token_id"))
+        self.assertEqual(len(result.get("token_id") or ""), 32)
+
+    def test_guard_schema_deny_has_no_token_id(self):
+        payload = self._valid_request_payload()
+        payload.pop("mode")
+        result = evaluate_official_source_approved_apply_guard(
+            payload,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        self.assertFalse(result.get("guard_allowed"))
+        self.assertIn("token_id", result)
+        self.assertIsNone(result.get("token_id"))
+
+    def test_guard_token_deny_has_no_token_id(self):
+        payload = self._valid_request_payload()
+        payload["approval_token"] = "bad.token"
+        result = evaluate_official_source_approved_apply_guard(
+            payload,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        self.assertFalse(result.get("guard_allowed"))
+        self.assertIn("token_id", result)
+        self.assertIsNone(result.get("token_id"))
+
+    def test_guard_post_token_deny_surfaces_token_id(self):
+
+
+        if __name__ == "__main__":
+            unittest.main()
+        # After token validates, binding mismatch path must surface token_id
+        payload, issued = self._with_token(self._valid_request_payload())
+        payload["selected_key"] = "different|row"
+        result = evaluate_official_source_approved_apply_guard(
+            payload,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        self.assertFalse(result.get("guard_allowed"))
+        self.assertEqual(result.get("reason_code"), "selected_key_binding_mismatch")
+        self.assertIn("token_id", result)
+        self.assertEqual(result.get("token_id"), issued.get("token_id"))
+        self.assertEqual(len(result.get("token_id") or ""), 32)
