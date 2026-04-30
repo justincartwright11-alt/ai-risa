@@ -389,6 +389,104 @@ def _build_approved_apply_report_scoring_bridge_evidence(
     return base_payload
 
 
+def _derive_scoring_bridge_status(evidence: dict) -> str:
+    resolved_status = str(evidence.get("resolved_result_status") or "").strip()
+    if resolved_status == "no_prediction_found":
+        return "missing"
+    if resolved_status in ("duplicate_conflict", "malformed_ledger_trace"):
+        return "conflict"
+    if resolved_status in ("no_actual_found", "no_global_ledger_trace"):
+        return "unresolved"
+    if resolved_status == "resolved":
+        return "ok"
+    return "unresolved"
+
+
+def _build_official_source_approved_apply_report_scoring_bridge_summary(
+    prediction_report_id_filter=None,
+    local_result_key_filter=None,
+    limit_raw=None,
+) -> dict:
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    empty_status_counts: dict[str, int] = {"ok": 0, "unresolved": 0, "conflict": 0, "missing": 0}
+    payload: dict = {
+        "ok": True,
+        "generated_at": generated_at,
+        "bridge_available": False,
+        "total_records": 0,
+        "latest_records": [],
+        "status_counts": dict(empty_status_counts),
+        "errors": [],
+    }
+
+    try:
+        limit = int(limit_raw) if str(limit_raw or "").strip() else 20
+    except Exception:
+        limit = 20
+    limit = max(1, min(limit, 100))
+
+    accuracy_dir = _resolve_accuracy_dir()
+    prediction_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
+
+    actual_records: list[dict] = []
+    for filename in ["actual_results.json", "actual_results_manual.json", "actual_results_unresolved.json"]:
+        actual_records.extend(_load_json_records(accuracy_dir / filename))
+
+    ledger_path = Path(_resolve_global_ledger_path(accuracy_dir))
+    global_ledger_rows: list[dict] = []
+    if ledger_path.exists():
+        with ledger_path.open("r", encoding="utf-8") as _handle:
+            for _line_num, _line_text in enumerate(_handle, start=1):
+                _stripped = _line_text.strip()
+                if not _stripped:
+                    continue
+                try:
+                    _row = json.loads(_stripped)
+                    if isinstance(_row, dict):
+                        global_ledger_rows.append(_row)
+                    else:
+                        payload["errors"].append(f"malformed_ledger_row_line_{_line_num}: not a JSON object")
+                except Exception as _exc:
+                    payload["errors"].append(f"malformed_ledger_row_line_{_line_num}: {_exc}")
+
+    bridge_records: list[dict] = []
+    for pred_row in prediction_records:
+        evidence = _build_approved_apply_report_scoring_bridge_evidence(
+            pred_row,
+            actual_records,
+            global_ledger_rows,
+        )
+        bridge_status = _derive_scoring_bridge_status(evidence)
+        record = dict(evidence)
+        record["scoring_bridge_status"] = bridge_status
+        record["generated_at"] = generated_at
+        bridge_records.append(record)
+
+    if prediction_report_id_filter is not None:
+        pid_filter = str(prediction_report_id_filter).strip()
+        bridge_records = [r for r in bridge_records if str(r.get("prediction_report_id") or "") == pid_filter]
+
+    if local_result_key_filter is not None:
+        lrk_filter = str(local_result_key_filter).strip()
+        bridge_records = [r for r in bridge_records if str(r.get("local_result_key") or "") == lrk_filter]
+
+    if not bridge_records:
+        return payload
+
+    bridge_records.sort(key=lambda r: str(r.get("prediction_report_id") or ""))
+
+    status_counts: dict[str, int] = dict(empty_status_counts)
+    for record in bridge_records:
+        status = str(record.get("scoring_bridge_status") or "missing")
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    payload["bridge_available"] = True
+    payload["total_records"] = len(bridge_records)
+    payload["latest_records"] = bridge_records[:limit]
+    payload["status_counts"] = status_counts
+    return payload
+
+
 def _build_accuracy_comparison_summary() -> dict:
     base_dir = Path(__file__).resolve().parent.parent
     accuracy_dir = _resolve_accuracy_dir()
@@ -1562,6 +1660,43 @@ def api_operator_actual_result_lookup_global_ledger_summary():
             "status_counts": {},
             "errors": [str(exc)],
         }), 500
+
+
+@app.route("/api/operator/report-scoring-bridge/summary", methods=["GET"])
+def api_operator_report_scoring_bridge_summary():
+    limit_raw = request.args.get("limit")
+    prediction_report_id_filter = request.args.get("prediction_report_id") or None
+    local_result_key_filter = request.args.get("local_result_key") or None
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    _empty_error_response = {
+        "ok": False,
+        "generated_at": generated_at,
+        "bridge_available": False,
+        "total_records": 0,
+        "latest_records": [],
+        "status_counts": {"ok": 0, "unresolved": 0, "conflict": 0, "missing": 0},
+        "errors": [],
+    }
+    if limit_raw is not None:
+        try:
+            limit_int = int(limit_raw)
+        except (ValueError, TypeError):
+            _empty_error_response["errors"] = [f"invalid_limit: {limit_raw!r} is not an integer"]
+            return jsonify(_empty_error_response), 400
+        if limit_int < 1 or limit_int > 100:
+            _empty_error_response["errors"] = [f"limit_out_of_range: must be 1–100, got {limit_int}"]
+            return jsonify(_empty_error_response), 400
+    try:
+        return jsonify(
+            _build_official_source_approved_apply_report_scoring_bridge_summary(
+                prediction_report_id_filter=prediction_report_id_filter,
+                local_result_key_filter=local_result_key_filter,
+                limit_raw=limit_raw,
+            )
+        )
+    except Exception as exc:
+        _empty_error_response["errors"] = [str(exc)]
+        return jsonify(_empty_error_response), 500
 
 
 @app.route("/api/operator/actual-result-lookup/dry-run-preview", methods=["GET"])

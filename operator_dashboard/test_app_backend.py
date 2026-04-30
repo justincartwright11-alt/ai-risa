@@ -1,4 +1,4 @@
-import unittest
+﻿import unittest
 import json
 import os
 import tempfile
@@ -3719,6 +3719,354 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertNotIn('guarded-local-apply', dom_block,
                         "batch apply should not be called on DOMContentLoaded")
 
+    # -------------------------------------------------------------------------
+    # Report-scoring bridge v2 endpoint tests
+    # -------------------------------------------------------------------------
+
+    def _write_bridge_v2_fixtures(
+        self,
+        temp_accuracy_dir,
+        ledger_path,
+        prediction_records,
+        actual_records=None,
+        ledger_rows=None,
+    ):
+        """Write fixture data for bridge v2 endpoint tests."""
+        import json as _json
+        from pathlib import Path as _Path
+        _acc = _Path(temp_accuracy_dir)
+        _acc.mkdir(parents=True, exist_ok=True)
+        (_acc / 'accuracy_ledger.json').write_text(
+            _json.dumps(prediction_records), encoding='utf-8'
+        )
+        if actual_records is not None:
+            (_acc / 'actual_results.json').write_text(
+                _json.dumps(actual_records), encoding='utf-8'
+            )
+        if ledger_rows is not None:
+            _Path(ledger_path).write_text(
+                ''.join(_json.dumps(r) + '\n' for r in ledger_rows),
+                encoding='utf-8',
+            )
+
+    def test_bridge_v2_endpoint_safe_empty_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records=[], actual_records=[], ledger_rows=[])
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            for key in ('ok', 'generated_at', 'bridge_available', 'total_records', 'latest_records', 'status_counts', 'errors'):
+                self.assertIn(key, data)
+            self.assertTrue(data['ok'])
+            self.assertFalse(data['bridge_available'])
+            self.assertEqual(data['total_records'], 0)
+            self.assertEqual(data['latest_records'], [])
+            for sk in ('ok', 'unresolved', 'conflict', 'missing'):
+                self.assertEqual(data['status_counts'].get(sk), 0)
+            self.assertEqual(data['errors'], [])
+
+    def test_bridge_v2_endpoint_clean_scored_record_visible(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [{
+                'prediction_report_id': 'rpt_clean_1',
+                'fight_id': 'alpha_vs_beta',
+                'predicted_winner_id': 'Alpha',
+                'predicted_method': 'Decision',
+                'predicted_round': 'R3',
+                'confidence': 0.82,
+            }]
+            actual_records = [{
+                'fight_id': 'alpha_vs_beta',
+                'actual_winner': 'Alpha',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            }]
+            ledger_rows = [{
+                'global_ledger_record_id': 'glr_clean_1',
+                'local_result_key': 'alpha_vs_beta',
+                'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+                'approved_actual_result': {
+                    'fight_id': 'alpha_vs_beta',
+                    'actual_winner': 'Alpha',
+                    'actual_method': 'Decision',
+                    'actual_round': 'R3',
+                },
+            }]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records, ledger_rows)
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            self.assertTrue(data['bridge_available'])
+            self.assertEqual(data['total_records'], 1)
+            record = data['latest_records'][0]
+            self.assertEqual(record['prediction_report_id'], 'rpt_clean_1')
+            self.assertTrue(record['scored'])
+            self.assertEqual(record['scoring_bridge_status'], 'ok')
+            self.assertIn(record['score_outcome'], ('round_exact', 'method_correct', 'winner_correct'))
+            self.assertIn('generated_at', record)
+
+    def test_bridge_v2_endpoint_unresolved_record_visible(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [{
+                'prediction_report_id': 'rpt_unresolved_1',
+                'fight_id': 'gamma_vs_delta',
+                'predicted_winner_id': 'Gamma',
+                'predicted_method': 'KO',
+                'predicted_round': 'R1',
+                'confidence': 0.65,
+            }]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records=[], ledger_rows=[])
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            self.assertTrue(data['bridge_available'])
+            record = data['latest_records'][0]
+            self.assertFalse(record['scored'])
+            self.assertEqual(record['score_outcome'], 'unresolved')
+            self.assertEqual(record['scoring_bridge_status'], 'unresolved')
+
+    def test_bridge_v2_endpoint_mismatch_visible(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [{
+                'prediction_report_id': 'rpt_mismatch_1',
+                'fight_id': 'eta_vs_zeta',
+                'predicted_winner_id': 'Eta',
+                'predicted_method': 'KO',
+                'predicted_round': 'R1',
+                'confidence': 0.70,
+            }]
+            actual_records = [{
+                'fight_id': 'eta_vs_zeta',
+                'actual_winner': 'Zeta',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            }]
+            ledger_rows = [{
+                'global_ledger_record_id': 'glr_mismatch_1',
+                'local_result_key': 'eta_vs_zeta',
+                'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+                'approved_actual_result': {
+                    'fight_id': 'eta_vs_zeta',
+                    'actual_winner': 'Zeta',
+                    'actual_method': 'Decision',
+                    'actual_round': 'R3',
+                },
+            }]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records, ledger_rows)
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            record = data['latest_records'][0]
+            self.assertTrue(record['scored'])
+            self.assertEqual(record['score_outcome'], 'mismatch')
+            self.assertEqual(record['scoring_bridge_status'], 'ok')
+
+    def test_bridge_v2_endpoint_duplicate_conflict_visible(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [{
+                'prediction_report_id': 'rpt_conflict_1',
+                'fight_id': 'theta_vs_iota',
+                'predicted_winner_id': 'Theta',
+                'predicted_method': 'Decision',
+                'predicted_round': 'R3',
+                'confidence': 0.75,
+            }]
+            actual_records = [{
+                'fight_id': 'theta_vs_iota',
+                'actual_winner': 'Theta',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            }]
+            ledger_rows = [
+                {
+                    'global_ledger_record_id': 'glr_conflict_1a',
+                    'local_result_key': 'theta_vs_iota',
+                    'official_source_reference': {'source_url': 'https://ufc.com/event/1'},
+                    'approved_actual_result': {'fight_id': 'theta_vs_iota', 'actual_winner': 'Theta'},
+                },
+                {
+                    'global_ledger_record_id': 'glr_conflict_1b',
+                    'local_result_key': 'theta_vs_iota',
+                    'official_source_reference': {'source_url': 'https://ufc.com/event/1'},
+                    'approved_actual_result': {'fight_id': 'theta_vs_iota', 'actual_winner': 'Theta'},
+                },
+            ]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records, ledger_rows)
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            record = data['latest_records'][0]
+            self.assertFalse(record['scored'])
+            self.assertEqual(record['score_outcome'], 'duplicate_conflict')
+            self.assertEqual(record['scoring_bridge_status'], 'conflict')
+
+    def test_bridge_v2_endpoint_filter_by_prediction_report_id(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [
+                {'prediction_report_id': 'rpt_filter_a', 'fight_id': 'kappa_vs_lambda'},
+                {'prediction_report_id': 'rpt_filter_b', 'fight_id': 'mu_vs_nu'},
+            ]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records=[], ledger_rows=[])
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary?prediction_report_id=rpt_filter_a')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            self.assertEqual(data['total_records'], 1)
+            self.assertEqual(data['latest_records'][0]['prediction_report_id'], 'rpt_filter_a')
+
+    def test_bridge_v2_endpoint_filter_by_local_result_key(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [
+                {'prediction_report_id': 'rpt_lrk_a', 'fight_id': 'xi_vs_omicron'},
+                {'prediction_report_id': 'rpt_lrk_b', 'fight_id': 'pi_vs_rho'},
+            ]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records=[], ledger_rows=[])
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary?local_result_key=xi_vs_omicron')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            self.assertEqual(data['total_records'], 1)
+            self.assertEqual(data['latest_records'][0]['local_result_key'], 'xi_vs_omicron')
+
+    def test_bridge_v2_endpoint_limit_parameter_deterministic(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [
+                {'prediction_report_id': f'rpt_lim_{i}', 'fight_id': f'fight_{i}_vs_opp'}
+                for i in range(5)
+            ]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records=[], ledger_rows=[])
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary?limit=2')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self.assertTrue(data['ok'])
+            self.assertEqual(data['total_records'], 5)
+            self.assertEqual(len(data['latest_records']), 2)
+
+    def test_bridge_v2_endpoint_exposes_no_mutation_behavior(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            ledger_path = temp_root / 'bridge_v2_ledger.jsonl'
+
+            prediction_records = [{
+                'prediction_report_id': 'rpt_nomut_1',
+                'fight_id': 'sigma_vs_tau',
+                'predicted_winner_id': 'Sigma',
+                'predicted_method': 'Decision',
+                'predicted_round': 'R3',
+                'confidence': 0.60,
+            }]
+            actual_records = [{
+                'fight_id': 'sigma_vs_tau',
+                'actual_winner': 'Sigma',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            }]
+            ledger_rows = [{
+                'global_ledger_record_id': 'glr_nomut_1',
+                'local_result_key': 'sigma_vs_tau',
+                'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+                'approved_actual_result': {
+                    'fight_id': 'sigma_vs_tau',
+                    'actual_winner': 'Sigma',
+                    'actual_method': 'Decision',
+                    'actual_round': 'R3',
+                },
+            }]
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE'] = str(ledger_path)
+            self._write_bridge_v2_fixtures(temp_accuracy_dir, ledger_path, prediction_records, actual_records, ledger_rows)
+
+            accuracy_ledger_mtime_before = (temp_accuracy_dir / 'accuracy_ledger.json').stat().st_mtime
+            actual_results_mtime_before = (temp_accuracy_dir / 'actual_results.json').stat().st_mtime
+            ledger_mtime_before = Path(ledger_path).stat().st_mtime
+
+            resp = self.client.get('/api/operator/report-scoring-bridge/summary')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data['ok'])
+
+            self.assertEqual((temp_accuracy_dir / 'accuracy_ledger.json').stat().st_mtime, accuracy_ledger_mtime_before)
+            self.assertEqual((temp_accuracy_dir / 'actual_results.json').stat().st_mtime, actual_results_mtime_before)
+            self.assertEqual(Path(ledger_path).stat().st_mtime, ledger_mtime_before)
+
 
 # ---------------------------------------------------------------------------
 # Unit tests for planner eligibility classification logic
@@ -3879,5 +4227,6 @@ class TestPlannerEligibilityClassification(unittest.TestCase):
         for key in ('unresolved_needing_backfill', 'resolved_needing_backfill',
                     'resolved_miss_needing_backfill', 'eligibility_counts'):
             self.assertIn(key, summary, f"Missing backwards-compat key: {key}")
+
 if __name__ == '__main__':
     unittest.main()
