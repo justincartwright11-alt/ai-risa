@@ -27,6 +27,7 @@ def _build_guard_response(
     binding_digest_actual: str | None,
     manual_review_required: bool,
     token_id: str | None = None,
+    operation_id: str | None = None,
 ) -> dict:
     return {
         "ok": bool(guard_allowed),
@@ -46,6 +47,7 @@ def _build_guard_response(
         "manual_review_required": bool(manual_review_required),
         "reason_code": reason_code,
         "token_id": token_id,
+        "operation_id": operation_id,
         "errors": list(errors or []),
         "selected_key": selected_key,
         "acceptance_gate": acceptance_gate,
@@ -154,6 +156,7 @@ def evaluate_official_source_approved_apply_guard(
         request_valid = bool(schema_result.get("request_valid"))
         approval_granted = bool(schema_result.get("approval_granted"))
         selected_key = schema_result.get("selected_key")
+        operation_id = schema_result.get("operation_id")
 
         if not request_valid:
             return _build_guard_response(
@@ -170,6 +173,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_expected=None,
                 binding_digest_actual=None,
                 manual_review_required=True,
+                operation_id=operation_id,
             )
 
         payload = request_payload if isinstance(request_payload, dict) else {}
@@ -200,6 +204,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
                 token_id=token_result.get("token_id"),
+                operation_id=operation_id,
             )
 
         binding_mismatch_code, binding_mismatch_error = _extract_binding_mismatch(payload)
@@ -219,6 +224,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
                 token_id=token_result.get("token_id"),
+                operation_id=operation_id,
             )
 
         payload_preview = payload.get("preview_snapshot") if isinstance(payload, dict) else None
@@ -238,6 +244,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
                 token_id=token_result.get("token_id"),
+                operation_id=operation_id,
             )
 
         if not _preview_matches_authoritative(payload_preview, authoritative_preview_result):
@@ -256,6 +263,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 token_id=token_result.get("token_id"),
                 manual_review_required=True,
+                operation_id=operation_id,
             )
 
         acceptance_gate = evaluate_official_source_acceptance_gate(authoritative_preview_result)
@@ -278,6 +286,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
                 token_id=token_result.get("token_id"),
+                operation_id=operation_id,
             )
 
         if gate_state in {"manual_review", "rejected"}:
@@ -296,6 +305,7 @@ def evaluate_official_source_approved_apply_guard(
                 binding_digest_actual=token_result.get("binding_digest_actual"),
                 manual_review_required=True,
                 token_id=token_result.get("token_id"),
+                operation_id=operation_id,
             )
 
         return _build_guard_response(
@@ -313,6 +323,7 @@ def evaluate_official_source_approved_apply_guard(
             binding_digest_actual=token_result.get("binding_digest_actual"),
             manual_review_required=False,
             token_id=token_result.get("token_id"),
+            operation_id=operation_id,
         )
     except Exception as exc:
         return _build_guard_response(
@@ -329,6 +340,7 @@ def evaluate_official_source_approved_apply_guard(
             binding_digest_expected=None,
             binding_digest_actual=None,
             manual_review_required=True,
+            operation_id=None,
         )
 
 

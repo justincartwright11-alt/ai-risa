@@ -88,7 +88,49 @@ class OfficialSourceApprovedApplySchemaTest(unittest.TestCase):
         self.assertTrue(result.get("approval_required"))
         self.assertTrue(result.get("approval_granted"))
         self.assertFalse(result.get("manual_review_required"))
+        self.assertIsNone(result.get("operation_id"))
         self._assert_invariant_flags(result)
+
+    def test_valid_payload_with_operation_id_is_valid(self):
+        payload = self._valid_payload()
+        payload["operation_id"] = "op_retry_20260430_abcdef"
+        result = validate_official_source_approved_apply_request(payload)
+        self.assertTrue(result.get("request_valid"))
+        self.assertEqual(result.get("reason_code"), "valid_schema")
+        self.assertEqual(result.get("operation_id"), "op_retry_20260430_abcdef")
+
+    def test_operation_id_is_normalized_and_stripped(self):
+        payload = self._valid_payload()
+        payload["operation_id"] = "  op_retry_20260430_abcdef  "
+        result = validate_official_source_approved_apply_request(payload)
+        self.assertTrue(result.get("request_valid"))
+        self.assertEqual(result.get("operation_id"), "op_retry_20260430_abcdef")
+
+    def test_operation_id_non_string_rejected_with_malformed_field_type(self):
+        payload = self._valid_payload()
+        payload["operation_id"] = 12345
+        result = validate_official_source_approved_apply_request(payload)
+        self.assertFalse(result.get("request_valid"))
+        self.assertEqual(result.get("reason_code"), "malformed_field_type")
+        self._assert_invariant_flags(result)
+
+    def test_operation_id_format_invalid_cases_rejected(self):
+        invalid_values = [
+            "short-id",
+            "a" * 129,
+            "operation id with spaces",
+            "operation/id/with/slash",
+            "operation\\id\\with\\backslash",
+            "................",
+        ]
+        for value in invalid_values:
+            with self.subTest(operation_id=value):
+                payload = self._valid_payload()
+                payload["operation_id"] = value
+                result = validate_official_source_approved_apply_request(payload)
+                self.assertFalse(result.get("request_valid"))
+                self.assertEqual(result.get("reason_code"), "operation_id_format_invalid")
+                self._assert_invariant_flags(result)
 
     def test_build_response_helper_has_required_envelope(self):
         result = build_official_source_approved_apply_schema_response(

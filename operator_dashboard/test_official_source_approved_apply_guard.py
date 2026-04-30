@@ -390,6 +390,19 @@ class OfficialSourceApprovedApplyGuardTest(unittest.TestCase):
         self.assertIn("token_id", result)
         self.assertEqual(result.get("token_id"), issued.get("token_id"))
         self.assertEqual(len(result.get("token_id") or ""), 32)
+        self.assertIn("operation_id", result)
+        self.assertIsNone(result.get("operation_id"))
+
+    def test_guard_allowed_surfaces_normalized_operation_id(self):
+        payload, _issued = self._with_token(self._valid_request_payload())
+        payload["operation_id"] = "  op_retry_20260430_abcdef  "
+        result = evaluate_official_source_approved_apply_guard(
+            payload,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        self.assertTrue(result.get("guard_allowed"))
+        self.assertEqual(result.get("operation_id"), "op_retry_20260430_abcdef")
 
     def test_guard_schema_deny_has_no_token_id(self):
         payload = self._valid_request_payload()
@@ -402,6 +415,8 @@ class OfficialSourceApprovedApplyGuardTest(unittest.TestCase):
         self.assertFalse(result.get("guard_allowed"))
         self.assertIn("token_id", result)
         self.assertIsNone(result.get("token_id"))
+        self.assertIn("operation_id", result)
+        self.assertIsNone(result.get("operation_id"))
 
     def test_guard_token_deny_has_no_token_id(self):
         payload = self._valid_request_payload()
@@ -414,12 +429,62 @@ class OfficialSourceApprovedApplyGuardTest(unittest.TestCase):
         self.assertFalse(result.get("guard_allowed"))
         self.assertIn("token_id", result)
         self.assertIsNone(result.get("token_id"))
+        self.assertIn("operation_id", result)
+        self.assertIsNone(result.get("operation_id"))
+
+    def test_operation_id_absent_does_not_change_guard_allow_result(self):
+        payload_without, _issued = self._with_token(self._valid_request_payload())
+        payload_with = self._valid_request_payload()
+        payload_with["operation_id"] = "op_retry_20260430_abcdef"
+        payload_with, _issued2 = self._with_token(payload_with)
+
+        result_without = evaluate_official_source_approved_apply_guard(
+            payload_without,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        result_with = evaluate_official_source_approved_apply_guard(
+            payload_with,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+
+        self.assertTrue(result_without.get("guard_allowed"))
+        self.assertTrue(result_with.get("guard_allowed"))
+        self.assertEqual(result_without.get("reason_code"), result_with.get("reason_code"))
+        self.assertIsNone(result_without.get("operation_id"))
+        self.assertEqual(result_with.get("operation_id"), "op_retry_20260430_abcdef")
+        self._assert_non_mutation_flags(result_without)
+        self._assert_non_mutation_flags(result_with)
+
+    def test_operation_id_absent_does_not_change_guard_deny_result(self):
+        payload_without = self._valid_request_payload()
+        payload_without.pop("mode")
+
+        payload_with = self._valid_request_payload()
+        payload_with.pop("mode")
+        payload_with["operation_id"] = "op_retry_20260430_abcdef"
+
+        result_without = evaluate_official_source_approved_apply_guard(
+            payload_without,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+        result_with = evaluate_official_source_approved_apply_guard(
+            payload_with,
+            authoritative_preview_result=self._authoritative_preview_result(),
+            now_epoch=1700000001,
+        )
+
+        self.assertFalse(result_without.get("guard_allowed"))
+        self.assertFalse(result_with.get("guard_allowed"))
+        self.assertEqual(result_without.get("reason_code"), result_with.get("reason_code"))
+        self.assertIsNone(result_without.get("operation_id"))
+        self.assertEqual(result_with.get("operation_id"), "op_retry_20260430_abcdef")
+        self._assert_non_mutation_flags(result_without)
+        self._assert_non_mutation_flags(result_with)
 
     def test_guard_post_token_deny_surfaces_token_id(self):
-
-
-        if __name__ == "__main__":
-            unittest.main()
         # After token validates, binding mismatch path must surface token_id
         payload, issued = self._with_token(self._valid_request_payload())
         payload["selected_key"] = "different|row"
@@ -433,3 +498,9 @@ class OfficialSourceApprovedApplyGuardTest(unittest.TestCase):
         self.assertIn("token_id", result)
         self.assertEqual(result.get("token_id"), issued.get("token_id"))
         self.assertEqual(len(result.get("token_id") or ""), 32)
+        self.assertIn("operation_id", result)
+        self.assertIsNone(result.get("operation_id"))
+
+
+if __name__ == "__main__":
+    unittest.main()
