@@ -20,6 +20,8 @@ from operator_dashboard.official_source_acceptance_gate import evaluate_official
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 from operator_dashboard.official_source_approved_apply_schema import validate_official_source_approved_apply_request
 from operator_dashboard.official_source_approved_apply_guard import evaluate_official_source_approved_apply_guard
+from operator_dashboard.official_source_approved_apply_mutation_adapter import apply_official_source_approved_apply_mutation
+from operator_dashboard.official_source_approved_apply_token_consume_helper import OfficialSourceApprovedApplyTokenConsumeHelper
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
@@ -38,6 +40,10 @@ from operator_dashboard.phase1_ops import (
 )
 
 app = Flask(__name__)
+app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)
+app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE", None)
+
+OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
 
 _RUNTIME_METRICS = {
     "started_at_epoch": time(),
@@ -1571,6 +1577,36 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         acceptance_gate: dict | None,
         binding_digest_expected: str | None,
         binding_digest_actual: str | None,
+        token_id: str | None = None,
+        mutation_enabled: bool = False,
+        fight_id: str | None = None,
+        proposed_write: dict | None = None,
+        write_target: str | None = None,
+        before_row_count: int | None = None,
+        after_row_count: int | None = None,
+        pre_write_file_sha256: str | None = None,
+        post_write_file_sha256: str | None = None,
+        rollback_attempted: bool = False,
+        rollback_succeeded: bool | None = None,
+        post_rollback_file_sha256: str | None = None,
+        rollback_reason_code: str | None = None,
+        rollback_error_detail: str | None = None,
+        rollback_started_at_utc: str | None = None,
+        rollback_finished_at_utc: str | None = None,
+        rollback_terminal_state: str | None = None,
+        escalation_required: bool = False,
+        operator_escalation_action: str | None = None,
+        approval_token_id: str | None = None,
+        operation_id: str | None = None,
+        write_attempt_id: str | None = None,
+        contract_version: str | None = None,
+        endpoint_version: str | None = None,
+        token_consume_performed: bool = False,
+        token_consume_reason_code: str | None = None,
+        token_consume_idempotent: bool = False,
+        token_consume_attempted_at_utc: str | None = None,
+        token_consume_completed_at_utc: str | None = None,
+        token_consume_retry_count: int = 0,
     ) -> dict:
         token_status_value = str(token_status or "not_evaluated")
         return {
@@ -1597,6 +1633,36 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
             "acceptance_gate": acceptance_gate,
             "binding_digest_expected": binding_digest_expected,
             "binding_digest_actual": binding_digest_actual,
+            "token_id": token_id,
+            "fight_id": fight_id,
+            "proposed_write": proposed_write,
+            "write_target": write_target,
+            "before_row_count": before_row_count,
+            "after_row_count": after_row_count,
+            "pre_write_file_sha256": pre_write_file_sha256,
+            "post_write_file_sha256": post_write_file_sha256,
+            "rollback_attempted": bool(rollback_attempted),
+            "rollback_succeeded": rollback_succeeded,
+            "post_rollback_file_sha256": post_rollback_file_sha256,
+            "rollback_reason_code": rollback_reason_code,
+            "rollback_error_detail": rollback_error_detail,
+            "rollback_started_at_utc": rollback_started_at_utc,
+            "rollback_finished_at_utc": rollback_finished_at_utc,
+            "rollback_terminal_state": rollback_terminal_state,
+            "escalation_required": bool(escalation_required),
+            "operator_escalation_action": operator_escalation_action,
+            "approval_token_id": approval_token_id,
+            "operation_id": operation_id,
+            "write_attempt_id": write_attempt_id,
+            "contract_version": contract_version,
+            "endpoint_version": endpoint_version,
+            "mutation_enabled": bool(mutation_enabled),
+            "token_consume_performed": bool(token_consume_performed),
+            "token_consume_reason_code": token_consume_reason_code,
+            "token_consume_idempotent": bool(token_consume_idempotent),
+            "token_consume_attempted_at_utc": token_consume_attempted_at_utc,
+            "token_consume_completed_at_utc": token_consume_completed_at_utc,
+            "token_consume_retry_count": int(token_consume_retry_count),
             "message": "Approved apply endpoint skeleton is decision-only and non-mutating.",
         }
 
@@ -1672,7 +1738,113 @@ def api_operator_actual_result_lookup_official_source_approved_apply():
         acceptance_gate=guard_result.get("acceptance_gate"),
         binding_digest_expected=guard_result.get("binding_digest_expected"),
         binding_digest_actual=guard_result.get("binding_digest_actual"),
+        token_id=guard_result.get("token_id"),
+        mutation_enabled=bool(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)),
     )
+
+    if not bool(guard_result.get("guard_allowed")):
+        return jsonify(response_payload)
+
+    if not bool(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)):
+        response_payload["reason_code"] = "mutation_disabled_after_guard"
+        response_payload["message"] = "Approved apply mutation remains disabled unless dark/test config is enabled."
+        return jsonify(response_payload)
+
+    accuracy_dir_override = app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE")
+    accuracy_dir_text = str(accuracy_dir_override or "").strip()
+    if not accuracy_dir_text:
+        response_payload["ok"] = False
+        response_payload["reason_code"] = "mutation_accuracy_dir_not_configured"
+        response_payload["errors"] = ["OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE is required when mutation is enabled"]
+        response_payload["message"] = "Approved apply mutation failed closed: accuracy dir override is not configured."
+        return jsonify(response_payload)
+
+    accuracy_dir = Path(accuracy_dir_text)
+    if not accuracy_dir.is_dir():
+        response_payload["ok"] = False
+        response_payload["reason_code"] = "mutation_accuracy_dir_not_configured"
+        response_payload["errors"] = ["configured accuracy dir override does not exist"]
+        response_payload["message"] = "Approved apply mutation failed closed: configured accuracy dir override is invalid."
+        return jsonify(response_payload)
+
+    operation_id = uuid.uuid4().hex
+    write_attempt_id = uuid.uuid4().hex
+    contract_version = "official_source_approved_apply_contract_v1"
+    endpoint_version = "official_source_approved_apply_endpoint_mutation_v1"
+
+    adapter_result = apply_official_source_approved_apply_mutation(
+        guard_result=guard_result,
+        preview_snapshot=authoritative_preview_result,
+        accuracy_dir=accuracy_dir,
+        consumed_token_ids=set(),
+        lock_timeout_seconds=10,
+        operation_id=operation_id,
+        write_attempt_id=write_attempt_id,
+        contract_version=contract_version,
+        endpoint_version=endpoint_version,
+    )
+
+    for field_name in [
+        "fight_id",
+        "proposed_write",
+        "write_target",
+        "before_row_count",
+        "after_row_count",
+        "pre_write_file_sha256",
+        "post_write_file_sha256",
+        "rollback_attempted",
+        "rollback_succeeded",
+        "post_rollback_file_sha256",
+        "rollback_reason_code",
+        "rollback_error_detail",
+        "rollback_started_at_utc",
+        "rollback_finished_at_utc",
+        "rollback_terminal_state",
+        "escalation_required",
+        "operator_escalation_action",
+        "approval_token_id",
+        "operation_id",
+        "write_attempt_id",
+        "contract_version",
+        "endpoint_version",
+    ]:
+        response_payload[field_name] = adapter_result.get(field_name)
+
+    response_payload["ok"] = bool(adapter_result.get("ok"))
+    response_payload["mutation_performed"] = bool(adapter_result.get("mutation_performed"))
+    response_payload["write_performed"] = bool(adapter_result.get("write_performed"))
+    response_payload["reason_code"] = str(adapter_result.get("reason_code") or response_payload.get("reason_code") or "internal_apply_error")
+    response_payload["errors"] = list(adapter_result.get("errors") or response_payload.get("errors") or [])
+    response_payload["approval_token_id"] = adapter_result.get("approval_token_id") or response_payload.get("approval_token_id")
+
+    if not response_payload.get("write_performed"):
+        return jsonify(response_payload)
+
+    consume_attempted_at_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    response_payload["token_consume_attempted_at_utc"] = consume_attempted_at_utc
+
+    consume_result = OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume(
+        response_payload.get("token_id"),
+        operation_id=operation_id,
+        write_attempt_id=write_attempt_id,
+        selected_key=response_payload.get("selected_key"),
+        reason_code_at_consume=str(adapter_result.get("reason_code") or "official_source_write_applied"),
+        binding_digest_expected=response_payload.get("binding_digest_expected"),
+        contract_version=contract_version,
+        endpoint_version=endpoint_version,
+    )
+
+    response_payload["token_consume_completed_at_utc"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    response_payload["token_consume_retry_count"] = 0
+    response_payload["token_consume_performed"] = bool(consume_result.get("token_consume_performed"))
+    response_payload["token_consume_reason_code"] = str(consume_result.get("reason_code") or "token_consume_post_write_failed")
+    response_payload["token_consume_idempotent"] = bool(consume_result.get("idempotent"))
+
+    if not bool(consume_result.get("ok")):
+        response_payload["ok"] = False
+        response_payload["reason_code"] = "token_consume_post_write_failed"
+        response_payload["errors"] = list(consume_result.get("errors") or [])
+
     return jsonify(response_payload)
 
 

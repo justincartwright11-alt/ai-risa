@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 from time import time
 from datetime import datetime, timezone
+import app as app_module
 from app import (
     app,
     _build_structural_signal_backfill_planner,
@@ -21,11 +22,24 @@ from app import (
 )
 from official_source_approved_apply_token import issue_official_source_approved_apply_token
 from official_source_acceptance_gate import evaluate_official_source_acceptance_gate
+from official_source_approved_apply_token_consume_helper import OfficialSourceApprovedApplyTokenConsumeHelper
 from operator_dashboard.official_source_lookup_provider import OfficialSourceLookupProvider
 
 class DashboardBackendTest(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
+        self._original_mutation_enabled = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED')
+        self._original_accuracy_override = app.config.get('OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE')
+        self._original_consume_helper = app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER
+
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = False
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = None
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
+
+    def tearDown(self):
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = self._original_mutation_enabled
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = self._original_accuracy_override
+        app_module.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = self._original_consume_helper
 
     def _official_preview_payload(self, selected_key='alpha_vs_beta|predictions_alpha_vs_beta_prediction_json', **overrides):
         payload = {
@@ -81,6 +95,7 @@ class DashboardBackendTest(unittest.TestCase):
                 },
                 'audit': {
                     'record_fight_id': 'alpha_vs_beta',
+                    'fight_name': 'Alpha vs Beta',
                     'provider_attempted': True,
                     'attempted_sources': [],
                 },
@@ -120,14 +135,42 @@ class DashboardBackendTest(unittest.TestCase):
             'acceptance_gate',
             'binding_digest_expected',
             'binding_digest_actual',
+            'token_id',
+            'fight_id',
+            'proposed_write',
+            'write_target',
+            'before_row_count',
+            'after_row_count',
+            'pre_write_file_sha256',
+            'post_write_file_sha256',
+            'rollback_attempted',
+            'rollback_succeeded',
+            'post_rollback_file_sha256',
+            'rollback_reason_code',
+            'rollback_error_detail',
+            'rollback_started_at_utc',
+            'rollback_finished_at_utc',
+            'rollback_terminal_state',
+            'escalation_required',
+            'operator_escalation_action',
+            'approval_token_id',
+            'operation_id',
+            'write_attempt_id',
+            'contract_version',
+            'endpoint_version',
+            'mutation_enabled',
+            'token_consume_performed',
+            'token_consume_reason_code',
+            'token_consume_idempotent',
+            'token_consume_attempted_at_utc',
+            'token_consume_completed_at_utc',
+            'token_consume_retry_count',
             'message',
         ]
         for field in required_fields:
             self.assertIn(field, data)
         self.assertEqual(data.get('mode'), 'official_source_approved_apply')
         self.assertEqual(data.get('phase'), 'approved_apply')
-        self.assertFalse(data.get('mutation_performed'))
-        self.assertFalse(data.get('write_performed'))
         self.assertFalse(data.get('bulk_lookup_performed'))
         self.assertFalse(data.get('scoring_semantics_changed'))
         self.assertFalse(data.get('external_lookup_performed'))
@@ -883,6 +926,176 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertFalse(data.get('bulk_lookup_performed'))
         self.assertFalse(data.get('scoring_semantics_changed'))
         self.assertFalse(data.get('external_lookup_performed'))
+        self.assertFalse(data.get('mutation_enabled'))
+        self.assertEqual(data.get('reason_code'), 'mutation_disabled_after_guard')
+
+    @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
+    @patch('app.apply_official_source_approved_apply_mutation')
+    def test_official_source_approved_apply_default_disabled_never_calls_adapter_or_consume(self, mock_apply, mock_consume):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertTrue(data.get('guard_allowed'))
+        self.assertFalse(data.get('mutation_enabled'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('write_performed'))
+        self.assertFalse(data.get('token_consume_performed'))
+        self.assertEqual(data.get('reason_code'), 'mutation_disabled_after_guard')
+
+        mock_apply.assert_not_called()
+        mock_consume.assert_not_called()
+
+    @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
+    @patch('app.apply_official_source_approved_apply_mutation')
+    def test_official_source_approved_apply_guard_deny_never_calls_adapter(self, mock_apply, mock_consume):
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+        payload = self._official_approved_apply_payload()
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertFalse(data.get('guard_allowed'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('write_performed'))
+
+        mock_apply.assert_not_called()
+        mock_consume.assert_not_called()
+
+    @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
+    @patch('app.apply_official_source_approved_apply_mutation')
+    def test_official_source_approved_apply_enabled_without_accuracy_override_fails_closed(self, mock_apply, mock_consume):
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+        app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = None
+
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self._assert_approved_apply_normalized_envelope(data)
+        self.assertTrue(data.get('mutation_enabled'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertFalse(data.get('write_performed'))
+        self.assertFalse(data.get('token_consume_performed'))
+        self.assertEqual(data.get('reason_code'), 'mutation_accuracy_dir_not_configured')
+
+        mock_apply.assert_not_called()
+        mock_consume.assert_not_called()
+
+    def test_official_source_approved_apply_enabled_temp_path_writes_only_temp_manual_results(self):
+        repo_hash_before = self._actual_results_file_hashes()
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_accuracy_dir = Path(temp_dir)
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+
+            self._assert_approved_apply_normalized_envelope(data)
+            self.assertTrue(data.get('mutation_enabled'))
+            self.assertTrue(data.get('mutation_performed'))
+            self.assertTrue(data.get('write_performed'))
+            self.assertEqual(Path(data.get('write_target')), temp_manual_path)
+            self.assertEqual(temp_manual_path.name, 'actual_results_manual.json')
+
+            rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+
+        repo_hash_after = self._actual_results_file_hashes()
+        self.assertEqual(repo_hash_before, repo_hash_after)
+
+    @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
+    def test_official_source_approved_apply_token_consume_called_only_after_successful_write(self, mock_consume):
+        mock_consume.return_value = {
+            'ok': True,
+            'token_consume_performed': True,
+            'reason_code': 'consumed',
+            'idempotent': False,
+            'errors': [],
+        }
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_accuracy_dir = Path(temp_dir)
+            (temp_accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+
+            resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('write_performed'))
+            self.assertTrue(data.get('token_consume_performed'))
+
+        self.assertEqual(mock_consume.call_count, 1)
+        call_args = mock_consume.call_args
+        self.assertEqual(call_args.args[0], data.get('token_id'))
+        self.assertEqual(call_args.kwargs.get('selected_key'), data.get('selected_key'))
+        self.assertEqual(call_args.kwargs.get('binding_digest_expected'), data.get('binding_digest_expected'))
+        self.assertEqual(call_args.kwargs.get('contract_version'), 'official_source_approved_apply_contract_v1')
+        self.assertEqual(call_args.kwargs.get('endpoint_version'), 'official_source_approved_apply_endpoint_mutation_v1')
+        self.assertEqual(call_args.kwargs.get('operation_id'), data.get('operation_id'))
+        self.assertEqual(call_args.kwargs.get('write_attempt_id'), data.get('write_attempt_id'))
+
+    def test_official_source_approved_apply_consume_failure_after_write_keeps_committed_temp_write(self):
+        payload = self._official_approved_apply_payload()
+        payload['approval_token'] = self._issue_approved_apply_token(payload)
+        adapter_call_count = {'count': 0}
+        real_adapter_apply = app_module.apply_official_source_approved_apply_mutation
+
+        def wrapped_adapter(*args, **kwargs):
+            adapter_call_count['count'] += 1
+            return real_adapter_apply(*args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_accuracy_dir = Path(temp_dir)
+            temp_manual_path = temp_accuracy_dir / 'actual_results_manual.json'
+            temp_manual_path.write_text('[]\n', encoding='utf-8')
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+
+            with patch('app.apply_official_source_approved_apply_mutation', side_effect=wrapped_adapter):
+                with patch(
+                    'app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume',
+                    return_value={
+                        'ok': False,
+                        'token_consume_performed': False,
+                        'reason_code': 'token_consume_store_unavailable',
+                        'idempotent': False,
+                        'errors': ['token consume store unavailable'],
+                    },
+                ):
+                    resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('write_performed'))
+            self.assertTrue(data.get('mutation_performed'))
+            self.assertFalse(data.get('token_consume_performed'))
+            self.assertEqual(data.get('reason_code'), 'token_consume_post_write_failed')
+            self.assertEqual(data.get('token_consume_reason_code'), 'token_consume_store_unavailable')
+            self.assertEqual(adapter_call_count['count'], 1)
+
+            rows = json.loads(temp_manual_path.read_text(encoding='utf-8'))
+            matched_rows = [row for row in rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
 
     def test_official_source_approved_apply_manual_review_gate_returns_guard_denied(self):
         payload = self._official_approved_apply_payload()
