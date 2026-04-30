@@ -242,6 +242,153 @@ def _build_official_source_approved_apply_global_ledger_summary(limit_raw=None) 
     return payload
 
 
+def _round_to_int(value) -> int | None:
+    text = str(value or "").strip()
+    if not _is_known_value(text):
+        return None
+    digits = ""
+    for ch in text:
+        if ch.isdigit():
+            digits += ch
+        elif digits:
+            break
+    if not digits:
+        return None
+    try:
+        return int(digits)
+    except Exception:
+        return None
+
+
+def _round_tolerance_hit(predicted_round, actual_round) -> bool:
+    predicted_round_num = _round_to_int(predicted_round)
+    actual_round_num = _round_to_int(actual_round)
+    if predicted_round_num is None or actual_round_num is None:
+        return False
+    return abs(predicted_round_num - actual_round_num) == 1
+
+
+def _build_approved_apply_report_scoring_bridge_evidence(
+    prediction_report: dict | None,
+    approved_actual_rows: list[dict] | None,
+    global_ledger_rows: list[dict] | None,
+) -> dict:
+    prediction = prediction_report if isinstance(prediction_report, dict) else {}
+    actual_rows = [row for row in (approved_actual_rows or []) if isinstance(row, dict)]
+    ledger_rows = [row for row in (global_ledger_rows or []) if isinstance(row, dict)]
+
+    local_result_key = str(prediction.get("local_result_key") or prediction.get("fight_id") or "").strip() or None
+    if not local_result_key and len(actual_rows) == 1:
+        local_result_key = str(actual_rows[0].get("fight_id") or actual_rows[0].get("local_result_key") or "").strip() or None
+
+    def _row_local_key(row: dict) -> str:
+        approved_actual = row.get("approved_actual_result") if isinstance(row.get("approved_actual_result"), dict) else {}
+        return _normalize_token(
+            row.get("local_result_key")
+            or row.get("fight_id")
+            or approved_actual.get("fight_id")
+            or ""
+        )
+
+    normalized_local_result_key = _normalize_token(local_result_key or "")
+    matching_actual_rows = [row for row in actual_rows if _row_local_key(row) == normalized_local_result_key] if normalized_local_result_key else []
+    matching_ledger_rows = [
+        row for row in ledger_rows
+        if _normalize_token(row.get("local_result_key") or "") == normalized_local_result_key
+    ] if normalized_local_result_key else []
+
+    predicted_winner_id = prediction.get("predicted_winner_id") or prediction.get("predicted_winner")
+    predicted_method = prediction.get("predicted_method")
+    predicted_round = prediction.get("predicted_round")
+
+    base_payload = {
+        "prediction_report_id": prediction.get("prediction_report_id") or prediction.get("report_id") or prediction.get("id"),
+        "local_result_key": local_result_key,
+        "global_ledger_record_id": None,
+        "official_source_reference": None,
+        "approved_actual_result": None,
+        "predicted_winner_id": predicted_winner_id,
+        "predicted_method": predicted_method,
+        "predicted_round": predicted_round,
+        "confidence": prediction.get("confidence"),
+        "resolved_result_status": "unresolved",
+        "scored": False,
+        "score_outcome": "unresolved",
+        "calibration_notes": "awaiting approved actual bridge evidence",
+    }
+
+    if not prediction:
+        base_payload["resolved_result_status"] = "no_prediction_found"
+        base_payload["calibration_notes"] = "approved actual exists but prediction/report record is missing"
+        return base_payload
+
+    if not local_result_key:
+        base_payload["resolved_result_status"] = "malformed_ledger_trace"
+        base_payload["calibration_notes"] = "prediction/report record has no local_result_key or fight_id"
+        return base_payload
+
+    if len(matching_actual_rows) > 1 or len(matching_ledger_rows) > 1:
+        base_payload["resolved_result_status"] = "duplicate_conflict"
+        base_payload["score_outcome"] = "duplicate_conflict"
+        base_payload["calibration_notes"] = "duplicate approved actual or duplicate global ledger trace detected"
+        return base_payload
+
+    if not matching_actual_rows:
+        base_payload["resolved_result_status"] = "no_actual_found"
+        base_payload["score_outcome"] = "unresolved"
+        base_payload["calibration_notes"] = "prediction/report record exists but no approved actual was found"
+        return base_payload
+
+    if not matching_ledger_rows:
+        base_payload["resolved_result_status"] = "no_global_ledger_trace"
+        base_payload["score_outcome"] = "unresolved"
+        base_payload["approved_actual_result"] = matching_actual_rows[0]
+        base_payload["calibration_notes"] = "approved actual exists locally but global ledger trace is missing"
+        return base_payload
+
+    actual_row = matching_actual_rows[0]
+    ledger_row = matching_ledger_rows[0]
+    approved_actual_from_ledger = ledger_row.get("approved_actual_result") if isinstance(ledger_row.get("approved_actual_result"), dict) else None
+    approved_actual = approved_actual_from_ledger or actual_row
+
+    if not isinstance(approved_actual, dict):
+        base_payload["resolved_result_status"] = "malformed_ledger_trace"
+        base_payload["score_outcome"] = "unresolved"
+        base_payload["calibration_notes"] = "approved actual payload is malformed"
+        return base_payload
+
+    actual_winner = approved_actual.get("actual_winner") or actual_row.get("actual_winner")
+    actual_method = approved_actual.get("actual_method") or actual_row.get("actual_method")
+    actual_round = approved_actual.get("actual_round") or actual_row.get("actual_round")
+
+    winner_match = _winner_hit(predicted_winner_id, actual_winner)
+    method_match = _method_hit(predicted_method, actual_method)
+    round_exact_match = _round_hit(predicted_round, actual_round)
+    round_tolerance_match = _round_tolerance_hit(predicted_round, actual_round)
+
+    if not winner_match:
+        score_outcome = "mismatch"
+    elif method_match and round_exact_match:
+        score_outcome = "round_exact"
+    elif method_match and round_tolerance_match:
+        score_outcome = "round_tolerance"
+    elif method_match:
+        score_outcome = "method_correct"
+    else:
+        score_outcome = "winner_correct"
+
+    base_payload.update({
+        "global_ledger_record_id": ledger_row.get("global_ledger_record_id"),
+        "official_source_reference": ledger_row.get("official_source_reference"),
+        "approved_actual_result": approved_actual,
+        "resolved_result_status": "resolved",
+        "scored": True,
+        "score_outcome": score_outcome,
+        "calibration_notes": f"deterministic_outcome={score_outcome}",
+    })
+    return base_payload
+
+
 def _build_accuracy_comparison_summary() -> dict:
     base_dir = Path(__file__).resolve().parent.parent
     accuracy_dir = _resolve_accuracy_dir()

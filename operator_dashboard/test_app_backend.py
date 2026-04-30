@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 import app as app_module
 from app import (
     app,
+    _build_approved_apply_report_scoring_bridge_evidence,
     _build_structural_signal_backfill_planner,
     _build_batch_preview_execution_token,
     _build_selected_keys_digest,
@@ -215,6 +216,24 @@ class DashboardBackendTest(unittest.TestCase):
             return []
         return app_module.OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER.read_records(str(ledger_path))
 
+    def _assert_bridge_evidence_fields(self, data):
+        required_fields = {
+            'prediction_report_id',
+            'local_result_key',
+            'global_ledger_record_id',
+            'official_source_reference',
+            'approved_actual_result',
+            'predicted_winner_id',
+            'predicted_method',
+            'predicted_round',
+            'confidence',
+            'resolved_result_status',
+            'scored',
+            'score_outcome',
+            'calibration_notes',
+        }
+        self.assertEqual(set(data.keys()), required_fields)
+
     def _acceptance_gate_preview_result(self, **overrides):
         base = {
             'ok': True,
@@ -243,6 +262,171 @@ class DashboardBackendTest(unittest.TestCase):
         }
         base.update(overrides)
         return base
+
+    def test_report_scoring_bridge_clean_scored_report(self):
+        prediction_report = {
+            'prediction_report_id': 'report_alpha_1',
+            'local_result_key': 'alpha_vs_beta',
+            'predicted_winner_id': 'Alpha',
+            'predicted_method': 'Decision',
+            'predicted_round': 'R3',
+            'confidence': 0.82,
+        }
+        approved_actual_rows = [{
+            'fight_id': 'alpha_vs_beta',
+            'actual_winner': 'Alpha',
+            'actual_method': 'Decision',
+            'actual_round': 'R3',
+        }]
+        global_ledger_rows = [{
+            'global_ledger_record_id': 'glr_1',
+            'local_result_key': 'alpha_vs_beta',
+            'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+            'approved_actual_result': {
+                'fight_id': 'alpha_vs_beta',
+                'actual_winner': 'Alpha',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            },
+        }]
+
+        data = _build_approved_apply_report_scoring_bridge_evidence(
+            prediction_report,
+            approved_actual_rows,
+            global_ledger_rows,
+        )
+        self._assert_bridge_evidence_fields(data)
+        self.assertTrue(data.get('scored'))
+        self.assertEqual(data.get('resolved_result_status'), 'resolved')
+        self.assertEqual(data.get('score_outcome'), 'round_exact')
+        self.assertEqual(data.get('global_ledger_record_id'), 'glr_1')
+
+    def test_report_scoring_bridge_unresolved_when_no_approved_actual(self):
+        prediction_report = {
+            'prediction_report_id': 'report_alpha_2',
+            'local_result_key': 'alpha_vs_beta',
+            'predicted_winner_id': 'Alpha',
+            'predicted_method': 'Decision',
+            'predicted_round': 'R3',
+            'confidence': 0.71,
+        }
+
+        data = _build_approved_apply_report_scoring_bridge_evidence(
+            prediction_report,
+            approved_actual_rows=[],
+            global_ledger_rows=[],
+        )
+        self._assert_bridge_evidence_fields(data)
+        self.assertFalse(data.get('scored'))
+        self.assertEqual(data.get('resolved_result_status'), 'no_actual_found')
+        self.assertEqual(data.get('score_outcome'), 'unresolved')
+
+    def test_report_scoring_bridge_mismatch_is_deterministic(self):
+        prediction_report = {
+            'prediction_report_id': 'report_alpha_3',
+            'local_result_key': 'alpha_vs_beta',
+            'predicted_winner_id': 'Alpha',
+            'predicted_method': 'KO',
+            'predicted_round': 'R1',
+            'confidence': 0.64,
+        }
+        approved_actual_rows = [{
+            'fight_id': 'alpha_vs_beta',
+            'actual_winner': 'Beta',
+            'actual_method': 'Decision',
+            'actual_round': 'R3',
+        }]
+        global_ledger_rows = [{
+            'global_ledger_record_id': 'glr_2',
+            'local_result_key': 'alpha_vs_beta',
+            'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+            'approved_actual_result': {
+                'fight_id': 'alpha_vs_beta',
+                'actual_winner': 'Beta',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            },
+        }]
+
+        data = _build_approved_apply_report_scoring_bridge_evidence(
+            prediction_report,
+            approved_actual_rows,
+            global_ledger_rows,
+        )
+        self._assert_bridge_evidence_fields(data)
+        self.assertTrue(data.get('scored'))
+        self.assertEqual(data.get('resolved_result_status'), 'resolved')
+        self.assertEqual(data.get('score_outcome'), 'mismatch')
+
+    def test_report_scoring_bridge_duplicate_conflict_from_duplicate_ledger_trace(self):
+        prediction_report = {
+            'prediction_report_id': 'report_alpha_4',
+            'local_result_key': 'alpha_vs_beta',
+            'predicted_winner_id': 'Alpha',
+            'predicted_method': 'Decision',
+            'predicted_round': 'R3',
+            'confidence': 0.88,
+        }
+        approved_actual_rows = [{
+            'fight_id': 'alpha_vs_beta',
+            'actual_winner': 'Alpha',
+            'actual_method': 'Decision',
+            'actual_round': 'R3',
+        }]
+        global_ledger_rows = [
+            {
+                'global_ledger_record_id': 'glr_3a',
+                'local_result_key': 'alpha_vs_beta',
+                'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+                'approved_actual_result': {'fight_id': 'alpha_vs_beta', 'actual_winner': 'Alpha'},
+            },
+            {
+                'global_ledger_record_id': 'glr_3b',
+                'local_result_key': 'alpha_vs_beta',
+                'official_source_reference': {'source_url': 'https://ufc.com/event/test-card'},
+                'approved_actual_result': {'fight_id': 'alpha_vs_beta', 'actual_winner': 'Alpha'},
+            },
+        ]
+
+        data = _build_approved_apply_report_scoring_bridge_evidence(
+            prediction_report,
+            approved_actual_rows,
+            global_ledger_rows,
+        )
+        self._assert_bridge_evidence_fields(data)
+        self.assertFalse(data.get('scored'))
+        self.assertEqual(data.get('resolved_result_status'), 'duplicate_conflict')
+        self.assertEqual(data.get('score_outcome'), 'duplicate_conflict')
+
+    def test_report_scoring_bridge_no_approved_actual_remains_auditable_and_non_mutating(self):
+        prediction_report = {
+            'prediction_report_id': 'report_alpha_5',
+            'local_result_key': 'alpha_vs_beta',
+            'predicted_winner_id': 'Alpha',
+            'predicted_method': 'Decision',
+            'predicted_round': 'R3',
+            'confidence': 0.5,
+        }
+        approved_actual_rows = []
+        global_ledger_rows = []
+
+        snapshot_prediction = json.loads(json.dumps(prediction_report))
+        snapshot_actual_rows = json.loads(json.dumps(approved_actual_rows))
+        snapshot_ledger_rows = json.loads(json.dumps(global_ledger_rows))
+
+        data = _build_approved_apply_report_scoring_bridge_evidence(
+            prediction_report,
+            approved_actual_rows,
+            global_ledger_rows,
+        )
+
+        self._assert_bridge_evidence_fields(data)
+        self.assertFalse(data.get('scored'))
+        self.assertEqual(data.get('resolved_result_status'), 'no_actual_found')
+        self.assertIn('no approved actual', str(data.get('calibration_notes') or '').lower())
+        self.assertEqual(prediction_report, snapshot_prediction)
+        self.assertEqual(approved_actual_rows, snapshot_actual_rows)
+        self.assertEqual(global_ledger_rows, snapshot_ledger_rows)
 
     def test_acceptance_gate_tier_a0_happy_path_write_eligible(self):
         result = evaluate_official_source_acceptance_gate(self._acceptance_gate_preview_result())
