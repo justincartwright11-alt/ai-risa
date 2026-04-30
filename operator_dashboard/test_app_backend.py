@@ -1839,6 +1839,47 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'/api/operator/actual-result-lookup/global-ledger-summary', resp.data)
         self.assertIn(b'No write controls', resp.data)
 
+    def test_advanced_dashboard_has_report_scoring_bridge_readiness_panel(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Report-Scoring Bridge Readiness', resp.data)
+        self.assertIn(b'refresh-report-scoring-bridge-summary-btn', resp.data)
+        self.assertIn(b'report-scoring-bridge-summary-panel', resp.data)
+
+    def test_advanced_dashboard_wires_report_scoring_bridge_summary_endpoint(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'/api/operator/report-scoring-bridge/summary', resp.data)
+
+    def test_advanced_dashboard_report_scoring_bridge_panel_has_no_write_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+        panel_start = page.find('Report-Scoring Bridge Readiness')
+        self.assertNotEqual(panel_start, -1)
+        panel_slice = page[panel_start:panel_start + 2200]
+        self.assertIn('Read-only visibility only. No write controls, no token consume, no approval-token display.', page)
+        self.assertNotIn('Apply', panel_slice)
+        self.assertNotIn('approval_token', panel_slice)
+        self.assertNotIn('token_digest', panel_slice)
+
+    def test_advanced_dashboard_report_scoring_bridge_panel_has_empty_and_error_surfaces(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'No bridge records available.', resp.data)
+        self.assertIn(b'Malformed/parse issues:', resp.data)
+
+    def test_advanced_dashboard_report_scoring_bridge_panel_has_latest_and_status_render_path(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Status counts', resp.data)
+        self.assertIn(b'Latest records', resp.data)
+        self.assertIn(b'score_outcome', resp.data)
+        self.assertIn(b'scoring_bridge_status', resp.data)
+        self.assertIn(b'duplicate_conflict', resp.data)
+        self.assertIn(b'mismatch', resp.data)
+        self.assertIn(b'unresolved', resp.data)
+
     @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
     def test_official_source_approved_apply_token_consume_called_only_after_successful_write(self, mock_consume):
         mock_consume.return_value = {
