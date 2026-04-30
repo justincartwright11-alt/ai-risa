@@ -156,9 +156,17 @@ def _round_hit(predicted_round, actual_round) -> bool:
     return _is_known_value(predicted_round) and _is_known_value(actual_round) and _normalize_token(predicted_round) == _normalize_token(actual_round)
 
 
+def _resolve_accuracy_dir() -> Path:
+    override = str(app.config.get("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE") or "").strip()
+    if override:
+        return Path(override)
+    base_dir = Path(__file__).resolve().parent.parent
+    return base_dir / "ops" / "accuracy"
+
+
 def _build_accuracy_comparison_summary() -> dict:
     base_dir = Path(__file__).resolve().parent.parent
-    accuracy_dir = base_dir / "ops" / "accuracy"
+    accuracy_dir = _resolve_accuracy_dir()
 
     ledger_records = _load_json_records(accuracy_dir / "accuracy_ledger.json")
     actual_records = []
@@ -439,8 +447,7 @@ def _build_waiting_row_candidate_fight_keys(row: dict) -> list:
 
 
 def _load_local_actual_result_map() -> tuple:
-    base_dir = Path(__file__).resolve().parent.parent
-    accuracy_dir = base_dir / "ops" / "accuracy"
+    accuracy_dir = _resolve_accuracy_dir()
 
     records_by_key = {}
     for filename in [

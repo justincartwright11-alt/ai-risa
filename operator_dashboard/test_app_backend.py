@@ -1224,6 +1224,117 @@ class DashboardBackendTest(unittest.TestCase):
         repo_hash_after = self._actual_results_file_hashes()
         self.assertEqual(repo_hash_before, repo_hash_after)
 
+    def test_official_source_approved_apply_temp_write_becomes_visible_to_accuracy_summary(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            (temp_accuracy_dir / 'actual_results.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'actual_results_unresolved.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'accuracy_ledger.json').write_text(json.dumps([
+                {
+                    'fight_id': 'alpha_vs_beta',
+                    'predicted_winner': 'Alpha',
+                    'event_date': '2024-01-01',
+                    'source_file': 'predictions/alpha_vs_beta_prediction.json',
+                }
+            ]), encoding='utf-8')
+            audit_path = temp_root / 'approved_apply_operation_id_audit.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            before_resp = self.client.get('/api/accuracy/comparison-summary')
+            self.assertEqual(before_resp.status_code, 200)
+            before_data = before_resp.get_json()
+            waiting_before = [row for row in before_data.get('waiting_for_results') or [] if row.get('fight_name') == 'alpha_vs_beta']
+            self.assertEqual(len(waiting_before), 1)
+
+            payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            apply_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(apply_resp.status_code, 200)
+            apply_data = apply_resp.get_json()
+            self.assertTrue(apply_data.get('write_performed'))
+            self.assertTrue(apply_data.get('mutation_performed'))
+            self.assertEqual(apply_data.get('operation_id'), 'op_retry_20260430_abcdef')
+
+            after_resp = self.client.get('/api/accuracy/comparison-summary')
+            self.assertEqual(after_resp.status_code, 200)
+            after_data = after_resp.get_json()
+            waiting_after = [row for row in after_data.get('waiting_for_results') or [] if row.get('fight_name') == 'alpha_vs_beta']
+            compared_after = [row for row in after_data.get('compared_results') or [] if row.get('fight_name') == 'alpha_vs_beta']
+            self.assertEqual(waiting_after, [])
+            self.assertEqual(len(compared_after), 1)
+            self.assertEqual(compared_after[0].get('actual_winner'), 'Alpha')
+            self.assertEqual(compared_after[0].get('status'), 'compared')
+
+            manual_rows = json.loads((temp_accuracy_dir / 'actual_results_manual.json').read_text(encoding='utf-8'))
+            matched_rows = [row for row in manual_rows if row.get('fight_id') == 'alpha_vs_beta']
+            self.assertEqual(len(matched_rows), 1)
+
+            audit_rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(audit_rows), 1)
+            self.assertEqual(audit_rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
+            self.assertEqual(audit_rows[0].get('deterministic_status'), 'write_applied')
+
+    def test_official_source_approved_apply_guard_deny_leaves_local_summary_waiting_and_audits_operation_id(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            temp_accuracy_dir = temp_root / 'accuracy'
+            temp_accuracy_dir.mkdir()
+            (temp_accuracy_dir / 'actual_results.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'actual_results_manual.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'actual_results_unresolved.json').write_text('[]\n', encoding='utf-8')
+            (temp_accuracy_dir / 'accuracy_ledger.json').write_text(json.dumps([
+                {
+                    'fight_id': 'alpha_vs_beta',
+                    'predicted_winner': 'Alpha',
+                    'event_date': '2024-01-01',
+                    'source_file': 'predictions/alpha_vs_beta_prediction.json',
+                }
+            ]), encoding='utf-8')
+            audit_path = temp_root / 'approved_apply_operation_id_audit.jsonl'
+
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED'] = True
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE'] = str(temp_accuracy_dir)
+            app.config['OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE'] = str(audit_path)
+
+            payload = self._official_approved_apply_payload(operation_id='op_retry_20260430_abcdef')
+            payload['preview_snapshot']['source_citation']['source_confidence'] = 'tier_b'
+            payload['preview_snapshot']['source_citation']['confidence_score'] = 0.55
+            payload['preview_snapshot']['acceptance_gate']['state'] = 'manual_review'
+            payload['preview_snapshot']['acceptance_gate']['write_eligible'] = False
+            payload['preview_snapshot']['acceptance_gate']['reason_code'] = 'tier_b_without_corroboration'
+            payload['approval_token'] = self._issue_approved_apply_token(payload)
+
+            apply_resp = self.client.post('/api/operator/actual-result-lookup/official-source-approved-apply', json=payload)
+            self.assertEqual(apply_resp.status_code, 200)
+            apply_data = apply_resp.get_json()
+            self.assertFalse(apply_data.get('guard_allowed'))
+            self.assertFalse(apply_data.get('write_performed'))
+            self.assertFalse(apply_data.get('mutation_performed'))
+            self.assertEqual(apply_data.get('operation_id'), 'op_retry_20260430_abcdef')
+
+            manual_rows = json.loads((temp_accuracy_dir / 'actual_results_manual.json').read_text(encoding='utf-8'))
+            self.assertEqual(manual_rows, [])
+
+            summary_resp = self.client.get('/api/accuracy/comparison-summary')
+            self.assertEqual(summary_resp.status_code, 200)
+            summary_data = summary_resp.get_json()
+            waiting_rows = [row for row in summary_data.get('waiting_for_results') or [] if row.get('fight_name') == 'alpha_vs_beta']
+            compared_rows = [row for row in summary_data.get('compared_results') or [] if row.get('fight_name') == 'alpha_vs_beta']
+            self.assertEqual(len(waiting_rows), 1)
+            self.assertEqual(compared_rows, [])
+
+            audit_rows = self._read_operation_id_audit_rows(audit_path)
+            self.assertEqual(len(audit_rows), 1)
+            self.assertEqual(audit_rows[0].get('operation_id'), 'op_retry_20260430_abcdef')
+            self.assertEqual(audit_rows[0].get('deterministic_status'), 'guard_denied')
+
     @patch('app.OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER.register_consume')
     def test_official_source_approved_apply_token_consume_called_only_after_successful_write(self, mock_consume):
         mock_consume.return_value = {
