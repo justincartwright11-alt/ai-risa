@@ -1,0 +1,103 @@
+{
+  "scenario_id": "citation_binding_mismatch",
+  "description": "Guard denial: approval_binding.citation_fingerprint differs from preview_snapshot.source_citation.citation_fingerprint",
+  "token_mode": "valid",
+  "token_issue_epoch": 1700000000,
+  "token_ttl_seconds": 120,
+  "now_epoch": 1700000060,
+  "token_binding_override": null,
+  "request_payload": {
+    "mode": "official_source_approved_apply",
+    "lookup_intent": "apply_write",
+    "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+    "approval_granted": true,
+    "approval_binding": {
+      "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+      "citation_fingerprint": "abc123fingerprint",
+      "source_url": "https://ufc.com/event/test-card",
+      "source_date": "2026-04-20",
+      "extracted_winner": "Alpha",
+      "record_fight_id": "alpha_vs_beta",
+      "selected_row_identity": {
+        "fight_name": "Alpha vs Beta",
+        "fight_id": "alpha_vs_beta"
+      }
+    },
+    "preview_snapshot": {
+      "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+      "reason_code": "accepted_preview_write_eligible",
+      "manual_review_required": false,
+      "source_citation": {
+        "source_url": "https://ufc.com/event/test-card",
+        "source_title": "UFC Test Card",
+        "source_date": "2026-04-20",
+        "publisher_host": "ufc.com",
+        "source_confidence": "tier_a0",
+        "confidence_score": 0.85,
+        "citation_fingerprint": "DIFFERENT_FINGERPRINT",
+        "extracted_winner": "Alpha"
+      },
+      "acceptance_gate": {
+        "state": "write_eligible",
+        "write_eligible": true,
+        "reason_code": "accepted_preview_write_eligible",
+        "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+        "citation_fingerprint": "abc123fingerprint"
+      },
+      "audit": {
+        "record_fight_id": "alpha_vs_beta",
+        "provider_attempted": true,
+        "attempted_sources": ["https://ufc.com/event/test-card"]
+      }
+    }
+  },
+  "authoritative_preview_result": {
+    "ok": true,
+    "mode": "official_source_one_record",
+    "phase": "lookup_preview",
+    "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+    "approval_required": true,
+    "approval_granted": false,
+    "mutation_performed": false,
+    "external_lookup_performed": true,
+    "bulk_lookup_performed": false,
+    "scoring_semantics_changed": false,
+    "manual_review_required": false,
+    "reason_code": "accepted_preview_write_eligible",
+    "source_citation": {
+      "source_url": "https://ufc.com/event/test-card",
+      "source_title": "UFC Test Card",
+      "source_date": "2026-04-20",
+      "publisher_host": "ufc.com",
+      "source_confidence": "tier_a0",
+      "confidence_score": 0.85,
+      "citation_fingerprint": "abc123fingerprint",
+      "extracted_winner": "Alpha"
+    },
+    "acceptance_gate": {
+      "state": "write_eligible",
+      "write_eligible": true,
+      "reason_code": "accepted_preview_write_eligible",
+      "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+      "citation_fingerprint": "abc123fingerprint"
+    },
+    "audit": {
+      "record_fight_id": "alpha_vs_beta",
+      "provider_attempted": true,
+      "attempted_sources": ["https://ufc.com/event/test-card"]
+    }
+  },
+  "consumed_token_ids_from_fixture": [],
+  "replayed_token_ids_from_fixture": [],
+  "expected": {
+    "guard_allowed": false,
+    "reason_code": "citation_binding_mismatch",
+    "request_valid": true,
+    "token_valid": true,
+    "approval_binding_valid": false,
+    "mutation_performed": false,
+    "write_performed": false,
+    "bulk_lookup_performed": false,
+    "scoring_semantics_changed": false
+  }
+}

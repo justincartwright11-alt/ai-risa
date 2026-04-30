@@ -1,0 +1,29 @@
+{
+  "scenario_id": "batch_field_not_allowed",
+  "description": "Schema denial: payload contains a forbidden batch field (selected_keys)",
+  "token_mode": "none",
+  "token_issue_epoch": 1700000000,
+  "token_ttl_seconds": 120,
+  "now_epoch": 1700000060,
+  "token_binding_override": null,
+  "request_payload": {
+    "mode": "official_source_approved_apply",
+    "lookup_intent": "apply_write",
+    "selected_key": "alpha_vs_beta|predictions_alpha_vs_beta_prediction_json",
+    "approval_granted": true,
+    "selected_keys": ["alpha_vs_beta|predictions_alpha_vs_beta_prediction_json"]
+  },
+  "authoritative_preview_result": null,
+  "consumed_token_ids_from_fixture": [],
+  "replayed_token_ids_from_fixture": [],
+  "expected": {
+    "guard_allowed": false,
+    "reason_code": "batch_field_not_allowed",
+    "request_valid": false,
+    "token_valid": false,
+    "mutation_performed": false,
+    "write_performed": false,
+    "bulk_lookup_performed": false,
+    "scoring_semantics_changed": false
+  }
+}

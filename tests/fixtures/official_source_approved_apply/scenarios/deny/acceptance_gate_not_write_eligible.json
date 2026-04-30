@@ -1,0 +1,21 @@
+{
+  "scenario_id": "acceptance_gate_not_write_eligible",
+  "description": "Guard denial: acceptance gate returns non-standard state with write_eligible=false; tested via mock only",
+  "token_mode": "mock_test_only",
+  "token_issue_epoch": 1700000000,
+  "token_ttl_seconds": 120,
+  "now_epoch": 1700000060,
+  "token_binding_override": null,
+  "request_payload": null,
+  "authoritative_preview_result": null,
+  "consumed_token_ids_from_fixture": [],
+  "replayed_token_ids_from_fixture": [],
+  "expected": {
+    "guard_allowed": false,
+    "reason_code": "acceptance_gate_not_write_eligible",
+    "mutation_performed": false,
+    "write_performed": false,
+    "bulk_lookup_performed": false,
+    "scoring_semantics_changed": false
+  }
+}
