@@ -315,10 +315,13 @@
                         Select All
                     </label>
                     <span id="main-prf-intake-selected-count" style="font-size:12px;color:#5a6374;">Selected: 0</span>
+                    <span id="main-prf-intake-parsed-count" style="font-size:12px;color:#5a6374;"></span>
+                    <span id="main-prf-intake-saved-count" style="font-size:12px;color:#0f766e;"></span>
                 </div>
 
                 <div id="main-prf-intake-status" class="status-display" style="margin-top:0;"></div>
                 <div id="main-prf-intake-warnings" class="status-display" style="display:none;"></div>
+                <div id="main-prf-discovery-rows" style="display:none;margin-top:8px;overflow:auto;"></div>
                 <div id="main-prf-intake-review-table" style="margin-top:10px;overflow:auto;"></div>
 
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;margin-bottom:8px;">
@@ -465,6 +468,7 @@
 
                 <div id="button3-candidate-status" class="status-display" style="display:none;"></div>
                 <div id="button3-candidate-review" style="margin-top:10px;overflow:auto;"></div>
+                <div id="button3-preapply-panel" style="display:none;margin-top:10px;background:#fff7ed;border:1px solid #f3d9a4;border-radius:6px;padding:12px;font-size:12px;"></div>
 
                 <div id="button3-accuracy-status" class="status-display" style="margin-top:10px;"></div>
                 <div id="button3-accuracy-summary" style="margin-top:10px;overflow:auto;"></div>
@@ -750,6 +754,9 @@
         const mainPrfIntakeReviewTable = document.getElementById('main-prf-intake-review-table');
         const mainPrfIntakeSelectAll = document.getElementById('main-prf-intake-select-all');
         const mainPrfIntakeSelectedCount = document.getElementById('main-prf-intake-selected-count');
+        const mainPrfIntakeParsedCount = document.getElementById('main-prf-intake-parsed-count');
+        const mainPrfIntakeSavedCount = document.getElementById('main-prf-intake-saved-count');
+        const mainPrfDiscoveryRows = document.getElementById('main-prf-discovery-rows');
         const mainPrfIntakeApproval = document.getElementById('main-prf-intake-approval');
         const mainPrfSaveSelectedBtn = document.getElementById('main-prf-save-selected-btn');
         const mainPrfRefreshSnapshotBtn = document.getElementById('main-prf-refresh-snapshot-btn');
@@ -758,6 +765,7 @@
         const mainPrfQueueSnapshot = document.getElementById('main-prf-queue-snapshot');
 
         let mainPrfLastIntakePreview = null;
+        let mainPrfTotalSavedCount = 0;
 
         function _scoreMainPrfReadiness(row, eventPreview) {
             let score = 0;
@@ -818,6 +826,15 @@
                 : 0;
             if (mainPrfIntakeSelectAll) {
                 mainPrfIntakeSelectAll.checked = selectableCount > 0 && selectedCount === selectableCount;
+            }
+
+            // Show blocker warning if any selected rows have needs_review status
+            const blockedCount = selectedRows.filter((r) => r.parse_status === 'needs_review').length;
+            if (blockedCount > 0 && mainPrfIntakeStatus) {
+                const savedNote = mainPrfTotalSavedCount > 0 ? ` | Saved: ${mainPrfTotalSavedCount}` : '';
+                mainPrfIntakeStatus.className = 'status-display';
+                mainPrfIntakeStatus.textContent =
+                    `Selected: ${selectedCount} (${blockedCount} needs_review — will be rejected on save)${savedNote}`;
             }
 
             const canSave = selectedCount > 0 && Boolean(mainPrfIntakeApproval && mainPrfIntakeApproval.checked);
@@ -997,9 +1014,39 @@
                     mainPrfIntakeStatus.textContent = `Discovery failed: ${_escapeHtml(data.error || 'unknown_error')}`;
                     return;
                 }
-                const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+                const rows = Array.isArray(data.rows) ? data.rows : [];
                 mainPrfIntakeStatus.className = 'status-display success';
-                mainPrfIntakeStatus.textContent = `Discovery complete: ${Number(data.new_triggers || 0)} new trigger(s), ${rowCount} total row(s) in review queue.`;
+                mainPrfIntakeStatus.textContent = `Discovery complete: ${Number(data.new_triggers || 0)} new trigger(s), ${rows.length} total row(s). Click an event below to pre-fill intake fields.`;
+                // Show discovered event rows panel
+                if (mainPrfDiscoveryRows && rows.length) {
+                    const evtBody = rows.slice(0, 20).map((r) => {
+                        const eName = _escapeHtml(r.event_name || '');
+                        const eDate = _escapeHtml(r.date || '');
+                        const eProm = _escapeHtml(r.promotion || '');
+                        const eBouts = Number(r.bouts_count || 0);
+                        return `<tr style="cursor:pointer;" data-event-name="${eName}" data-event-date="${eDate}" data-event-promotion="${eProm}" class="main-prf-discovery-event-row">
+                            <td style="border:1px solid #ddd;padding:5px;">${eName}</td>
+                            <td style="border:1px solid #ddd;padding:5px;">${eDate}</td>
+                            <td style="border:1px solid #ddd;padding:5px;">${eProm}</td>
+                            <td style="border:1px solid #ddd;padding:5px;">${eBouts} bouts</td>
+                            <td style="border:1px solid #ddd;padding:5px;"><button type="button" class="btn-secondary main-prf-use-event-btn" data-event-name="${eName}" data-event-date="${eDate}" data-event-promotion="${eProm}" style="margin:0;padding:3px 8px;font-size:11px;">Use</button></td>
+                        </tr>`;
+                    }).join('');
+                    mainPrfDiscoveryRows.style.display = 'block';
+                    mainPrfDiscoveryRows.innerHTML = `<div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:5px;">Discovered Events (${rows.length}) — click Use to pre-fill intake fields</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:5px;text-align:left;">Event</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Date</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Promotion</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Bouts</th><th style="border:1px solid #ddd;padding:5px;"></th></tr></thead><tbody>${evtBody}</tbody></table>`;
+                    mainPrfDiscoveryRows.querySelectorAll('.main-prf-use-event-btn').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            if (mainPrfIntakeEventName) mainPrfIntakeEventName.value = btn.getAttribute('data-event-name') || '';
+                            if (mainPrfIntakeEventDate) mainPrfIntakeEventDate.value = btn.getAttribute('data-event-date') || '';
+                            if (mainPrfIntakePromotion) mainPrfIntakePromotion.value = btn.getAttribute('data-event-promotion') || '';
+                            mainPrfIntakeStatus.className = 'status-display success';
+                            mainPrfIntakeStatus.textContent = `Event fields pre-filled from discovery. Add raw card text and click Parse Preview.`;
+                        });
+                    });
+                } else if (mainPrfDiscoveryRows) {
+                    mainPrfDiscoveryRows.style.display = 'none';
+                    mainPrfDiscoveryRows.innerHTML = '';
+                }
             } catch (e) {
                 mainPrfIntakeStatus.className = 'status-display error';
                 mainPrfIntakeStatus.textContent = `Discovery request failed: ${_escapeHtml(e.message)}`;
@@ -1047,8 +1094,23 @@
                 }
 
                 const rowCount = Array.isArray(data.matchup_previews) ? data.matchup_previews.length : 0;
+                const needsReviewCount = (data.matchup_previews || []).filter((r) => r.parse_status === 'needs_review').length;
+                const parsedOkCount = rowCount - needsReviewCount;
+                if (mainPrfIntakeParsedCount) {
+                    mainPrfIntakeParsedCount.textContent = ` | Parsed: ${rowCount} (${parsedOkCount} ready, ${needsReviewCount} needs_review)`;
+                }
+                if (mainPrfIntakeSavedCount && mainPrfTotalSavedCount > 0) {
+                    mainPrfIntakeSavedCount.textContent = ` | Saved: ${mainPrfTotalSavedCount}`;
+                }
                 mainPrfIntakeStatus.className = 'status-display success';
-                mainPrfIntakeStatus.textContent = `Preview loaded: ${rowCount} matchup row(s) extracted and ranked.`;
+                let statusMsg = `Preview loaded: ${rowCount} row(s) parsed.`;
+                if (needsReviewCount > 0) {
+                    statusMsg += ` Save blocker: ${needsReviewCount} row(s) with needs_review will be rejected — fix matchup text to resolve.`;
+                }
+                if ((data.parse_warnings || []).includes('missing_event_date')) {
+                    statusMsg += ` Warning: missing event_date — save will proceed but date will be blank.`;
+                }
+                mainPrfIntakeStatus.textContent = statusMsg;
             } catch (e) {
                 mainPrfIntakeStatus.className = 'status-display error';
                 mainPrfIntakeStatus.textContent = `Preview request failed: ${_escapeHtml(e.message)}`;
@@ -1112,6 +1174,10 @@
                     return;
                 }
 
+                mainPrfTotalSavedCount += Number(data.accepted_count || 0);
+                if (mainPrfIntakeSavedCount) {
+                    mainPrfIntakeSavedCount.textContent = ` | Saved: ${mainPrfTotalSavedCount}`;
+                }
                 mainPrfSaveStatus.className = 'status-display success';
                 mainPrfSaveStatus.textContent = `Save complete: ${Number(data.accepted_count || 0)} accepted, ${Number(data.rejected_count || 0)} rejected.`;
                 await loadMainPrfQueueSnapshot();
@@ -1171,7 +1237,7 @@
         function _renderMainPrfQueueRows(rows) {
             if (!mainPrfQueueTable) return;
             if (!rows || !rows.length) {
-                mainPrfQueueTable.innerHTML = '<div style="color:#666;font-size:13px;">No saved queue fights yet. Use intake/save flow first.</div>';
+                mainPrfQueueTable.innerHTML = '<div style="color:#666;font-size:13px;">No saved fights yet. Use Button 1 first.</div>';
                 _updateMainPrfSelectedCount();
                 return;
             }
@@ -1457,14 +1523,59 @@
         const button3State = {
             selectedKey: '',
             candidates: [],
+            waitingRows: [],
+            selectedRow: null,
         };
 
-        function _setButton3SelectedKey(value) {
+        const button3PreapplyPanel = document.getElementById('button3-preapply-panel');
+
+        function _setButton3SelectedKey(value, rowData) {
             button3State.selectedKey = String(value || '').trim();
+            button3State.selectedRow = rowData || null;
             if (button3SelectedKeyLabel) {
                 button3SelectedKeyLabel.textContent = `Selected Key: ${button3State.selectedKey || 'none'}`;
             }
             _updateButton3ApplyState();
+        }
+
+        function _renderButton3PreApplyPanel() {
+            if (!button3PreapplyPanel) return;
+            const selectedCandidate = button3CandidateReview
+                ? button3CandidateReview.querySelector('input[name="button3-candidate-radio"]:checked')
+                : null;
+            const candidateIdx = selectedCandidate ? Number(selectedCandidate.value) : -1;
+            const candidate = (candidateIdx >= 0 && button3State.candidates[candidateIdx]) || null;
+            const row = button3State.selectedRow;
+            const key = button3State.selectedKey;
+            const approved = Boolean(button3ApplyApproval && button3ApplyApproval.checked);
+
+            if (!key && !candidate) {
+                button3PreapplyPanel.style.display = 'none';
+                button3PreapplyPanel.innerHTML = '';
+                return;
+            }
+
+            const rowHtml = row
+                ? `<div style="margin-bottom:6px;"><strong>Selected waiting row:</strong> ${_escapeHtml(row.fight_name || key)} | Predicted: ${_escapeHtml(row.predicted_winner || '—')} | Date: ${_escapeHtml(row.event_date || '—')} | Key: <code>${_escapeHtml(key)}</code></div>`
+                : `<div style="margin-bottom:6px;"><strong>Selected key:</strong> <code>${_escapeHtml(key)}</code></div>`;
+
+            let writePreviewHtml = '<div style="color:#888;font-size:12px;">Select a candidate to see write preview.</div>';
+            if (candidate) {
+                const pw = candidate.proposed_write || {};
+                writePreviewHtml = `<div style="margin-bottom:4px;"><strong>Write preview</strong> (if applied):</div><table style="border-collapse:collapse;font-size:12px;">
+                    <tr><td style="padding:3px 8px 3px 0;color:#5a6374;">actual_winner</td><td style="padding:3px 8px;">→</td><td style="padding:3px 0;"><strong>${_escapeHtml(pw.actual_winner || 'UNKNOWN')}</strong></td></tr>
+                    <tr><td style="padding:3px 8px 3px 0;color:#5a6374;">actual_method</td><td style="padding:3px 8px;">→</td><td style="padding:3px 0;"><strong>${_escapeHtml(pw.actual_method || 'UNKNOWN')}</strong></td></tr>
+                    <tr><td style="padding:3px 8px 3px 0;color:#5a6374;">actual_round</td><td style="padding:3px 8px;">→</td><td style="padding:3px 0;"><strong>${_escapeHtml(pw.actual_round || 'UNKNOWN')}</strong></td></tr>
+                    <tr><td style="padding:3px 8px 3px 0;color:#5a6374;">event_date</td><td style="padding:3px 8px;">→</td><td style="padding:3px 0;"><strong>${_escapeHtml(pw.event_date || 'UNKNOWN')}</strong></td></tr>
+                </table><div style="margin-top:4px;color:#5a6374;">Candidate: ${_escapeHtml(candidate.label || '')} (${_escapeHtml(candidate.type || '')})</div>`;
+            }
+
+            const approvalHtml = approved
+                ? `<div style="margin-top:6px;color:#0f766e;font-weight:700;">&#10003; Operator approval granted — Apply is active.</div>`
+                : `<div style="margin-top:6px;color:#b45309;">Approval required — check the approval box to enable Apply.</div>`;
+
+            button3PreapplyPanel.style.display = 'block';
+            button3PreapplyPanel.innerHTML = `<div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:8px;">Pre-Apply Review</div>${rowHtml}${writePreviewHtml}${approvalHtml}`;
         }
 
         function _updateButton3ApplyState() {
@@ -1477,6 +1588,7 @@
                 button3ApplySelectedBtn.style.opacity = canApply ? '1' : '0.6';
                 button3ApplySelectedBtn.style.cursor = canApply ? 'pointer' : 'not-allowed';
             }
+            _renderButton3PreApplyPanel();
         }
 
         function _parseButton3CandidateUrls() {
@@ -1496,6 +1608,7 @@
         function _renderButton3WaitingRows(data) {
             if (!button3WaitingTable) return;
             const rows = Array.isArray(data.preview_rows) ? data.preview_rows : [];
+            button3State.waitingRows = rows;
             if (!rows.length) {
                 button3WaitingTable.innerHTML = '<div style="color:#666;font-size:13px;">No waiting rows available for result apply.</div>';
                 return;
@@ -1519,7 +1632,9 @@
 
             button3WaitingTable.querySelectorAll('.button3-select-key-btn').forEach((btn) => {
                 btn.addEventListener('click', () => {
-                    _setButton3SelectedKey(btn.getAttribute('data-selected-key') || '');
+                    const key = btn.getAttribute('data-selected-key') || '';
+                    const rowData = button3State.waitingRows.find((r) => _escapeHtml(r.selected_key || '') === key) || null;
+                    _setButton3SelectedKey(key, rowData);
                     if (button3CandidateStatus) {
                         button3CandidateStatus.style.display = 'block';
                         button3CandidateStatus.className = 'status-display success';

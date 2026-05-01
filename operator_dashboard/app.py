@@ -1048,7 +1048,7 @@ def _build_phase1_intake_matchup_preview_row(
     fighter_a = ""
     fighter_b = ""
 
-    for separator in (" vs ", " v "):
+    for separator in (" vs. ", " versus ", " vs ", " v "):
         if separator in lowered:
             split_index = lowered.find(separator)
             fighter_a = line_text[:split_index].strip(" -\t")
@@ -1056,10 +1056,18 @@ def _build_phase1_intake_matchup_preview_row(
             break
 
     if not fighter_a and not fighter_b:
-        if lowered.startswith("vs "):
+        if lowered.startswith("vs. "):
+            fighter_b = line_text[4:].strip(" -\t")
+        elif lowered.startswith("versus "):
+            fighter_b = line_text[7:].strip(" -\t")
+        elif lowered.startswith("vs "):
             fighter_b = line_text[3:].strip(" -\t")
         elif lowered.startswith("v "):
             fighter_b = line_text[2:].strip(" -\t")
+        elif lowered.endswith(" vs."):
+            fighter_a = line_text[:-4].strip(" -\t")
+        elif lowered.endswith(" versus"):
+            fighter_a = line_text[:-7].strip(" -\t")
         elif lowered.endswith(" vs"):
             fighter_a = line_text[:-3].strip(" -\t")
         elif lowered.endswith(" v"):
@@ -1104,10 +1112,16 @@ def _build_phase1_intake_preview_payload(request_json: dict) -> dict:
             continue
         lowered = line_text.lower()
         looks_like_matchup = (
-            " vs " in lowered
+            " vs. " in lowered
+            or " versus " in lowered
+            or " vs " in lowered
             or " v " in lowered
+            or lowered.startswith("vs. ")
+            or lowered.startswith("versus ")
             or lowered.startswith("vs ")
             or lowered.startswith("v ")
+            or lowered.endswith(" vs.")
+            or lowered.endswith(" versus")
             or lowered.endswith(" vs")
             or lowered.endswith(" v")
         )
