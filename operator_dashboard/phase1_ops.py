@@ -163,9 +163,25 @@ def _extract_event_fields(event_payload: Dict[str, Any], event_file: Path) -> Di
     event_name = event_payload.get("event") or event_payload.get("event_name") or event_file.stem
     promotion = event_payload.get("promotion") or ""
     date = event_payload.get("date") or ""
+    location = event_payload.get("location") or ""
     sport = _guess_sport(event_name, promotion)
     event_id = _slugify(event_name) or _slugify(event_file.stem)
-    bouts = event_payload.get("bouts") if isinstance(event_payload.get("bouts"), list) else []
+    bouts_raw = event_payload.get("bouts") if isinstance(event_payload.get("bouts"), list) else []
+    bouts: List[Dict[str, Any]] = []
+    for bout in bouts_raw:
+        if not isinstance(bout, dict):
+            continue
+        fighter_a = str(bout.get("fighter_a") or "").strip()
+        fighter_b = str(bout.get("fighter_b") or "").strip()
+        fighters = bout.get("fighters") if isinstance(bout.get("fighters"), list) else []
+        if not fighter_a and len(fighters) > 0:
+            fighter_a = str(fighters[0] or "").strip()
+        if not fighter_b and len(fighters) > 1:
+            fighter_b = str(fighters[1] or "").strip()
+        normalized_bout = dict(bout)
+        normalized_bout["fighter_a"] = fighter_a
+        normalized_bout["fighter_b"] = fighter_b
+        bouts.append(normalized_bout)
     has_main_event = any(bool(b.get("main_event")) for b in bouts if isinstance(b, dict))
     return {
         "event_id": event_id,
@@ -174,6 +190,8 @@ def _extract_event_fields(event_payload: Dict[str, Any], event_file: Path) -> Di
         "date": date,
         "sport": sport,
         "promotion": promotion,
+        "location": location,
+        "bouts": bouts,
         "bouts_count": len(bouts),
         "has_main_event": has_main_event,
         "state": "queued",

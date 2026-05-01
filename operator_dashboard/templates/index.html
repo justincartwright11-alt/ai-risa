@@ -766,6 +766,7 @@
 
         let mainPrfLastIntakePreview = null;
         let mainPrfTotalSavedCount = 0;
+        let mainPrfDiscoveryRowsByEventId = {};
 
         function _scoreMainPrfReadiness(row, eventPreview) {
             let score = 0;
@@ -1015,32 +1016,64 @@
                     return;
                 }
                 const rows = Array.isArray(data.rows) ? data.rows : [];
+                mainPrfDiscoveryRowsByEventId = {};
+                rows.forEach((row, idx) => {
+                    const eventId = String((row || {}).event_id || `row-${idx}`);
+                    mainPrfDiscoveryRowsByEventId[eventId] = row || {};
+                });
                 mainPrfIntakeStatus.className = 'status-display success';
                 mainPrfIntakeStatus.textContent = `Discovery complete: ${Number(data.new_triggers || 0)} new trigger(s), ${rows.length} total row(s). Click an event below to pre-fill intake fields.`;
                 // Show discovered event rows panel
                 if (mainPrfDiscoveryRows && rows.length) {
-                    const evtBody = rows.slice(0, 20).map((r) => {
+                    const evtBody = rows.slice(0, 20).map((r, idx) => {
+                        const eventId = _escapeHtml(String(r.event_id || `row-${idx}`));
                         const eName = _escapeHtml(r.event_name || '');
                         const eDate = _escapeHtml(r.date || '');
                         const eProm = _escapeHtml(r.promotion || '');
                         const eBouts = Number(r.bouts_count || 0);
-                        return `<tr style="cursor:pointer;" data-event-name="${eName}" data-event-date="${eDate}" data-event-promotion="${eProm}" class="main-prf-discovery-event-row">
+                        return `<tr style="cursor:pointer;" data-event-id="${eventId}" data-event-name="${eName}" data-event-date="${eDate}" data-event-promotion="${eProm}" class="main-prf-discovery-event-row">
                             <td style="border:1px solid #ddd;padding:5px;">${eName}</td>
                             <td style="border:1px solid #ddd;padding:5px;">${eDate}</td>
                             <td style="border:1px solid #ddd;padding:5px;">${eProm}</td>
                             <td style="border:1px solid #ddd;padding:5px;">${eBouts} bouts</td>
-                            <td style="border:1px solid #ddd;padding:5px;"><button type="button" class="btn-secondary main-prf-use-event-btn" data-event-name="${eName}" data-event-date="${eDate}" data-event-promotion="${eProm}" style="margin:0;padding:3px 8px;font-size:11px;">Use</button></td>
+                            <td style="border:1px solid #ddd;padding:5px;"><button type="button" class="btn-secondary main-prf-use-event-btn" data-event-id="${eventId}" style="margin:0;padding:3px 8px;font-size:11px;">Use</button></td>
                         </tr>`;
                     }).join('');
                     mainPrfDiscoveryRows.style.display = 'block';
                     mainPrfDiscoveryRows.innerHTML = `<div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:5px;">Discovered Events (${rows.length}) — click Use to pre-fill intake fields</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:5px;text-align:left;">Event</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Date</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Promotion</th><th style="border:1px solid #ddd;padding:5px;text-align:left;">Bouts</th><th style="border:1px solid #ddd;padding:5px;"></th></tr></thead><tbody>${evtBody}</tbody></table>`;
                     mainPrfDiscoveryRows.querySelectorAll('.main-prf-use-event-btn').forEach((btn) => {
                         btn.addEventListener('click', () => {
-                            if (mainPrfIntakeEventName) mainPrfIntakeEventName.value = btn.getAttribute('data-event-name') || '';
-                            if (mainPrfIntakeEventDate) mainPrfIntakeEventDate.value = btn.getAttribute('data-event-date') || '';
-                            if (mainPrfIntakePromotion) mainPrfIntakePromotion.value = btn.getAttribute('data-event-promotion') || '';
+                            const eventId = String(btn.getAttribute('data-event-id') || '');
+                            const row = mainPrfDiscoveryRowsByEventId[eventId] || {};
+                            if (mainPrfIntakeEventName) mainPrfIntakeEventName.value = String(row.event_name || '');
+                            if (mainPrfIntakeEventDate) mainPrfIntakeEventDate.value = String(row.date || '');
+                            if (mainPrfIntakePromotion) mainPrfIntakePromotion.value = String(row.promotion || '');
+                            if (mainPrfIntakeLocation) mainPrfIntakeLocation.value = String(row.location || '');
+                            if (mainPrfIntakeSourceReference) mainPrfIntakeSourceReference.value = String(row.source || '');
+
+                            const bouts = Array.isArray(row.bouts) ? row.bouts : [];
+                            const lines = bouts
+                                .map((bout) => {
+                                    if (!bout || typeof bout !== 'object') return '';
+                                    const fighters = Array.isArray(bout.fighters) ? bout.fighters : [];
+                                    const fighterA = String(bout.fighter_a || fighters[0] || '').trim();
+                                    const fighterB = String(bout.fighter_b || fighters[1] || '').trim();
+                                    if (!fighterA && !fighterB) return '';
+                                    return `${fighterA} vs ${fighterB}`.trim();
+                                })
+                                .filter((line) => Boolean(line));
+                            const loadedCount = lines.length;
+                            if (mainPrfIntakeRawCardText) {
+                                mainPrfIntakeRawCardText.value = loadedCount ? lines.join('\n') : '';
+                            }
+
+                            const selectedEventName = String(row.event_name || 'Selected event');
                             mainPrfIntakeStatus.className = 'status-display success';
-                            mainPrfIntakeStatus.textContent = `Event fields pre-filled from discovery. Add raw card text and click Parse Preview.`;
+                            if (loadedCount > 0) {
+                                mainPrfIntakeStatus.textContent = `${selectedEventName} selected. ${loadedCount} bouts loaded into Manual Input. Event and bout list loaded. Click Parse Preview.`;
+                            } else {
+                                mainPrfIntakeStatus.textContent = `${selectedEventName} selected. 0 bouts loaded into Manual Input. Event loaded, but no bout list was available. Paste matchups manually, then click Parse Preview. This discovered event has no bout list. Paste matchups manually.`;
+                            }
                         });
                     });
                 } else if (mainPrfDiscoveryRows) {
