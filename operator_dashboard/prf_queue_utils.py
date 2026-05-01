@@ -253,3 +253,23 @@ def get_prf_queue_list(queue_path: str) -> dict:
         'upcoming_fights': rows,
         'errors': [],
     }
+
+
+def update_report_status(queue_path: str, matchup_id: str, new_status: str) -> dict:
+    """Update only the report_status field on a saved queue record."""
+    now_iso = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+    rows = load_prf_queue(queue_path)
+    updated = False
+    for row in rows:
+        if row.get('matchup_id') == matchup_id:
+            row['report_status'] = new_status
+            updated = True
+            break
+    if updated:
+        _write_prf_queue(queue_path, rows)
+    return {
+        'ok': updated,
+        'matchup_id': matchup_id,
+        'new_status': new_status,
+        'updated_at': now_iso,
+    }

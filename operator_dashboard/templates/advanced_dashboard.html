@@ -1068,6 +1068,28 @@
                             </div>
                             <div id="operator-prf-save-queue-output" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
                             <div id="operator-prf-upcoming-queue-window" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
+                            <!-- Phase 3: PDF Report Generation Controls -->
+                            <div id="operator-prf-phase3-controls" style="margin-top:12px;border:1px solid #d1d5db;border-radius:8px;padding:10px;background:#f8fafc;display:none;">
+                                <div style="font-size:12px;font-weight:700;color:#314b68;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Generate Premium PDF Reports</div>
+                                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;margin:0;">
+                                        <input id="operator-prf-report-select-all" type="checkbox" />
+                                        Select All for Generation
+                                    </label>
+                                    <select id="operator-prf-report-type-select" style="padding:6px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;">
+                                        <option value="single_matchup">Single Matchup Premium</option>
+                                        <option value="event_card">Full Event Card</option>
+                                    </select>
+                                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;margin:0;">
+                                        <input id="operator-prf-generate-approval" type="checkbox" />
+                                        Operator Approval for PDF Generation
+                                    </label>
+                                    <button id="operator-prf-generate-reports-btn" style="padding:8px 14px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #7c3aed;background:#f3f0ff;color:#7c3aed;cursor:pointer;">Generate Premium PDF Reports</button>
+                                </div>
+                                <span style="font-size:11px;color:#5a6374;">Requires explicit operator approval. No result lookup, no learning, no billing, no web discovery.</span>
+                            </div>
+                            <div id="operator-prf-generate-warnings" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
+                            <div id="operator-prf-export-results-window" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
                             <button id="operator-dry-run-preview-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #6b7280;background:#f5f7fa;color:#374151;cursor:pointer;">Dry-Run Preview Waiting Results</button>

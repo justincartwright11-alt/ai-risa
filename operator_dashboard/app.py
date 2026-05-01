@@ -47,6 +47,7 @@ app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE", No
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE", None)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE", None)
 app.config.setdefault("PRF_QUEUE_PATH_OVERRIDE", None)
+app.config.setdefault("PRF_REPORTS_DIR_OVERRIDE", None)
 
 OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
 OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER = OfficialSourceApprovedApplyGlobalLedgerHelper()
@@ -1749,6 +1750,91 @@ def api_premium_report_factory_queue():
     from operator_dashboard.prf_queue_utils import get_prf_queue_list
     queue_path = _get_prf_queue_path()
     result = get_prf_queue_list(queue_path)
+    return jsonify(result)
+
+
+def _get_prf_reports_dir() -> str:
+    """Return the PRF reports directory path, using test override when set."""
+    override = app.config.get("PRF_REPORTS_DIR_OVERRIDE")
+    if override:
+        return override
+    base_dir = Path(__file__).resolve().parent.parent
+    return str(base_dir / "ops" / "prf_reports")
+
+
+@app.route("/api/premium-report-factory/reports/generate", methods=["POST"])
+def api_premium_report_factory_reports_generate():
+    from operator_dashboard.prf_report_builder import generate_reports
+    from operator_dashboard.prf_queue_utils import load_prf_queue, update_report_status
+
+    request_json = request.get_json(silent=True)
+    if not isinstance(request_json, dict):
+        request_json = {}
+
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    operator_approval = bool(request_json.get("operator_approval"))
+
+    if not operator_approval:
+        return jsonify({
+            "ok": False,
+            "generated_at": generated_at,
+            "accepted_count": 0,
+            "rejected_count": 0,
+            "generated_reports": [],
+            "rejected_reports": [],
+            "export_summary": {"output_folder": _get_prf_reports_dir(), "total_files": 0, "total_size_bytes": 0},
+            "warnings": [],
+            "errors": ["operator_approval_required"],
+        }), 400
+
+    selected_matchup_ids = request_json.get("selected_matchup_ids") or []
+    if not isinstance(selected_matchup_ids, list):
+        selected_matchup_ids = []
+
+    report_type = str(request_json.get("report_type") or "").strip()
+    export_format = str(request_json.get("export_format") or "pdf").strip() or "pdf"
+    notes = str(request_json.get("notes") or "").strip()
+
+    queue_path = _get_prf_queue_path()
+    all_queue_records = load_prf_queue(queue_path)
+
+    if selected_matchup_ids:
+        id_set = set(str(mid) for mid in selected_matchup_ids if mid)
+        queue_records = [r for r in all_queue_records if r.get("matchup_id") in id_set]
+    else:
+        queue_records = list(all_queue_records)
+
+    reports_dir = _get_prf_reports_dir()
+
+    result = generate_reports(
+        queue_records=queue_records,
+        report_type=report_type,
+        operator_approval=operator_approval,
+        export_format=export_format,
+        notes=notes,
+        reports_dir=reports_dir,
+    )
+
+    # Update report_status in queue for successfully generated reports
+    for gen_report in result.get("generated_reports") or []:
+        try:
+            update_report_status(
+                queue_path,
+                gen_report["matchup_id"],
+                gen_report["report_status"],
+            )
+        except Exception:
+            pass
+
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
+
+
+@app.route("/api/premium-report-factory/reports/list", methods=["GET"])
+def api_premium_report_factory_reports_list():
+    from operator_dashboard.prf_report_builder import list_generated_reports
+    reports_dir = _get_prf_reports_dir()
+    result = list_generated_reports(reports_dir)
     return jsonify(result)
 
 

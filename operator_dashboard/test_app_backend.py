@@ -4778,5 +4778,424 @@ class PremiumReportFactoryPhase2QueueTest(unittest.TestCase):
         self.assertNotIn('operator-prf-calibrate-btn', html)
         self.assertNotIn('operator-prf-learning-btn', html)
 
+
+# ---------------------------------------------------------------------------
+# Phase 3 Premium Report Factory – PDF Report Builder Tests
+# ---------------------------------------------------------------------------
+
+class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
+    """
+    Focused tests for Phase 3 PDF report builder.
+    All file I/O uses isolated temporary directories.
+    No result lookup, no accuracy comparison, no learning, no web discovery,
+    no billing, no distribution.
+    """
+
+    def setUp(self):
+        self.client = app.test_client()
+        self._orig_queue = app.config.get('PRF_QUEUE_PATH_OVERRIDE')
+        self._orig_reports = app.config.get('PRF_REPORTS_DIR_OVERRIDE')
+
+    def tearDown(self):
+        app.config['PRF_QUEUE_PATH_OVERRIDE'] = self._orig_queue
+        app.config['PRF_REPORTS_DIR_OVERRIDE'] = self._orig_reports
+
+    def _set_temp_paths(self, tmpdir):
+        import os
+        queue_path = os.path.join(tmpdir, 'prf_queue.json')
+        reports_dir = os.path.join(tmpdir, 'prf_reports')
+        app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+        app.config['PRF_REPORTS_DIR_OVERRIDE'] = reports_dir
+        return queue_path, reports_dir
+
+    def _save_two_matchups(self, queue_path):
+        """Save two clean matchups to the queue and return their matchup_ids."""
+        preview_payload = {
+            'raw_card_text': 'John Fighter vs Mark Boxer\nSam Striker v Luke Grappler',
+            'event_name': 'Phase3 Test Card',
+            'event_date': '2026-07-01',
+            'promotion': 'AI-RISA FC',
+            'location': 'London',
+            'source_reference': 'phase3_test_source',
+            'notes': 'phase3 smoke',
+        }
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=preview_payload)
+        self.assertEqual(resp.status_code, 200)
+        preview = resp.get_json()
+        matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+        self.assertGreaterEqual(len(matchups), 1)
+
+        save_payload = {
+            'event_preview': preview.get('event_preview'),
+            'selected_matchup_previews': matchups,
+            'operator_approval': True,
+            'source_reference': 'phase3_test_source',
+        }
+        resp2 = self.client.post('/api/premium-report-factory/queue/save-selected', json=save_payload)
+        self.assertEqual(resp2.status_code, 200)
+        saved = resp2.get_json()
+        matchup_ids = [m['matchup_id'] for m in saved.get('saved_matchups') or []]
+        return matchup_ids
+
+    # 1. Generate endpoint rejects missing operator_approval
+    def test_prf_phase3_generate_requires_operator_approval(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_paths(tmpdir)
+            payload = {
+                'selected_matchup_ids': [],
+                'report_type': 'single_matchup',
+                'operator_approval': False,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            self.assertIn('operator_approval_required', data.get('errors') or [])
+
+    # 2. Selected saved queue fight exports PDF
+    def test_prf_phase3_generate_exports_pdf_file(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreater(len(matchup_ids), 0)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'export_format': 'pdf',
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertGreaterEqual(data.get('accepted_count'), 1)
+
+            gen_reports = data.get('generated_reports') or []
+            self.assertGreater(len(gen_reports), 0)
+            file_path = gen_reports[0].get('file_path')
+            self.assertIsNotNone(file_path)
+            self.assertTrue(os.path.exists(file_path), 'PDF file must exist on disk')
+
+    # 3. Deterministic filename
+    def test_prf_phase3_deterministic_filename(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreater(len(matchup_ids), 0)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            gen_reports = data.get('generated_reports') or []
+            self.assertGreater(len(gen_reports), 0)
+            file_name = gen_reports[0].get('file_name')
+            self.assertIsNotNone(file_name)
+            self.assertTrue(file_name.startswith('ai_risa_premium_report_'), 'Filename must use deterministic prefix')
+            self.assertTrue(file_name.endswith('.pdf'), 'Filename must end with .pdf')
+
+    # 4. report_status is 'generated' only after confirmed file write
+    def test_prf_phase3_report_status_generated_only_after_success(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreater(len(matchup_ids), 0)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            data = resp.get_json()
+            for rep in data.get('generated_reports') or []:
+                self.assertIn(
+                    rep.get('report_status'),
+                    ('generated', 'partial'),
+                    'report_status must be generated or partial, not pending or failed',
+                )
+                self.assertNotEqual(rep.get('report_status'), 'pending')
+                self.assertNotEqual(rep.get('report_status'), 'failed')
+
+    # 5. Failed export does not mark report_status as 'generated'
+    def test_prf_phase3_failed_export_not_marked_generated(self):
+        from operator_dashboard.prf_report_builder import generate_reports
+        # Use an invalid reports_dir to trigger export failure
+        records = [{
+            'matchup_id': 'prf_q_test001',
+            'fighter_a': 'Alpha',
+            'fighter_b': 'Beta',
+            'event_id': 'alpha_event',
+            'event_name': 'Alpha Event',
+            'event_date': '2026-07-01',
+            'promotion': 'Test FC',
+            'queue_status': 'saved',
+            'source_reference': 'test',
+            'notes': '',
+        }]
+        # Pass a path where writing is impossible (a file, not a dir)
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a *file* where the reports dir would be to force failure
+            bad_dir = os.path.join(tmpdir, 'not_a_dir')
+            with open(bad_dir, 'w') as f:
+                f.write("block")
+            result = generate_reports(
+                queue_records=records,
+                report_type='single_matchup',
+                operator_approval=True,
+                export_format='pdf',
+                notes='',
+                reports_dir=bad_dir,
+            )
+        # ok is False because accepted_count == 0
+        self.assertFalse(result.get('ok'))
+        self.assertEqual(result.get('accepted_count'), 0)
+        # Verify no generated_reports have status 'generated'
+        for rep in result.get('generated_reports') or []:
+            self.assertNotEqual(rep.get('report_status'), 'generated')
+
+    # 6. All 14 required sections present in section_status
+    def test_prf_phase3_all_14_sections_present(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreater(len(matchup_ids), 0)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            data = resp.get_json()
+            gen_reports = data.get('generated_reports') or []
+            self.assertGreater(len(gen_reports), 0)
+            section_status = gen_reports[0].get('section_status') or {}
+            required_sections = [
+                'cover_page', 'headline_prediction', 'executive_summary',
+                'matchup_snapshot', 'decision_structure', 'energy_use',
+                'fatigue_failure_points', 'mental_condition', 'collapse_triggers',
+                'deception_and_unpredictability', 'round_by_round_control_shifts',
+                'scenario_tree', 'risk_warnings', 'operator_notes',
+            ]
+            for section in required_sections:
+                self.assertIn(section, section_status, 'Missing section: {}'.format(section))
+
+    # 7. section_status values are valid
+    def test_prf_phase3_section_status_values_valid(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreater(len(matchup_ids), 0)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            data = resp.get_json()
+            gen_reports = data.get('generated_reports') or []
+            section_status = gen_reports[0].get('section_status') or {}
+            valid_values = {'complete', 'partial', 'unavailable', 'blocked'}
+            for section, status in section_status.items():
+                self.assertIn(status, valid_values, 'Invalid section_status value for {}: {}'.format(section, status))
+
+    # 8. Missing analysis uses empty-state placeholders (not blank)
+    def test_prf_phase3_empty_state_placeholders_not_blank(self):
+        from operator_dashboard.prf_report_content import assemble_report_sections
+        record = {
+            'matchup_id': 'prf_q_test002',
+            'fighter_a': 'Alpha',
+            'fighter_b': 'Beta',
+            'event_id': 'test_event',
+            'event_name': 'Test Event',
+            'event_date': '2026-07-01',
+            'promotion': 'Test FC',
+            'queue_status': 'saved',
+            'source_reference': 'test',
+            'notes': '',
+        }
+        sections, section_status = assemble_report_sections(record)
+        # Sections that will be 'unavailable' in Phase 3 must have explicit placeholder text
+        unavailable_sections = [
+            'headline_prediction', 'decision_structure', 'energy_use',
+            'fatigue_failure_points', 'mental_condition', 'collapse_triggers',
+            'deception_and_unpredictability', 'round_by_round_control_shifts', 'scenario_tree',
+        ]
+        for section in unavailable_sections:
+            content = sections.get(section) or ''
+            self.assertTrue(bool(content.strip()), 'Section {} must have non-empty placeholder'.format(section))
+            self.assertNotEqual(content.strip(), '', 'Section {} must not be blank'.format(section))
+            self.assertEqual(section_status.get(section), 'unavailable')
+
+    # 9. Unsupported report_type is rejected
+    def test_prf_phase3_unsupported_report_type_rejected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'totally_invalid_type',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            errors = data.get('errors') or []
+            self.assertTrue(any('unsupported_report_type' in e for e in errors))
+
+    # 10. fighter_profile report_type is rejected in Phase 3
+    def test_prf_phase3_fighter_profile_rejected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'fighter_profile',
+                'operator_approval': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            errors = data.get('errors') or []
+            self.assertTrue(any('not_supported' in e for e in errors))
+
+    # 11. Report list endpoint returns generated reports
+    def test_prf_phase3_report_list_endpoint(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+
+            # List is empty before generation
+            resp = self.client.get('/api/premium-report-factory/reports/list')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertEqual(data.get('total_count'), 0)
+            self.assertEqual(data.get('reports'), [])
+
+            # Generate a report
+            matchup_ids = self._save_two_matchups(queue_path)
+            gen_payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+            }
+            self.client.post('/api/premium-report-factory/reports/generate', json=gen_payload)
+
+            # List now shows the generated report
+            resp2 = self.client.get('/api/premium-report-factory/reports/list')
+            self.assertEqual(resp2.status_code, 200)
+            data2 = resp2.get_json()
+            self.assertTrue(data2.get('ok'))
+            self.assertGreaterEqual(data2.get('total_count'), 1)
+            for field in ('ok', 'generated_at', 'reports', 'total_count', 'warnings', 'errors'):
+                self.assertIn(field, data2)
+
+    # 12. Dashboard contains Generate Premium PDF Reports button
+    def test_prf_phase3_dashboard_has_generate_btn(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('operator-prf-generate-reports-btn', html)
+        self.assertIn('Generate Premium PDF Reports', html)
+
+    # 13. Dashboard contains export results window
+    def test_prf_phase3_dashboard_has_export_results_window(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('operator-prf-export-results-window', html)
+        self.assertIn('operator-prf-generate-approval', html)
+        self.assertIn('operator-prf-report-type-select', html)
+        self.assertIn('operator-prf-generate-warnings', html)
+
+    # 14. Dashboard contains no result/learning/billing/web controls
+    def test_prf_phase3_dashboard_no_forbidden_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertNotIn('operator-prf-result-lookup-btn', html)
+        self.assertNotIn('operator-prf-calibrate-btn', html)
+        self.assertNotIn('operator-prf-learning-btn', html)
+        self.assertNotIn('operator-prf-billing-btn', html)
+        self.assertNotIn('operator-prf-web-discover-btn', html)
+        self.assertNotIn('operator-prf-email-btn', html)
+
+    # 15. Backend regression: Phase 2 queue still works after Phase 3 additions
+    def test_prf_phase3_phase2_regression(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_paths(tmpdir)
+            # Phase 1 preview
+            resp = self.client.post('/api/premium-report-factory/intake/preview', json={
+                'raw_card_text': 'Alpha vs Beta',
+                'event_name': 'Regression Card',
+                'event_date': '2026-07-01',
+                'source_reference': 'regression_test',
+            })
+            self.assertEqual(resp.status_code, 200)
+            self.assertTrue(resp.get_json().get('ok'))
+            # Phase 2 save
+            preview = resp.get_json()
+            matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+            if matchups:
+                save_resp = self.client.post('/api/premium-report-factory/queue/save-selected', json={
+                    'event_preview': preview.get('event_preview'),
+                    'selected_matchup_previews': matchups,
+                    'operator_approval': True,
+                    'source_reference': 'regression_test',
+                })
+                self.assertEqual(save_resp.status_code, 200)
+                self.assertTrue(save_resp.get_json().get('ok'))
+            # Phase 2 queue list
+            list_resp = self.client.get('/api/premium-report-factory/queue')
+            self.assertEqual(list_resp.status_code, 200)
+            self.assertTrue(list_resp.get_json().get('ok'))
+
+    # 16. Full event-card report generation from multiple saved queue fights
+    def test_prf_phase3_event_card_multi_matchup_batch(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+            self.assertGreaterEqual(len(matchup_ids), 2)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids,
+                'report_type': 'event_card',
+                'operator_approval': True,
+                'notes': 'batch event card test',
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertGreaterEqual(data.get('accepted_count'), 1)
+
+            gen_reports = data.get('generated_reports') or []
+            for rep in gen_reports:
+                self.assertIsNotNone(rep.get('file_path'))
+                self.assertTrue(os.path.exists(rep['file_path']), 'PDF must exist: {}'.format(rep['file_path']))
+
 if __name__ == '__main__':
     unittest.main()
