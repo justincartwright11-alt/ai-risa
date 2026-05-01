@@ -1539,6 +1539,7 @@ def api_operator_compare_with_result():
         return operator_error_response(str(e), 500, errors=[str(e)])
 
 
+@app.route("/api/operator/accuracy-calibration-review", methods=["POST"])
 @app.route("/api/operator/run-calibration-review", methods=["POST"])
 def api_operator_run_calibration_review():
     """

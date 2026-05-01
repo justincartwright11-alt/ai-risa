@@ -3760,6 +3760,60 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertNotIn('guarded-local-apply', dom_block,
                         "batch apply should not be called on DOMContentLoaded")
 
+    def test_operator_run_calibration_review_route_still_works(self):
+        mock_result = {
+            'timestamp': '2026-05-01T00:00:00Z',
+            'fights_analyzed': 3,
+            'miss_patterns': {'winner': 1},
+            'proposed_calibrations': [{'field': 'confidence'}],
+            'backtest_summary': {'total': 3},
+            'confidence_in_calibration': 0.66,
+            'recommendation': 'keep current threshold',
+        }
+
+        with patch.object(app_module, 'MatchupOperator') as mock_operator_cls:
+            mock_operator_cls.return_value.run_calibration_review.return_value = mock_result
+            resp = self.client.post('/api/operator/run-calibration-review', json={})
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertTrue(data.get('approval_required'))
+        self.assertEqual(data.get('fights_analyzed'), 3)
+        self.assertIn('recommendation', data)
+
+    def test_operator_accuracy_calibration_review_alias_matches_canonical_shape(self):
+        mock_result = {
+            'timestamp': '2026-05-01T00:00:00Z',
+            'fights_analyzed': 5,
+            'miss_patterns': {'method': 2},
+            'proposed_calibrations': [{'field': 'method'}],
+            'backtest_summary': {'total': 5},
+            'confidence_in_calibration': 0.72,
+            'recommendation': 'review method weighting',
+        }
+
+        with patch.object(app_module, 'MatchupOperator') as mock_operator_cls:
+            mock_operator_cls.return_value.run_calibration_review.return_value = mock_result
+            canonical_resp = self.client.post('/api/operator/run-calibration-review', json={})
+
+        with patch.object(app_module, 'MatchupOperator') as mock_operator_cls:
+            mock_operator_cls.return_value.run_calibration_review.return_value = mock_result
+            alias_resp = self.client.post('/api/operator/accuracy-calibration-review', json={})
+
+        self.assertEqual(canonical_resp.status_code, 200)
+        self.assertEqual(alias_resp.status_code, 200)
+
+        canonical_data = canonical_resp.get_json()
+        alias_data = alias_resp.get_json()
+
+        self.assertEqual(set(alias_data.keys()), set(canonical_data.keys()))
+        for key in ('ok', 'approval_required', 'fights_analyzed', 'confidence_in_calibration'):
+            self.assertEqual(alias_data.get(key), canonical_data.get(key))
+
+        self.assertNotEqual(alias_data, {'error': 'Operator endpoint not found', 'ok': False})
+
+
     # -------------------------------------------------------------------------
     # Report-scoring bridge v2 endpoint tests
     # -------------------------------------------------------------------------
