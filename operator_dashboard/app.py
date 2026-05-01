@@ -3351,6 +3351,127 @@ def api_operator_actual_result_lookup_guarded_single():
     })
 
 
+@app.route("/api/operator/actual-result-lookup/manual-single-apply", methods=["POST"])
+def api_operator_actual_result_lookup_manual_single_apply():
+    data = request.get_json(silent=True) or {}
+    selected_key = str(data.get("selected_key") or "").strip()
+    approval_granted = bool(data.get("approval_granted"))
+    manual_result = data.get("manual_result") if isinstance(data.get("manual_result"), dict) else {}
+
+    base_payload = {
+        "ok": False,
+        "mode": "manual_single_apply",
+        "approval_required": True,
+        "approval_granted": approval_granted,
+        "mutation_performed": False,
+        "external_lookup_performed": False,
+        "bulk_lookup_performed": False,
+        "manual_review_required": False,
+        "scoring_semantics_changed": False,
+        "selected_key": selected_key or None,
+        "selected_row": None,
+        "proposed_write": None,
+        "audit": {
+            "write_target": None,
+            "write_action": "manual_single_apply",
+            "selected_key": selected_key or None,
+            "record_fight_id": None,
+            "before_row_count": None,
+            "after_row_count": None,
+            "write_performed": False,
+        },
+    }
+
+    if not selected_key:
+        return jsonify({
+            **base_payload,
+            "error": "selected_key is required",
+            "message": "Preview only. Approval required before any write.",
+        }), 400
+
+    if not approval_granted:
+        return jsonify({
+            **base_payload,
+            "error": "approval_granted must be true for manual apply",
+            "message": "Preview only. Approval required before any write.",
+        }), 400
+
+    actual_winner = str(manual_result.get("actual_winner") or "").strip()
+    if not actual_winner:
+        return jsonify({
+            **base_payload,
+            "error": "manual_result.actual_winner is required",
+            "message": "Manual candidate is incomplete. No write performed.",
+        }), 400
+
+    summary = _build_accuracy_comparison_summary()
+    waiting_rows = summary.get("waiting_for_results") or []
+    selected_row = None
+    for row in waiting_rows:
+        if _build_waiting_row_selected_key(row) == selected_key:
+            selected_row = dict(row)
+            break
+
+    if selected_row is None:
+        return jsonify({
+            **base_payload,
+            "error": "selected_key not found in waiting rows",
+            "manual_review_required": True,
+            "message": "Selected row was not found. Manual review required.",
+        }), 404
+
+    fight_id = str(selected_row.get("fight_id") or "").strip()
+    if not _is_known_value(fight_id):
+        fight_id = _normalize_token(selected_row.get("fight_name")) or "unknown_fight"
+
+    proposed_write = {
+        "fight_id": fight_id,
+        "actual_winner": actual_winner,
+        "actual_method": str(manual_result.get("actual_method") or "UNKNOWN").strip() or "UNKNOWN",
+        "actual_round": str(manual_result.get("actual_round") or "UNKNOWN").strip() or "UNKNOWN",
+        "event_date": str(manual_result.get("event_date") or selected_row.get("event_date") or "UNKNOWN").strip() or "UNKNOWN",
+        "source": "manual_button3_operator_apply",
+        "source_reference": str(manual_result.get("source_reference") or "manual_input").strip() or "manual_input",
+        "operator_note": str(manual_result.get("operator_note") or "").strip(),
+    }
+
+    accuracy_dir = _resolve_accuracy_dir()
+    write_result = _upsert_single_manual_actual_result(accuracy_dir, proposed_write)
+    if not write_result.get("ok"):
+        return jsonify({
+            **base_payload,
+            "error": "manual_result_write_failed",
+            "selected_row": selected_row,
+            "proposed_write": proposed_write,
+            "audit": {
+                **base_payload["audit"],
+                "record_fight_id": fight_id,
+                "write_target": write_result.get("write_target"),
+                "before_row_count": write_result.get("before_row_count"),
+                "after_row_count": write_result.get("after_row_count"),
+                "write_performed": False,
+            },
+            "message": "Manual result write failed.",
+        }), 500
+
+    return jsonify({
+        **base_payload,
+        "ok": True,
+        "mutation_performed": True,
+        "selected_row": selected_row,
+        "proposed_write": proposed_write,
+        "audit": {
+            **base_payload["audit"],
+            "record_fight_id": fight_id,
+            "write_target": write_result.get("write_target"),
+            "before_row_count": write_result.get("before_row_count"),
+            "after_row_count": write_result.get("after_row_count"),
+            "write_performed": True,
+        },
+        "message": "Approved manual actual result written for selected row.",
+    })
+
+
 @app.route("/api/accuracy/signal-breakdown", methods=["GET"])
 def api_accuracy_signal_breakdown():
     try:

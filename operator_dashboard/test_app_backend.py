@@ -653,6 +653,56 @@ class DashboardBackendTest(unittest.TestCase):
         # Main dashboard may pre-load queue state, but generation must stay behind explicit click.
         self.assertNotIn('/api/premium-report-factory/reports/generate', dom_ready_slice)
 
+    def test_index_has_button3_result_comparison_learning_controls(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Find Results &amp; Improve Accuracy', resp.data)
+        self.assertIn(b'button3-load-waiting-btn', resp.data)
+        self.assertIn(b'button3-official-preview-btn', resp.data)
+        self.assertIn(b'button3-add-manual-candidate-btn', resp.data)
+        self.assertIn(b'button3-apply-approval', resp.data)
+        self.assertIn(b'button3-apply-selected-btn', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/dry-run-preview', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/official-source-one-record-preview', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/guarded-single', resp.data)
+        self.assertIn(b'/api/operator/actual-result-lookup/manual-single-apply', resp.data)
+
+    def test_index_button3_apply_endpoints_not_called_on_page_load(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        self.assertIn('/api/operator/actual-result-lookup/guarded-single', page)
+        self.assertIn('/api/operator/actual-result-lookup/manual-single-apply', page)
+
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 1200]
+
+        # Button 3 apply endpoints must remain behind explicit operator action.
+        self.assertNotIn('/api/operator/actual-result-lookup/guarded-single', dom_ready_slice)
+        self.assertNotIn('/api/operator/actual-result-lookup/manual-single-apply', dom_ready_slice)
+
+    def test_button3_manual_single_apply_requires_approval(self):
+        payload = {
+            'selected_key': 'alpha_vs_beta|predictions_alpha_vs_beta_prediction_json',
+            'approval_granted': False,
+            'manual_result': {
+                'actual_winner': 'Alpha',
+                'actual_method': 'Decision',
+                'actual_round': 'R3',
+            },
+        }
+        resp = self.client.post('/api/operator/actual-result-lookup/manual-single-apply', json=payload)
+        self.assertEqual(resp.status_code, 400)
+        data = resp.get_json()
+        self.assertFalse(data.get('ok'))
+        self.assertEqual(data.get('mode'), 'manual_single_apply')
+        self.assertTrue(data.get('approval_required'))
+        self.assertFalse(data.get('approval_granted'))
+        self.assertFalse(data.get('mutation_performed'))
+        self.assertIn('approval_granted must be true for manual apply', data.get('error', ''))
+
     def test_advanced_dashboard_has_interactive_summary_chips(self):
         resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)

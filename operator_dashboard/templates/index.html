@@ -402,6 +402,79 @@
             </div>
         </section>
 
+        <!-- Find Results & Improve Accuracy -->
+        <section class="section-card" style="border-left-color: #b45309;">
+            <div class="section-header" style="background: #fff7ed;">
+                <h2 style="color: #b45309;">Find Results &amp; Improve Accuracy</h2>
+            </div>
+            <div class="section-body">
+                <p style="margin: 0 0 10px 0; color: #555; font-size: 14px;">
+                    Button 3 workflow: official-source preview + manual input, candidate review, approval-gated apply, and multi-level accuracy summary.
+                </p>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                    <button id="button3-load-waiting-btn" class="btn-secondary">Load Waiting Results</button>
+                    <span id="button3-selected-key-label" style="font-size:12px;color:#5a6374;">Selected Key: none</span>
+                </div>
+
+                <div id="button3-waiting-status" class="status-display" style="margin-top:0;"></div>
+                <div id="button3-waiting-table" style="margin-top:10px;overflow:auto;"></div>
+
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px;">
+                    <div>
+                        <label for="button3-candidate-urls" style="display:block;font-weight:700;margin-bottom:6px;font-size:13px;color:#374151;">Official Source Candidate URLs (Optional)</label>
+                        <textarea id="button3-candidate-urls" placeholder="https://www.ufc.com/event/example&#10;https://www.onefc.com/events/example" style="min-height:58px;"></textarea>
+                    </div>
+                    <div style="display:flex;align-items:flex-end;">
+                        <button id="button3-official-preview-btn" class="btn-primary" style="width:100%;">Run Official Preview</button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:10px;margin-top:10px;">
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="button3-manual-winner">Manual Winner</label>
+                        <input id="button3-manual-winner" type="text" placeholder="Actual winner" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="button3-manual-method">Manual Method</label>
+                        <input id="button3-manual-method" type="text" placeholder="Decision / KO / Submission" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="button3-manual-round">Manual Round</label>
+                        <input id="button3-manual-round" type="text" placeholder="R1 / R2 / R3" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="button3-manual-event-date">Manual Event Date</label>
+                        <input id="button3-manual-event-date" type="text" placeholder="YYYY-MM-DD" />
+                    </div>
+                </div>
+
+                <div class="command-input-group" style="margin-top:10px;">
+                    <label for="button3-manual-source-reference">Manual Source Reference</label>
+                    <input id="button3-manual-source-reference" type="text" placeholder="Manual source note/reference" />
+                </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px;margin-bottom:8px;">
+                    <button id="button3-add-manual-candidate-btn" class="btn-secondary">Add Manual Candidate</button>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="button3-apply-approval" type="checkbox" />
+                        I approve applying selected result candidate
+                    </label>
+                    <button id="button3-apply-selected-btn" style="padding:8px 14px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid #b45309;background:#fff7ed;color:#b45309;cursor:pointer;" disabled>Apply Selected Candidate</button>
+                </div>
+
+                <div id="button3-candidate-status" class="status-display" style="display:none;"></div>
+                <div id="button3-candidate-review" style="margin-top:10px;overflow:auto;"></div>
+
+                <div id="button3-accuracy-status" class="status-display" style="margin-top:10px;"></div>
+                <div id="button3-accuracy-summary" style="margin-top:10px;overflow:auto;"></div>
+
+                <div class="help-text" style="margin-top:8px;">
+                    No result apply without operator approval. No calibration/learning apply without operator approval. No hidden automatic writes.
+                </div>
+            </div>
+        </section>
+
         <!-- Find Fight Results -->
         <section class="section-card" style="border-left-color: #0b6b57;">
             <div class="section-header" style="background: #eefaf6;">
@@ -1361,6 +1434,419 @@
             }
         });
 
+        // --- Button 3: Find Results & Improve Accuracy ---
+        const button3LoadWaitingBtn = document.getElementById('button3-load-waiting-btn');
+        const button3SelectedKeyLabel = document.getElementById('button3-selected-key-label');
+        const button3WaitingStatus = document.getElementById('button3-waiting-status');
+        const button3WaitingTable = document.getElementById('button3-waiting-table');
+        const button3CandidateUrls = document.getElementById('button3-candidate-urls');
+        const button3OfficialPreviewBtn = document.getElementById('button3-official-preview-btn');
+        const button3ManualWinner = document.getElementById('button3-manual-winner');
+        const button3ManualMethod = document.getElementById('button3-manual-method');
+        const button3ManualRound = document.getElementById('button3-manual-round');
+        const button3ManualEventDate = document.getElementById('button3-manual-event-date');
+        const button3ManualSourceReference = document.getElementById('button3-manual-source-reference');
+        const button3AddManualCandidateBtn = document.getElementById('button3-add-manual-candidate-btn');
+        const button3ApplyApproval = document.getElementById('button3-apply-approval');
+        const button3ApplySelectedBtn = document.getElementById('button3-apply-selected-btn');
+        const button3CandidateStatus = document.getElementById('button3-candidate-status');
+        const button3CandidateReview = document.getElementById('button3-candidate-review');
+        const button3AccuracyStatus = document.getElementById('button3-accuracy-status');
+        const button3AccuracySummary = document.getElementById('button3-accuracy-summary');
+
+        const button3State = {
+            selectedKey: '',
+            candidates: [],
+        };
+
+        function _setButton3SelectedKey(value) {
+            button3State.selectedKey = String(value || '').trim();
+            if (button3SelectedKeyLabel) {
+                button3SelectedKeyLabel.textContent = `Selected Key: ${button3State.selectedKey || 'none'}`;
+            }
+            _updateButton3ApplyState();
+        }
+
+        function _updateButton3ApplyState() {
+            const selectedCandidate = button3CandidateReview
+                ? button3CandidateReview.querySelector('input[name="button3-candidate-radio"]:checked')
+                : null;
+            const canApply = Boolean(button3State.selectedKey) && Boolean(selectedCandidate) && Boolean(button3ApplyApproval && button3ApplyApproval.checked);
+            if (button3ApplySelectedBtn) {
+                button3ApplySelectedBtn.disabled = !canApply;
+                button3ApplySelectedBtn.style.opacity = canApply ? '1' : '0.6';
+                button3ApplySelectedBtn.style.cursor = canApply ? 'pointer' : 'not-allowed';
+            }
+        }
+
+        function _parseButton3CandidateUrls() {
+            const raw = String(button3CandidateUrls ? button3CandidateUrls.value : '');
+            const seen = new Set();
+            const urls = [];
+            raw.split(/[\n,]/).forEach((token) => {
+                const item = token.trim();
+                if (item && !seen.has(item)) {
+                    seen.add(item);
+                    urls.push(item);
+                }
+            });
+            return urls.slice(0, 3);
+        }
+
+        function _renderButton3WaitingRows(data) {
+            if (!button3WaitingTable) return;
+            const rows = Array.isArray(data.preview_rows) ? data.preview_rows : [];
+            if (!rows.length) {
+                button3WaitingTable.innerHTML = '<div style="color:#666;font-size:13px;">No waiting rows available for result apply.</div>';
+                return;
+            }
+
+            const body = rows.map((row) => {
+                const selectedKey = _escapeHtml(row.selected_key || '');
+                return `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fight_name || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.predicted_winner || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.event_date || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;"><code>${selectedKey}</code></td>
+                    <td style="border:1px solid #ddd;padding:6px;"><button type="button" class="btn-secondary button3-select-key-btn" data-selected-key="${selectedKey}" style="margin:0;padding:4px 10px;font-size:12px;">Select</button></td>
+                </tr>`;
+            }).join('');
+
+            button3WaitingTable.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fight</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Predicted Winner</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Event Date</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Selected Key</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Action</th></tr></thead>
+                <tbody>${body}</tbody>
+            </table>`;
+
+            button3WaitingTable.querySelectorAll('.button3-select-key-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    _setButton3SelectedKey(btn.getAttribute('data-selected-key') || '');
+                    if (button3CandidateStatus) {
+                        button3CandidateStatus.style.display = 'block';
+                        button3CandidateStatus.className = 'status-display success';
+                        button3CandidateStatus.textContent = 'Waiting row selected for candidate review.';
+                    }
+                });
+            });
+        }
+
+        function _renderButton3Candidates() {
+            if (!button3CandidateReview) return;
+            const candidates = button3State.candidates || [];
+            if (!candidates.length) {
+                button3CandidateReview.innerHTML = '<div style="color:#666;font-size:13px;">No result candidates yet. Run official preview or add a manual candidate.</div>';
+                _updateButton3ApplyState();
+                return;
+            }
+
+            const body = candidates.map((candidate, idx) => {
+                const proposed = candidate.proposed_write || {};
+                const details = `<div style="font-size:12px;color:#374151;">Winner: ${_escapeHtml(proposed.actual_winner || 'UNKNOWN')} | Method: ${_escapeHtml(proposed.actual_method || 'UNKNOWN')} | Round: ${_escapeHtml(proposed.actual_round || 'UNKNOWN')} | Event Date: ${_escapeHtml(proposed.event_date || 'UNKNOWN')}</div>`;
+                return `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;"><input type="radio" name="button3-candidate-radio" value="${idx}" ${idx === 0 ? 'checked' : ''} /></td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(candidate.label || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(candidate.type || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${details}</td>
+                </tr>`;
+            }).join('');
+
+            button3CandidateReview.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Select</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Candidate</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Type</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Details</th></tr></thead>
+                <tbody>${body}</tbody>
+            </table>`;
+
+            button3CandidateReview.querySelectorAll('input[name="button3-candidate-radio"]').forEach((radio) => {
+                radio.addEventListener('change', _updateButton3ApplyState);
+            });
+            _updateButton3ApplyState();
+        }
+
+        function _buildButton3AccuracyBreakdowns(summaryData) {
+            const comparedRows = Array.isArray(summaryData.compared_results) ? summaryData.compared_results : [];
+            const metrics = summaryData.summary_metrics || {};
+
+            const fighterMap = {};
+            const matchupMap = {};
+            const eventMap = {};
+
+            comparedRows.forEach((row) => {
+                const fightName = String(row.fight_name || '').trim();
+                const eventKey = String(row.event_date || 'unknown').trim() || 'unknown';
+                const winnerHit = Boolean(row.winner_hit);
+
+                const matchupBucket = matchupMap[fightName] || { compared: 0, winner_hits: 0 };
+                matchupBucket.compared += 1;
+                if (winnerHit) matchupBucket.winner_hits += 1;
+                matchupMap[fightName] = matchupBucket;
+
+                const eventBucket = eventMap[eventKey] || { compared: 0, winner_hits: 0 };
+                eventBucket.compared += 1;
+                if (winnerHit) eventBucket.winner_hits += 1;
+                eventMap[eventKey] = eventBucket;
+
+                const parts = fightName.split(/\s+vs\s+/i).map((p) => p.trim()).filter(Boolean);
+                parts.forEach((fighter) => {
+                    const bucket = fighterMap[fighter] || { compared: 0, winner_hits: 0 };
+                    bucket.compared += 1;
+                    if (winnerHit) bucket.winner_hits += 1;
+                    fighterMap[fighter] = bucket;
+                });
+            });
+
+            const toRows = (mapping) => Object.keys(mapping).sort().map((key) => {
+                const row = mapping[key];
+                const pct = row.compared ? ((row.winner_hits / row.compared) * 100).toFixed(2) : '0.00';
+                return `<tr><td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(key)}</td><td style="border:1px solid #ddd;padding:6px;">${row.compared}</td><td style="border:1px solid #ddd;padding:6px;">${row.winner_hits}</td><td style="border:1px solid #ddd;padding:6px;">${pct}%</td></tr>`;
+            }).join('');
+
+            const segmentHtml = `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Segment</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Hits</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Available</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Accuracy</th></tr></thead><tbody>
+                <tr><td style="border:1px solid #ddd;padding:6px;">winner</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.winner_hits || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.total_compared || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.overall_accuracy_pct || 0).toFixed(2)}%</td></tr>
+                <tr><td style="border:1px solid #ddd;padding:6px;">method</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.method_hits || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.method_available || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.method_available || 0) ? ((Number(metrics.method_hits || 0) / Number(metrics.method_available || 0)) * 100).toFixed(2) : '0.00'}%</td></tr>
+                <tr><td style="border:1px solid #ddd;padding:6px;">round</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.round_hits || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.round_available || 0)}</td><td style="border:1px solid #ddd;padding:6px;">${Number(metrics.round_available || 0) ? ((Number(metrics.round_hits || 0) / Number(metrics.round_available || 0)) * 100).toFixed(2) : '0.00'}%</td></tr>
+            </tbody></table>`;
+
+            return {
+                fighterRows: toRows(fighterMap),
+                matchupRows: toRows(matchupMap),
+                eventRows: toRows(eventMap),
+                segmentHtml,
+                metrics,
+            };
+        }
+
+        async function loadButton3WaitingRows() {
+            if (!button3WaitingStatus) return;
+            button3WaitingStatus.className = 'status-display';
+            button3WaitingStatus.textContent = 'Loading waiting result rows...';
+            try {
+                const res = await fetch('/api/operator/actual-result-lookup/dry-run-preview');
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    button3WaitingStatus.className = 'status-display error';
+                    button3WaitingStatus.textContent = `Waiting rows load failed: ${_escapeHtml(data.error || 'unknown_error')}`;
+                    return;
+                }
+                _renderButton3WaitingRows(data);
+                button3WaitingStatus.className = 'status-display success';
+                button3WaitingStatus.textContent = `Waiting rows loaded: ${Number(data.waiting_count || 0)} total, ${Number((data.preview_rows || []).length)} previewed.`;
+            } catch (e) {
+                button3WaitingStatus.className = 'status-display error';
+                button3WaitingStatus.textContent = `Waiting rows request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
+        async function runButton3OfficialPreview() {
+            if (!button3State.selectedKey) {
+                if (button3CandidateStatus) {
+                    button3CandidateStatus.style.display = 'block';
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = 'Select a waiting row key first.';
+                }
+                return;
+            }
+
+            const candidateUrls = _parseButton3CandidateUrls();
+            if (button3CandidateStatus) {
+                button3CandidateStatus.style.display = 'block';
+                button3CandidateStatus.className = 'status-display';
+                button3CandidateStatus.textContent = 'Running official-source preview...';
+            }
+
+            try {
+                const payload = {
+                    selected_key: button3State.selectedKey,
+                    mode: 'official_source_one_record',
+                    lookup_intent: 'preview_only',
+                    approval_granted: false,
+                    ...(candidateUrls.length ? { candidate_urls: candidateUrls } : {}),
+                };
+                const res = await fetch('/api/operator/actual-result-lookup/official-source-one-record-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = `Official preview failed: ${_escapeHtml(data.error || data.message || 'unknown_error')}`;
+                    return;
+                }
+
+                const proposed = data.proposed_write || {};
+                const sourceCitation = data.source_citation || {};
+                const officialCandidate = {
+                    label: 'Official/Local Candidate',
+                    type: 'official',
+                    proposed_write: {
+                        actual_winner: proposed.actual_winner || sourceCitation.extracted_winner || 'UNKNOWN',
+                        actual_method: proposed.actual_method || sourceCitation.method || 'UNKNOWN',
+                        actual_round: proposed.actual_round || sourceCitation.round_time || 'UNKNOWN',
+                        event_date: proposed.event_date || (data.selected_row || {}).event_date || 'UNKNOWN',
+                    },
+                };
+                button3State.candidates = [officialCandidate, ...button3State.candidates.filter((c) => c.type !== 'official')];
+                _renderButton3Candidates();
+
+                button3CandidateStatus.className = 'status-display success';
+                button3CandidateStatus.textContent = 'Official candidate preview loaded into review window.';
+            } catch (e) {
+                button3CandidateStatus.className = 'status-display error';
+                button3CandidateStatus.textContent = `Official preview request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
+        function addButton3ManualCandidate() {
+            const winner = String(button3ManualWinner ? button3ManualWinner.value : '').trim();
+            if (!winner) {
+                if (button3CandidateStatus) {
+                    button3CandidateStatus.style.display = 'block';
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = 'Manual winner is required to add a manual candidate.';
+                }
+                return;
+            }
+            const manualCandidate = {
+                label: 'Manual Candidate',
+                type: 'manual',
+                proposed_write: {
+                    actual_winner: winner,
+                    actual_method: String(button3ManualMethod ? button3ManualMethod.value : '').trim() || 'UNKNOWN',
+                    actual_round: String(button3ManualRound ? button3ManualRound.value : '').trim() || 'UNKNOWN',
+                    event_date: String(button3ManualEventDate ? button3ManualEventDate.value : '').trim() || 'UNKNOWN',
+                    source_reference: String(button3ManualSourceReference ? button3ManualSourceReference.value : '').trim() || 'manual_input',
+                },
+            };
+            button3State.candidates = [manualCandidate, ...button3State.candidates.filter((c) => c.type !== 'manual')];
+            _renderButton3Candidates();
+            if (button3CandidateStatus) {
+                button3CandidateStatus.style.display = 'block';
+                button3CandidateStatus.className = 'status-display success';
+                button3CandidateStatus.textContent = 'Manual candidate added to review window.';
+            }
+        }
+
+        async function applyButton3SelectedCandidate() {
+            const selectedRadio = button3CandidateReview
+                ? button3CandidateReview.querySelector('input[name="button3-candidate-radio"]:checked')
+                : null;
+            if (!selectedRadio) {
+                if (button3CandidateStatus) {
+                    button3CandidateStatus.style.display = 'block';
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = 'Select a candidate before apply.';
+                }
+                return;
+            }
+            if (!button3ApplyApproval || !button3ApplyApproval.checked) {
+                if (button3CandidateStatus) {
+                    button3CandidateStatus.style.display = 'block';
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = 'Operator approval is required before result apply.';
+                }
+                return;
+            }
+
+            const idx = Number(selectedRadio.value);
+            const candidate = button3State.candidates[idx];
+            if (!candidate || !button3State.selectedKey) {
+                if (button3CandidateStatus) {
+                    button3CandidateStatus.style.display = 'block';
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = 'Invalid candidate state. Reload waiting rows and try again.';
+                }
+                return;
+            }
+
+            if (button3CandidateStatus) {
+                button3CandidateStatus.style.display = 'block';
+                button3CandidateStatus.className = 'status-display';
+                button3CandidateStatus.textContent = 'Applying selected candidate...';
+            }
+
+            try {
+                let res;
+                if (candidate.type === 'manual') {
+                    res = await fetch('/api/operator/actual-result-lookup/manual-single-apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            selected_key: button3State.selectedKey,
+                            approval_granted: true,
+                            manual_result: {
+                                actual_winner: candidate.proposed_write.actual_winner,
+                                actual_method: candidate.proposed_write.actual_method,
+                                actual_round: candidate.proposed_write.actual_round,
+                                event_date: candidate.proposed_write.event_date,
+                                source_reference: candidate.proposed_write.source_reference,
+                            },
+                        }),
+                    });
+                } else {
+                    res = await fetch('/api/operator/actual-result-lookup/guarded-single', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            selected_key: button3State.selectedKey,
+                            approval_granted: true,
+                        }),
+                    });
+                }
+
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    button3CandidateStatus.className = 'status-display error';
+                    button3CandidateStatus.textContent = `Apply failed: ${_escapeHtml(data.error || data.message || 'unknown_error')}`;
+                    return;
+                }
+
+                button3CandidateStatus.className = 'status-display success';
+                button3CandidateStatus.textContent = _escapeHtml(data.message || 'Result apply completed.');
+                await loadButton3AccuracySummary();
+                await loadButton3WaitingRows();
+            } catch (e) {
+                button3CandidateStatus.className = 'status-display error';
+                button3CandidateStatus.textContent = `Apply request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
+        async function loadButton3AccuracySummary() {
+            if (!button3AccuracyStatus || !button3AccuracySummary) return;
+            button3AccuracyStatus.className = 'status-display';
+            button3AccuracyStatus.textContent = 'Loading fighter/matchup/event/segment/total accuracy...';
+            try {
+                const res = await fetch('/api/accuracy/comparison-summary');
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    button3AccuracyStatus.className = 'status-display error';
+                    button3AccuracyStatus.textContent = `Accuracy summary failed: ${_escapeHtml(data.error || 'unknown_error')}`;
+                    return;
+                }
+
+                const breakdown = _buildButton3AccuracyBreakdowns(data);
+                const metrics = breakdown.metrics || {};
+                button3AccuracyStatus.className = 'status-display success';
+                button3AccuracyStatus.textContent = `Accuracy summary loaded. Total compared: ${Number(metrics.total_compared || 0)}.`;
+
+                button3AccuracySummary.innerHTML = `
+                    <div style="font-size:13px;margin-bottom:8px;"><strong>Total AI-RISA Accuracy:</strong> ${Number(metrics.overall_accuracy_pct || 0).toFixed(2)}%</div>
+                    <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+                        <div><div style="font-weight:700;font-size:12px;color:#374151;margin-bottom:4px;">Segment Accuracy</div>${breakdown.segmentHtml}</div>
+                        <div><div style="font-weight:700;font-size:12px;color:#374151;margin-bottom:4px;">Single Fighter Accuracy</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Compared</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Winner Hits</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Accuracy</th></tr></thead><tbody>${breakdown.fighterRows || '<tr><td colspan="4" style="border:1px solid #ddd;padding:6px;color:#666;">No scored rows.</td></tr>'}</tbody></table></div>
+                        <div><div style="font-weight:700;font-size:12px;color:#374151;margin-bottom:4px;">Matchup Accuracy</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Compared</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Winner Hits</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Accuracy</th></tr></thead><tbody>${breakdown.matchupRows || '<tr><td colspan="4" style="border:1px solid #ddd;padding:6px;color:#666;">No scored rows.</td></tr>'}</tbody></table></div>
+                        <div><div style="font-weight:700;font-size:12px;color:#374151;margin-bottom:4px;">Event-Card Accuracy</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Event Date</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Compared</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Winner Hits</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Accuracy</th></tr></thead><tbody>${breakdown.eventRows || '<tr><td colspan="4" style="border:1px solid #ddd;padding:6px;color:#666;">No scored rows.</td></tr>'}</tbody></table></div>
+                    </div>
+                `;
+            } catch (e) {
+                button3AccuracyStatus.className = 'status-display error';
+                button3AccuracyStatus.textContent = `Accuracy summary request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
+        button3LoadWaitingBtn && button3LoadWaitingBtn.addEventListener('click', loadButton3WaitingRows);
+        button3OfficialPreviewBtn && button3OfficialPreviewBtn.addEventListener('click', runButton3OfficialPreview);
+        button3AddManualCandidateBtn && button3AddManualCandidateBtn.addEventListener('click', addButton3ManualCandidate);
+        button3ApplyApproval && button3ApplyApproval.addEventListener('change', _updateButton3ApplyState);
+        button3ApplySelectedBtn && button3ApplySelectedBtn.addEventListener('click', applyButton3SelectedCandidate);
+
         // --- Web Trigger Scout Logic ---
         const webTriggerScoutInput = document.getElementById('web-trigger-scout-input');
         const webTriggerScoutRunBtn = document.getElementById('web-trigger-scout-run-btn');
@@ -1703,6 +2189,7 @@
             loadSystemHealth();
             loadMainPrfQueue();
             loadMainPrfQueueSnapshot();
+            loadButton3AccuracySummary();
             // NOTE: Batch preview/apply are NOT called on page load (per requirements)
         });
 
