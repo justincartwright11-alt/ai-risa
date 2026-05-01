@@ -3813,6 +3813,127 @@ class DashboardBackendTest(unittest.TestCase):
 
         self.assertNotEqual(alias_data, {'error': 'Operator endpoint not found', 'ok': False})
 
+    def test_premium_report_factory_phase1_intake_preview_clean_card_contract(self):
+        payload = {
+            'raw_card_text': 'Alpha vs Beta\nGamma v Delta',
+            'event_name': 'Test Card',
+            'event_date': '2026-05-10',
+            'promotion': 'AI-RISA FC',
+            'location': 'London',
+            'source_reference': 'manual_operator_entry',
+            'notes': 'phase1 smoke',
+        }
+
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        for field in ('ok', 'generated_at', 'event_preview', 'matchup_previews', 'parse_warnings', 'errors'):
+            self.assertIn(field, data)
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('parse_warnings'), [])
+        self.assertEqual(data.get('errors'), [])
+
+        event_preview = data.get('event_preview') or {}
+        self.assertEqual(event_preview.get('event_name'), payload['event_name'])
+        self.assertEqual(event_preview.get('event_date'), payload['event_date'])
+        self.assertEqual(event_preview.get('promotion'), payload['promotion'])
+        self.assertEqual(event_preview.get('location'), payload['location'])
+        self.assertEqual(event_preview.get('source_reference'), payload['source_reference'])
+        self.assertEqual(event_preview.get('notes'), payload['notes'])
+        self.assertEqual(event_preview.get('raw_card_text_preserved'), payload['raw_card_text'])
+
+        matchup_previews = data.get('matchup_previews') or []
+        self.assertEqual(len(matchup_previews), 2)
+        first = matchup_previews[0]
+        for field in (
+            'temporary_matchup_id', 'fighter_a', 'fighter_b', 'bout_order',
+            'weight_class', 'ruleset', 'source_reference', 'parse_status', 'parse_notes',
+        ):
+            self.assertIn(field, first)
+        self.assertEqual(first.get('fighter_a'), 'Alpha')
+        self.assertEqual(first.get('fighter_b'), 'Beta')
+        self.assertEqual(first.get('parse_status'), 'parsed')
+        self.assertEqual(first.get('source_reference'), payload['source_reference'])
+
+    def test_premium_report_factory_phase1_intake_preview_incomplete_row_needs_review(self):
+        payload = {
+            'raw_card_text': 'Alpha vs\nvs Beta',
+            'event_name': 'Test Card',
+            'event_date': '2026-05-10',
+            'source_reference': 'manual_operator_entry',
+        }
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        previews = data.get('matchup_previews') or []
+        self.assertGreaterEqual(len(previews), 2)
+        self.assertEqual(previews[0].get('parse_status'), 'needs_review')
+        self.assertEqual(previews[1].get('parse_status'), 'needs_review')
+
+    def test_premium_report_factory_phase1_intake_preview_duplicate_lines_deterministic(self):
+        payload = {
+            'raw_card_text': 'Alpha vs Beta\nAlpha vs Beta\nAlpha vs Beta',
+            'event_name': 'Determinism Card',
+            'event_date': '2026-06-01',
+            'source_reference': 'manual_operator_entry',
+        }
+
+        resp_one = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        resp_two = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp_one.status_code, 200)
+        self.assertEqual(resp_two.status_code, 200)
+
+        rows_one = (resp_one.get_json() or {}).get('matchup_previews') or []
+        rows_two = (resp_two.get_json() or {}).get('matchup_previews') or []
+        self.assertEqual(rows_one, rows_two)
+        self.assertEqual(len(rows_one), 3)
+
+    def test_premium_report_factory_phase1_intake_preview_missing_event_date_warns_not_fails(self):
+        payload = {
+            'raw_card_text': 'Alpha vs Beta',
+            'event_name': 'No Date Card',
+            'event_date': '',
+            'source_reference': 'manual_operator_entry',
+        }
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('missing_event_date', data.get('parse_warnings') or [])
+        self.assertEqual(data.get('errors'), [])
+
+    def test_premium_report_factory_phase1_intake_preview_preserves_source_reference_and_raw_text(self):
+        payload = {
+            'raw_card_text': 'Alpha vs Beta\nGamma vs Delta\n',
+            'event_name': 'Source Ref Card',
+            'event_date': '2026-07-01',
+            'source_reference': 'ops_sheet_2026_07_01',
+        }
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        event_preview = data.get('event_preview') or {}
+        self.assertEqual(event_preview.get('source_reference'), payload['source_reference'])
+        self.assertEqual(event_preview.get('raw_card_text_preserved'), payload['raw_card_text'])
+        for row in data.get('matchup_previews') or []:
+            self.assertEqual(row.get('source_reference'), payload['source_reference'])
+
+    def test_premium_report_factory_phase1_intake_preview_has_no_storage_side_effects(self):
+        before = self._actual_results_file_hashes()
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json={
+            'raw_card_text': 'Alpha vs Beta',
+            'event_name': 'No Write Card',
+            'event_date': '2026-08-01',
+            'source_reference': 'manual_operator_entry',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue((resp.get_json() or {}).get('ok'))
+        after = self._actual_results_file_hashes()
+        self.assertEqual(before, after)
+
 
     # -------------------------------------------------------------------------
     # Report-scoring bridge v2 endpoint tests

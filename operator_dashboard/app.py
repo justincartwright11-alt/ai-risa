@@ -1035,6 +1035,111 @@ def _validate_batch_preview_token(token: str, selected_keys: list) -> tuple:
     return True, "ok", age_seconds
 
 
+def _build_phase1_intake_matchup_preview_row(
+    raw_line: str,
+    bout_order: int,
+    source_reference: str,
+) -> dict:
+    line_text = str(raw_line or "").strip()
+    lowered = line_text.lower()
+
+    fighter_a = ""
+    fighter_b = ""
+
+    for separator in (" vs ", " v "):
+        if separator in lowered:
+            split_index = lowered.find(separator)
+            fighter_a = line_text[:split_index].strip(" -\t")
+            fighter_b = line_text[split_index + len(separator):].strip(" -\t")
+            break
+
+    if not fighter_a and not fighter_b:
+        if lowered.startswith("vs "):
+            fighter_b = line_text[3:].strip(" -\t")
+        elif lowered.startswith("v "):
+            fighter_b = line_text[2:].strip(" -\t")
+        elif lowered.endswith(" vs"):
+            fighter_a = line_text[:-3].strip(" -\t")
+        elif lowered.endswith(" v"):
+            fighter_a = line_text[:-2].strip(" -\t")
+
+    parse_status = "parsed" if fighter_a and fighter_b else "needs_review"
+    parse_notes = "" if parse_status == "parsed" else "incomplete_matchup_row"
+    deterministic_seed = f"{bout_order}|{line_text}"
+    temporary_matchup_id = f"tmp_{hashlib.sha256(deterministic_seed.encode('utf-8')).hexdigest()[:12]}"
+
+    return {
+        "temporary_matchup_id": temporary_matchup_id,
+        "fighter_a": fighter_a,
+        "fighter_b": fighter_b,
+        "bout_order": bout_order,
+        "weight_class": None,
+        "ruleset": None,
+        "source_reference": source_reference,
+        "parse_status": parse_status,
+        "parse_notes": parse_notes,
+    }
+
+
+def _build_phase1_intake_preview_payload(request_json: dict) -> dict:
+    request_json = request_json if isinstance(request_json, dict) else {}
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+    raw_card_text = request_json.get("raw_card_text")
+    raw_card_text_preserved = "" if raw_card_text is None else str(raw_card_text)
+    event_date = str(request_json.get("event_date") or "").strip()
+    source_reference = str(request_json.get("source_reference") or "").strip()
+
+    parse_warnings = []
+    if not event_date:
+        parse_warnings.append("missing_event_date")
+
+    matchup_previews = []
+    bout_order = 1
+    for raw_line in raw_card_text_preserved.splitlines():
+        line_text = str(raw_line or "").strip()
+        if not line_text:
+            continue
+        lowered = line_text.lower()
+        looks_like_matchup = (
+            " vs " in lowered
+            or " v " in lowered
+            or lowered.startswith("vs ")
+            or lowered.startswith("v ")
+            or lowered.endswith(" vs")
+            or lowered.endswith(" v")
+        )
+        if not looks_like_matchup:
+            continue
+        matchup_previews.append(
+            _build_phase1_intake_matchup_preview_row(
+                line_text,
+                bout_order,
+                source_reference,
+            )
+        )
+        bout_order += 1
+
+    event_preview = {
+        "event_name": str(request_json.get("event_name") or "").strip(),
+        "event_date": event_date,
+        "promotion": str(request_json.get("promotion") or "").strip(),
+        "location": str(request_json.get("location") or "").strip(),
+        "source_reference": source_reference,
+        "notes": str(request_json.get("notes") or "").strip(),
+        "raw_card_text_preserved": raw_card_text_preserved,
+    }
+
+    return {
+        "ok": True,
+        "generated_at": generated_at,
+        "event_preview": event_preview,
+        "matchup_previews": matchup_previews,
+        "parse_warnings": parse_warnings,
+        "errors": [],
+    }
+
+
 def operator_error_response(message: str, status_code: int = 500, **extra):
     payload = {
         "ok": False,
@@ -1588,6 +1693,33 @@ def api_operator_run_calibration_review():
             recommendation=message,
             errors=[str(e)],
         )
+
+
+@app.route("/api/premium-report-factory/intake/preview", methods=["POST"])
+def api_premium_report_factory_phase1_intake_preview():
+    request_json = request.get_json(silent=True)
+    if request_json is None:
+        request_json = {}
+
+    if not isinstance(request_json, dict):
+        return jsonify({
+            "ok": False,
+            "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "event_preview": {
+                "event_name": "",
+                "event_date": "",
+                "promotion": "",
+                "location": "",
+                "source_reference": "",
+                "notes": "",
+                "raw_card_text_preserved": "",
+            },
+            "matchup_previews": [],
+            "parse_warnings": [],
+            "errors": ["request_json_object_required"],
+        }), 400
+
+    return jsonify(_build_phase1_intake_preview_payload(request_json))
 
 
 def _build_signal_gap_breakdown() -> dict:
