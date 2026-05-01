@@ -599,6 +599,31 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'Bulk lookup for waiting records does not run automatically.', resp.data)
 
+    def test_index_has_button2_main_dashboard_pdf_controls(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Generate Premium PDF Reports', resp.data)
+        self.assertIn(b'main-prf-refresh-queue-btn', resp.data)
+        self.assertIn(b'main-prf-select-all', resp.data)
+        self.assertIn(b'main-prf-generate-approval', resp.data)
+        self.assertIn(b'main-prf-generate-btn', resp.data)
+        self.assertIn(b'/api/premium-report-factory/queue', resp.data)
+        self.assertIn(b'/api/premium-report-factory/reports/generate', resp.data)
+        self.assertIn(b'No result lookup, no learning, no billing, no web discovery.', resp.data)
+
+    def test_index_button2_generate_not_called_on_page_load(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        self.assertIn('/api/premium-report-factory/reports/generate', page)
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 600]
+
+        # Main dashboard may pre-load queue state, but generation must stay behind explicit click.
+        self.assertNotIn('/api/premium-report-factory/reports/generate', dom_ready_slice)
+
     def test_advanced_dashboard_has_interactive_summary_chips(self):
         resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)

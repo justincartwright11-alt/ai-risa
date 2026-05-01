@@ -268,6 +268,49 @@
             </div>
         </section>
 
+        <!-- Generate Premium PDF Reports -->
+        <section class="section-card" style="border-left-color: #7c3aed;">
+            <div class="section-header" style="background: #f6f1ff;">
+                <h2 style="color: #6d28d9;">Generate Premium PDF Reports</h2>
+            </div>
+            <div class="section-body">
+                <p style="margin: 0 0 10px 0; color: #555; font-size: 14px;">
+                    Saved queue fights only. Select one/many/all, approve, generate/export, and review file paths.
+                </p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                    <button id="main-prf-refresh-queue-btn" class="btn-secondary">Refresh Saved Fight Queue</button>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="main-prf-select-all" type="checkbox" />
+                        Select All
+                    </label>
+                    <span id="main-prf-selected-count" style="font-size:12px;color:#5a6374;">Selected: 0</span>
+                </div>
+
+                <div id="main-prf-queue-status" class="status-display" style="margin-top:0;"></div>
+                <div id="main-prf-queue-table" style="margin-top:10px;overflow:auto;"></div>
+
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;margin-bottom:8px;">
+                    <label for="main-prf-report-type" style="font-size:13px;font-weight:700;color:#374151;">Report Type</label>
+                    <select id="main-prf-report-type" style="padding:8px 10px;font-size:13px;border-radius:6px;border:1px solid #c7d6e8;">
+                        <option value="single_matchup">Single Matchup Premium</option>
+                        <option value="event_card">Full Event Card</option>
+                    </select>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="main-prf-generate-approval" type="checkbox" />
+                        I approve generating and exporting customer PDFs
+                    </label>
+                    <button id="main-prf-generate-btn" style="padding:8px 14px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid #7c3aed;background:#f3f0ff;color:#7c3aed;cursor:pointer;" disabled>Generate &amp; Export</button>
+                </div>
+
+                <div class="help-text" style="margin-top:0;">
+                    Operator approval is required before customer PDF output. No result lookup, no learning, no billing, no web discovery.
+                </div>
+
+                <div id="main-prf-generate-status" class="status-display" style="display:none;"></div>
+                <div id="main-prf-generate-results" style="display:none;margin-top:10px;overflow:auto;"></div>
+            </div>
+        </section>
+
         <!-- Build a Report -->
         <section class="section-card" style="border-left-color: #0078d4;">
             <div class="section-header" style="background: #e8f4fd;">
@@ -547,6 +590,248 @@
                 </div>`;
             return { data, summaryHtml };
         }
+
+        // --- Main Dashboard Button 2: Premium PDF Generation ---
+        const mainPrfRefreshQueueBtn = document.getElementById('main-prf-refresh-queue-btn');
+        const mainPrfSelectAll = document.getElementById('main-prf-select-all');
+        const mainPrfSelectedCount = document.getElementById('main-prf-selected-count');
+        const mainPrfQueueStatus = document.getElementById('main-prf-queue-status');
+        const mainPrfQueueTable = document.getElementById('main-prf-queue-table');
+        const mainPrfReportType = document.getElementById('main-prf-report-type');
+        const mainPrfGenerateApproval = document.getElementById('main-prf-generate-approval');
+        const mainPrfGenerateBtn = document.getElementById('main-prf-generate-btn');
+        const mainPrfGenerateStatus = document.getElementById('main-prf-generate-status');
+        const mainPrfGenerateResults = document.getElementById('main-prf-generate-results');
+
+        function _formatBytes(bytes) {
+            const value = Number(bytes || 0);
+            if (!Number.isFinite(value) || value <= 0) return '0 B';
+            if (value < 1024) return `${value} B`;
+            if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+            return `${(value / (1024 * 1024)).toFixed(2)} MB`;
+        }
+
+        function _getMainPrfSelectedMatchupIds() {
+            if (!mainPrfQueueTable) return [];
+            return Array.from(mainPrfQueueTable.querySelectorAll('.main-prf-row-checkbox:checked'))
+                .map((cb) => cb.getAttribute('data-matchup-id') || '')
+                .filter(Boolean);
+        }
+
+        function _updateMainPrfSelectedCount() {
+            const selectedCount = _getMainPrfSelectedMatchupIds().length;
+            if (mainPrfSelectedCount) {
+                mainPrfSelectedCount.textContent = `Selected: ${selectedCount}`;
+            }
+            const selectableCount = mainPrfQueueTable
+                ? mainPrfQueueTable.querySelectorAll('.main-prf-row-checkbox').length
+                : 0;
+            if (mainPrfSelectAll) {
+                mainPrfSelectAll.checked = selectableCount > 0 && selectedCount === selectableCount;
+            }
+            const canGenerate = selectedCount > 0 && Boolean(mainPrfGenerateApproval && mainPrfGenerateApproval.checked);
+            if (mainPrfGenerateBtn) {
+                mainPrfGenerateBtn.disabled = !canGenerate;
+                mainPrfGenerateBtn.style.opacity = canGenerate ? '1' : '0.6';
+                mainPrfGenerateBtn.style.cursor = canGenerate ? 'pointer' : 'not-allowed';
+            }
+        }
+
+        function _renderMainPrfQueueRows(rows) {
+            if (!mainPrfQueueTable) return;
+            if (!rows || !rows.length) {
+                mainPrfQueueTable.innerHTML = '<div style="color:#666;font-size:13px;">No saved queue fights yet. Use intake/save flow first.</div>';
+                _updateMainPrfSelectedCount();
+                return;
+            }
+
+            const body = rows.map((row) => {
+                const matchupId = _escapeHtml(row.matchup_id || '');
+                return `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;"><input type="checkbox" class="main-prf-row-checkbox" data-matchup-id="${matchupId}" /></td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_a || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_b || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.event_name || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.event_date || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(String(row.report_readiness_score ?? ''))}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.report_status || 'queued')}</td>
+                </tr>`;
+            }).join('');
+
+            mainPrfQueueTable.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                    <tr>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Select</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter A</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter B</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Event</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Date</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Report Status</th>
+                    </tr>
+                </thead>
+                <tbody>${body}</tbody>
+            </table>`;
+
+            mainPrfQueueTable.querySelectorAll('.main-prf-row-checkbox').forEach((cb) => {
+                cb.addEventListener('change', _updateMainPrfSelectedCount);
+            });
+
+            _updateMainPrfSelectedCount();
+        }
+
+        async function loadMainPrfQueue() {
+            if (!mainPrfQueueStatus) return;
+            mainPrfQueueStatus.className = 'status-display';
+            mainPrfQueueStatus.textContent = 'Loading saved queue fights...';
+            if (mainPrfGenerateResults) {
+                mainPrfGenerateResults.style.display = 'none';
+                mainPrfGenerateResults.innerHTML = '';
+            }
+            if (mainPrfGenerateStatus) {
+                mainPrfGenerateStatus.style.display = 'none';
+                mainPrfGenerateStatus.innerHTML = '';
+            }
+
+            try {
+                const res = await fetch('/api/premium-report-factory/queue');
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mainPrfQueueStatus.className = 'status-display error';
+                    mainPrfQueueStatus.textContent = `Queue load failed: ${(data.errors || ['unknown_error']).join('; ')}`;
+                    _renderMainPrfQueueRows([]);
+                    return;
+                }
+                const rows = Array.isArray(data.upcoming_fights) ? data.upcoming_fights : [];
+                mainPrfQueueStatus.className = 'status-display success';
+                mainPrfQueueStatus.textContent = `Queue loaded: ${Number(data.total_queued || rows.length)} saved fight(s).`;
+                _renderMainPrfQueueRows(rows);
+            } catch (e) {
+                mainPrfQueueStatus.className = 'status-display error';
+                mainPrfQueueStatus.textContent = `Queue request failed: ${e.message}`;
+                _renderMainPrfQueueRows([]);
+            }
+        }
+
+        function _renderMainPrfGenerateResult(data) {
+            if (!mainPrfGenerateResults || !mainPrfGenerateStatus) return;
+            const generated = Array.isArray(data.generated_reports) ? data.generated_reports : [];
+            const rejected = Array.isArray(data.rejected_reports) ? data.rejected_reports : [];
+            const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+            const errors = Array.isArray(data.errors) ? data.errors : [];
+            const totalSize = Number((data.export_summary || {}).total_size_bytes || 0);
+
+            const generatedRows = generated.map((row) => {
+                return `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_name || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_path || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.matchup_id || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.report_status || '')}</td>
+                </tr>`;
+            }).join('');
+
+            const rejectedRows = rejected.map((row) => `<li>${_escapeHtml(row.matchup_id || 'unknown')}: ${_escapeHtml(row.reason || '')}</li>`).join('');
+            const warningsHtml = warnings.length ? `<div style="margin-top:8px;color:#7a4f00;"><strong>Warnings:</strong> ${_escapeHtml(warnings.join('; '))}</div>` : '';
+            const errorsHtml = errors.length ? `<div style="margin-top:8px;color:#a80000;"><strong>Errors:</strong> ${_escapeHtml(errors.join('; '))}</div>` : '';
+
+            const allPaths = generated.map((g) => g.file_path || '').filter(Boolean).join('\n');
+            const copyBtn = generated.length
+                ? `<button id="main-prf-copy-paths-btn" class="btn-secondary" style="margin-top:8px;">Copy All Paths</button>`
+                : '';
+
+            mainPrfGenerateResults.style.display = 'block';
+            mainPrfGenerateResults.innerHTML = `
+                <div style="font-size:13px;margin-bottom:8px;"><strong>Accepted:</strong> ${Number(data.accepted_count || 0)} | <strong>Rejected:</strong> ${Number(data.rejected_count || 0)} | <strong>Total Size:</strong> ${_formatBytes(totalSize)}</div>
+                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Status</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
+                ${copyBtn}
+                ${rejected.length ? `<div style="margin-top:8px;"><strong>Rejected:</strong><ul style="margin:6px 0 0 18px;">${rejectedRows}</ul></div>` : ''}
+                ${warningsHtml}
+                ${errorsHtml}
+            `;
+
+            const copyPathsBtn = document.getElementById('main-prf-copy-paths-btn');
+            if (copyPathsBtn) {
+                copyPathsBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(allPaths);
+                        mainPrfGenerateStatus.style.display = 'block';
+                        mainPrfGenerateStatus.className = 'status-display success';
+                        mainPrfGenerateStatus.textContent = 'File paths copied to clipboard.';
+                    } catch (_) {
+                        mainPrfGenerateStatus.style.display = 'block';
+                        mainPrfGenerateStatus.className = 'status-display error';
+                        mainPrfGenerateStatus.textContent = 'Clipboard copy failed. Copy paths manually from the table.';
+                    }
+                });
+            }
+        }
+
+        async function runMainPrfGenerate() {
+            if (!mainPrfGenerateStatus) return;
+            const selectedMatchupIds = _getMainPrfSelectedMatchupIds();
+            if (!selectedMatchupIds.length) {
+                mainPrfGenerateStatus.style.display = 'block';
+                mainPrfGenerateStatus.className = 'status-display error';
+                mainPrfGenerateStatus.textContent = 'Select at least one saved fight before generation.';
+                return;
+            }
+            if (!mainPrfGenerateApproval || !mainPrfGenerateApproval.checked) {
+                mainPrfGenerateStatus.style.display = 'block';
+                mainPrfGenerateStatus.className = 'status-display error';
+                mainPrfGenerateStatus.textContent = 'Operator approval is required before generating customer PDFs.';
+                return;
+            }
+
+            mainPrfGenerateStatus.style.display = 'block';
+            mainPrfGenerateStatus.className = 'status-display';
+            mainPrfGenerateStatus.textContent = `Generating PDFs for ${selectedMatchupIds.length} selected fight(s)...`;
+            if (mainPrfGenerateResults) {
+                mainPrfGenerateResults.style.display = 'none';
+                mainPrfGenerateResults.innerHTML = '';
+            }
+
+            const payload = {
+                operator_approval: true,
+                selected_matchup_ids: selectedMatchupIds,
+                report_type: mainPrfReportType ? String(mainPrfReportType.value || 'single_matchup') : 'single_matchup',
+                export_format: 'pdf',
+            };
+
+            try {
+                const res = await fetch('/api/premium-report-factory/reports/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mainPrfGenerateStatus.className = 'status-display error';
+                    mainPrfGenerateStatus.textContent = `Generation failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}`;
+                    _renderMainPrfGenerateResult(data || {});
+                    return;
+                }
+
+                mainPrfGenerateStatus.className = 'status-display success';
+                mainPrfGenerateStatus.textContent = `Export complete: ${Number(data.accepted_count || 0)} PDF(s) generated.`;
+                _renderMainPrfGenerateResult(data);
+                await loadMainPrfQueue();
+            } catch (e) {
+                mainPrfGenerateStatus.className = 'status-display error';
+                mainPrfGenerateStatus.textContent = `Generation request failed: ${e.message}`;
+            }
+        }
+
+        mainPrfRefreshQueueBtn && mainPrfRefreshQueueBtn.addEventListener('click', loadMainPrfQueue);
+        mainPrfSelectAll && mainPrfSelectAll.addEventListener('change', () => {
+            const checked = mainPrfSelectAll.checked;
+            if (!mainPrfQueueTable) return;
+            mainPrfQueueTable.querySelectorAll('.main-prf-row-checkbox').forEach((cb) => {
+                cb.checked = checked;
+            });
+            _updateMainPrfSelectedCount();
+        });
+        mainPrfGenerateApproval && mainPrfGenerateApproval.addEventListener('change', _updateMainPrfSelectedCount);
+        mainPrfGenerateBtn && mainPrfGenerateBtn.addEventListener('click', runMainPrfGenerate);
 
         operatorAnalyzeBtn.addEventListener('click', async () => {
             const matchup = operatorMatchupInput.value.trim();
@@ -944,6 +1229,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadAccuracySummary();
             loadSystemHealth();
+            loadMainPrfQueue();
             // NOTE: Batch preview/apply are NOT called on page load (per requirements)
         });
 
