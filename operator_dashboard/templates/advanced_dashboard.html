@@ -1016,6 +1016,47 @@
                             <button id="operator-analyze-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #0078d4;background:#e8f4fd;color:#0078d4;cursor:pointer;">Analyze + Build Premium Report</button>
                             <button id="operator-compare-btn" style="padding:10px;font-size:14px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Compare With Real Result</button>
                         </div>
+                        <div style="border:1px solid #dbe3ef;border-radius:8px;padding:10px;background:#fbfdff;margin-bottom:12px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Premium Report Factory - Event Card Intake Preview</div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                                <div style="grid-column:1 / span 2;">
+                                    <label for="operator-prf-raw-card-text" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">raw_card_text</label>
+                                    <textarea id="operator-prf-raw-card-text" rows="4" placeholder="Paste event card lines, e.g. Fighter A vs Fighter B" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;resize:vertical;"></textarea>
+                                </div>
+                                <div>
+                                    <label for="operator-prf-event-name" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">event_name</label>
+                                    <input id="operator-prf-event-name" type="text" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                                <div>
+                                    <label for="operator-prf-event-date" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">event_date</label>
+                                    <input id="operator-prf-event-date" type="text" placeholder="YYYY-MM-DD" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                                <div>
+                                    <label for="operator-prf-promotion" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">promotion</label>
+                                    <input id="operator-prf-promotion" type="text" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                                <div>
+                                    <label for="operator-prf-location" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">location</label>
+                                    <input id="operator-prf-location" type="text" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                                <div>
+                                    <label for="operator-prf-source-reference" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">source_reference</label>
+                                    <input id="operator-prf-source-reference" type="text" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                                <div>
+                                    <label for="operator-prf-notes" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">notes</label>
+                                    <input id="operator-prf-notes" type="text" style="width:100%;padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid #c7d6e8;box-sizing:border-box;" />
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+                                <button id="operator-prf-preview-btn" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #1f5f93;background:#edf5ff;color:#1f5f93;cursor:pointer;">Preview Event Card</button>
+                                <span style="font-size:12px;color:#5a6374;">Preview-only panel. No save/write/apply/report/result/learning controls.</span>
+                            </div>
+                            <div id="operator-prf-event-preview-output" class="phase1-table-shell" style="margin-bottom:8px;display:none;"></div>
+                            <div id="operator-prf-matchup-preview-output" class="phase1-table-shell" style="margin-bottom:8px;display:none;"></div>
+                            <div id="operator-prf-parse-warnings-output" class="phase1-table-shell" style="margin-bottom:8px;display:none;"></div>
+                            <div id="operator-prf-errors-output" class="phase1-table-shell" style="margin-bottom:0;display:none;"></div>
+                        </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
                             <button id="operator-dry-run-preview-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #6b7280;background:#f5f7fa;color:#374151;cursor:pointer;">Dry-Run Preview Waiting Results</button>
                             <span style="font-size:12px;color:#5a6374;">No web lookup or result write is performed by this preview.</span>
@@ -2449,6 +2490,18 @@
                 const officialSourcePreviewBtn = document.getElementById('operator-official-source-preview-btn');
                 const officialSourcePreviewOutputDiv = document.getElementById('operator-official-source-preview-output');
                 const officialSourceCandidateUrlsTextarea = document.getElementById('operator-official-source-candidate-urls');
+                const premiumFactoryRawCardTextInput = document.getElementById('operator-prf-raw-card-text');
+                const premiumFactoryEventNameInput = document.getElementById('operator-prf-event-name');
+                const premiumFactoryEventDateInput = document.getElementById('operator-prf-event-date');
+                const premiumFactoryPromotionInput = document.getElementById('operator-prf-promotion');
+                const premiumFactoryLocationInput = document.getElementById('operator-prf-location');
+                const premiumFactorySourceReferenceInput = document.getElementById('operator-prf-source-reference');
+                const premiumFactoryNotesInput = document.getElementById('operator-prf-notes');
+                const premiumFactoryPreviewBtn = document.getElementById('operator-prf-preview-btn');
+                const premiumFactoryEventPreviewOutputDiv = document.getElementById('operator-prf-event-preview-output');
+                const premiumFactoryMatchupPreviewOutputDiv = document.getElementById('operator-prf-matchup-preview-output');
+                const premiumFactoryWarningsOutputDiv = document.getElementById('operator-prf-parse-warnings-output');
+                const premiumFactoryErrorsOutputDiv = document.getElementById('operator-prf-errors-output');
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2645,6 +2698,77 @@
                             <div style="margin-bottom:4px;"><strong>Checks Summary:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(acceptanceGate.checks || {}, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;"><strong>Acceptance Gate:</strong> Not available</div>'}
                         ${citation ? `<div style="margin-bottom:4px;"><strong>Source Citation:</strong></div><pre style="margin:0 0 8px 0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;">${escapeHtml(JSON.stringify(citation, null, 2))}</pre>` : '<div style="margin-bottom:8px;color:#6b7280;">No source citation returned.</div>'}
                     `;
+                }
+
+                function renderPremiumFactoryPreviewOutput(data) {
+                    if (!premiumFactoryEventPreviewOutputDiv || !premiumFactoryMatchupPreviewOutputDiv || !premiumFactoryWarningsOutputDiv || !premiumFactoryErrorsOutputDiv) {
+                        return;
+                    }
+
+                    const eventPreview = data.event_preview || {};
+                    const matchupRows = Array.isArray(data.matchup_previews) ? data.matchup_previews : [];
+                    const warnings = Array.isArray(data.parse_warnings) ? [...data.parse_warnings] : [];
+                    const errors = Array.isArray(data.errors) ? data.errors : [];
+
+                    premiumFactoryEventPreviewOutputDiv.style.display = 'block';
+                    premiumFactoryEventPreviewOutputDiv.innerHTML = `
+                        <div style="padding:8px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">event_preview</div>
+                            <pre style="margin:0;white-space:pre-wrap;background:#fff;border:1px solid #e5edf7;border-radius:6px;padding:8px;font-size:11px;">${escapeHtml(JSON.stringify(eventPreview, null, 2))}</pre>
+                        </div>`;
+
+                    if (!matchupRows.length) {
+                        warnings.push('no_matchups_found');
+                        premiumFactoryMatchupPreviewOutputDiv.style.display = 'block';
+                        premiumFactoryMatchupPreviewOutputDiv.innerHTML = '<div style="padding:8px;color:#666;">matchup_previews: no rows returned.</div>';
+                    } else {
+                        const body = matchupRows.map((row) => `<tr>
+                                <td>${escapeHtml(row.temporary_matchup_id || '')}</td>
+                                <td>${escapeHtml(row.fighter_a || '')}</td>
+                                <td>${escapeHtml(row.fighter_b || '')}</td>
+                                <td>${escapeHtml(String(row.bout_order ?? ''))}</td>
+                                <td>${escapeHtml(row.weight_class || '')}</td>
+                                <td>${escapeHtml(row.ruleset || '')}</td>
+                                <td>${escapeHtml(row.source_reference || '')}</td>
+                                <td>${escapeHtml(row.parse_status || '')}</td>
+                                <td>${escapeHtml(row.parse_notes || '')}</td>
+                            </tr>`).join('');
+                        premiumFactoryMatchupPreviewOutputDiv.style.display = 'block';
+                        premiumFactoryMatchupPreviewOutputDiv.innerHTML = `
+                            <div style="padding:8px;">
+                                <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">matchup_previews</div>
+                                <table class="phase1-table">
+                                    <thead>
+                                        <tr>
+                                            <th>temporary_matchup_id</th>
+                                            <th>fighter_a</th>
+                                            <th>fighter_b</th>
+                                            <th>bout_order</th>
+                                            <th>weight_class</th>
+                                            <th>ruleset</th>
+                                            <th>source_reference</th>
+                                            <th>parse_status</th>
+                                            <th>parse_notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${body}</tbody>
+                                </table>
+                            </div>`;
+                    }
+
+                    premiumFactoryWarningsOutputDiv.style.display = 'block';
+                    premiumFactoryWarningsOutputDiv.innerHTML = `
+                        <div style="padding:8px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">parse_warnings</div>
+                            <div style="font-size:12px;color:#374151;">${warnings.length ? escapeHtml(warnings.join(', ')) : 'none'}</div>
+                        </div>`;
+
+                    premiumFactoryErrorsOutputDiv.style.display = 'block';
+                    premiumFactoryErrorsOutputDiv.innerHTML = `
+                        <div style="padding:8px;">
+                            <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">errors</div>
+                            <div style="font-size:12px;color:${errors.length ? '#a80000' : '#374151'};">${errors.length ? escapeHtml(errors.join('; ')) : 'none'}</div>
+                        </div>`;
                 }
 
                 function renderGuardedSingleOutput(data) {
@@ -2906,6 +3030,58 @@ ${comparedResults.length ? `<table class="phase1-table">
                     } catch (e) {
                         setError('Request error: ' + e.message);
                         setStatus('Official source preview request failed.', true);
+                    }
+                });
+
+                premiumFactoryPreviewBtn && (premiumFactoryPreviewBtn.onclick = async () => {
+                    const rawCardText = premiumFactoryRawCardTextInput ? premiumFactoryRawCardTextInput.value : '';
+                    const requestPayload = {
+                        raw_card_text: rawCardText,
+                        event_name: premiumFactoryEventNameInput ? premiumFactoryEventNameInput.value : '',
+                        event_date: premiumFactoryEventDateInput ? premiumFactoryEventDateInput.value : '',
+                        promotion: premiumFactoryPromotionInput ? premiumFactoryPromotionInput.value : '',
+                        location: premiumFactoryLocationInput ? premiumFactoryLocationInput.value : '',
+                        source_reference: premiumFactorySourceReferenceInput ? premiumFactorySourceReferenceInput.value : '',
+                        notes: premiumFactoryNotesInput ? premiumFactoryNotesInput.value : '',
+                    };
+
+                    setError('');
+                    setStatus('Loading premium report factory preview...');
+
+                    if (!String(rawCardText || '').trim()) {
+                        renderPremiumFactoryPreviewOutput({
+                            ok: true,
+                            event_preview: {},
+                            matchup_previews: [],
+                            parse_warnings: ['empty_raw_card_text'],
+                            errors: [],
+                        });
+                        setStatus('Premium report factory preview loaded with empty input warning.');
+                        return;
+                    }
+
+                    try {
+                        const resp = await fetch('/api/premium-report-factory/intake/preview', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestPayload)
+                        });
+                        const data = await resp.json();
+                        renderPremiumFactoryPreviewOutput(data);
+                        if (!resp.ok || !data.ok) {
+                            setStatus('Premium report factory preview failed.', true);
+                            return;
+                        }
+                        setStatus('Premium report factory preview loaded.');
+                    } catch (e) {
+                        renderPremiumFactoryPreviewOutput({
+                            ok: false,
+                            event_preview: {},
+                            matchup_previews: [],
+                            parse_warnings: [],
+                            errors: [e.message || 'request_failed'],
+                        });
+                        setStatus('Premium report factory preview request failed.', true);
                     }
                 });
 

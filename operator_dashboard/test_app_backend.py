@@ -2959,6 +2959,72 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn('approval_granted', surrounding)
         self.assertNotIn('approval_granted: true', surrounding)
 
+    def test_advanced_dashboard_has_premium_report_factory_intake_panel(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Premium Report Factory - Event Card Intake Preview', resp.data)
+        self.assertIn(b'operator-prf-preview-btn', resp.data)
+        self.assertIn(b'Preview Event Card', resp.data)
+        self.assertIn(b'/api/premium-report-factory/intake/preview', resp.data)
+
+    def test_advanced_dashboard_premium_report_factory_intake_fields_and_outputs_exist(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+
+        for required_id in (
+            b'operator-prf-raw-card-text',
+            b'operator-prf-event-name',
+            b'operator-prf-event-date',
+            b'operator-prf-promotion',
+            b'operator-prf-location',
+            b'operator-prf-source-reference',
+            b'operator-prf-notes',
+            b'operator-prf-event-preview-output',
+            b'operator-prf-matchup-preview-output',
+            b'operator-prf-parse-warnings-output',
+            b'operator-prf-errors-output',
+        ):
+            self.assertIn(required_id, resp.data)
+
+        for table_field in (
+            b'temporary_matchup_id',
+            b'fighter_a',
+            b'fighter_b',
+            b'bout_order',
+            b'weight_class',
+            b'ruleset',
+            b'source_reference',
+            b'parse_status',
+            b'parse_notes',
+        ):
+            self.assertIn(table_field, resp.data)
+
+    def test_premium_report_factory_intake_preview_not_called_on_page_load(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 1300]
+        self.assertNotIn('/api/premium-report-factory/intake/preview', dom_ready_slice)
+
+    def test_premium_report_factory_intake_panel_has_no_write_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+        panel_start = page.find('Premium Report Factory - Event Card Intake Preview')
+        self.assertNotEqual(panel_start, -1)
+        panel_end = page.find('operator-dry-run-preview-btn', panel_start)
+        self.assertNotEqual(panel_end, -1)
+        panel_slice = page[panel_start:panel_end]
+
+        self.assertNotIn('operator-prf-save-btn', panel_slice)
+        self.assertNotIn('operator-prf-write-btn', panel_slice)
+        self.assertNotIn('operator-prf-apply-btn', panel_slice)
+        self.assertNotIn('operator-prf-report-btn', panel_slice)
+        self.assertNotIn('operator-prf-result-btn', panel_slice)
+        self.assertNotIn('operator-prf-learning-btn', panel_slice)
+
     def test_advanced_dashboard_has_guarded_single_lookup_controls(self):
         resp = self.client.get('/advanced-dashboard')
         self.assertEqual(resp.status_code, 200)
