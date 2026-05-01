@@ -611,6 +611,35 @@ class DashboardBackendTest(unittest.TestCase):
         self.assertIn(b'/api/premium-report-factory/reports/generate', resp.data)
         self.assertIn(b'No result lookup, no learning, no billing, no web discovery.', resp.data)
 
+    def test_index_has_button1_main_dashboard_queue_builder_controls(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Find and Build Fight Queue', resp.data)
+        self.assertIn(b'main-prf-run-discovery-btn', resp.data)
+        self.assertIn(b'main-prf-parse-preview-btn', resp.data)
+        self.assertIn(b'main-prf-intake-select-all', resp.data)
+        self.assertIn(b'main-prf-intake-approval', resp.data)
+        self.assertIn(b'main-prf-save-selected-btn', resp.data)
+        self.assertIn(b'/api/phase1/scan-upcoming-events', resp.data)
+        self.assertIn(b'/api/premium-report-factory/intake/preview', resp.data)
+        self.assertIn(b'/api/premium-report-factory/queue/save-selected', resp.data)
+        self.assertIn(b'Search and analysis are automatic. Permanent writes are blocked until explicit operator approval.', resp.data)
+
+    def test_index_button1_preview_and_save_not_called_on_page_load(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        page = resp.data.decode('utf-8', errors='ignore')
+
+        self.assertIn('/api/premium-report-factory/intake/preview', page)
+        self.assertIn('/api/premium-report-factory/queue/save-selected', page)
+        dom_ready_start = page.find("window.addEventListener('DOMContentLoaded', () => {")
+        self.assertNotEqual(dom_ready_start, -1)
+        dom_ready_slice = page[dom_ready_start:dom_ready_start + 800]
+
+        # Button 1 preview/save remain behind explicit operator action.
+        self.assertNotIn('/api/premium-report-factory/intake/preview', dom_ready_slice)
+        self.assertNotIn('/api/premium-report-factory/queue/save-selected', dom_ready_slice)
+
     def test_index_button2_generate_not_called_on_page_load(self):
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)

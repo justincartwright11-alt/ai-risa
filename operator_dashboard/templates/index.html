@@ -268,6 +268,78 @@
             </div>
         </section>
 
+        <!-- Find and Build Fight Queue -->
+        <section class="section-card" style="border-left-color: #0f766e;">
+            <div class="section-header" style="background: #ecfdf5;">
+                <h2 style="color: #0f766e;">Find and Build Fight Queue</h2>
+            </div>
+            <div class="section-body">
+                <p style="margin: 0 0 10px 0; color: #555; font-size: 14px;">
+                    Official-source discovery plus manual input, extraction preview, readiness ranking, review selection, and approval-gated save.
+                </p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:10px;">
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="main-prf-intake-event-name">Event Name</label>
+                        <input id="main-prf-intake-event-name" type="text" placeholder="e.g. UFC Fight Night: Example" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="main-prf-intake-event-date">Event Date</label>
+                        <input id="main-prf-intake-event-date" type="text" placeholder="YYYY-MM-DD" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="main-prf-intake-promotion">Promotion</label>
+                        <input id="main-prf-intake-promotion" type="text" placeholder="e.g. UFC" />
+                    </div>
+                    <div class="command-input-group" style="margin-bottom:0;">
+                        <label for="main-prf-intake-location">Location</label>
+                        <input id="main-prf-intake-location" type="text" placeholder="City, Country" />
+                    </div>
+                </div>
+
+                <div class="command-input-group">
+                    <label for="main-prf-intake-source-reference">Source Reference</label>
+                    <input id="main-prf-intake-source-reference" type="text" placeholder="Official page URL or source note" />
+                </div>
+
+                <div class="command-input-group">
+                    <label for="main-prf-intake-raw-card-text">Manual Input (Raw Event Card Text)</label>
+                    <textarea id="main-prf-intake-raw-card-text" placeholder="Paste matchup lines, one per line:&#10;Fighter A vs Fighter B"></textarea>
+                </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                    <button id="main-prf-run-discovery-btn" class="btn-secondary">Run Official-Source Discovery</button>
+                    <button id="main-prf-parse-preview-btn" class="btn-primary">Parse Preview</button>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="main-prf-intake-select-all" type="checkbox" />
+                        Select All
+                    </label>
+                    <span id="main-prf-intake-selected-count" style="font-size:12px;color:#5a6374;">Selected: 0</span>
+                </div>
+
+                <div id="main-prf-intake-status" class="status-display" style="margin-top:0;"></div>
+                <div id="main-prf-intake-warnings" class="status-display" style="display:none;"></div>
+                <div id="main-prf-intake-review-table" style="margin-top:10px;overflow:auto;"></div>
+
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;margin-bottom:8px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="main-prf-intake-approval" type="checkbox" />
+                        I approve saving selected matchups to queue/database
+                    </label>
+                    <button id="main-prf-save-selected-btn" style="padding:8px 14px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid #0f766e;background:#ecfdf5;color:#0f766e;cursor:pointer;" disabled>Save Selected</button>
+                    <button id="main-prf-refresh-snapshot-btn" class="btn-secondary">Refresh Queue Snapshot</button>
+                </div>
+
+                <div class="help-text" style="margin-top:0;">
+                    Search and analysis are automatic. Permanent writes are blocked until explicit operator approval.
+                </div>
+
+                <div id="main-prf-save-status" class="status-display" style="display:none;"></div>
+                <div id="main-prf-save-results" style="display:none;margin-top:10px;overflow:auto;"></div>
+                <div id="main-prf-queue-snapshot" style="display:none;margin-top:10px;overflow:auto;"></div>
+            </div>
+        </section>
+
         <!-- Generate Premium PDF Reports -->
         <section class="section-card" style="border-left-color: #7c3aed;">
             <div class="section-header" style="background: #f6f1ff;">
@@ -591,6 +663,392 @@
             return { data, summaryHtml };
         }
 
+        // --- Main Dashboard Button 1: Find and Build Fight Queue ---
+        const mainPrfRunDiscoveryBtn = document.getElementById('main-prf-run-discovery-btn');
+        const mainPrfParsePreviewBtn = document.getElementById('main-prf-parse-preview-btn');
+        const mainPrfIntakeEventName = document.getElementById('main-prf-intake-event-name');
+        const mainPrfIntakeEventDate = document.getElementById('main-prf-intake-event-date');
+        const mainPrfIntakePromotion = document.getElementById('main-prf-intake-promotion');
+        const mainPrfIntakeLocation = document.getElementById('main-prf-intake-location');
+        const mainPrfIntakeSourceReference = document.getElementById('main-prf-intake-source-reference');
+        const mainPrfIntakeRawCardText = document.getElementById('main-prf-intake-raw-card-text');
+        const mainPrfIntakeStatus = document.getElementById('main-prf-intake-status');
+        const mainPrfIntakeWarnings = document.getElementById('main-prf-intake-warnings');
+        const mainPrfIntakeReviewTable = document.getElementById('main-prf-intake-review-table');
+        const mainPrfIntakeSelectAll = document.getElementById('main-prf-intake-select-all');
+        const mainPrfIntakeSelectedCount = document.getElementById('main-prf-intake-selected-count');
+        const mainPrfIntakeApproval = document.getElementById('main-prf-intake-approval');
+        const mainPrfSaveSelectedBtn = document.getElementById('main-prf-save-selected-btn');
+        const mainPrfRefreshSnapshotBtn = document.getElementById('main-prf-refresh-snapshot-btn');
+        const mainPrfSaveStatus = document.getElementById('main-prf-save-status');
+        const mainPrfSaveResults = document.getElementById('main-prf-save-results');
+        const mainPrfQueueSnapshot = document.getElementById('main-prf-queue-snapshot');
+
+        let mainPrfLastIntakePreview = null;
+
+        function _scoreMainPrfReadiness(row, eventPreview) {
+            let score = 0;
+            const fighterA = String((row || {}).fighter_a || '').trim();
+            const fighterB = String((row || {}).fighter_b || '').trim();
+            const eventDate = String((eventPreview || {}).event_date || '').trim();
+            const sourceReference = String((row || {}).source_reference || (eventPreview || {}).source_reference || '').trim();
+            const promotion = String((eventPreview || {}).promotion || '').trim();
+
+            if (fighterA) score += 20;
+            if (fighterB) score += 20;
+            if (eventDate) score += 20;
+            if (sourceReference) score += 20;
+            if (promotion) score += 20;
+
+            return score;
+        }
+
+        function _bucketMainPrfReadiness(score, parseStatus) {
+            if (String(parseStatus || '') === 'needs_review') {
+                return 'Needs review';
+            }
+            if (score >= 80) {
+                return 'Ready';
+            }
+            if (score >= 40) {
+                return 'Partial';
+            }
+            return 'Needs review';
+        }
+
+        function _getMainPrfIntakeSelectedRows() {
+            if (!mainPrfIntakeReviewTable || !mainPrfLastIntakePreview) return [];
+            const rows = Array.isArray(mainPrfLastIntakePreview.matchup_previews)
+                ? mainPrfLastIntakePreview.matchup_previews
+                : [];
+            const selectedIndexes = [];
+            mainPrfIntakeReviewTable.querySelectorAll('.main-prf-intake-row-checkbox:checked').forEach((cb) => {
+                const idx = Number(cb.getAttribute('data-row-idx'));
+                if (Number.isInteger(idx)) {
+                    selectedIndexes.push(idx);
+                }
+            });
+            return selectedIndexes
+                .filter((idx) => idx >= 0 && idx < rows.length)
+                .map((idx) => rows[idx]);
+        }
+
+        function _updateMainPrfIntakeSelectionState() {
+            const selectedRows = _getMainPrfIntakeSelectedRows();
+            const selectedCount = selectedRows.length;
+            if (mainPrfIntakeSelectedCount) {
+                mainPrfIntakeSelectedCount.textContent = `Selected: ${selectedCount}`;
+            }
+
+            const selectableCount = mainPrfIntakeReviewTable
+                ? mainPrfIntakeReviewTable.querySelectorAll('.main-prf-intake-row-checkbox').length
+                : 0;
+            if (mainPrfIntakeSelectAll) {
+                mainPrfIntakeSelectAll.checked = selectableCount > 0 && selectedCount === selectableCount;
+            }
+
+            const canSave = selectedCount > 0 && Boolean(mainPrfIntakeApproval && mainPrfIntakeApproval.checked);
+            if (mainPrfSaveSelectedBtn) {
+                mainPrfSaveSelectedBtn.disabled = !canSave;
+                mainPrfSaveSelectedBtn.style.opacity = canSave ? '1' : '0.6';
+                mainPrfSaveSelectedBtn.style.cursor = canSave ? 'pointer' : 'not-allowed';
+            }
+        }
+
+        function _renderMainPrfIntakeWarnings(warnings, errors) {
+            if (!mainPrfIntakeWarnings) return;
+            const warningList = Array.isArray(warnings) ? warnings : [];
+            const errorList = Array.isArray(errors) ? errors : [];
+            if (!warningList.length && !errorList.length) {
+                mainPrfIntakeWarnings.style.display = 'none';
+                mainPrfIntakeWarnings.textContent = '';
+                return;
+            }
+            mainPrfIntakeWarnings.style.display = 'block';
+            if (errorList.length) {
+                mainPrfIntakeWarnings.className = 'status-display error';
+                mainPrfIntakeWarnings.textContent = `Errors: ${errorList.join('; ')}`;
+                return;
+            }
+            mainPrfIntakeWarnings.className = 'status-display';
+            mainPrfIntakeWarnings.textContent = `Warnings: ${warningList.join(', ')}`;
+        }
+
+        function _renderMainPrfIntakePreview(data) {
+            if (!mainPrfIntakeReviewTable) return;
+            const eventPreview = (data && typeof data === 'object' && data.event_preview && typeof data.event_preview === 'object')
+                ? data.event_preview
+                : {};
+            const rows = Array.isArray(data.matchup_previews) ? data.matchup_previews : [];
+
+            if (!rows.length) {
+                mainPrfIntakeReviewTable.innerHTML = '<div style="color:#666;font-size:13px;">No matchup rows found. Add manual input or run discovery then preview again.</div>';
+                _updateMainPrfIntakeSelectionState();
+                return;
+            }
+
+            const normalizedRows = rows.map((row) => {
+                const score = _scoreMainPrfReadiness(row, eventPreview);
+                return {
+                    ...row,
+                    readiness_score: score,
+                    readiness_bucket: _bucketMainPrfReadiness(score, row.parse_status),
+                };
+            });
+
+            normalizedRows.sort((a, b) => {
+                if (b.readiness_score !== a.readiness_score) {
+                    return b.readiness_score - a.readiness_score;
+                }
+                return Number(a.bout_order || 0) - Number(b.bout_order || 0);
+            });
+
+            if (mainPrfLastIntakePreview) {
+                mainPrfLastIntakePreview.matchup_previews = normalizedRows;
+                mainPrfLastIntakePreview.event_preview = eventPreview;
+            }
+
+            const body = normalizedRows.map((row, idx) => {
+                const parseStatus = String(row.parse_status || '');
+                const note = parseStatus === 'needs_review' ? 'needs_review' : (row.parse_notes || '');
+                return `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;"><input type="checkbox" class="main-prf-intake-row-checkbox" data-row-idx="${idx}" checked /></td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_a || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_b || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(String(row.readiness_score ?? ''))}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.readiness_bucket || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(parseStatus)}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(note)}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(String(row.bout_order ?? ''))}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.temporary_matchup_id || '')}</td>
+                </tr>`;
+            }).join('');
+
+            mainPrfIntakeReviewTable.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                    <tr>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Select</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter A</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter B</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness Score</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness Bucket</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Parse Status</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Parse Notes</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Order</th>
+                        <th style="border:1px solid #ddd;padding:6px;text-align:left;">Temp ID</th>
+                    </tr>
+                </thead>
+                <tbody>${body}</tbody>
+            </table>`;
+
+            mainPrfIntakeReviewTable.querySelectorAll('.main-prf-intake-row-checkbox').forEach((cb) => {
+                cb.addEventListener('change', _updateMainPrfIntakeSelectionState);
+            });
+
+            _updateMainPrfIntakeSelectionState();
+        }
+
+        function _renderMainPrfSaveResults(data) {
+            if (!mainPrfSaveResults) return;
+            const saved = Array.isArray(data.saved_matchups) ? data.saved_matchups : [];
+            const rejected = Array.isArray(data.rejected_matchups) ? data.rejected_matchups : [];
+            const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+            const errors = Array.isArray(data.errors) ? data.errors : [];
+
+            const savedRows = saved.map((row) => `<tr>
+                <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.matchup_id || '')}</td>
+                <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_a || '')}</td>
+                <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_b || '')}</td>
+                <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(String(row.report_readiness_score ?? ''))}</td>
+                <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.queue_status || '')}</td>
+            </tr>`).join('');
+
+            const rejectedRows = rejected.map((row) => `<li>${_escapeHtml((row.fighter_a || '?') + ' vs ' + (row.fighter_b || '?'))}: ${_escapeHtml(row.rejection_reason || 'rejected')}</li>`).join('');
+            const queueSummary = data.queue_summary || {};
+
+            mainPrfSaveResults.style.display = 'block';
+            mainPrfSaveResults.innerHTML = `
+                <div style="font-size:13px;margin-bottom:8px;"><strong>Accepted:</strong> ${Number(data.accepted_count || 0)} | <strong>Rejected:</strong> ${Number(data.rejected_count || 0)} | <strong>Total Queued:</strong> ${Number(queueSummary.total_queued || 0)}</div>
+                ${saved.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter A</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter B</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Queue Status</th></tr></thead><tbody>${savedRows}</tbody></table>` : '<div style="color:#666;">No rows were saved.</div>'}
+                ${rejected.length ? `<div style="margin-top:8px;"><strong>Rejected:</strong><ul style="margin:6px 0 0 18px;">${rejectedRows}</ul></div>` : ''}
+                ${warnings.length ? `<div style="margin-top:8px;color:#7a4f00;"><strong>Warnings:</strong> ${_escapeHtml(warnings.join('; '))}</div>` : ''}
+                ${errors.length ? `<div style="margin-top:8px;color:#a80000;"><strong>Errors:</strong> ${_escapeHtml(errors.join('; '))}</div>` : ''}
+            `;
+        }
+
+        async function loadMainPrfQueueSnapshot() {
+            if (!mainPrfQueueSnapshot) return;
+            try {
+                const res = await fetch('/api/premium-report-factory/queue');
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mainPrfQueueSnapshot.style.display = 'block';
+                    mainPrfQueueSnapshot.innerHTML = `<div class="status-display error">Queue snapshot failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}</div>`;
+                    return;
+                }
+
+                const rows = Array.isArray(data.upcoming_fights) ? data.upcoming_fights : [];
+                const body = rows.slice(0, 20).map((row) => `<tr>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_a || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.fighter_b || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.event_name || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.event_date || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(String(row.report_readiness_score ?? ''))}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.queue_status || '')}</td>
+                </tr>`).join('');
+
+                mainPrfQueueSnapshot.style.display = 'block';
+                mainPrfQueueSnapshot.innerHTML = `
+                    <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">Upcoming Fight Queue Snapshot (${Number(data.total_queued || rows.length)})</div>
+                    ${rows.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter A</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter B</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Event</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Date</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Queue Status</th></tr></thead><tbody>${body}</tbody></table>` : '<div style="color:#666;">Queue is empty.</div>'}
+                `;
+            } catch (e) {
+                mainPrfQueueSnapshot.style.display = 'block';
+                mainPrfQueueSnapshot.innerHTML = `<div class="status-display error">Queue snapshot request failed: ${_escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        async function runMainPrfDiscovery() {
+            if (!mainPrfIntakeStatus) return;
+            mainPrfIntakeStatus.className = 'status-display';
+            mainPrfIntakeStatus.textContent = 'Running official-source discovery workflow...';
+            try {
+                const res = await fetch('/api/phase1/scan-upcoming-events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sport: 'all' }),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mainPrfIntakeStatus.className = 'status-display error';
+                    mainPrfIntakeStatus.textContent = `Discovery failed: ${_escapeHtml(data.error || 'unknown_error')}`;
+                    return;
+                }
+                const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+                mainPrfIntakeStatus.className = 'status-display success';
+                mainPrfIntakeStatus.textContent = `Discovery complete: ${Number(data.new_triggers || 0)} new trigger(s), ${rowCount} total row(s) in review queue.`;
+            } catch (e) {
+                mainPrfIntakeStatus.className = 'status-display error';
+                mainPrfIntakeStatus.textContent = `Discovery request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
+        async function runMainPrfParsePreview() {
+            if (!mainPrfIntakeStatus) return;
+            const payload = {
+                raw_card_text: mainPrfIntakeRawCardText ? String(mainPrfIntakeRawCardText.value || '') : '',
+                event_name: mainPrfIntakeEventName ? String(mainPrfIntakeEventName.value || '') : '',
+                event_date: mainPrfIntakeEventDate ? String(mainPrfIntakeEventDate.value || '') : '',
+                promotion: mainPrfIntakePromotion ? String(mainPrfIntakePromotion.value || '') : '',
+                location: mainPrfIntakeLocation ? String(mainPrfIntakeLocation.value || '') : '',
+                source_reference: mainPrfIntakeSourceReference ? String(mainPrfIntakeSourceReference.value || '') : '',
+                notes: '',
+            };
+
+            mainPrfIntakeStatus.className = 'status-display';
+            mainPrfIntakeStatus.textContent = 'Parsing manual input preview...';
+            if (mainPrfSaveResults) {
+                mainPrfSaveResults.style.display = 'none';
+                mainPrfSaveResults.innerHTML = '';
+            }
+            if (mainPrfSaveStatus) {
+                mainPrfSaveStatus.style.display = 'none';
+                mainPrfSaveStatus.innerHTML = '';
+            }
+
+            try {
+                const res = await fetch('/api/premium-report-factory/intake/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                mainPrfLastIntakePreview = data && typeof data === 'object' ? data : null;
+                _renderMainPrfIntakeWarnings(data.parse_warnings, data.errors);
+                _renderMainPrfIntakePreview(data);
+
+                if (!res.ok || !data.ok) {
+                    mainPrfIntakeStatus.className = 'status-display error';
+                    mainPrfIntakeStatus.textContent = `Preview failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}`;
+                    return;
+                }
+
+                const rowCount = Array.isArray(data.matchup_previews) ? data.matchup_previews.length : 0;
+                mainPrfIntakeStatus.className = 'status-display success';
+                mainPrfIntakeStatus.textContent = `Preview loaded: ${rowCount} matchup row(s) extracted and ranked.`;
+            } catch (e) {
+                mainPrfIntakeStatus.className = 'status-display error';
+                mainPrfIntakeStatus.textContent = `Preview request failed: ${_escapeHtml(e.message)}`;
+                _renderMainPrfIntakeWarnings([], [e.message]);
+                if (mainPrfIntakeReviewTable) {
+                    mainPrfIntakeReviewTable.innerHTML = '';
+                }
+            }
+        }
+
+        async function runMainPrfSaveSelected() {
+            if (!mainPrfSaveStatus) return;
+            const selectedRows = _getMainPrfIntakeSelectedRows();
+            if (!mainPrfLastIntakePreview) {
+                mainPrfSaveStatus.style.display = 'block';
+                mainPrfSaveStatus.className = 'status-display error';
+                mainPrfSaveStatus.textContent = 'Run Parse Preview before attempting save.';
+                return;
+            }
+            if (!selectedRows.length) {
+                mainPrfSaveStatus.style.display = 'block';
+                mainPrfSaveStatus.className = 'status-display error';
+                mainPrfSaveStatus.textContent = 'Select at least one matchup row before save.';
+                return;
+            }
+            if (!mainPrfIntakeApproval || !mainPrfIntakeApproval.checked) {
+                mainPrfSaveStatus.style.display = 'block';
+                mainPrfSaveStatus.className = 'status-display error';
+                mainPrfSaveStatus.textContent = 'Operator approval is required before permanent queue/database save.';
+                return;
+            }
+
+            const savePayload = {
+                event_preview: mainPrfLastIntakePreview.event_preview || {},
+                selected_matchup_previews: selectedRows,
+                operator_approval: true,
+                source_reference: mainPrfIntakeSourceReference ? String(mainPrfIntakeSourceReference.value || '') : '',
+                notes: '',
+            };
+
+            mainPrfSaveStatus.style.display = 'block';
+            mainPrfSaveStatus.className = 'status-display';
+            mainPrfSaveStatus.textContent = `Saving ${selectedRows.length} selected matchup row(s)...`;
+            if (mainPrfSaveResults) {
+                mainPrfSaveResults.style.display = 'none';
+                mainPrfSaveResults.innerHTML = '';
+            }
+
+            try {
+                const res = await fetch('/api/premium-report-factory/queue/save-selected', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(savePayload),
+                });
+                const data = await res.json();
+                _renderMainPrfSaveResults(data || {});
+
+                if (!res.ok || !data.ok) {
+                    mainPrfSaveStatus.className = 'status-display error';
+                    mainPrfSaveStatus.textContent = `Save failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}`;
+                    return;
+                }
+
+                mainPrfSaveStatus.className = 'status-display success';
+                mainPrfSaveStatus.textContent = `Save complete: ${Number(data.accepted_count || 0)} accepted, ${Number(data.rejected_count || 0)} rejected.`;
+                await loadMainPrfQueueSnapshot();
+                await loadMainPrfQueue();
+            } catch (e) {
+                mainPrfSaveStatus.className = 'status-display error';
+                mainPrfSaveStatus.textContent = `Save request failed: ${_escapeHtml(e.message)}`;
+            }
+        }
+
         // --- Main Dashboard Button 2: Premium PDF Generation ---
         const mainPrfRefreshQueueBtn = document.getElementById('main-prf-refresh-queue-btn');
         const mainPrfSelectAll = document.getElementById('main-prf-select-all');
@@ -832,6 +1290,20 @@
         });
         mainPrfGenerateApproval && mainPrfGenerateApproval.addEventListener('change', _updateMainPrfSelectedCount);
         mainPrfGenerateBtn && mainPrfGenerateBtn.addEventListener('click', runMainPrfGenerate);
+
+        mainPrfRunDiscoveryBtn && mainPrfRunDiscoveryBtn.addEventListener('click', runMainPrfDiscovery);
+        mainPrfParsePreviewBtn && mainPrfParsePreviewBtn.addEventListener('click', runMainPrfParsePreview);
+        mainPrfIntakeSelectAll && mainPrfIntakeSelectAll.addEventListener('change', () => {
+            const checked = mainPrfIntakeSelectAll.checked;
+            if (!mainPrfIntakeReviewTable) return;
+            mainPrfIntakeReviewTable.querySelectorAll('.main-prf-intake-row-checkbox').forEach((cb) => {
+                cb.checked = checked;
+            });
+            _updateMainPrfIntakeSelectionState();
+        });
+        mainPrfIntakeApproval && mainPrfIntakeApproval.addEventListener('change', _updateMainPrfIntakeSelectionState);
+        mainPrfSaveSelectedBtn && mainPrfSaveSelectedBtn.addEventListener('click', runMainPrfSaveSelected);
+        mainPrfRefreshSnapshotBtn && mainPrfRefreshSnapshotBtn.addEventListener('click', loadMainPrfQueueSnapshot);
 
         operatorAnalyzeBtn.addEventListener('click', async () => {
             const matchup = operatorMatchupInput.value.trim();
@@ -1230,6 +1702,7 @@
             loadAccuracySummary();
             loadSystemHealth();
             loadMainPrfQueue();
+            loadMainPrfQueueSnapshot();
             // NOTE: Batch preview/apply are NOT called on page load (per requirements)
         });
 
