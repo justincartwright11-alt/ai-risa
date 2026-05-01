@@ -46,6 +46,7 @@ app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_MUTATION_ENABLED", False)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_ACCURACY_DIR_OVERRIDE", None)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_OPERATION_ID_AUDIT_PATH_OVERRIDE", None)
 app.config.setdefault("OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_PATH_OVERRIDE", None)
+app.config.setdefault("PRF_QUEUE_PATH_OVERRIDE", None)
 
 OFFICIAL_SOURCE_APPROVED_APPLY_TOKEN_CONSUME_HELPER = OfficialSourceApprovedApplyTokenConsumeHelper()
 OFFICIAL_SOURCE_APPROVED_APPLY_GLOBAL_LEDGER_HELPER = OfficialSourceApprovedApplyGlobalLedgerHelper()
@@ -1720,6 +1721,35 @@ def api_premium_report_factory_phase1_intake_preview():
         }), 400
 
     return jsonify(_build_phase1_intake_preview_payload(request_json))
+
+
+def _get_prf_queue_path() -> str:
+    """Return the PRF queue file path, using test override when set."""
+    override = app.config.get("PRF_QUEUE_PATH_OVERRIDE")
+    if override:
+        return override
+    base_dir = Path(__file__).resolve().parent.parent
+    return str(base_dir / "ops" / "prf_queue" / "upcoming_fight_queue.json")
+
+
+@app.route("/api/premium-report-factory/queue/save-selected", methods=["POST"])
+def api_premium_report_factory_queue_save_selected():
+    from operator_dashboard.prf_queue_utils import process_prf_save_selected
+    request_json = request.get_json(silent=True)
+    if request_json is None:
+        request_json = {}
+    queue_path = _get_prf_queue_path()
+    result = process_prf_save_selected(request_json, queue_path)
+    status_code = 200 if result.get('ok') else 400
+    return jsonify(result), status_code
+
+
+@app.route("/api/premium-report-factory/queue", methods=["GET"])
+def api_premium_report_factory_queue():
+    from operator_dashboard.prf_queue_utils import get_prf_queue_list
+    queue_path = _get_prf_queue_path()
+    result = get_prf_queue_list(queue_path)
+    return jsonify(result)
 
 
 def _build_signal_gap_breakdown() -> dict:

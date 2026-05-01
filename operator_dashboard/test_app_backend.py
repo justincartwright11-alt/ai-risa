@@ -4510,5 +4510,273 @@ class TestPlannerEligibilityClassification(unittest.TestCase):
                     'resolved_miss_needing_backfill', 'eligibility_counts'):
             self.assertIn(key, summary, f"Missing backwards-compat key: {key}")
 
+
+# ---------------------------------------------------------------------------
+# Phase 2 Premium Report Factory – Approved Save Queue Tests
+# ---------------------------------------------------------------------------
+
+class PremiumReportFactoryPhase2QueueTest(unittest.TestCase):
+    """
+    Focused tests for Phase 2 approved save queue behavior.
+    All file I/O uses isolated temporary directories.
+    No PDF, no result lookup, no learning, no web discovery.
+    """
+
+    def setUp(self):
+        self.client = app.test_client()
+        self._original_prf_queue_path = app.config.get('PRF_QUEUE_PATH_OVERRIDE')
+
+    def tearDown(self):
+        app.config['PRF_QUEUE_PATH_OVERRIDE'] = self._original_prf_queue_path
+
+    def _set_temp_queue_path(self, tmpdir):
+        import os
+        queue_path = os.path.join(tmpdir, 'prf_queue.json')
+        app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+        return queue_path
+
+    def _clean_preview_payload(self):
+        return {
+            'raw_card_text': 'Alpha vs Beta\nGamma v Delta',
+            'event_name': 'Phase2 Test Card',
+            'event_date': '2026-06-01',
+            'promotion': 'AI-RISA FC',
+            'location': 'London',
+            'source_reference': 'phase2_test_source',
+            'notes': 'phase2 smoke',
+        }
+
+    def _preview_matchups(self, payload=None):
+        if payload is None:
+            payload = self._clean_preview_payload()
+        resp = self.client.post('/api/premium-report-factory/intake/preview', json=payload)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        return data
+
+    # 1. Phase 1 preview still works unchanged
+    def test_prf_phase2_phase1_preview_still_works_unchanged(self):
+        data = self._preview_matchups()
+        for field in ('ok', 'generated_at', 'event_preview', 'matchup_previews', 'parse_warnings', 'errors'):
+            self.assertIn(field, data)
+        self.assertTrue(data.get('ok'))
+        matchups = data.get('matchup_previews') or []
+        self.assertEqual(len(matchups), 2)
+        self.assertEqual(matchups[0].get('fighter_a'), 'Alpha')
+        self.assertEqual(matchups[0].get('fighter_b'), 'Beta')
+        self.assertEqual(matchups[0].get('parse_status'), 'parsed')
+
+    # 2. No save happens on page load (GET /advanced-dashboard does not invoke save)
+    def test_prf_phase2_no_save_on_page_load(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = self._set_temp_queue_path(tmpdir)
+            resp = self.client.get('/advanced-dashboard')
+            self.assertIn(resp.status_code, (200, 301, 302))
+            import os
+            self.assertFalse(os.path.exists(queue_path), 'Queue file must not be created on page load')
+
+    # 3. Save requires explicit operator_approval
+    def test_prf_phase2_save_requires_operator_approval(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_queue_path(tmpdir)
+            preview = self._preview_matchups()
+            payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': preview.get('matchup_previews'),
+                'operator_approval': False,
+                'source_reference': 'phase2_test_source',
+            }
+            resp = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            self.assertIn('operator_approval_required', data.get('errors') or [])
+
+    # 4. Selected valid matchups are saved
+    def test_prf_phase2_selected_valid_matchups_are_saved(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = self._set_temp_queue_path(tmpdir)
+            preview = self._preview_matchups()
+            matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+            self.assertGreater(len(matchups), 0, 'Need at least one parsed matchup')
+            payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': matchups,
+                'operator_approval': True,
+                'source_reference': 'phase2_test_source',
+            }
+            resp = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertEqual(data.get('accepted_count'), len(matchups))
+            self.assertEqual(data.get('rejected_count'), 0)
+            saved = data.get('saved_matchups') or []
+            self.assertEqual(len(saved), len(matchups))
+            first = saved[0]
+            for field in (
+                'event_id', 'matchup_id', 'fighter_a', 'fighter_b',
+                'event_name', 'event_date', 'promotion', 'location',
+                'source_reference', 'bout_order', 'weight_class', 'ruleset',
+                'report_readiness_score', 'report_status', 'result_status',
+                'accuracy_status', 'queue_status', 'created_at',
+                'approved_by_operator', 'approval_timestamp',
+            ):
+                self.assertIn(field, first, f'Missing field: {field}')
+            self.assertTrue(first.get('approved_by_operator'))
+            self.assertEqual(first.get('queue_status'), 'saved')
+            for required_field in ('ok', 'generated_at', 'accepted_count', 'rejected_count',
+                                   'saved_matchups', 'rejected_matchups', 'queue_summary',
+                                   'warnings', 'errors'):
+                self.assertIn(required_field, data)
+
+    # 5. needs_review rows are rejected
+    def test_prf_phase2_needs_review_rows_rejected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_queue_path(tmpdir)
+            preview = self._preview_matchups({
+                'raw_card_text': 'Alpha vs\nvs Beta',
+                'event_name': 'Needs Review Card',
+                'event_date': '2026-06-01',
+                'source_reference': 'phase2_test_source',
+            })
+            matchups = preview.get('matchup_previews') or []
+            needs_review = [m for m in matchups if m.get('parse_status') == 'needs_review']
+            self.assertGreater(len(needs_review), 0, 'Fixture must produce at least one needs_review row')
+            payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': needs_review,
+                'operator_approval': True,
+                'source_reference': 'phase2_test_source',
+            }
+            resp = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get('ok'))
+            self.assertEqual(data.get('accepted_count'), 0)
+            self.assertEqual(data.get('rejected_count'), len(needs_review))
+            rejected = data.get('rejected_matchups') or []
+            self.assertEqual(len(rejected), len(needs_review))
+            for r in rejected:
+                self.assertEqual(r.get('rejection_reason'), 'needs_review')
+
+    # 6. source_reference is preserved
+    def test_prf_phase2_source_reference_preserved(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_queue_path(tmpdir)
+            preview = self._preview_matchups()
+            matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+            self.assertGreater(len(matchups), 0)
+            source_ref = 'ops_sheet_phase2_2026_06_01'
+            payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': matchups,
+                'operator_approval': True,
+                'source_reference': source_ref,
+            }
+            resp = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            for saved in data.get('saved_matchups') or []:
+                self.assertEqual(saved.get('source_reference'), source_ref)
+
+    # 7. Duplicate save is deterministic (idempotent upsert)
+    def test_prf_phase2_duplicate_save_is_deterministic(self):
+        import tempfile, json as _json
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = self._set_temp_queue_path(tmpdir)
+            preview = self._preview_matchups()
+            matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+            self.assertGreater(len(matchups), 0)
+            payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': matchups,
+                'operator_approval': True,
+                'source_reference': 'phase2_dedup_test',
+            }
+            resp1 = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            resp2 = self.client.post('/api/premium-report-factory/queue/save-selected', json=payload)
+            self.assertEqual(resp1.status_code, 200)
+            self.assertEqual(resp2.status_code, 200)
+
+            import os
+            with open(queue_path, encoding='utf-8') as f:
+                rows = _json.load(f)
+            # Queue should contain exactly the unique matchups, not duplicates
+            matchup_ids = [r['matchup_id'] for r in rows]
+            self.assertEqual(len(matchup_ids), len(set(matchup_ids)), 'Duplicate save must be idempotent')
+            self.assertEqual(len(rows), len(matchups))
+
+    # 8. Queue endpoint lists saved fights
+    def test_prf_phase2_queue_endpoint_lists_saved_fights(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._set_temp_queue_path(tmpdir)
+            # Queue empty at start
+            resp_empty = self.client.get('/api/premium-report-factory/queue')
+            self.assertEqual(resp_empty.status_code, 200)
+            data_empty = resp_empty.get_json()
+            self.assertTrue(data_empty.get('ok'))
+            self.assertEqual(data_empty.get('total_queued'), 0)
+            self.assertEqual(data_empty.get('upcoming_fights'), [])
+
+            # Save one matchup
+            preview = self._preview_matchups()
+            matchups = [m for m in (preview.get('matchup_previews') or []) if m.get('parse_status') == 'parsed']
+            self.assertGreater(len(matchups), 0)
+            save_payload = {
+                'event_preview': preview.get('event_preview'),
+                'selected_matchup_previews': matchups[:1],
+                'operator_approval': True,
+                'source_reference': 'queue_list_test',
+            }
+            self.client.post('/api/premium-report-factory/queue/save-selected', json=save_payload)
+
+            resp_full = self.client.get('/api/premium-report-factory/queue')
+            self.assertEqual(resp_full.status_code, 200)
+            data_full = resp_full.get_json()
+            self.assertTrue(data_full.get('ok'))
+            self.assertEqual(data_full.get('total_queued'), 1)
+            fights = data_full.get('upcoming_fights') or []
+            self.assertEqual(len(fights), 1)
+            for field in ('ok', 'generated_at', 'total_queued', 'upcoming_fights', 'errors'):
+                self.assertIn(field, data_full)
+
+    # 9. Dashboard contains Phase 2 select controls, Save Selected button, queue window
+    def test_advanced_dashboard_has_prf_phase2_select_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('operator-prf-select-all', html)
+        self.assertIn('operator-prf-save-selected-btn', html)
+        self.assertIn('Save Selected to Upcoming Fight Queue', html)
+        self.assertIn('operator-prf-matchup-checkbox', html)
+
+    # 10. Dashboard contains queue window
+    def test_advanced_dashboard_has_prf_phase2_queue_window(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('operator-prf-phase2-controls', html)
+        self.assertIn('operator-prf-upcoming-queue-window', html)
+        self.assertIn('operator-prf-save-queue-output', html)
+
+    # 11. Dashboard has no PDF/result/learning controls in Phase 2 section
+    def test_advanced_dashboard_prf_phase2_no_pdf_result_learning_controls(self):
+        resp = self.client.get('/advanced-dashboard')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        # Phase 2 panel must not introduce forbidden control IDs
+        self.assertNotIn('operator-prf-generate-pdf-btn', html)
+        self.assertNotIn('operator-prf-result-lookup-btn', html)
+        self.assertNotIn('operator-prf-calibrate-btn', html)
+        self.assertNotIn('operator-prf-learning-btn', html)
+
 if __name__ == '__main__':
     unittest.main()

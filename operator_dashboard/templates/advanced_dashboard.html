@@ -1056,6 +1056,18 @@
                             <div id="operator-prf-matchup-preview-output" class="phase1-table-shell" style="margin-bottom:8px;display:none;"></div>
                             <div id="operator-prf-parse-warnings-output" class="phase1-table-shell" style="margin-bottom:8px;display:none;"></div>
                             <div id="operator-prf-errors-output" class="phase1-table-shell" style="margin-bottom:0;display:none;"></div>
+                            <div id="operator-prf-phase2-controls" style="margin-top:8px;display:none;">
+                                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+                                    <label id="operator-prf-select-all-label" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#374151;margin:0;">
+                                        <input id="operator-prf-select-all" type="checkbox" />
+                                        Select All
+                                    </label>
+                                    <button id="operator-prf-save-selected-btn" style="padding:8px 14px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #107c10;background:#e8f6f3;color:#107c10;cursor:pointer;">Save Selected to Upcoming Fight Queue</button>
+                                    <span style="font-size:12px;color:#5a6374;">Requires explicit operator approval. No PDF/result/learning action.</span>
+                                </div>
+                            </div>
+                            <div id="operator-prf-save-queue-output" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
+                            <div id="operator-prf-upcoming-queue-window" class="phase1-table-shell" style="margin-top:8px;display:none;"></div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
                             <button id="operator-dry-run-preview-btn" style="padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #6b7280;background:#f5f7fa;color:#374151;cursor:pointer;">Dry-Run Preview Waiting Results</button>
@@ -2502,6 +2514,12 @@
                 const premiumFactoryMatchupPreviewOutputDiv = document.getElementById('operator-prf-matchup-preview-output');
                 const premiumFactoryWarningsOutputDiv = document.getElementById('operator-prf-parse-warnings-output');
                 const premiumFactoryErrorsOutputDiv = document.getElementById('operator-prf-errors-output');
+                const premiumFactoryPhase2Controls = document.getElementById('operator-prf-phase2-controls');
+                const premiumFactorySelectAllCheckbox = document.getElementById('operator-prf-select-all');
+                const premiumFactorySaveSelectedBtn = document.getElementById('operator-prf-save-selected-btn');
+                const premiumFactorySaveQueueOutputDiv = document.getElementById('operator-prf-save-queue-output');
+                const premiumFactoryUpcomingQueueWindow = document.getElementById('operator-prf-upcoming-queue-window');
+                let premiumFactoryLastPreviewData = null;
 
                 function setStatus(msg, isError = false) {
                     if (statusDiv) {
@@ -2705,6 +2723,7 @@
                         return;
                     }
 
+                    premiumFactoryLastPreviewData = data;
                     const eventPreview = data.event_preview || {};
                     const matchupRows = Array.isArray(data.matchup_previews) ? data.matchup_previews : [];
                     const warnings = Array.isArray(data.parse_warnings) ? [...data.parse_warnings] : [];
@@ -2721,8 +2740,10 @@
                         warnings.push('no_matchups_found');
                         premiumFactoryMatchupPreviewOutputDiv.style.display = 'block';
                         premiumFactoryMatchupPreviewOutputDiv.innerHTML = '<div style="padding:8px;color:#666;">matchup_previews: no rows returned.</div>';
+                        if (premiumFactoryPhase2Controls) premiumFactoryPhase2Controls.style.display = 'none';
                     } else {
-                        const body = matchupRows.map((row) => `<tr>
+                        const body = matchupRows.map((row, idx) => `<tr>
+                                <td><input type="checkbox" class="operator-prf-matchup-checkbox" data-matchup-idx="${idx}" checked /></td>
                                 <td>${escapeHtml(row.temporary_matchup_id || '')}</td>
                                 <td>${escapeHtml(row.fighter_a || '')}</td>
                                 <td>${escapeHtml(row.fighter_b || '')}</td>
@@ -2740,6 +2761,7 @@
                                 <table class="phase1-table">
                                     <thead>
                                         <tr>
+                                            <th>Select</th>
                                             <th>temporary_matchup_id</th>
                                             <th>fighter_a</th>
                                             <th>fighter_b</th>
@@ -2754,6 +2776,8 @@
                                     <tbody>${body}</tbody>
                                 </table>
                             </div>`;
+                        if (premiumFactoryPhase2Controls) premiumFactoryPhase2Controls.style.display = 'block';
+                        if (premiumFactorySelectAllCheckbox) premiumFactorySelectAllCheckbox.checked = true;
                     }
 
                     premiumFactoryWarningsOutputDiv.style.display = 'block';
@@ -3082,6 +3106,112 @@ ${comparedResults.length ? `<table class="phase1-table">
                             errors: [e.message || 'request_failed'],
                         });
                         setStatus('Premium report factory preview request failed.', true);
+                    }
+                });
+
+                premiumFactorySelectAllCheckbox && (premiumFactorySelectAllCheckbox.onchange = () => {
+                    const checked = premiumFactorySelectAllCheckbox.checked;
+                    if (!premiumFactoryMatchupPreviewOutputDiv) return;
+                    premiumFactoryMatchupPreviewOutputDiv.querySelectorAll('.operator-prf-matchup-checkbox').forEach((cb) => {
+                        cb.checked = checked;
+                    });
+                });
+
+                premiumFactorySaveSelectedBtn && (premiumFactorySaveSelectedBtn.onclick = async () => {
+                    if (!premiumFactoryLastPreviewData) {
+                        setStatus('Run Preview first before saving.', true);
+                        return;
+                    }
+                    const allRows = Array.isArray(premiumFactoryLastPreviewData.matchup_previews)
+                        ? premiumFactoryLastPreviewData.matchup_previews
+                        : [];
+                    const selectedIdxs = new Set();
+                    if (premiumFactoryMatchupPreviewOutputDiv) {
+                        premiumFactoryMatchupPreviewOutputDiv.querySelectorAll('.operator-prf-matchup-checkbox:checked').forEach((cb) => {
+                            const idx = parseInt(cb.getAttribute('data-matchup-idx'), 10);
+                            if (!isNaN(idx)) selectedIdxs.add(idx);
+                        });
+                    }
+                    const selectedMatchupPreviews = allRows.filter((_, idx) => selectedIdxs.has(idx));
+                    if (!selectedMatchupPreviews.length) {
+                        setStatus('No matchups selected. Check at least one row before saving.', true);
+                        return;
+                    }
+                    const savePayload = {
+                        event_preview: premiumFactoryLastPreviewData.event_preview || {},
+                        selected_matchup_previews: selectedMatchupPreviews,
+                        operator_approval: true,
+                        source_reference: premiumFactorySourceReferenceInput ? premiumFactorySourceReferenceInput.value : '',
+                        notes: premiumFactoryNotesInput ? premiumFactoryNotesInput.value : '',
+                    };
+                    setStatus('Saving selected matchups to upcoming fight queue...');
+                    if (premiumFactorySaveQueueOutputDiv) {
+                        premiumFactorySaveQueueOutputDiv.style.display = 'none';
+                        premiumFactorySaveQueueOutputDiv.innerHTML = '';
+                    }
+                    try {
+                        const resp = await fetch('/api/premium-report-factory/queue/save-selected', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(savePayload),
+                        });
+                        const data = await resp.json();
+                        if (premiumFactorySaveQueueOutputDiv) {
+                            premiumFactorySaveQueueOutputDiv.style.display = 'block';
+                            const savedBody = (data.saved_matchups || []).map((m) => `<tr>
+                                <td>${escapeHtml(m.matchup_id || '')}</td>
+                                <td>${escapeHtml(m.fighter_a || '')}</td>
+                                <td>${escapeHtml(m.fighter_b || '')}</td>
+                                <td>${escapeHtml(String(m.bout_order ?? ''))}</td>
+                                <td>${escapeHtml(m.event_name || '')}</td>
+                                <td>${escapeHtml(m.event_date || '')}</td>
+                                <td>${escapeHtml(m.source_reference || '')}</td>
+                                <td>${escapeHtml(String(m.report_readiness_score ?? ''))}</td>
+                                <td>${escapeHtml(m.queue_status || '')}</td>
+                            </tr>`).join('');
+                            const rejectedSummary = (data.rejected_matchups || []).length
+                                ? `<div style="padding:6px 8px;font-size:12px;color:#a80000;">Rejected (needs_review): ${(data.rejected_matchups || []).map((r) => escapeHtml(r.fighter_a || '?') + ' vs ' + escapeHtml(r.fighter_b || '?')).join(', ')}</div>`
+                                : '';
+                            const warnSummary = (data.warnings || []).length
+                                ? `<div style="padding:6px 8px;font-size:12px;color:#7a3f00;">Warnings: ${escapeHtml((data.warnings || []).join(', '))}</div>`
+                                : '';
+                            const errSummary = (data.errors || []).length
+                                ? `<div style="padding:6px 8px;font-size:12px;color:#a80000;">Errors: ${escapeHtml((data.errors || []).join('; '))}</div>`
+                                : '';
+                            premiumFactorySaveQueueOutputDiv.innerHTML = `
+                                <div style="padding:8px;">
+                                    <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">Save Result — accepted: ${Number(data.accepted_count || 0)}, rejected: ${Number(data.rejected_count || 0)}</div>
+                                    ${savedBody ? `<table class="phase1-table"><thead><tr><th>matchup_id</th><th>fighter_a</th><th>fighter_b</th><th>bout_order</th><th>event_name</th><th>event_date</th><th>source_reference</th><th>readiness_score</th><th>queue_status</th></tr></thead><tbody>${savedBody}</tbody></table>` : '<div style="color:#666;">No matchups saved.</div>'}
+                                    ${rejectedSummary}${warnSummary}${errSummary}
+                                </div>`;
+                        }
+                        if (!resp.ok || !data.ok) {
+                            setStatus('Save failed: ' + (data.errors || []).join('; '), true);
+                            return;
+                        }
+                        setStatus(`Saved ${Number(data.accepted_count || 0)} matchup(s) to upcoming fight queue.`);
+                        // Refresh queue window after successful save
+                        const queueResp = await fetch('/api/premium-report-factory/queue');
+                        const queueData = await queueResp.json();
+                        if (premiumFactoryUpcomingQueueWindow && queueData.ok) {
+                            const qBody = (queueData.upcoming_fights || []).map((f) => `<tr>
+                                <td>${escapeHtml(f.fighter_a || '')}</td>
+                                <td>${escapeHtml(f.fighter_b || '')}</td>
+                                <td>${escapeHtml(f.event_name || '')}</td>
+                                <td>${escapeHtml(f.event_date || '')}</td>
+                                <td>${escapeHtml(f.source_reference || '')}</td>
+                                <td>${escapeHtml(String(f.report_readiness_score ?? ''))}</td>
+                                <td>${escapeHtml(f.queue_status || '')}</td>
+                            </tr>`).join('');
+                            premiumFactoryUpcomingQueueWindow.style.display = 'block';
+                            premiumFactoryUpcomingQueueWindow.innerHTML = `
+                                <div style="padding:8px;">
+                                    <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">Upcoming Fight Queue (${Number(queueData.total_queued || 0)} saved)</div>
+                                    ${qBody ? `<table class="phase1-table"><thead><tr><th>fighter_a</th><th>fighter_b</th><th>event_name</th><th>event_date</th><th>source_reference</th><th>readiness_score</th><th>queue_status</th></tr></thead><tbody>${qBody}</tbody></table>` : '<div style="color:#666;">Queue is empty.</div>'}
+                                </div>`;
+                        }
+                    } catch (e) {
+                        setStatus('Save request failed: ' + e.message, true);
                     }
                 });
 
