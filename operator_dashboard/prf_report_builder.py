@@ -14,7 +14,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-from operator_dashboard.prf_report_content import assemble_report_sections
+from operator_dashboard.prf_report_content import build_report_content_bundle
 from operator_dashboard.prf_report_export import write_pdf_report, build_report_filename
 
 SUPPORTED_REPORT_TYPES = {"single_matchup", "event_card"}
@@ -25,6 +25,10 @@ PLACEHOLDER_TOKENS = [
     "pending",
     "tbd",
     "no operator notes recorded",
+    "insufficient data",
+    "content will be enriched later",
+    "prediction unavailable",
+    "analysis unavailable",
 ]
 QUALITY_REQUIRED_SECTIONS = [
     "headline_prediction",
@@ -85,7 +89,12 @@ def _contains_placeholder_text(text: str) -> bool:
     return any(token in normalized for token in PLACEHOLDER_TOKENS)
 
 
-def _evaluate_report_quality(report_obj: dict, sections: dict, allow_draft: bool) -> tuple[str, bool, list[str], str]:
+def _evaluate_report_quality(
+    report_obj: dict,
+    sections: dict,
+    allow_draft: bool,
+    analysis_source_type: str,
+) -> tuple[str, bool, list[str], str]:
     """Evaluate customer-readiness and return quality metadata."""
     missing_sections = []
     for section_name in QUALITY_REQUIRED_SECTIONS:
@@ -100,6 +109,8 @@ def _evaluate_report_quality(report_obj: dict, sections: dict, allow_draft: bool
             missing_sections.append("matchup_snapshot")
 
     if not missing_sections:
+        if str(analysis_source_type or "").strip() == "generated_internal_draft":
+            return "draft_only", False, [], "Internal AI-RISA draft requires operator review before customer release."
         return "customer_ready", True, [], ""
 
     message = "Cannot generate customer PDF yet. Analysis data is missing for this matchup."
@@ -192,6 +203,7 @@ def generate_reports(
 
     generated_reports = []
     rejected_reports = []
+    content_preview_rows = []
     warnings = []
     errors = []
     total_size_bytes = 0
@@ -236,14 +248,24 @@ def generate_reports(
             else:
                 record_with_notes["notes"] = notes
 
-        # Assemble sections
+        # Assemble sections and content source linkage metadata
         try:
-            sections, section_status = assemble_report_sections(record_with_notes)
+            content_bundle = build_report_content_bundle(
+                record_with_notes,
+                allow_internal_draft=allow_draft,
+            )
+            sections = content_bundle.get("sections") or {}
+            section_status = content_bundle.get("section_status") or {}
         except Exception as exc:
             err_msg = "section assembly error: {}".format(exc)
             errors.append("matchup_id={}: {}".format(matchup_id, err_msg))
             rejected_reports.append({"matchup_id": matchup_id, "reason": err_msg})
             continue
+
+        analysis_source_status = str(content_bundle.get("analysis_source_status") or "not_found").strip()
+        analysis_source_type = str(content_bundle.get("analysis_source_type") or "none").strip()
+        linked_analysis_record_id = str(content_bundle.get("linked_analysis_record_id") or "").strip()
+        content_preview = content_bundle.get("content_preview") or {}
 
         event_id = str(record.get("event_id") or "unknown").strip()
         file_name = build_report_filename(event_id, matchup_id)
@@ -275,17 +297,34 @@ def generate_reports(
             "section_status": section_status,
             "source_reference": str(record.get("source_reference") or "").strip(),
             "operator_notes": record_with_notes.get("notes") or "",
+            "analysis_source_status": analysis_source_status,
+            "analysis_source_type": analysis_source_type,
+            "linked_analysis_record_id": linked_analysis_record_id,
+            "content_preview": content_preview,
         }
 
         quality_status, customer_ready, missing_sections, quality_message = _evaluate_report_quality(
             report_obj,
             sections,
             allow_draft=allow_draft,
+            analysis_source_type=analysis_source_type,
         )
         report_obj["report_quality_status"] = quality_status
         report_obj["customer_ready"] = customer_ready
         report_obj["missing_sections"] = missing_sections
         report_obj["quality_message"] = quality_message
+
+        content_preview_rows.append({
+            "matchup_id": matchup_id,
+            "analysis_source_status": analysis_source_status,
+            "analysis_source_type": analysis_source_type,
+            "linked_analysis_record_id": linked_analysis_record_id,
+            "report_quality_status": quality_status,
+            "missing_sections": missing_sections,
+            "headline_prediction_preview": str(content_preview.get("headline_prediction_preview") or ""),
+            "executive_summary_preview": str(content_preview.get("executive_summary_preview") or ""),
+            "operator_approval_state": bool(operator_approval),
+        })
 
         if quality_status == "blocked_missing_analysis":
             errors.append("matchup_id={}: {}".format(matchup_id, quality_message))
@@ -298,6 +337,9 @@ def generate_reports(
                 "generated_pdf_path": "",
                 "generated_pdf_size_bytes": 0,
                 "export_error": quality_message,
+                "analysis_source_status": analysis_source_status,
+                "analysis_source_type": analysis_source_type,
+                "linked_analysis_record_id": linked_analysis_record_id,
             })
             continue
 
@@ -350,6 +392,7 @@ def generate_reports(
         "rejected_count": rejected_count,
         "generated_reports": generated_reports,
         "rejected_reports": rejected_reports,
+        "content_preview_rows": content_preview_rows,
         "export_summary": {
             "output_folder": reports_dir,
             "total_files": accepted_count,

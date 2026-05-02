@@ -5013,8 +5013,101 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertEqual(report.get('report_quality_status'), 'draft_only')
             self.assertFalse(report.get('customer_ready'))
             self.assertIsInstance(report.get('missing_sections'), list)
-            self.assertIn('headline_prediction', report.get('missing_sections') or [])
+            self.assertEqual(report.get('analysis_source_status'), 'found')
+            self.assertEqual(report.get('analysis_source_type'), 'generated_internal_draft')
+            self.assertEqual(report.get('missing_sections'), [])
             self.assertEqual(report.get('export_error'), '')
+
+    def test_prf_phase3_content_preview_rows_present_for_blocked_customer_mode(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'export_format': 'pdf',
+                'allow_draft': False,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            previews = data.get('content_preview_rows') or []
+            self.assertEqual(len(previews), 1)
+            self.assertEqual(previews[0].get('analysis_source_status'), 'not_found')
+            self.assertEqual(previews[0].get('report_quality_status'), 'blocked_missing_analysis')
+            self.assertTrue((previews[0].get('missing_sections') or []))
+            self.assertIn('Prediction unavailable', previews[0].get('headline_prediction_preview') or '')
+
+    def test_prf_phase3_linked_matchup_analysis_can_be_customer_ready(self):
+        import tempfile
+        from operator_dashboard.prf_report_builder import generate_reports
+
+        records = [{
+            'matchup_id': 'jafel_filho_vs_cody_durden',
+            'fighter_a': 'Jafel Filho',
+            'fighter_b': 'Cody Durden',
+            'event_id': 'event_ufc_fn_moicano_duncan_2026_04_04',
+            'event_name': 'UFC Fight Night: Moicano vs Duncan',
+            'event_date': '2026-04-04',
+            'promotion': 'UFC',
+            'queue_status': 'saved',
+            'source_reference': 'matchups/jafel_filho_vs_cody_durden_premium_sections.json',
+            'notes': 'operator reviewed',
+        }]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = generate_reports(
+                queue_records=records,
+                report_type='single_matchup',
+                operator_approval=True,
+                export_format='pdf',
+                notes='',
+                reports_dir=tmpdir,
+                allow_draft=False,
+            )
+
+        self.assertTrue(result.get('ok'))
+        self.assertEqual(result.get('accepted_count'), 1)
+        report = (result.get('generated_reports') or [])[0]
+        self.assertEqual(report.get('report_quality_status'), 'customer_ready')
+        self.assertTrue(report.get('customer_ready'))
+        self.assertEqual(report.get('analysis_source_status'), 'found')
+        self.assertEqual(report.get('analysis_source_type'), 'analysis_json')
+        self.assertIn('premium_sections', str(report.get('linked_analysis_record_id') or ''))
+        self.assertEqual(report.get('missing_sections'), [])
+
+    def test_prf_phase3_internal_draft_content_has_no_unavailable_placeholders(self):
+        from operator_dashboard.prf_report_content import build_report_content_bundle
+
+        bundle = build_report_content_bundle({
+            'matchup_id': 'prf_q_internal001',
+            'fighter_a': 'John Fighter',
+            'fighter_b': 'Mark Boxer',
+            'event_name': 'Internal Draft Test',
+            'event_date': '2026-07-01',
+            'promotion': 'AI-RISA FC',
+            'source_reference': 'phase3_test_source',
+            'notes': '',
+        }, allow_internal_draft=True)
+
+        sections = bundle.get('sections') or {}
+        self.assertEqual(bundle.get('analysis_source_type'), 'generated_internal_draft')
+        for key in [
+            'headline_prediction',
+            'decision_structure',
+            'energy_use',
+            'fatigue_failure_points',
+            'mental_condition',
+            'collapse_triggers',
+            'deception_and_unpredictability',
+            'round_by_round_control_shifts',
+            'scenario_tree',
+        ]:
+            self.assertTrue(str(sections.get(key) or '').strip())
+            self.assertNotIn('unavailable', str(sections.get(key) or '').lower())
 
     def test_prf_phase3_blocked_missing_analysis_when_draft_disabled(self):
         import tempfile
@@ -5200,6 +5293,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                     export_format='pdf',
                     notes='',
                     reports_dir=tmpdir,
+                    allow_draft=True,
                 )
 
         self.assertFalse(result.get('ok'))
@@ -5264,14 +5358,14 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         from operator_dashboard.prf_report_content import assemble_report_sections
         record = {
             'matchup_id': 'prf_q_test002',
-            'fighter_a': 'Alpha',
-            'fighter_b': 'Beta',
+            'fighter_a': 'NoData Fighter One',
+            'fighter_b': 'NoData Fighter Two',
             'event_id': 'test_event',
             'event_name': 'Test Event',
             'event_date': '2026-07-01',
             'promotion': 'Test FC',
             'queue_status': 'saved',
-            'source_reference': 'test',
+            'source_reference': 'no_linked_analysis_expected',
             'notes': '',
         }
         sections, section_status = assemble_report_sections(record)
@@ -5441,6 +5535,8 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         html = resp.data.decode('utf-8')
         self.assertIn('main-prf-allow-draft', html)
         self.assertIn('Generate internal draft only', html)
+        self.assertIn('Analysis Source', html)
+        self.assertIn('Content Preview Before Export', html)
         self.assertIn('Download PDF', html)
         self.assertIn('Open Reports Folder', html)
         self.assertIn('Copy PDF Path', html)
@@ -5501,6 +5597,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'report_type': 'event_card',
                 'operator_approval': True,
                 'notes': 'batch event card test',
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             self.assertEqual(resp.status_code, 200)

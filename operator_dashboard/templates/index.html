@@ -1368,9 +1368,25 @@
             if (!mainPrfGenerateResults || !mainPrfGenerateStatus) return;
             const generated = Array.isArray(data.generated_reports) ? data.generated_reports : [];
             const rejected = Array.isArray(data.rejected_reports) ? data.rejected_reports : [];
+            const contentPreviewRows = Array.isArray(data.content_preview_rows) ? data.content_preview_rows : [];
             const warnings = Array.isArray(data.warnings) ? data.warnings : [];
             const errors = Array.isArray(data.errors) ? data.errors : [];
             const totalSize = Number((data.export_summary || {}).total_size_bytes || 0);
+
+            const contentPreviewHtml = contentPreviewRows.length
+                ? `<div style="margin-bottom:10px;border:1px solid #e8dbff;border-radius:8px;background:#faf7ff;padding:10px;">
+                    <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:6px;">Content Preview Before Export</div>
+                    ${contentPreviewRows.map((row) => {
+                        const missing = Array.isArray(row.missing_sections) ? row.missing_sections : [];
+                        return `<div style="border-top:1px solid #eee;padding-top:8px;margin-top:8px;">
+                            <div style="font-size:12px;color:#111827;"><strong>Matchup:</strong> ${_escapeHtml(row.matchup_id || '-')} | <strong>Analysis Source:</strong> ${_escapeHtml(row.analysis_source_status || 'not_found')} (${_escapeHtml(row.analysis_source_type || 'none')}) | <strong>Linked Record:</strong> ${_escapeHtml(row.linked_analysis_record_id || '-')} | <strong>Quality:</strong> ${_escapeHtml(row.report_quality_status || 'unknown')} | <strong>Operator Approval:</strong> ${row.operator_approval_state ? 'approved' : 'not approved'}</div>
+                            <div style="margin-top:4px;font-size:12px;color:#111827;"><strong>Headline Preview:</strong> ${_escapeHtml(row.headline_prediction_preview || '-')}</div>
+                            <div style="margin-top:3px;font-size:12px;color:#111827;"><strong>Executive Summary Preview:</strong> ${_escapeHtml(row.executive_summary_preview || '-')}</div>
+                            <div style="margin-top:3px;font-size:12px;color:${missing.length ? '#a80000' : '#0f766e'};"><strong>Missing Sections:</strong> ${_escapeHtml(missing.join(', ') || 'none')}</div>
+                        </div>`;
+                    }).join('')}
+                </div>`
+                : '';
 
             const generatedRows = generated.map((row) => {
                 const pdfPath = String(row.generated_pdf_path || row.file_path || '');
@@ -1382,6 +1398,9 @@
                 const reportQualityStatus = String(row.report_quality_status || 'unknown');
                 const customerReady = Boolean(row.customer_ready);
                 const missingSections = Array.isArray(row.missing_sections) ? row.missing_sections : [];
+                const analysisSourceStatus = String(row.analysis_source_status || 'not_found');
+                const analysisSourceType = String(row.analysis_source_type || 'none');
+                const linkedAnalysisRecordId = String(row.linked_analysis_record_id || '');
                 const qualityMessage = String(row.quality_message || '');
                 const fileAction = isOpenable && pdfPath
                     ? `<a href="/api/premium-report-factory/reports/download/${reportId}?file_name=${fileName}" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Download PDF</a>`
@@ -1396,6 +1415,8 @@
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_name || '')}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(reportQualityStatus)}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${customerReady ? 'true' : 'false'}</td>
+                    <td style="border:1px solid #ddd;padding:6px;word-break:break-word;">${_escapeHtml(`${analysisSourceStatus} (${analysisSourceType})`)}</td>
+                    <td style="border:1px solid #ddd;padding:6px;word-break:break-word;">${_escapeHtml(linkedAnalysisRecordId || '-')}</td>
                     <td style="border:1px solid #ddd;padding:6px;word-break:break-word;">${_escapeHtml(missingSections.join(', ') || '-')}</td>
                     <td style="border:1px solid #ddd;padding:6px;word-break:break-all;">${_escapeHtml(pdfPath)}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(`${sizeBytes} bytes (${_formatBytes(sizeBytes)})`)}</td>
@@ -1422,7 +1443,8 @@
             mainPrfGenerateResults.style.display = 'block';
             mainPrfGenerateResults.innerHTML = `
                 <div style="font-size:13px;margin-bottom:8px;"><strong>Accepted:</strong> ${Number(data.accepted_count || 0)} | <strong>Rejected:</strong> ${Number(data.rejected_count || 0)} | <strong>Total Size:</strong> ${_formatBytes(totalSize)}</div>
-                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Quality Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Customer Ready</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Missing Sections</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">PDF Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Size</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Error</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Actions</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
+                ${contentPreviewHtml}
+                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Quality Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Customer Ready</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Analysis Source</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Linked Analysis Record ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Missing Sections</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">PDF Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Size</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Error</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Actions</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
                 ${missingPdfHtml}
                 ${rejected.length ? `<div style="margin-top:8px;"><strong>Rejected:</strong><ul style="margin:6px 0 0 18px;">${rejectedRows}</ul></div>` : ''}
                 ${warningsHtml}
