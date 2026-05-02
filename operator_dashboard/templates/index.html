@@ -340,6 +340,14 @@
                 <div id="main-prf-save-status" class="status-display" style="display:none;"></div>
                 <div id="main-prf-save-results" style="display:none;margin-top:10px;overflow:auto;"></div>
                 <div id="main-prf-queue-snapshot" style="display:none;margin-top:10px;overflow:auto;"></div>
+
+                <!-- Engine Availability — Ranking Engine Availability (operator-only, collapsed by default) -->
+                <details id="ranking-engine-availability-panel" style="margin-top:14px;">
+                    <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;padding:6px 0;user-select:none;">Ranking Engine Availability (scaffold)</summary>
+                    <div id="ranking-engine-availability-content" style="margin-top:8px;font-size:12px;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;padding:10px;">
+                        <em style="color:#9ca3af;">Loading…</em>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -387,6 +395,14 @@
 
                 <div id="main-prf-generate-status" class="status-display" style="display:none;"></div>
                 <div id="main-prf-generate-results" style="display:none;margin-top:10px;overflow:auto;"></div>
+
+                <!-- Engine Availability — Generation / Betting / Section Manifest (operator-only, collapsed by default) -->
+                <details id="button2-engine-availability-panel" style="margin-top:14px;">
+                    <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;padding:6px 0;user-select:none;">Engine Availability (scaffold)</summary>
+                    <div id="button2-engine-availability-content" style="margin-top:8px;font-size:12px;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;padding:10px;">
+                        <em style="color:#9ca3af;">Loading…</em>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -602,6 +618,14 @@
                     </div>
                 </div>
                 <div id="accuracy-calibration-review-content" style="background: #fafbfc; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-top: 12px; font-size: 13px; display: none;"></div>
+
+                <!-- Engine Availability — Calibration Engine Availability (operator-only, collapsed by default) -->
+                <details id="calibration-engine-availability-panel" style="margin-top:14px;">
+                    <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;padding:6px 0;user-select:none;">Calibration Engine Availability (scaffold)</summary>
+                    <div id="calibration-engine-availability-content" style="margin-top:8px;font-size:12px;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;padding:10px;">
+                        <em style="color:#9ca3af;">Loading…</em>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -710,6 +734,30 @@
                 .replaceAll('>', '&gt;')
                 .replaceAll('"', '&quot;')
                 .replaceAll("'", '&#39;');
+        }
+
+        // Engine availability panel renderer — display-only, no gate actions
+        function _renderEngineAvailabilityPanel(contentId, entries) {
+            const el = document.getElementById(contentId);
+            if (!el) return;
+            if (!Array.isArray(entries) || entries.length === 0) {
+                el.innerHTML = '<em style="color:#9ca3af;">No entries.</em>';
+                return;
+            }
+            const rows = entries.map((e) => {
+                const gateTag = e.approval_gate_required
+                    ? '<span style="background:#fef3c7;color:#92400e;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px;">approval gate</span>'
+                    : '';
+                const reqTag = e.required
+                    ? '<span style="background:#dbeafe;color:#1e40af;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px;">required</span>'
+                    : '<span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px;">optional</span>';
+                return `<div style="padding:4px 0;border-bottom:1px solid #f3f4f6;">
+                    <code style="font-size:11px;color:#374151;">${_escapeHtml(e.engine_id)}</code>
+                    <span style="color:#6b7280;font-size:11px;margin-left:6px;">${_escapeHtml(e.label || '')}</span>
+                    ${reqTag}${gateTag}
+                </div>`;
+            }).join('');
+            el.innerHTML = rows;
         }
 
         function _renderIntentPlan(data) {
@@ -997,6 +1045,10 @@
                     <div style="font-size:12px;font-weight:700;color:#314b68;margin-bottom:6px;">Upcoming Fight Queue Snapshot (${Number(data.total_queued || rows.length)})</div>
                     ${rows.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter A</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Fighter B</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Event</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Date</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Readiness</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Queue Status</th></tr></thead><tbody>${body}</tbody></table>` : '<div style="color:#666;">Queue is empty.</div>'}
                 `;
+                // Populate Button 1 ranking engine availability panel (display-only)
+                if (Array.isArray(data.ranking_engine_availability)) {
+                    _renderEngineAvailabilityPanel('ranking-engine-availability-content', data.ranking_engine_availability);
+                }
             } catch (e) {
                 mainPrfQueueSnapshot.style.display = 'block';
                 mainPrfQueueSnapshot.innerHTML = `<div class="status-display error">Queue snapshot request failed: ${_escapeHtml(e.message)}</div>`;
@@ -1549,6 +1601,10 @@
                 mainPrfGenerateStatus.className = 'status-display success';
                 mainPrfGenerateStatus.textContent = `Export complete: ${Number(data.accepted_count || 0)} PDF(s) generated.`;
                 _renderMainPrfGenerateResult(data);
+                // Populate Button 2 engine availability panel (display-only)
+                if (data.engine_availability && Array.isArray(data.engine_availability.generation_engines)) {
+                    _renderEngineAvailabilityPanel('button2-engine-availability-content', data.engine_availability.generation_engines);
+                }
                 await loadMainPrfQueue({ preserveGenerateResults: true });
             } catch (e) {
                 mainPrfGenerateStatus.className = 'status-display error';
@@ -2189,6 +2245,10 @@
                 accuracyCalibrationReviewContent.innerHTML = '<pre style="margin:0;white-space:pre-wrap;word-wrap:break-word;font-size:12px;">' + JSON.stringify(data, null, 2) + '</pre>';
                 accuracyCalibrationReviewContent.style.display = 'block';
                 accuracyCalibrationReviewBtn.textContent = 'Run Accuracy-Ledger Calibration Review';
+                // Populate Button 3 calibration engine availability panel (display-only)
+                if (Array.isArray(data.calibration_engine_availability)) {
+                    _renderEngineAvailabilityPanel('calibration-engine-availability-content', data.calibration_engine_availability);
+                }
                 await loadAccuracySummary();
             } catch (e) {
                 accuracyCalibrationReviewContent.innerHTML = `<span style="color:#a80000;">Error: ${e.message}</span>`;
