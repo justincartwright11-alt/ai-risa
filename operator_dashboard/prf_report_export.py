@@ -9,13 +9,27 @@ no billing, no distribution, no auto-send.
 """
 
 import os
+import re
 from datetime import datetime, timezone
+
+
+_INVALID_FILENAME_CHARS = re.compile(r'[\\/:*?"<>|]+')
+
+
+def _sanitize_filename_component(value: str) -> str:
+    """Normalize user-derived filename parts so Windows paths remain valid."""
+    sanitized = _INVALID_FILENAME_CHARS.sub("_", str(value or "").strip())
+    sanitized = re.sub(r"\s+", "_", sanitized)
+    sanitized = sanitized.strip(" ._")
+    return sanitized or "unknown"
 
 
 def build_report_filename(event_id: str, matchup_id: str) -> str:
     """Deterministic PDF filename per the locked export rules."""
     date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
-    return "ai_risa_premium_report_{}_{}_{}.pdf".format(event_id, matchup_id, date_str)
+    safe_event_id = _sanitize_filename_component(event_id)
+    safe_matchup_id = _sanitize_filename_component(matchup_id)
+    return "ai_risa_premium_report_{}_{}_{}.pdf".format(safe_event_id, safe_matchup_id, date_str)
 
 
 def write_pdf_report(report_obj: dict, sections: dict, reports_dir: str) -> dict:

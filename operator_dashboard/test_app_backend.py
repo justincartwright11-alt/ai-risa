@@ -5033,6 +5033,17 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertTrue(file_name.startswith('ai_risa_premium_report_'), 'Filename must use deterministic prefix')
             self.assertTrue(file_name.endswith('.pdf'), 'Filename must end with .pdf')
 
+    def test_prf_phase3_filename_sanitizes_windows_invalid_characters(self):
+        from operator_dashboard.prf_report_export import build_report_filename
+
+        file_name = build_report_filename('ares_fc_39: jbalia vs. diatta', 'prf_q_7b1e2a0d1275b54a')
+
+        self.assertTrue(file_name.endswith('.pdf'))
+        self.assertNotIn(':', file_name)
+        self.assertNotIn('/', file_name)
+        self.assertNotIn('\\', file_name)
+        self.assertIn('ares_fc_39__jbalia_vs._diatta', file_name)
+
     # 4. report_status is 'generated' only after confirmed file write
     def test_prf_phase3_report_status_generated_only_after_success(self):
         import tempfile
