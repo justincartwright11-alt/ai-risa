@@ -15,6 +15,7 @@ import os
 import re
 from datetime import datetime, timezone
 
+from operator_dashboard.prf_betting_market_adapter import build_betting_market_enrichment
 from operator_dashboard.prf_report_content import build_report_content_bundle
 from operator_dashboard.prf_report_export import write_pdf_report, build_report_filename
 from operator_dashboard.prf_report_readiness_scaffold import (
@@ -365,6 +366,7 @@ def generate_reports(
     notes: str,
     reports_dir: str,
     allow_draft: bool = False,
+    betting_analyst_mode: bool = False,
 ) -> dict:
     """
     Core Phase 3 generation logic.
@@ -549,6 +551,14 @@ def generate_reports(
             "section_source_map": {},
         }
 
+        if betting_analyst_mode:
+            betting_enrichment = build_betting_market_enrichment(
+                queue_record=record_with_notes,
+                report_obj=report_obj,
+                sections=sections,
+            )
+            report_obj.update(betting_enrichment)
+
         quality_status, customer_ready, missing_sections, quality_message, sparse_completion_status, sparse_completion_reason, readiness_gate_reason = _evaluate_report_quality(
             report_obj,
             record_with_notes,
@@ -604,6 +614,27 @@ def generate_reports(
             "operator_approval_state": bool(operator_approval),
         })
 
+        if betting_analyst_mode:
+            content_preview_rows[-1].update(
+                {
+                    key: report_obj.get(key)
+                    for key in (
+                        "betting_market_status",
+                        "odds_source_status",
+                        "implied_probability",
+                        "fair_price_estimate",
+                        "market_edge_summary",
+                        "prop_market_notes",
+                        "volatility_grade",
+                        "round_band_betting_path",
+                        "pass_no_bet_conditions",
+                        "betting_risk_disclaimer",
+                        "betting_engine_contributions",
+                        "betting_missing_inputs",
+                    )
+                }
+            )
+
         if quality_status == "blocked_missing_analysis":
             errors.append("matchup_id={}: {}".format(matchup_id, quality_message))
             rejected_reports.append({
@@ -627,6 +658,26 @@ def generate_reports(
                 "analysis_source_type": analysis_source_type,
                 "linked_analysis_record_id": linked_analysis_record_id,
             })
+            if betting_analyst_mode:
+                rejected_reports[-1].update(
+                    {
+                        key: report_obj.get(key)
+                        for key in (
+                            "betting_market_status",
+                            "odds_source_status",
+                            "implied_probability",
+                            "fair_price_estimate",
+                            "market_edge_summary",
+                            "prop_market_notes",
+                            "volatility_grade",
+                            "round_band_betting_path",
+                            "pass_no_bet_conditions",
+                            "betting_risk_disclaimer",
+                            "betting_engine_contributions",
+                            "betting_missing_inputs",
+                        )
+                    }
+                )
             continue
 
         if quality_status == "draft_only":

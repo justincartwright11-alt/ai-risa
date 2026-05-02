@@ -1901,6 +1901,8 @@ def api_premium_report_factory_reports_generate():
     export_format = str(request_json.get("export_format") or "pdf").strip() or "pdf"
     notes = str(request_json.get("notes") or "").strip()
     allow_draft = bool(request_json.get("allow_draft", False))
+    report_mode = str(request_json.get("report_mode") or "").strip().lower()
+    betting_analyst_mode = bool(request_json.get("betting_analyst_mode", False)) or report_mode == "betting_analyst"
 
     queue_path = _get_prf_queue_path()
     all_queue_records = load_prf_queue(queue_path)
@@ -1921,6 +1923,7 @@ def api_premium_report_factory_reports_generate():
         notes=notes,
         reports_dir=reports_dir,
         allow_draft=allow_draft,
+        betting_analyst_mode=betting_analyst_mode,
     )
 
     # Update report_status in queue for successfully generated reports

@@ -5640,6 +5640,69 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 self.assertIsNotNone(rep.get('file_path'))
                 self.assertTrue(os.path.exists(rep['file_path']), 'PDF must exist: {}'.format(rep['file_path']))
 
+    def test_prf_phase3_betting_fields_absent_when_mode_not_selected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, _reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'allow_draft': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            report = (resp.get_json().get('generated_reports') or [])[0]
+            self.assertNotIn('betting_market_status', report)
+            self.assertNotIn('betting_risk_disclaimer', report)
+            self.assertNotIn('pass_no_bet_conditions', report)
+
+    def test_prf_phase3_betting_fields_present_when_mode_selected(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, _reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'allow_draft': True,
+                'betting_analyst_mode': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            report = (resp.get_json().get('generated_reports') or [])[0]
+            self.assertIn('betting_market_status', report)
+            self.assertIn('betting_risk_disclaimer', report)
+            self.assertIn('pass_no_bet_conditions', report)
+            self.assertIn('betting_engine_contributions', report)
+            self.assertIsInstance(report.get('pass_no_bet_conditions'), list)
+            self.assertGreater(len(report.get('pass_no_bet_conditions') or []), 0)
+
+    def test_prf_phase3_betting_missing_odds_sets_unavailable_without_blocking_generate(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, _reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'allow_draft': True,
+                'betting_analyst_mode': True,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            report = (resp.get_json().get('generated_reports') or [])[0]
+            self.assertEqual(report.get('betting_market_status'), 'unavailable')
+            self.assertIn('odds_snapshot', report.get('betting_missing_inputs') or [])
+            self.assertEqual(report.get('report_quality_status'), 'draft_only')
+            self.assertEqual(report.get('readiness_gate_reason'), 'internal_draft_requires_operator_review')
+
 if __name__ == '__main__':
     unittest.main()
 
