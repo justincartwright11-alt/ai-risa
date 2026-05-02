@@ -1241,6 +1241,21 @@
             return `${(value / (1024 * 1024)).toFixed(2)} MB`;
         }
 
+        function _toFileUrl(pathValue) {
+            const rawPath = String(pathValue || '').trim();
+            if (!rawPath) return '';
+            const normalized = rawPath.replaceAll('\\', '/');
+            return `file:///${encodeURI(normalized)}`;
+        }
+
+        function _getFolderPath(pathValue) {
+            const rawPath = String(pathValue || '').trim();
+            if (!rawPath) return '';
+            const normalized = rawPath.replaceAll('\\', '/');
+            const lastSlash = normalized.lastIndexOf('/');
+            return lastSlash > 0 ? normalized.slice(0, lastSlash) : '';
+        }
+
         function _getMainPrfSelectedMatchupIds() {
             if (!mainPrfQueueTable) return [];
             return Array.from(mainPrfQueueTable.querySelectorAll('.main-prf-row-checkbox:checked'))
@@ -1352,19 +1367,34 @@
             const totalSize = Number((data.export_summary || {}).total_size_bytes || 0);
 
             const generatedRows = generated.map((row) => {
+                const pdfPath = String(row.generated_pdf_path || row.file_path || '');
+                const folderPath = _getFolderPath(pdfPath);
+                const sizeBytes = Number(row.generated_pdf_size_bytes || 0);
+                const isOpenable = Boolean(row.generated_pdf_openable);
+                const fileAction = isOpenable && pdfPath
+                    ? `<a href="${_escapeHtml(_toFileUrl(pdfPath))}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;margin-right:6px;">Open PDF</a>`
+                    : '<span style="color:#666;">Open PDF unavailable</span>';
+                const folderAction = folderPath
+                    ? `<a href="${_escapeHtml(_toFileUrl(folderPath))}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Open Reports Folder</a>`
+                    : '<span style="color:#666;">Folder unavailable</span>';
                 return `<tr>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_name || '')}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_path || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;word-break:break-all;">${_escapeHtml(pdfPath)}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(`${sizeBytes} bytes (${_formatBytes(sizeBytes)})`)}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.matchup_id || '')}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.report_status || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${fileAction}${folderAction}</td>
                 </tr>`;
             }).join('');
 
             const rejectedRows = rejected.map((row) => `<li>${_escapeHtml(row.matchup_id || 'unknown')}: ${_escapeHtml(row.reason || '')}</li>`).join('');
             const warningsHtml = warnings.length ? `<div style="margin-top:8px;color:#7a4f00;"><strong>Warnings:</strong> ${_escapeHtml(warnings.join('; '))}</div>` : '';
             const errorsHtml = errors.length ? `<div style="margin-top:8px;color:#a80000;"><strong>Errors:</strong> ${_escapeHtml(errors.join('; '))}</div>` : '';
+            const missingPdfHtml = !generated.length
+                ? '<div style="margin-top:8px;color:#a80000;"><strong>PDF was not created. Check export error.</strong></div>'
+                : '';
 
-            const allPaths = generated.map((g) => g.file_path || '').filter(Boolean).join('\n');
+            const allPaths = generated.map((g) => g.generated_pdf_path || g.file_path || '').filter(Boolean).join('\n');
             const copyBtn = generated.length
                 ? `<button id="main-prf-copy-paths-btn" class="btn-secondary" style="margin-top:8px;">Copy All Paths</button>`
                 : '';
@@ -1372,8 +1402,9 @@
             mainPrfGenerateResults.style.display = 'block';
             mainPrfGenerateResults.innerHTML = `
                 <div style="font-size:13px;margin-bottom:8px;"><strong>Accepted:</strong> ${Number(data.accepted_count || 0)} | <strong>Rejected:</strong> ${Number(data.rejected_count || 0)} | <strong>Total Size:</strong> ${_formatBytes(totalSize)}</div>
-                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Status</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
+                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">PDF Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Size</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Actions</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
                 ${copyBtn}
+                ${missingPdfHtml}
                 ${rejected.length ? `<div style="margin-top:8px;"><strong>Rejected:</strong><ul style="margin:6px 0 0 18px;">${rejectedRows}</ul></div>` : ''}
                 ${warningsHtml}
                 ${errorsHtml}

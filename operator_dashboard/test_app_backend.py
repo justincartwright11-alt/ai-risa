@@ -4983,6 +4983,33 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertIsNotNone(file_path)
             self.assertTrue(os.path.exists(file_path), 'PDF file must exist on disk')
 
+    # 2b. Generated report includes explicit PDF proof fields
+    def test_prf_phase3_generate_includes_pdf_proof_fields(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'export_format': 'pdf',
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            gen_reports = data.get('generated_reports') or []
+            self.assertGreater(len(gen_reports), 0)
+
+            report = gen_reports[0]
+            self.assertTrue(report.get('generated_pdf_exists'))
+            self.assertTrue(report.get('generated_pdf_openable'))
+            self.assertTrue(str(report.get('generated_pdf_path') or '').endswith('.pdf'))
+            self.assertGreater(int(report.get('generated_pdf_size_bytes') or 0), 0)
+            self.assertTrue(os.path.exists(report.get('generated_pdf_path')))
+            self.assertEqual(report.get('export_error'), '')
+
     # 3. Deterministic filename
     def test_prf_phase3_deterministic_filename(self):
         import tempfile, os
@@ -5067,6 +5094,54 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         # Verify no generated_reports have status 'generated'
         for rep in result.get('generated_reports') or []:
             self.assertNotEqual(rep.get('report_status'), 'generated')
+
+    # 5b. Invalid export artifacts are not treated as generated PDFs
+    def test_prf_phase3_non_pdf_or_zero_byte_artifact_not_marked_generated(self):
+        import tempfile
+        from unittest.mock import patch
+        from operator_dashboard.prf_report_builder import generate_reports
+
+        records = [{
+            'matchup_id': 'prf_q_test002',
+            'fighter_a': 'Alpha',
+            'fighter_b': 'Beta',
+            'event_id': 'alpha_event',
+            'event_name': 'Alpha Event',
+            'event_date': '2026-07-01',
+            'promotion': 'Test FC',
+            'queue_status': 'saved',
+            'source_reference': 'test',
+            'notes': '',
+        }]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zero_byte_path = os.path.join(tmpdir, 'broken_export.pdf')
+
+            def _fake_write_pdf_report(report_obj, sections, reports_dir):
+                with open(zero_byte_path, 'wb'):
+                    pass
+                return {
+                    'ok': True,
+                    'file_path': zero_byte_path,
+                    'file_name': os.path.basename(zero_byte_path),
+                    'error': None,
+                }
+
+            with patch('operator_dashboard.prf_report_builder.write_pdf_report', _fake_write_pdf_report):
+                result = generate_reports(
+                    queue_records=records,
+                    report_type='single_matchup',
+                    operator_approval=True,
+                    export_format='pdf',
+                    notes='',
+                    reports_dir=tmpdir,
+                )
+
+        self.assertFalse(result.get('ok'))
+        self.assertEqual(result.get('accepted_count'), 0)
+        self.assertEqual(len(result.get('generated_reports') or []), 0)
+        self.assertEqual(len(result.get('rejected_reports') or []), 1)
+        self.assertTrue(any('Zero-byte PDF file detected' in err for err in (result.get('errors') or [])))
 
     # 6. All 14 required sections present in section_status
     def test_prf_phase3_all_14_sections_present(self):

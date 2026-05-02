@@ -38,6 +38,24 @@ def _determine_report_status(section_status: dict) -> str:
     return "generated"
 
 
+def _validate_generated_pdf(file_path: str) -> tuple[bool, str, int, str]:
+    """Validate that the export produced a real, non-empty PDF artifact."""
+    normalized_path = os.path.abspath(str(file_path or "").strip()) if str(file_path or "").strip() else ""
+    if not normalized_path:
+        return False, "", 0, "PDF was not created. Check export error."
+    if not normalized_path.lower().endswith(".pdf"):
+        return False, normalized_path, 0, "Export artifact is not a PDF file."
+    if not os.path.exists(normalized_path):
+        return False, normalized_path, 0, "PDF was not created. Check export error."
+    try:
+        size_bytes = os.path.getsize(normalized_path)
+    except Exception as exc:
+        return False, normalized_path, 0, "Failed to read generated PDF size: {}".format(exc)
+    if size_bytes <= 0:
+        return False, normalized_path, size_bytes, "Zero-byte PDF file detected. Export failed."
+    return True, normalized_path, size_bytes, ""
+
+
 def generate_reports(
     queue_records: list,
     report_type: str,
@@ -191,6 +209,11 @@ def generate_reports(
             "export_format": "pdf",
             "file_name": file_name,
             "file_path": None,
+            "generated_pdf_exists": False,
+            "generated_pdf_path": "",
+            "generated_pdf_size_bytes": 0,
+            "generated_pdf_openable": False,
+            "export_error": "",
             "generated_at": generated_at,
             "section_status": section_status,
             "source_reference": str(record.get("source_reference") or "").strip(),
@@ -201,19 +224,33 @@ def generate_reports(
         export_result = write_pdf_report(report_obj, sections, reports_dir)
 
         if export_result.get("ok"):
-            file_path = export_result["file_path"]
-            try:
-                total_size_bytes += os.path.getsize(file_path)
-            except Exception:
-                pass
-            report_obj["report_status"] = _determine_report_status(section_status)
-            report_obj["file_path"] = file_path
-            generated_reports.append(report_obj)
+            valid_pdf, generated_pdf_path, pdf_size_bytes, pdf_error = _validate_generated_pdf(
+                export_result.get("file_path")
+            )
+            report_obj["file_path"] = generated_pdf_path or export_result.get("file_path")
+            report_obj["generated_pdf_exists"] = valid_pdf
+            report_obj["generated_pdf_path"] = generated_pdf_path
+            report_obj["generated_pdf_size_bytes"] = pdf_size_bytes
+            report_obj["generated_pdf_openable"] = valid_pdf
+            report_obj["export_error"] = pdf_error
+
+            if valid_pdf:
+                total_size_bytes += pdf_size_bytes
+                report_obj["report_status"] = _determine_report_status(section_status)
+                generated_reports.append(report_obj)
+            else:
+                report_obj["report_status"] = "failed"
+                errors.append("matchup_id={}: export failed: {}".format(matchup_id, pdf_error))
+                rejected_reports.append({
+                    "matchup_id": matchup_id,
+                    "reason": "export_failed: {}".format(pdf_error),
+                })
         else:
             error_msg = export_result.get("error") or "unknown export error"
             errors.append("matchup_id={}: export failed: {}".format(matchup_id, error_msg))
             report_obj["report_status"] = "failed"
             report_obj["file_name"] = export_result.get("file_name") or file_name
+            report_obj["export_error"] = error_msg
             rejected_reports.append({
                 "matchup_id": matchup_id,
                 "reason": "export_failed: {}".format(error_msg),
@@ -286,10 +323,20 @@ def list_generated_reports(reports_dir: str) -> dict:
             except Exception as exc:
                 warnings.append("meta_read_error for {}: {}".format(name, exc))
         # No metadata — report file only
+        size_bytes = 0
+        try:
+            size_bytes = os.path.getsize(file_path)
+        except Exception as exc:
+            warnings.append("stat_error for {}: {}".format(name, exc))
         reports.append({
             "file_name": name,
             "file_path": file_path,
-            "report_status": "generated",
+            "report_status": "generated" if size_bytes > 0 else "failed",
+            "generated_pdf_exists": size_bytes > 0,
+            "generated_pdf_path": file_path,
+            "generated_pdf_size_bytes": size_bytes,
+            "generated_pdf_openable": size_bytes > 0,
+            "export_error": "" if size_bytes > 0 else "Zero-byte PDF file detected. Export failed.",
         })
 
     return {
