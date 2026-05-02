@@ -12,10 +12,16 @@ no scoring rewrite.
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 from operator_dashboard.prf_report_content import build_report_content_bundle
 from operator_dashboard.prf_report_export import write_pdf_report, build_report_filename
+from operator_dashboard.prf_report_readiness_scaffold import (
+    detect_missing_required_sections,
+    evaluate_report_readiness_status,
+    evaluate_sparse_case_completion,
+)
 
 SUPPORTED_REPORT_TYPES = {"single_matchup", "event_card"}
 REJECTED_REPORT_TYPES = {"fighter_profile"}
@@ -89,18 +95,92 @@ def _contains_placeholder_text(text: str) -> bool:
     return any(token in normalized for token in PLACEHOLDER_TOKENS)
 
 
+def _extract_prediction_fields(
+    record: dict,
+    sections: dict,
+    content_preview: dict,
+    analysis_source_status: str,
+    analysis_source_type: str,
+    linked_analysis_record_id: str,
+) -> dict:
+    """Extract sparse-completion prediction fields from available Button 2 sources."""
+    headline = str(sections.get("headline_prediction") or content_preview.get("headline_prediction_preview") or "")
+    round_shift = str(sections.get("round_by_round_control_shifts") or "")
+
+    winner = str(record.get("winner") or record.get("predicted_winner") or "").strip()
+    method = str(record.get("method") or "").strip()
+    confidence = record.get("confidence")
+    round_value = str(record.get("round") or "").strip()
+
+    if not winner:
+        winner_match = re.search(r"projected winner:\s*([^\.]+)", headline, re.IGNORECASE)
+        if winner_match:
+            winner = winner_match.group(1).strip()
+    if not winner:
+        projection_match = re.search(r"final projection is\s+([^\.]+?)\s+by\s+", headline, re.IGNORECASE)
+        if projection_match:
+            winner = projection_match.group(1).strip()
+
+    if not method:
+        method_match = re.search(r"via\s+([A-Za-z\- ]+)", headline, re.IGNORECASE)
+        if method_match:
+            method = method_match.group(1).strip()
+    if not method:
+        by_match = re.search(r"\bby\s+([A-Za-z\- ]+)", headline, re.IGNORECASE)
+        if by_match:
+            method = by_match.group(1).strip()
+
+    if confidence in (None, ""):
+        confidence_match = re.search(r"(\d{1,2}(?:\.\d+)?)%", headline)
+        if confidence_match:
+            try:
+                confidence = float(confidence_match.group(1)) / 100.0
+            except Exception:
+                confidence = None
+    if confidence in (None, "") and str(analysis_source_status or "").strip().lower() == "found":
+        # Linked analysis exists but not all sources expose numeric confidence.
+        confidence = 0.5
+
+    if not round_value:
+        round_match = re.search(r"round\s*(one|two|three|four|five|\d)", round_shift, re.IGNORECASE)
+        if round_match:
+            round_value = str(round_match.group(1)).strip()
+    if not round_value and str(analysis_source_status or "").strip().lower() == "found":
+        round_value = "n/a"
+
+    if str(analysis_source_type or "").strip() == "generated_internal_draft":
+        if not winner:
+            winner = str(record.get("fighter_a") or "").strip() or "internal_draft_projection"
+        if not method:
+            method = "decision"
+        if confidence in (None, ""):
+            confidence = 0.5
+        if not round_value:
+            round_value = "n/a"
+
+    return {
+        "winner": winner,
+        "confidence": confidence,
+        "method": method,
+        "round": round_value,
+        "debug_metrics": {
+            "analysis_source_status": str(analysis_source_status or "").strip(),
+            "linked_analysis_record_id": str(linked_analysis_record_id or "").strip(),
+        },
+    }
+
+
 def _evaluate_report_quality(
     report_obj: dict,
+    queue_record: dict,
     sections: dict,
+    content_preview: dict,
     allow_draft: bool,
+    analysis_source_status: str,
     analysis_source_type: str,
-) -> tuple[str, bool, list[str], str]:
-    """Evaluate customer-readiness and return quality metadata."""
-    missing_sections = []
-    for section_name in QUALITY_REQUIRED_SECTIONS:
-        content = sections.get(section_name)
-        if _contains_placeholder_text(content):
-            missing_sections.append(section_name)
+) -> tuple[str, bool, list[str], str, str, str]:
+    """Evaluate customer-readiness and sparse-completion using scaffold contracts."""
+    missing_sections = detect_missing_required_sections(sections)
 
     fighter_a = str(report_obj.get("fighter_a") or "").strip()
     fighter_b = str(report_obj.get("fighter_b") or "").strip()
@@ -108,15 +188,55 @@ def _evaluate_report_quality(
         if "matchup_snapshot" not in missing_sections:
             missing_sections.append("matchup_snapshot")
 
-    if not missing_sections:
+    sparse_payload = _extract_prediction_fields(
+        queue_record,
+        sections,
+        content_preview,
+        analysis_source_status,
+        analysis_source_type,
+        str(report_obj.get("linked_analysis_record_id") or "").strip(),
+    )
+    sparse_result = evaluate_sparse_case_completion(sparse_payload)
+    sparse_completion_ready = bool(sparse_result.get("ready"))
+    sparse_missing_fields = sparse_result.get("missing_fields") or []
+
+    readiness = evaluate_report_readiness_status(
+        analysis_source_status=analysis_source_status,
+        allow_draft=allow_draft,
+        missing_sections=missing_sections,
+        sparse_completion_ready=sparse_completion_ready,
+    )
+
+    quality_status = str(readiness.get("report_quality_status") or "blocked_missing_analysis").strip()
+    customer_ready = bool(readiness.get("customer_ready"))
+    readiness_gate_reason = str(readiness.get("reason_code") or "unknown").strip()
+
+    if str(analysis_source_type or "").strip() == "generated_internal_draft":
+        quality_status = "draft_only"
+        customer_ready = False
+        readiness_gate_reason = "internal_draft_requires_operator_review"
+
+    sparse_completion_status = "complete" if sparse_completion_ready else "incomplete"
+    if sparse_completion_ready:
+        sparse_completion_reason = "all_sparse_prediction_fields_present"
+    else:
+        sparse_completion_reason = "missing_fields: {}".format(
+            ",".join(str(name) for name in sparse_missing_fields)
+        )
+
+    if quality_status == "customer_ready":
+        return quality_status, customer_ready, [], "", sparse_completion_status, sparse_completion_reason, readiness_gate_reason
+
+    if quality_status == "draft_only":
+        message = "Internal AI-RISA draft requires operator review before customer release."
+        if missing_sections:
+            message = "Cannot generate customer PDF yet. Analysis data is missing for this matchup."
         if str(analysis_source_type or "").strip() == "generated_internal_draft":
-            return "draft_only", False, [], "Internal AI-RISA draft requires operator review before customer release."
-        return "customer_ready", True, [], ""
+            message = "Internal AI-RISA draft requires operator review before customer release."
+        return quality_status, False, missing_sections, message, sparse_completion_status, sparse_completion_reason, readiness_gate_reason
 
     message = "Cannot generate customer PDF yet. Analysis data is missing for this matchup."
-    if allow_draft:
-        return "draft_only", False, missing_sections, message
-    return "blocked_missing_analysis", False, missing_sections, message
+    return "blocked_missing_analysis", False, missing_sections, message, sparse_completion_status, sparse_completion_reason, readiness_gate_reason
 
 
 def generate_reports(
@@ -291,6 +411,9 @@ def generate_reports(
             "report_quality_status": "blocked_missing_analysis",
             "customer_ready": False,
             "missing_sections": [],
+            "sparse_completion_status": "incomplete",
+            "sparse_completion_reason": "not_evaluated",
+            "readiness_gate_reason": "not_evaluated",
             "quality_message": "",
             "export_error": "",
             "generated_at": generated_at,
@@ -303,15 +426,21 @@ def generate_reports(
             "content_preview": content_preview,
         }
 
-        quality_status, customer_ready, missing_sections, quality_message = _evaluate_report_quality(
+        quality_status, customer_ready, missing_sections, quality_message, sparse_completion_status, sparse_completion_reason, readiness_gate_reason = _evaluate_report_quality(
             report_obj,
+            record_with_notes,
             sections,
+            content_preview,
             allow_draft=allow_draft,
+            analysis_source_status=analysis_source_status,
             analysis_source_type=analysis_source_type,
         )
         report_obj["report_quality_status"] = quality_status
         report_obj["customer_ready"] = customer_ready
         report_obj["missing_sections"] = missing_sections
+        report_obj["sparse_completion_status"] = sparse_completion_status
+        report_obj["sparse_completion_reason"] = sparse_completion_reason
+        report_obj["readiness_gate_reason"] = readiness_gate_reason
         report_obj["quality_message"] = quality_message
 
         content_preview_rows.append({
@@ -321,6 +450,9 @@ def generate_reports(
             "linked_analysis_record_id": linked_analysis_record_id,
             "report_quality_status": quality_status,
             "missing_sections": missing_sections,
+            "sparse_completion_status": sparse_completion_status,
+            "sparse_completion_reason": sparse_completion_reason,
+            "readiness_gate_reason": readiness_gate_reason,
             "headline_prediction_preview": str(content_preview.get("headline_prediction_preview") or ""),
             "executive_summary_preview": str(content_preview.get("executive_summary_preview") or ""),
             "operator_approval_state": bool(operator_approval),
@@ -334,6 +466,9 @@ def generate_reports(
                 "report_quality_status": quality_status,
                 "customer_ready": customer_ready,
                 "missing_sections": missing_sections,
+                "sparse_completion_status": sparse_completion_status,
+                "sparse_completion_reason": sparse_completion_reason,
+                "readiness_gate_reason": readiness_gate_reason,
                 "generated_pdf_path": "",
                 "generated_pdf_size_bytes": 0,
                 "export_error": quality_message,

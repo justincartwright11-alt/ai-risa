@@ -5016,6 +5016,9 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertEqual(report.get('analysis_source_status'), 'found')
             self.assertEqual(report.get('analysis_source_type'), 'generated_internal_draft')
             self.assertEqual(report.get('missing_sections'), [])
+            self.assertEqual(report.get('sparse_completion_status'), 'complete')
+            self.assertEqual(report.get('sparse_completion_reason'), 'all_sparse_prediction_fields_present')
+            self.assertEqual(report.get('readiness_gate_reason'), 'internal_draft_requires_operator_review')
             self.assertEqual(report.get('export_error'), '')
 
     def test_prf_phase3_content_preview_rows_present_for_blocked_customer_mode(self):
@@ -5039,6 +5042,9 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertEqual(previews[0].get('analysis_source_status'), 'not_found')
             self.assertEqual(previews[0].get('report_quality_status'), 'blocked_missing_analysis')
             self.assertTrue((previews[0].get('missing_sections') or []))
+            self.assertEqual(previews[0].get('sparse_completion_status'), 'incomplete')
+            self.assertIn('missing_fields:', previews[0].get('sparse_completion_reason') or '')
+            self.assertEqual(previews[0].get('readiness_gate_reason'), 'missing_required_outputs_or_analysis')
             self.assertIn('Prediction unavailable', previews[0].get('headline_prediction_preview') or '')
 
     def test_prf_phase3_linked_matchup_analysis_can_be_customer_ready(self):
@@ -5078,6 +5084,9 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         self.assertEqual(report.get('analysis_source_type'), 'analysis_json')
         self.assertIn('premium_sections', str(report.get('linked_analysis_record_id') or ''))
         self.assertEqual(report.get('missing_sections'), [])
+        self.assertEqual(report.get('sparse_completion_status'), 'complete')
+        self.assertEqual(report.get('sparse_completion_reason'), 'all_sparse_prediction_fields_present')
+        self.assertEqual(report.get('readiness_gate_reason'), 'all_required_outputs_present')
 
     def test_prf_phase3_internal_draft_content_has_no_unavailable_placeholders(self):
         from operator_dashboard.prf_report_content import build_report_content_bundle
@@ -5130,6 +5139,9 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             rejected = data.get('rejected_reports') or []
             self.assertEqual(len(rejected), 1)
             self.assertEqual(rejected[0].get('report_quality_status'), 'blocked_missing_analysis')
+            self.assertEqual(rejected[0].get('sparse_completion_status'), 'incomplete')
+            self.assertIn('missing_fields:', rejected[0].get('sparse_completion_reason') or '')
+            self.assertEqual(rejected[0].get('readiness_gate_reason'), 'missing_required_outputs_or_analysis')
             self.assertIn(
                 'Cannot generate customer PDF yet. Analysis data is missing for this matchup.',
                 rejected[0].get('reason') or '',
