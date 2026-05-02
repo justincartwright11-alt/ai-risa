@@ -5045,6 +5045,11 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertEqual(previews[0].get('sparse_completion_status'), 'incomplete')
             self.assertIn('missing_fields:', previews[0].get('sparse_completion_reason') or '')
             self.assertEqual(previews[0].get('readiness_gate_reason'), 'missing_required_outputs_or_analysis')
+            self.assertIn(previews[0].get('combat_content_status'), ('missing', 'partial'))
+            self.assertIsInstance(previews[0].get('combat_engine_contributions'), dict)
+            self.assertIsInstance(previews[0].get('populated_sections'), list)
+            self.assertIsInstance(previews[0].get('missing_engine_outputs'), list)
+            self.assertIsInstance(previews[0].get('section_source_map'), dict)
             self.assertIn('Prediction unavailable', previews[0].get('headline_prediction_preview') or '')
 
     def test_prf_phase3_linked_matchup_analysis_can_be_customer_ready(self):
@@ -5087,6 +5092,13 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         self.assertEqual(report.get('sparse_completion_status'), 'complete')
         self.assertEqual(report.get('sparse_completion_reason'), 'all_sparse_prediction_fields_present')
         self.assertEqual(report.get('readiness_gate_reason'), 'all_required_outputs_present')
+        self.assertEqual(report.get('combat_content_status'), 'complete')
+        self.assertIsInstance(report.get('combat_engine_contributions'), dict)
+        self.assertIsInstance(report.get('populated_sections'), list)
+        self.assertIsInstance(report.get('missing_engine_outputs'), list)
+        self.assertIsInstance(report.get('section_source_map'), dict)
+        self.assertEqual(report.get('missing_engine_outputs'), [])
+        self.assertIn('headline_prediction', report.get('populated_sections') or [])
 
     def test_prf_phase3_internal_draft_content_has_no_unavailable_placeholders(self):
         from operator_dashboard.prf_report_content import build_report_content_bundle
@@ -5142,6 +5154,12 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertEqual(rejected[0].get('sparse_completion_status'), 'incomplete')
             self.assertIn('missing_fields:', rejected[0].get('sparse_completion_reason') or '')
             self.assertEqual(rejected[0].get('readiness_gate_reason'), 'missing_required_outputs_or_analysis')
+            self.assertIn(rejected[0].get('combat_content_status'), ('missing', 'partial'))
+            self.assertIsInstance(rejected[0].get('combat_engine_contributions'), dict)
+            self.assertIsInstance(rejected[0].get('populated_sections'), list)
+            self.assertIsInstance(rejected[0].get('missing_engine_outputs'), list)
+            self.assertIsInstance(rejected[0].get('section_source_map'), dict)
+            self.assertGreater(len(rejected[0].get('missing_engine_outputs') or []), 0)
             self.assertIn(
                 'Cannot generate customer PDF yet. Analysis data is missing for this matchup.',
                 rejected[0].get('reason') or '',

@@ -52,6 +52,62 @@ QUALITY_REQUIRED_SECTIONS = [
     "operator_notes",
 ]
 
+COMBAT_ENGINE_SECTION_MAP = {
+    "tactical_keys_engine": [
+        "headline_prediction",
+        "executive_summary",
+        "matchup_snapshot",
+        "operator_notes",
+    ],
+    "decision_structure_engine": [
+        "decision_structure",
+        "scenario_tree",
+        "risk_warnings",
+    ],
+    "energy_use_engine": [
+        "energy_use",
+        "round_by_round_control_shifts",
+        "risk_warnings",
+    ],
+    "fatigue_failure_point_engine": [
+        "fatigue_failure_points",
+        "round_by_round_control_shifts",
+        "risk_warnings",
+    ],
+    "mental_condition_engine": [
+        "mental_condition",
+        "collapse_triggers",
+        "risk_warnings",
+    ],
+    "collapse_trigger_engine": [
+        "collapse_triggers",
+        "scenario_tree",
+        "risk_warnings",
+    ],
+    "deception_and_unpredictability_engine": [
+        "deception_and_unpredictability",
+        "matchup_snapshot",
+        "risk_warnings",
+    ],
+    "dominance_danger_zone_engine": [
+        "matchup_snapshot",
+        "round_by_round_control_shifts",
+        "executive_summary",
+    ],
+    "round_band_projection_engine": [
+        "round_by_round_control_shifts",
+        "headline_prediction",
+        "scenario_tree",
+    ],
+    "scenario_tree_method_pathways_engine": [
+        "scenario_tree",
+        "headline_prediction",
+        "executive_summary",
+    ],
+}
+
+REQUIRED_COMBAT_SECTIONS = tuple(QUALITY_REQUIRED_SECTIONS)
+
 
 def _compute_report_id(matchup_id: str, report_type: str, generated_at: str) -> str:
     """Deterministic SHA-256 report ID."""
@@ -167,6 +223,68 @@ def _extract_prediction_fields(
             "analysis_source_status": str(analysis_source_status or "").strip(),
             "linked_analysis_record_id": str(linked_analysis_record_id or "").strip(),
         },
+    }
+
+
+def _build_combat_content_metadata(sections: dict, analysis_source_type: str) -> dict:
+    """Build additive Combat Intelligence metadata from existing section outputs."""
+    populated_sections = []
+    section_source_map = {}
+    all_target_sections = set()
+
+    for mapped_sections in COMBAT_ENGINE_SECTION_MAP.values():
+        all_target_sections.update(mapped_sections)
+
+    for section_name in sorted(all_target_sections):
+        section_text = str(sections.get(section_name) or "")
+        populated = not _contains_placeholder_text(section_text)
+        if populated:
+            populated_sections.append(section_name)
+        section_source_map[section_name] = {
+            "source_type": str(analysis_source_type or "none").strip(),
+            "contributing_engines": [
+                engine_name
+                for engine_name, mapped_sections in COMBAT_ENGINE_SECTION_MAP.items()
+                if section_name in mapped_sections
+            ],
+            "populated": populated,
+        }
+
+    combat_engine_contributions = {}
+    missing_engine_outputs = []
+    for engine_name, mapped_sections in COMBAT_ENGINE_SECTION_MAP.items():
+        contributed_sections = [
+            section_name
+            for section_name in mapped_sections
+            if section_name in populated_sections
+        ]
+        if not contributed_sections:
+            missing_engine_outputs.append(engine_name)
+        combat_engine_contributions[engine_name] = {
+            "contributed": bool(contributed_sections),
+            "sections": contributed_sections,
+        }
+
+    missing_required_combat_sections = [
+        section_name
+        for section_name in REQUIRED_COMBAT_SECTIONS
+        if section_name not in populated_sections
+    ]
+
+    if len(populated_sections) == len(all_target_sections):
+        combat_content_status = "complete"
+    elif populated_sections:
+        combat_content_status = "partial"
+    else:
+        combat_content_status = "missing"
+
+    return {
+        "combat_engine_contributions": combat_engine_contributions,
+        "populated_sections": sorted(populated_sections),
+        "missing_engine_outputs": sorted(missing_engine_outputs),
+        "combat_content_status": combat_content_status,
+        "section_source_map": section_source_map,
+        "missing_required_combat_sections": missing_required_combat_sections,
     }
 
 
@@ -424,6 +542,11 @@ def generate_reports(
             "analysis_source_type": analysis_source_type,
             "linked_analysis_record_id": linked_analysis_record_id,
             "content_preview": content_preview,
+            "combat_engine_contributions": {},
+            "populated_sections": [],
+            "missing_engine_outputs": [],
+            "combat_content_status": "missing",
+            "section_source_map": {},
         }
 
         quality_status, customer_ready, missing_sections, quality_message, sparse_completion_status, sparse_completion_reason, readiness_gate_reason = _evaluate_report_quality(
@@ -435,6 +558,19 @@ def generate_reports(
             analysis_source_status=analysis_source_status,
             analysis_source_type=analysis_source_type,
         )
+
+        combat_metadata = _build_combat_content_metadata(sections, analysis_source_type)
+        missing_sections = sorted(
+            set(missing_sections + list(combat_metadata.get("missing_required_combat_sections") or []))
+        )
+
+        # Customer-ready cannot pass when required combat section content is unavailable.
+        if quality_status == "customer_ready" and missing_sections:
+            quality_status = "blocked_missing_analysis"
+            customer_ready = False
+            readiness_gate_reason = "missing_required_combat_outputs"
+            quality_message = "Cannot generate customer PDF yet. Combat intelligence outputs are missing for this matchup."
+
         report_obj["report_quality_status"] = quality_status
         report_obj["customer_ready"] = customer_ready
         report_obj["missing_sections"] = missing_sections
@@ -442,6 +578,11 @@ def generate_reports(
         report_obj["sparse_completion_reason"] = sparse_completion_reason
         report_obj["readiness_gate_reason"] = readiness_gate_reason
         report_obj["quality_message"] = quality_message
+        report_obj["combat_engine_contributions"] = combat_metadata["combat_engine_contributions"]
+        report_obj["populated_sections"] = combat_metadata["populated_sections"]
+        report_obj["missing_engine_outputs"] = combat_metadata["missing_engine_outputs"]
+        report_obj["combat_content_status"] = combat_metadata["combat_content_status"]
+        report_obj["section_source_map"] = combat_metadata["section_source_map"]
 
         content_preview_rows.append({
             "matchup_id": matchup_id,
@@ -453,6 +594,11 @@ def generate_reports(
             "sparse_completion_status": sparse_completion_status,
             "sparse_completion_reason": sparse_completion_reason,
             "readiness_gate_reason": readiness_gate_reason,
+            "combat_engine_contributions": combat_metadata["combat_engine_contributions"],
+            "populated_sections": combat_metadata["populated_sections"],
+            "missing_engine_outputs": combat_metadata["missing_engine_outputs"],
+            "combat_content_status": combat_metadata["combat_content_status"],
+            "section_source_map": combat_metadata["section_source_map"],
             "headline_prediction_preview": str(content_preview.get("headline_prediction_preview") or ""),
             "executive_summary_preview": str(content_preview.get("executive_summary_preview") or ""),
             "operator_approval_state": bool(operator_approval),
@@ -469,6 +615,11 @@ def generate_reports(
                 "sparse_completion_status": sparse_completion_status,
                 "sparse_completion_reason": sparse_completion_reason,
                 "readiness_gate_reason": readiness_gate_reason,
+                "combat_engine_contributions": combat_metadata["combat_engine_contributions"],
+                "populated_sections": combat_metadata["populated_sections"],
+                "missing_engine_outputs": combat_metadata["missing_engine_outputs"],
+                "combat_content_status": combat_metadata["combat_content_status"],
+                "section_source_map": combat_metadata["section_source_map"],
                 "generated_pdf_path": "",
                 "generated_pdf_size_bytes": 0,
                 "export_error": quality_message,
