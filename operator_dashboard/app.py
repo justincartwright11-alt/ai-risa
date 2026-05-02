@@ -28,6 +28,7 @@ from operator_dashboard.official_source_approved_apply_token_consume_helper impo
 
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
+from operator_dashboard.prf_ranking_adapter import enrich_row_with_ranking
 from operator_dashboard.phase1_ops import (
     create_matchups,
     enter_actual_result,
@@ -1079,7 +1080,7 @@ def _build_phase1_intake_matchup_preview_row(
     deterministic_seed = f"{bout_order}|{line_text}"
     temporary_matchup_id = f"tmp_{hashlib.sha256(deterministic_seed.encode('utf-8')).hexdigest()[:12]}"
 
-    return {
+    row = {
         "temporary_matchup_id": temporary_matchup_id,
         "fighter_a": fighter_a,
         "fighter_b": fighter_b,
@@ -1090,6 +1091,7 @@ def _build_phase1_intake_matchup_preview_row(
         "parse_status": parse_status,
         "parse_notes": parse_notes,
     }
+    return enrich_row_with_ranking(row)
 
 
 def _build_phase1_intake_preview_payload(request_json: dict) -> dict:
