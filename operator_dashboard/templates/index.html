@@ -371,8 +371,8 @@
                         <option value="event_card">Full Event Card</option>
                     </select>
                     <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
-                        <input id="main-prf-allow-draft" type="checkbox" checked />
-                        Allow draft output when analysis is missing
+                        <input id="main-prf-allow-draft" type="checkbox" />
+                        Generate internal draft only — not customer ready
                     </label>
                     <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
                         <input id="main-prf-generate-approval" type="checkbox" />
@@ -1387,7 +1387,7 @@
                     ? `<a href="/api/premium-report-factory/reports/download/${reportId}?file_name=${fileName}" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Download PDF</a>`
                     : '<span style="color:#666;">Download unavailable</span>';
                 const folderAction = folderPath
-                    ? `<a href="${_escapeHtml(_toFileUrl(folderPath))}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Open Reports Folder</a>`
+                    ? `<button type="button" class="btn-secondary main-prf-open-folder-btn" data-folder-path="${_escapeHtml(folderPath)}" style="display:inline-block;padding:4px 8px;font-size:11px;">Open Reports Folder</button>`
                     : '<span style="color:#666;">Folder unavailable</span>';
                 const copyPathAction = pdfPath
                     ? `<button type="button" class="btn-secondary main-prf-copy-path-btn" data-pdf-path="${_escapeHtml(pdfPath)}" style="display:inline-block;padding:4px 8px;font-size:11px;">Copy PDF Path</button>`
@@ -1436,11 +1436,38 @@
                         await navigator.clipboard.writeText(pathText);
                         mainPrfGenerateStatus.style.display = 'block';
                         mainPrfGenerateStatus.className = 'status-display success';
-                        mainPrfGenerateStatus.textContent = 'PDF path copied to clipboard.';
+                        mainPrfGenerateStatus.textContent = `PDF path copied:\n${pathText}`;
                     } catch (_) {
                         mainPrfGenerateStatus.style.display = 'block';
                         mainPrfGenerateStatus.className = 'status-display error';
                         mainPrfGenerateStatus.textContent = 'Clipboard copy failed. Copy PDF path manually from the table.';
+                    }
+                });
+            });
+
+            mainPrfGenerateResults.querySelectorAll('.main-prf-open-folder-btn').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const folderPath = String(btn.getAttribute('data-folder-path') || '');
+                    try {
+                        const res = await fetch('/api/premium-report-factory/reports/open-folder', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ folder_path: folderPath }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok || !data.ok) {
+                            mainPrfGenerateStatus.style.display = 'block';
+                            mainPrfGenerateStatus.className = 'status-display error';
+                            mainPrfGenerateStatus.textContent = `Open Reports Folder failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}`;
+                            return;
+                        }
+                        mainPrfGenerateStatus.style.display = 'block';
+                        mainPrfGenerateStatus.className = 'status-display success';
+                        mainPrfGenerateStatus.textContent = `Opened reports folder:\n${String(data.opened_path || folderPath)}`;
+                    } catch (e) {
+                        mainPrfGenerateStatus.style.display = 'block';
+                        mainPrfGenerateStatus.className = 'status-display error';
+                        mainPrfGenerateStatus.textContent = `Open Reports Folder request failed: ${e.message}`;
                     }
                 });
             });
@@ -1487,7 +1514,12 @@
                 const data = await res.json();
                 if (!res.ok || !data.ok) {
                     mainPrfGenerateStatus.className = 'status-display error';
-                    mainPrfGenerateStatus.textContent = `Generation failed: ${_escapeHtml((data.errors || ['unknown_error']).join('; '))}`;
+                    const errorText = String((data.errors || ['unknown_error']).join('; '));
+                    if (errorText.includes('Cannot generate customer PDF yet. Analysis data is missing for this matchup.')) {
+                        mainPrfGenerateStatus.textContent = 'Cannot generate customer PDF yet. Analysis data is missing for this matchup.';
+                    } else {
+                        mainPrfGenerateStatus.textContent = `Generation failed: ${_escapeHtml(errorText)}`;
+                    }
                     _renderMainPrfGenerateResult(data || {});
                     return;
                 }

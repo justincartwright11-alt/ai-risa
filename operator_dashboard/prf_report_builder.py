@@ -115,7 +115,7 @@ def generate_reports(
     export_format: str,
     notes: str,
     reports_dir: str,
-    allow_draft: bool = True,
+    allow_draft: bool = False,
 ) -> dict:
     """
     Core Phase 3 generation logic.

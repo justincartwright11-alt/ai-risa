@@ -43,6 +43,7 @@ def write_pdf_report(report_obj: dict, sections: dict, reports_dir: str) -> dict
     matchup_id = str(report_obj.get("matchup_id") or "unknown").strip()
     fighter_a = str(report_obj.get("fighter_a") or "").strip()
     fighter_b = str(report_obj.get("fighter_b") or "").strip()
+    is_draft_only = str(report_obj.get("report_quality_status") or "").strip() == "draft_only"
 
     file_name = build_report_filename(event_id, matchup_id)
     file_path = os.path.join(reports_dir, file_name)
@@ -64,6 +65,13 @@ def write_pdf_report(report_obj: dict, sections: dict, reports_dir: str) -> dict
         matchup_label = "{} vs {}".format(fighter_a, fighter_b) if fighter_a and fighter_b else "Matchup Report"
         matchup_label = matchup_label.encode("latin-1", errors="replace").decode("latin-1")
         pdf.multi_cell(page_w, 8, matchup_label, align="C")
+        if is_draft_only:
+            pdf.set_text_color(150, 30, 30)
+            pdf.set_font("Helvetica", "B", 11)
+            draft_label = "DRAFT ONLY - NOT CUSTOMER READY".encode("latin-1", errors="replace").decode("latin-1")
+            pdf.multi_cell(page_w, 8, draft_label, align="C")
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font("Helvetica", "", 12)
         pdf.ln(4)
 
         section_display_names = {
@@ -108,6 +116,8 @@ def write_pdf_report(report_obj: dict, sections: dict, reports_dir: str) -> dict
         generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         pdf.set_font("Helvetica", "I", 8)
         footer_text = "AI-RISA Premium Report Factory - Generated: {}".format(generated_at)
+        if is_draft_only:
+            footer_text += " | DRAFT ONLY - NOT CUSTOMER READY"
         footer_text = footer_text.encode("latin-1", errors="replace").decode("latin-1")
         pdf.multi_cell(page_w, 6, footer_text, align="C")
 

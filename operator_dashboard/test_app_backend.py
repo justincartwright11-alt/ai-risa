@@ -4970,6 +4970,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'report_type': 'single_matchup',
                 'operator_approval': True,
                 'export_format': 'pdf',
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             self.assertEqual(resp.status_code, 200)
@@ -4995,6 +4996,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'report_type': 'single_matchup',
                 'operator_approval': True,
                 'export_format': 'pdf',
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             self.assertEqual(resp.status_code, 200)
@@ -5040,6 +5042,26 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 rejected[0].get('reason') or '',
             )
 
+    def test_prf_phase3_default_customer_mode_blocks_missing_analysis(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'export_format': 'pdf',
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            rejected = data.get('rejected_reports') or []
+            self.assertEqual(len(rejected), 1)
+            self.assertEqual(rejected[0].get('report_quality_status'), 'blocked_missing_analysis')
+
     # 3. Deterministic filename
     def test_prf_phase3_deterministic_filename(self):
         import tempfile, os
@@ -5052,6 +5074,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'selected_matchup_ids': matchup_ids[:1],
                 'report_type': 'single_matchup',
                 'operator_approval': True,
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             self.assertEqual(resp.status_code, 200)
@@ -5086,6 +5109,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'selected_matchup_ids': matchup_ids[:1],
                 'report_type': 'single_matchup',
                 'operator_approval': True,
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             data = resp.get_json()
@@ -5196,6 +5220,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'selected_matchup_ids': matchup_ids[:1],
                 'report_type': 'single_matchup',
                 'operator_approval': True,
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             data = resp.get_json()
@@ -5224,6 +5249,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'selected_matchup_ids': matchup_ids[:1],
                 'report_type': 'single_matchup',
                 'operator_approval': True,
+                'allow_draft': True,
             }
             resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
             data = resp.get_json()
@@ -5319,6 +5345,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
                 'selected_matchup_ids': matchup_ids[:1],
                 'report_type': 'single_matchup',
                 'operator_approval': True,
+                'allow_draft': True,
             }
             self.client.post('/api/premium-report-factory/reports/generate', json=gen_payload)
 
@@ -5363,6 +5390,33 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertGreater(len(dl_resp.data), 0)
             dl_resp.close()
 
+    def test_prf_phase3_open_reports_folder_endpoint(self):
+        import tempfile
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            os.makedirs(reports_dir, exist_ok=True)
+
+            with patch('operator_dashboard.app.os.startfile') as mocked_startfile:
+                ok_resp = self.client.post(
+                    '/api/premium-report-factory/reports/open-folder',
+                    json={'folder_path': reports_dir},
+                )
+                self.assertEqual(ok_resp.status_code, 200)
+                ok_data = ok_resp.get_json()
+                self.assertTrue(ok_data.get('ok'))
+                mocked_startfile.assert_called_once()
+
+            bad_resp = self.client.post(
+                '/api/premium-report-factory/reports/open-folder',
+                json={'folder_path': os.path.abspath(os.path.join(reports_dir, '..'))},
+            )
+            self.assertEqual(bad_resp.status_code, 400)
+            bad_data = bad_resp.get_json()
+            self.assertFalse(bad_data.get('ok'))
+            self.assertIn('invalid_folder_path', bad_data.get('errors') or [])
+
     # 12. Dashboard contains Generate Premium PDF Reports button
     def test_prf_phase3_dashboard_has_generate_btn(self):
         resp = self.client.get('/advanced-dashboard')
@@ -5386,6 +5440,7 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         html = resp.data.decode('utf-8')
         self.assertIn('main-prf-allow-draft', html)
+        self.assertIn('Generate internal draft only', html)
         self.assertIn('Download PDF', html)
         self.assertIn('Open Reports Folder', html)
         self.assertIn('Copy PDF Path', html)

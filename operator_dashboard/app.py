@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 import os
 import json
+import subprocess
 from datetime import datetime, timezone
 from time import perf_counter, time
 import uuid
@@ -1808,7 +1809,7 @@ def api_premium_report_factory_reports_generate():
     report_type = str(request_json.get("report_type") or "").strip()
     export_format = str(request_json.get("export_format") or "pdf").strip() or "pdf"
     notes = str(request_json.get("notes") or "").strip()
-    allow_draft = bool(request_json.get("allow_draft", True))
+    allow_draft = bool(request_json.get("allow_draft", False))
 
     queue_path = _get_prf_queue_path()
     all_queue_records = load_prf_queue(queue_path)
@@ -1898,6 +1899,58 @@ def api_premium_report_factory_reports_download(report_id):
         download_name=safe_file_name,
         mimetype="application/pdf",
     )
+
+
+@app.route("/api/premium-report-factory/reports/open-folder", methods=["POST"])
+def api_premium_report_factory_reports_open_folder():
+    """Open a reports folder path in the local OS shell with strict path validation."""
+    request_json = request.get_json(silent=True)
+    if not isinstance(request_json, dict):
+        request_json = {}
+
+    requested_path = str(request_json.get("folder_path") or "").strip()
+    reports_dir = Path(_get_prf_reports_dir()).resolve()
+
+    if requested_path:
+        target_dir = Path(requested_path).resolve()
+    else:
+        target_dir = reports_dir
+
+    try:
+        target_dir.relative_to(reports_dir)
+    except Exception:
+        return jsonify({
+            "ok": False,
+            "opened_path": "",
+            "errors": ["invalid_folder_path"],
+        }), 400
+
+    if not target_dir.exists() or not target_dir.is_dir():
+        return jsonify({
+            "ok": False,
+            "opened_path": str(target_dir),
+            "errors": ["folder_not_found"],
+        }), 404
+
+    try:
+        if os.name == "nt":
+            os.startfile(str(target_dir))
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(target_dir)])
+        else:
+            subprocess.Popen(["xdg-open", str(target_dir)])
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "opened_path": str(target_dir),
+            "errors": ["open_folder_failed: {}".format(exc)],
+        }), 500
+
+    return jsonify({
+        "ok": True,
+        "opened_path": str(target_dir),
+        "errors": [],
+    })
 
 
 def _build_signal_gap_breakdown() -> dict:
