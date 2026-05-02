@@ -1693,6 +1693,8 @@ def api_operator_run_calibration_review():
         return jsonify({
             "ok": True,
             **result,
+            # Additive availability key — display-only, no calibration behavior change
+            "calibration_engine_availability": _build_calibration_engine_availability(),
         })
     
     except Exception as e:
@@ -1739,6 +1741,90 @@ def api_premium_report_factory_phase1_intake_preview():
     return jsonify(_build_phase1_intake_preview_payload(request_json))
 
 
+# ---------------------------------------------------------------------------
+# Engine availability helpers — display-only, no gate enforcement, no writes
+# ---------------------------------------------------------------------------
+
+def _engine_id_to_label(engine_id: str) -> str:
+    """Derive a human-readable label from an engine_id string."""
+    segment = engine_id.split(".")[-1] if "." in engine_id else engine_id
+    return segment.replace("_", " ").title()
+
+
+def _build_ranking_engine_availability() -> list:
+    """Return Button 1 ranking engine availability list.
+    Display-only — no gate enforcement, no side effects.
+    """
+    from operator_dashboard.prf_ranking_scaffold import build_button1_ranking_contracts
+    contracts = build_button1_ranking_contracts()
+    return [
+        {
+            "engine_id": c.engine_id,
+            "label": _engine_id_to_label(c.engine_id),
+            "required": True,   # All ranking contracts are required at this layer
+            "active": True,     # Static true — all registered contracts are active
+        }
+        for c in contracts.values()
+    ]
+
+
+def _build_button2_engine_availability() -> dict:
+    """Return Button 2 engine availability dict.
+    Display-only — no gate enforcement, no writes, no PDF gate changes.
+    """
+    from operator_dashboard.prf_betting_market_scaffold import build_betting_market_contracts
+    from operator_dashboard.prf_generation_scaffold import build_generation_contracts
+    from operator_dashboard.prf_section_output_contracts import build_section_output_manifest
+
+    betting_contracts = build_betting_market_contracts()
+    generation_contracts = build_generation_contracts()
+
+    return {
+        "betting_engines": [
+            {
+                "engine_id": c.engine_id,
+                "label": _engine_id_to_label(c.engine_id),
+                "required": c.required,
+                "active": True,
+            }
+            for c in betting_contracts.values()
+        ],
+        "generation_engines": [
+            {
+                "engine_id": c.engine_id,
+                "label": _engine_id_to_label(c.engine_id),
+                "required": c.required,
+                "active": True,
+            }
+            for c in generation_contracts.values()
+        ],
+        "section_manifest": build_section_output_manifest(),
+        # Preview only — existing allow_draft and customer-ready PDF gate are unchanged
+        "report_readiness_preview": "unavailable",
+    }
+
+
+def _build_calibration_engine_availability() -> list:
+    """Return Button 3 calibration engine availability list.
+    Display-only — no gate enforcement, no learning/calibration applied.
+    """
+    from operator_dashboard.prf_accuracy_calibration_scaffold import build_accuracy_calibration_contracts
+    contracts = build_accuracy_calibration_contracts()
+    return [
+        {
+            "engine_id": c.engine_id,
+            "label": _engine_id_to_label(c.engine_id),
+            "required": c.required,
+            "approval_gate_required": c.approval_gate_required,
+            "active": True,
+        }
+        for c in contracts.values()
+    ]
+
+
+# ---------------------------------------------------------------------------
+
+
 def _get_prf_queue_path() -> str:
     """Return the PRF queue file path, using test override when set."""
     override = app.config.get("PRF_QUEUE_PATH_OVERRIDE")
@@ -1765,6 +1851,9 @@ def api_premium_report_factory_queue():
     from operator_dashboard.prf_queue_utils import get_prf_queue_list
     queue_path = _get_prf_queue_path()
     result = get_prf_queue_list(queue_path)
+    # Additive availability key — display-only, no queue behavior change
+    if isinstance(result, dict):
+        result["ranking_engine_availability"] = _build_ranking_engine_availability()
     return jsonify(result)
 
 
@@ -1842,6 +1931,9 @@ def api_premium_report_factory_reports_generate():
             )
         except Exception:
             pass
+
+    # Additive availability key — display-only, no generation behavior change
+    result["engine_availability"] = _build_button2_engine_availability()
 
     status_code = 200 if result.get("ok") else 400
     return jsonify(result), status_code
@@ -1950,6 +2042,25 @@ def api_premium_report_factory_reports_open_folder():
         "ok": True,
         "opened_path": str(target_dir),
         "errors": [],
+    })
+
+
+@app.route("/api/engine-registry-manifest", methods=["GET"])
+def api_engine_registry_manifest():
+    """Operator-only read-only endpoint returning the global engine-pack registry manifest.
+
+    Returns:
+        { "ok": true, "engines": [ { engine_id, engine_group, display_name, buttons,
+          required_inputs, required_outputs, output_schema_version,
+          approval_gate_required } ] }
+
+    No database reads. No side effects.
+    """
+    from operator_dashboard.prf_engine_registry import build_global_engine_pack_registry
+    registry = build_global_engine_pack_registry()
+    return jsonify({
+        "ok": True,
+        "engines": registry.to_manifest_rows(),
     })
 
 

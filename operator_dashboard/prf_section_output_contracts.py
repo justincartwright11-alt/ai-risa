@@ -252,3 +252,21 @@ def list_sections_missing_required_outputs(
         for section_name in PREMIUM_REPORT_SECTION_NAMES
         if section_name in readiness and not readiness[section_name]["ready"]
     ]
+
+
+def build_section_output_manifest() -> list[dict]:
+    """Return section-to-engine mapping as a serializable list.
+
+    Display-only helper for operator availability panels.
+    No gate enforcement, no side effects.
+    """
+    contracts = build_combat_intelligence_section_output_contracts()
+    return [
+        {
+            "section_name": name,
+            "required_engine_ids": list(c.required_engine_ids),
+            "optional_engine_ids": list(c.optional_engine_ids),
+            "required_output_keys": list(c.required_output_keys),
+        }
+        for name, c in contracts.items()
+    ]

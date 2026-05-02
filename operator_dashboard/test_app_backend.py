@@ -5612,3 +5612,148 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class EnginePackRegistryWiringTest(unittest.TestCase):
+    """
+    Focused tests for engine-pack registry wiring (display-only, additive keys).
+    Verifies that new availability keys appear in responses without disrupting
+    existing response key access or behavior.
+    No PDF, no writes, no calibration behavior changes.
+    """
+
+    def setUp(self):
+        self.client = app.test_client()
+        self._original_prf_queue_path = app.config.get('PRF_QUEUE_PATH_OVERRIDE')
+        self._original_prf_reports_dir = app.config.get('PRF_REPORTS_DIR_OVERRIDE')
+
+    def tearDown(self):
+        app.config['PRF_QUEUE_PATH_OVERRIDE'] = self._original_prf_queue_path
+        app.config['PRF_REPORTS_DIR_OVERRIDE'] = self._original_prf_reports_dir
+
+    # 1. Button 1 queue route has ranking_engine_availability
+    def test_button1_queue_has_ranking_engine_availability(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = os.path.join(tmpdir, 'prf_queue.json')
+            app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+            resp = self.client.get('/api/premium-report-factory/queue')
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertIn('ranking_engine_availability', data)
+            availability = data['ranking_engine_availability']
+            self.assertIsInstance(availability, list)
+            self.assertGreater(len(availability), 0)
+
+    # 2. ranking_engine_availability entries have required fields
+    def test_button1_ranking_availability_entry_shape(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = os.path.join(tmpdir, 'prf_queue.json')
+            app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+            resp = self.client.get('/api/premium-report-factory/queue')
+            data = resp.get_json()
+            entry = data['ranking_engine_availability'][0]
+            self.assertIn('engine_id', entry)
+            self.assertIn('label', entry)
+            self.assertIn('required', entry)
+            self.assertIn('active', entry)
+            self.assertTrue(entry['active'])
+
+    # 3. Button 1 queue route existing key 'ok' is preserved after wiring
+    def test_button1_queue_existing_ok_key_preserved(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = os.path.join(tmpdir, 'prf_queue.json')
+            app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+            resp = self.client.get('/api/premium-report-factory/queue')
+            data = resp.get_json()
+            self.assertIn('ok', data)
+
+    # 4. Button 3 calibration route has calibration_engine_availability
+    def test_button3_calibration_review_has_calibration_engine_availability(self):
+        resp = self.client.post('/api/operator/accuracy-calibration-review', json={})
+        data = resp.get_json()
+        self.assertIn('calibration_engine_availability', data)
+        availability = data['calibration_engine_availability']
+        self.assertIsInstance(availability, list)
+        self.assertGreater(len(availability), 0)
+
+    # 5. calibration_engine_availability entries have approval_gate_required field
+    def test_button3_calibration_availability_entry_shape(self):
+        resp = self.client.post('/api/operator/accuracy-calibration-review', json={})
+        data = resp.get_json()
+        entry = data['calibration_engine_availability'][0]
+        self.assertIn('engine_id', entry)
+        self.assertIn('label', entry)
+        self.assertIn('required', entry)
+        self.assertIn('approval_gate_required', entry)
+        self.assertIn('active', entry)
+
+    # 6. Button 3 existing approval_required key is preserved after wiring
+    def test_button3_existing_approval_required_key_preserved(self):
+        resp = self.client.post('/api/operator/accuracy-calibration-review', json={})
+        data = resp.get_json()
+        self.assertIn('approval_required', data)
+        self.assertTrue(data['approval_required'])
+
+    # 7. Engine registry manifest endpoint returns ok and engines list
+    def test_engine_registry_manifest_returns_ok_and_engines(self):
+        resp = self.client.get('/api/engine-registry-manifest')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get('ok'))
+        self.assertIn('engines', data)
+        self.assertIsInstance(data['engines'], list)
+        self.assertGreater(len(data['engines']), 0)
+
+    # 8. Engine registry manifest entries have expected shape
+    def test_engine_registry_manifest_entry_shape(self):
+        resp = self.client.get('/api/engine-registry-manifest')
+        data = resp.get_json()
+        entry = data['engines'][0]
+        self.assertIn('engine_id', entry)
+        self.assertIn('engine_group', entry)
+        self.assertIn('display_name', entry)
+        self.assertIn('buttons', entry)
+        self.assertIn('approval_gate_required', entry)
+
+    # 9. Button 2 generate route has engine_availability after approved generate
+    def test_button2_generate_has_engine_availability(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = os.path.join(tmpdir, 'prf_queue.json')
+            reports_dir = os.path.join(tmpdir, 'reports')
+            app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+            app.config['PRF_REPORTS_DIR_OVERRIDE'] = reports_dir
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json={
+                'operator_approval': True,
+                'allow_draft': True,
+            })
+            data = resp.get_json()
+            self.assertIn('engine_availability', data)
+            ea = data['engine_availability']
+            self.assertIn('betting_engines', ea)
+            self.assertIn('generation_engines', ea)
+            self.assertIn('section_manifest', ea)
+            self.assertIn('report_readiness_preview', ea)
+            self.assertEqual(ea['report_readiness_preview'], 'unavailable')
+
+    # 10. Button 2 generate route existing ok key preserved after wiring
+    def test_button2_generate_existing_ok_key_preserved(self):
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path = os.path.join(tmpdir, 'prf_queue.json')
+            reports_dir = os.path.join(tmpdir, 'reports')
+            app.config['PRF_QUEUE_PATH_OVERRIDE'] = queue_path
+            app.config['PRF_REPORTS_DIR_OVERRIDE'] = reports_dir
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json={
+                'operator_approval': True,
+                'allow_draft': True,
+            })
+            data = resp.get_json()
+            self.assertIn('ok', data)
+
+
+if __name__ == '__main__':
+    unittest.main()
