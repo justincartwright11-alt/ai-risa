@@ -19,6 +19,28 @@ from operator_dashboard.prf_report_export import write_pdf_report, build_report_
 
 SUPPORTED_REPORT_TYPES = {"single_matchup", "event_card"}
 REJECTED_REPORT_TYPES = {"fighter_profile"}
+PLACEHOLDER_TOKENS = [
+    "unavailable",
+    "not available",
+    "pending",
+    "tbd",
+    "no operator notes recorded",
+]
+QUALITY_REQUIRED_SECTIONS = [
+    "headline_prediction",
+    "executive_summary",
+    "matchup_snapshot",
+    "decision_structure",
+    "energy_use",
+    "fatigue_failure_points",
+    "mental_condition",
+    "collapse_triggers",
+    "deception_and_unpredictability",
+    "round_by_round_control_shifts",
+    "scenario_tree",
+    "risk_warnings",
+    "operator_notes",
+]
 
 
 def _compute_report_id(matchup_id: str, report_type: str, generated_at: str) -> str:
@@ -56,6 +78,36 @@ def _validate_generated_pdf(file_path: str) -> tuple[bool, str, int, str]:
     return True, normalized_path, size_bytes, ""
 
 
+def _contains_placeholder_text(text: str) -> bool:
+    normalized = str(text or "").strip().lower()
+    if not normalized:
+        return True
+    return any(token in normalized for token in PLACEHOLDER_TOKENS)
+
+
+def _evaluate_report_quality(report_obj: dict, sections: dict, allow_draft: bool) -> tuple[str, bool, list[str], str]:
+    """Evaluate customer-readiness and return quality metadata."""
+    missing_sections = []
+    for section_name in QUALITY_REQUIRED_SECTIONS:
+        content = sections.get(section_name)
+        if _contains_placeholder_text(content):
+            missing_sections.append(section_name)
+
+    fighter_a = str(report_obj.get("fighter_a") or "").strip()
+    fighter_b = str(report_obj.get("fighter_b") or "").strip()
+    if not fighter_a or not fighter_b:
+        if "matchup_snapshot" not in missing_sections:
+            missing_sections.append("matchup_snapshot")
+
+    if not missing_sections:
+        return "customer_ready", True, [], ""
+
+    message = "Cannot generate customer PDF yet. Analysis data is missing for this matchup."
+    if allow_draft:
+        return "draft_only", False, missing_sections, message
+    return "blocked_missing_analysis", False, missing_sections, message
+
+
 def generate_reports(
     queue_records: list,
     report_type: str,
@@ -63,6 +115,7 @@ def generate_reports(
     export_format: str,
     notes: str,
     reports_dir: str,
+    allow_draft: bool = True,
 ) -> dict:
     """
     Core Phase 3 generation logic.
@@ -213,12 +266,43 @@ def generate_reports(
             "generated_pdf_path": "",
             "generated_pdf_size_bytes": 0,
             "generated_pdf_openable": False,
+            "report_quality_status": "blocked_missing_analysis",
+            "customer_ready": False,
+            "missing_sections": [],
+            "quality_message": "",
             "export_error": "",
             "generated_at": generated_at,
             "section_status": section_status,
             "source_reference": str(record.get("source_reference") or "").strip(),
             "operator_notes": record_with_notes.get("notes") or "",
         }
+
+        quality_status, customer_ready, missing_sections, quality_message = _evaluate_report_quality(
+            report_obj,
+            sections,
+            allow_draft=allow_draft,
+        )
+        report_obj["report_quality_status"] = quality_status
+        report_obj["customer_ready"] = customer_ready
+        report_obj["missing_sections"] = missing_sections
+        report_obj["quality_message"] = quality_message
+
+        if quality_status == "blocked_missing_analysis":
+            errors.append("matchup_id={}: {}".format(matchup_id, quality_message))
+            rejected_reports.append({
+                "matchup_id": matchup_id,
+                "reason": quality_message,
+                "report_quality_status": quality_status,
+                "customer_ready": customer_ready,
+                "missing_sections": missing_sections,
+                "generated_pdf_path": "",
+                "generated_pdf_size_bytes": 0,
+                "export_error": quality_message,
+            })
+            continue
+
+        if quality_status == "draft_only":
+            warnings.append("matchup_id={}: {}".format(matchup_id, quality_message))
 
         # Export PDF
         export_result = write_pdf_report(report_obj, sections, reports_dir)
@@ -336,6 +420,10 @@ def list_generated_reports(reports_dir: str) -> dict:
             "generated_pdf_path": file_path,
             "generated_pdf_size_bytes": size_bytes,
             "generated_pdf_openable": size_bytes > 0,
+            "report_quality_status": "unknown",
+            "customer_ready": False,
+            "missing_sections": [],
+            "quality_message": "",
             "export_error": "" if size_bytes > 0 else "Zero-byte PDF file detected. Export failed.",
         })
 

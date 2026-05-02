@@ -5008,7 +5008,37 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             self.assertTrue(str(report.get('generated_pdf_path') or '').endswith('.pdf'))
             self.assertGreater(int(report.get('generated_pdf_size_bytes') or 0), 0)
             self.assertTrue(os.path.exists(report.get('generated_pdf_path')))
+            self.assertEqual(report.get('report_quality_status'), 'draft_only')
+            self.assertFalse(report.get('customer_ready'))
+            self.assertIsInstance(report.get('missing_sections'), list)
+            self.assertIn('headline_prediction', report.get('missing_sections') or [])
             self.assertEqual(report.get('export_error'), '')
+
+    def test_prf_phase3_blocked_missing_analysis_when_draft_disabled(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'export_format': 'pdf',
+                'allow_draft': False,
+            }
+            resp = self.client.post('/api/premium-report-factory/reports/generate', json=payload)
+            self.assertEqual(resp.status_code, 400)
+            data = resp.get_json()
+            self.assertFalse(data.get('ok'))
+            self.assertEqual(data.get('accepted_count'), 0)
+            rejected = data.get('rejected_reports') or []
+            self.assertEqual(len(rejected), 1)
+            self.assertEqual(rejected[0].get('report_quality_status'), 'blocked_missing_analysis')
+            self.assertIn(
+                'Cannot generate customer PDF yet. Analysis data is missing for this matchup.',
+                rejected[0].get('reason') or '',
+            )
 
     # 3. Deterministic filename
     def test_prf_phase3_deterministic_filename(self):
@@ -5301,6 +5331,38 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
             for field in ('ok', 'generated_at', 'reports', 'total_count', 'warnings', 'errors'):
                 self.assertIn(field, data2)
 
+    def test_prf_phase3_download_endpoint_returns_pdf(self):
+        import tempfile
+        from urllib.parse import quote
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            queue_path, reports_dir = self._set_temp_paths(tmpdir)
+            matchup_ids = self._save_two_matchups(queue_path)
+
+            gen_payload = {
+                'selected_matchup_ids': matchup_ids[:1],
+                'report_type': 'single_matchup',
+                'operator_approval': True,
+                'allow_draft': True,
+            }
+            gen_resp = self.client.post('/api/premium-report-factory/reports/generate', json=gen_payload)
+            self.assertEqual(gen_resp.status_code, 200)
+            generated = (gen_resp.get_json().get('generated_reports') or [])[0]
+            report_id = generated.get('report_id')
+            file_name = generated.get('file_name')
+
+            dl_resp = self.client.get(
+                '/api/premium-report-factory/reports/download/{}?file_name={}'.format(
+                    quote(str(report_id), safe=''),
+                    quote(str(file_name), safe=''),
+                ),
+                buffered=True,
+            )
+            self.assertEqual(dl_resp.status_code, 200)
+            self.assertEqual(dl_resp.mimetype, 'application/pdf')
+            self.assertGreater(len(dl_resp.data), 0)
+            dl_resp.close()
+
     # 12. Dashboard contains Generate Premium PDF Reports button
     def test_prf_phase3_dashboard_has_generate_btn(self):
         resp = self.client.get('/advanced-dashboard')
@@ -5318,6 +5380,15 @@ class PremiumReportFactoryPhase3ReportBuilderTest(unittest.TestCase):
         self.assertIn('operator-prf-generate-approval', html)
         self.assertIn('operator-prf-report-type-select', html)
         self.assertIn('operator-prf-generate-warnings', html)
+
+    def test_prf_phase3_index_has_download_and_quality_controls(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode('utf-8')
+        self.assertIn('main-prf-allow-draft', html)
+        self.assertIn('Download PDF', html)
+        self.assertIn('Open Reports Folder', html)
+        self.assertIn('Copy PDF Path', html)
 
     # 14. Dashboard contains no result/learning/billing/web controls
     def test_prf_phase3_dashboard_no_forbidden_controls(self):

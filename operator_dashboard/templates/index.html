@@ -371,6 +371,10 @@
                         <option value="event_card">Full Event Card</option>
                     </select>
                     <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
+                        <input id="main-prf-allow-draft" type="checkbox" checked />
+                        Allow draft output when analysis is missing
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;">
                         <input id="main-prf-generate-approval" type="checkbox" />
                         I approve generating and exporting customer PDFs
                     </label>
@@ -1228,6 +1232,7 @@
         const mainPrfQueueStatus = document.getElementById('main-prf-queue-status');
         const mainPrfQueueTable = document.getElementById('main-prf-queue-table');
         const mainPrfReportType = document.getElementById('main-prf-report-type');
+        const mainPrfAllowDraft = document.getElementById('main-prf-allow-draft');
         const mainPrfGenerateApproval = document.getElementById('main-prf-generate-approval');
         const mainPrfGenerateBtn = document.getElementById('main-prf-generate-btn');
         const mainPrfGenerateStatus = document.getElementById('main-prf-generate-status');
@@ -1372,19 +1377,38 @@
                 const folderPath = _getFolderPath(pdfPath);
                 const sizeBytes = Number(row.generated_pdf_size_bytes || 0);
                 const isOpenable = Boolean(row.generated_pdf_openable);
+                const reportId = encodeURIComponent(String(row.report_id || ''));
+                const fileName = encodeURIComponent(String(row.file_name || ''));
+                const reportQualityStatus = String(row.report_quality_status || 'unknown');
+                const customerReady = Boolean(row.customer_ready);
+                const missingSections = Array.isArray(row.missing_sections) ? row.missing_sections : [];
+                const qualityMessage = String(row.quality_message || '');
                 const fileAction = isOpenable && pdfPath
-                    ? `<a href="${_escapeHtml(_toFileUrl(pdfPath))}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;margin-right:6px;">Open PDF</a>`
-                    : '<span style="color:#666;">Open PDF unavailable</span>';
+                    ? `<a href="/api/premium-report-factory/reports/download/${reportId}?file_name=${fileName}" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Download PDF</a>`
+                    : '<span style="color:#666;">Download unavailable</span>';
                 const folderAction = folderPath
                     ? `<a href="${_escapeHtml(_toFileUrl(folderPath))}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;padding:4px 8px;font-size:11px;text-decoration:none;">Open Reports Folder</a>`
                     : '<span style="color:#666;">Folder unavailable</span>';
+                const copyPathAction = pdfPath
+                    ? `<button type="button" class="btn-secondary main-prf-copy-path-btn" data-pdf-path="${_escapeHtml(pdfPath)}" style="display:inline-block;padding:4px 8px;font-size:11px;">Copy PDF Path</button>`
+                    : '<span style="color:#666;">Path unavailable</span>';
                 return `<tr>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.file_name || '')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(reportQualityStatus)}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">${customerReady ? 'true' : 'false'}</td>
+                    <td style="border:1px solid #ddd;padding:6px;word-break:break-word;">${_escapeHtml(missingSections.join(', ') || '-')}</td>
                     <td style="border:1px solid #ddd;padding:6px;word-break:break-all;">${_escapeHtml(pdfPath)}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(`${sizeBytes} bytes (${_formatBytes(sizeBytes)})`)}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.matchup_id || '')}</td>
                     <td style="border:1px solid #ddd;padding:6px;">${_escapeHtml(row.report_status || '')}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">${fileAction}${folderAction}</td>
+                    <td style="border:1px solid #ddd;padding:6px;word-break:break-word;">${_escapeHtml(row.export_error || qualityMessage || '-')}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                            ${fileAction}
+                            ${folderAction}
+                            ${copyPathAction}
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
 
@@ -1395,37 +1419,31 @@
                 ? '<div style="margin-top:8px;color:#a80000;"><strong>PDF was not created. Check export error.</strong></div>'
                 : '';
 
-            const allPaths = generated.map((g) => g.generated_pdf_path || g.file_path || '').filter(Boolean).join('\n');
-            const copyBtn = generated.length
-                ? `<button id="main-prf-copy-paths-btn" class="btn-secondary" style="margin-top:8px;">Copy All Paths</button>`
-                : '';
-
             mainPrfGenerateResults.style.display = 'block';
             mainPrfGenerateResults.innerHTML = `
                 <div style="font-size:13px;margin-bottom:8px;"><strong>Accepted:</strong> ${Number(data.accepted_count || 0)} | <strong>Rejected:</strong> ${Number(data.rejected_count || 0)} | <strong>Total Size:</strong> ${_formatBytes(totalSize)}</div>
-                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">PDF Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Size</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Actions</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
-                ${copyBtn}
+                ${generated.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="border:1px solid #ddd;padding:6px;text-align:left;">File</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Quality Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Customer Ready</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Missing Sections</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">PDF Path</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Size</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Matchup ID</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Status</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Export Error</th><th style="border:1px solid #ddd;padding:6px;text-align:left;">Actions</th></tr></thead><tbody>${generatedRows}</tbody></table>` : '<div style="color:#666;">No PDFs generated.</div>'}
                 ${missingPdfHtml}
                 ${rejected.length ? `<div style="margin-top:8px;"><strong>Rejected:</strong><ul style="margin:6px 0 0 18px;">${rejectedRows}</ul></div>` : ''}
                 ${warningsHtml}
                 ${errorsHtml}
             `;
 
-            const copyPathsBtn = document.getElementById('main-prf-copy-paths-btn');
-            if (copyPathsBtn) {
-                copyPathsBtn.addEventListener('click', async () => {
+            mainPrfGenerateResults.querySelectorAll('.main-prf-copy-path-btn').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const pathText = String(btn.getAttribute('data-pdf-path') || '');
                     try {
-                        await navigator.clipboard.writeText(allPaths);
+                        await navigator.clipboard.writeText(pathText);
                         mainPrfGenerateStatus.style.display = 'block';
                         mainPrfGenerateStatus.className = 'status-display success';
-                        mainPrfGenerateStatus.textContent = 'File paths copied to clipboard.';
+                        mainPrfGenerateStatus.textContent = 'PDF path copied to clipboard.';
                     } catch (_) {
                         mainPrfGenerateStatus.style.display = 'block';
                         mainPrfGenerateStatus.className = 'status-display error';
-                        mainPrfGenerateStatus.textContent = 'Clipboard copy failed. Copy paths manually from the table.';
+                        mainPrfGenerateStatus.textContent = 'Clipboard copy failed. Copy PDF path manually from the table.';
                     }
                 });
-            }
+            });
         }
 
         async function runMainPrfGenerate() {
@@ -1457,6 +1475,7 @@
                 selected_matchup_ids: selectedMatchupIds,
                 report_type: mainPrfReportType ? String(mainPrfReportType.value || 'single_matchup') : 'single_matchup',
                 export_format: 'pdf',
+                allow_draft: Boolean(mainPrfAllowDraft && mainPrfAllowDraft.checked),
             };
 
             try {

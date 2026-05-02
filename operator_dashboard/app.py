@@ -1,5 +1,5 @@
 from operator_dashboard.anomaly_utils import AnomalyAggregator
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from operator_dashboard.portfolio_utils import aggregate_portfolio, aggregate_event_portfolio
 from operator_dashboard.control_summary_utils import aggregate_control_summary
 from operator_dashboard.integrity_utils import aggregate_integrity
@@ -1808,6 +1808,7 @@ def api_premium_report_factory_reports_generate():
     report_type = str(request_json.get("report_type") or "").strip()
     export_format = str(request_json.get("export_format") or "pdf").strip() or "pdf"
     notes = str(request_json.get("notes") or "").strip()
+    allow_draft = bool(request_json.get("allow_draft", True))
 
     queue_path = _get_prf_queue_path()
     all_queue_records = load_prf_queue(queue_path)
@@ -1827,6 +1828,7 @@ def api_premium_report_factory_reports_generate():
         export_format=export_format,
         notes=notes,
         reports_dir=reports_dir,
+        allow_draft=allow_draft,
     )
 
     # Update report_status in queue for successfully generated reports
@@ -1850,6 +1852,52 @@ def api_premium_report_factory_reports_list():
     reports_dir = _get_prf_reports_dir()
     result = list_generated_reports(reports_dir)
     return jsonify(result)
+
+
+@app.route("/api/premium-report-factory/reports/download/<report_id>", methods=["GET"])
+def api_premium_report_factory_reports_download(report_id):
+    """Download a generated premium report file from the reports directory."""
+    file_name = str(request.args.get("file_name") or "").strip()
+    if not file_name:
+        return jsonify({
+            "ok": False,
+            "report_id": str(report_id or ""),
+            "errors": ["file_name_required"],
+        }), 400
+
+    # Prevent path traversal and non-PDF downloads.
+    safe_file_name = Path(file_name).name
+    if safe_file_name != file_name or not safe_file_name.lower().endswith(".pdf"):
+        return jsonify({
+            "ok": False,
+            "report_id": str(report_id or ""),
+            "errors": ["invalid_file_name"],
+        }), 400
+
+    reports_dir = Path(_get_prf_reports_dir()).resolve()
+    file_path = (reports_dir / safe_file_name).resolve()
+    try:
+        file_path.relative_to(reports_dir)
+    except Exception:
+        return jsonify({
+            "ok": False,
+            "report_id": str(report_id or ""),
+            "errors": ["invalid_file_name"],
+        }), 400
+
+    if not file_path.exists() or not file_path.is_file():
+        return jsonify({
+            "ok": False,
+            "report_id": str(report_id or ""),
+            "errors": ["report_file_not_found"],
+        }), 404
+
+    return send_file(
+        str(file_path),
+        as_attachment=True,
+        download_name=safe_file_name,
+        mimetype="application/pdf",
+    )
 
 
 def _build_signal_gap_breakdown() -> dict:
