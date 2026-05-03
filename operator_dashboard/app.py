@@ -29,6 +29,13 @@ from operator_dashboard.official_source_approved_apply_token_consume_helper impo
 from operator_dashboard.forecast_utils import get_operator_forecast
 from operator_dashboard.response_matrix_utils import get_operator_response_matrix
 from operator_dashboard.prf_ranking_adapter import enrich_row_with_ranking
+from operator_dashboard.prf_accuracy_calibration_adapter import (
+    build_button3_calibration_review_runtime_fields,
+    build_button3_compare_runtime_fields,
+    build_button3_confidence_runtime_fields,
+    build_button3_summary_runtime_fields,
+    build_learning_gate_placeholder,
+)
 from operator_dashboard.phase1_ops import (
     create_matchups,
     enter_actual_result,
@@ -681,12 +688,14 @@ def _build_accuracy_comparison_summary() -> dict:
     compared_results.sort(key=lambda row: str(row.get("fight_name") or ""))
     waiting_for_results.sort(key=lambda row: str(row.get("fight_name") or ""))
 
-    return {
+    response_payload = {
         "ok": True,
         "compared_results": compared_results,
         "waiting_for_results": waiting_for_results,
         "summary_metrics": summary_metrics,
     }
+    response_payload.update(build_button3_summary_runtime_fields(response_payload))
+    return response_payload
 
 
 def _build_actual_result_lookup_dry_run_preview(limit_value=None) -> dict:
@@ -1656,6 +1665,12 @@ def api_operator_compare_with_result():
         
         # Compare with result
         result = operator.compare_with_real_result(fighter_a, fighter_b)
+
+        if isinstance(result, dict):
+            result = {
+                **result,
+                **build_button3_compare_runtime_fields(result),
+            }
         
         return jsonify(result)
     
@@ -1692,12 +1707,14 @@ def api_operator_run_calibration_review():
         # Ensure approval_required is always True (no silent auto-apply)
         result["approval_required"] = True
         
-        return jsonify({
+        response_payload = {
             "ok": True,
             **result,
             # Additive availability key — display-only, no calibration behavior change
             "calibration_engine_availability": _build_calibration_engine_availability(),
-        })
+        }
+        response_payload.update(build_button3_calibration_review_runtime_fields(response_payload))
+        return jsonify(response_payload)
     
     except Exception as e:
         message = f"Error running calibration review: {str(e)}"
@@ -3537,6 +3554,7 @@ def api_operator_actual_result_lookup_guarded_single():
         "proposed_write": proposed_write,
         "scoring_semantics_changed": False,
         "audit": audit_payload,
+        **build_learning_gate_placeholder(operator_approval=False),
     }
 
     if not approval_granted:
@@ -3611,6 +3629,7 @@ def api_operator_actual_result_lookup_manual_single_apply():
             "after_row_count": None,
             "write_performed": False,
         },
+        **build_learning_gate_placeholder(operator_approval=False),
     }
 
     if not selected_key:
@@ -3873,7 +3892,9 @@ def _build_confidence_calibration() -> dict:
         })
 
     has_data = any(b["total_compared"] > 0 for b in calibration)
-    return {"ok": True, "has_data": has_data, "calibration": calibration}
+    response_payload = {"ok": True, "has_data": has_data, "calibration": calibration}
+    response_payload.update(build_button3_confidence_runtime_fields(response_payload))
+    return response_payload
 
 
 @app.route("/api/accuracy/confidence-calibration", methods=["GET"])

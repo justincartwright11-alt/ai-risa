@@ -5790,7 +5790,71 @@ class EnginePackRegistryWiringTest(unittest.TestCase):
         self.assertIn('approval_required', data)
         self.assertTrue(data['approval_required'])
 
-    # 7. Engine registry manifest endpoint returns ok and engines list
+    # 7. Button 3 compare route includes additive accuracy runtime wiring fields
+    def test_button3_compare_route_has_accuracy_runtime_wiring_fields(self):
+        mock_result = {
+            'ok': True,
+            'result_found': True,
+            'score': {
+                'segments': {'winner': {'score': 1}},
+                'metrics': {
+                    'winner_accuracy': 100,
+                    'method_accuracy': 100,
+                    'round_accuracy': 0,
+                    'overall_accuracy': 66.67,
+                },
+            },
+        }
+
+        with patch.object(app_module, 'MatchupOperator') as mock_operator_cls:
+            mock_operator = mock_operator_cls.return_value
+            mock_operator.parse_matchup_input.return_value = ('Alpha', 'Beta')
+            mock_operator.compare_with_real_result.return_value = mock_result
+
+            resp = self.client.post('/api/operator/compare-with-result', json={'matchup': 'Alpha vs Beta'})
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        for key in (
+            'result_comparison_status',
+            'official_result_source_status',
+            'predicted_winner_match',
+            'method_match',
+            'round_match',
+            'confidence_accuracy_band',
+            'section_accuracy_scores',
+            'overall_report_accuracy_score',
+            'calibration_recommendations',
+            'pattern_memory_update_proposals',
+            'learning_gate_status',
+            'learning_gate_reason',
+            'operator_approval_required',
+        ):
+            self.assertIn(key, data)
+        self.assertTrue(data.get('operator_approval_required'))
+
+    # 8. Button 3 comparison summary includes additive accuracy display fields
+    def test_button3_comparison_summary_has_accuracy_display_fields(self):
+        resp = self.client.get('/api/accuracy/comparison-summary')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertIn('section_accuracy_scores', data)
+        self.assertIn('overall_report_accuracy_score', data)
+        self.assertIn('result_comparison_status', data)
+        self.assertIn('operator_approval_required', data)
+
+    # 9. Button 3 confidence calibration includes proposal-only recommendations and learning gate
+    def test_button3_confidence_calibration_has_proposals_and_learning_gate(self):
+        resp = self.client.get('/api/accuracy/confidence-calibration')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertIn('calibration_recommendations', data)
+        self.assertIn('learning_gate_status', data)
+        self.assertIn('operator_approval_required', data)
+        self.assertEqual(data.get('learning_gate_status'), 'approval_required')
+        self.assertTrue(data.get('operator_approval_required'))
+
+    # 10. Engine registry manifest endpoint returns ok and engines list
     def test_engine_registry_manifest_returns_ok_and_engines(self):
         resp = self.client.get('/api/engine-registry-manifest')
         self.assertEqual(resp.status_code, 200)
@@ -5800,7 +5864,7 @@ class EnginePackRegistryWiringTest(unittest.TestCase):
         self.assertIsInstance(data['engines'], list)
         self.assertGreater(len(data['engines']), 0)
 
-    # 8. Engine registry manifest entries have expected shape
+    # 11. Engine registry manifest entries have expected shape
     def test_engine_registry_manifest_entry_shape(self):
         resp = self.client.get('/api/engine-registry-manifest')
         data = resp.get_json()
@@ -5811,7 +5875,7 @@ class EnginePackRegistryWiringTest(unittest.TestCase):
         self.assertIn('buttons', entry)
         self.assertIn('approval_gate_required', entry)
 
-    # 9. Button 2 generate route has engine_availability after approved generate
+    # 12. Button 2 generate route has engine_availability after approved generate
     def test_button2_generate_has_engine_availability(self):
         import tempfile, os
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -5832,7 +5896,7 @@ class EnginePackRegistryWiringTest(unittest.TestCase):
             self.assertIn('report_readiness_preview', ea)
             self.assertEqual(ea['report_readiness_preview'], 'unavailable')
 
-    # 10. Button 2 generate route existing ok key preserved after wiring
+    # 13. Button 2 generate route existing ok key preserved after wiring
     def test_button2_generate_existing_ok_key_preserved(self):
         import tempfile, os
         with tempfile.TemporaryDirectory() as tmpdir:
