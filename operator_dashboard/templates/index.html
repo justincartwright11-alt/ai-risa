@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-RISA Premium Report Factory</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e8eaed;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1d2e 0%, #12151f 100%);
+      border-bottom: 1px solid #2a2d3e;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #c9aa71;
+      letter-spacing: 0.02em;
+    }
+    .header .version { font-size: 0.75rem; color: #5a6480; }
+    .main { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
+    .dashboard-title {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #5a6480;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 32px;
+    }
+
+    /* ── Three Buttons ─────────────────────────────────────────────────── */
+    .three-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .btn-card {
+      background: #1a1d2e;
+      border: 1px solid #2a2d3e;
+      border-radius: 12px;
+      padding: 28px 20px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      text-align: center;
+      position: relative;
+    }
+    .btn-card:hover { border-color: #c9aa71; box-shadow: 0 0 20px rgba(201,170,113,0.08); }
+    .btn-card.active { border-color: #c9aa71; }
+    .btn-icon { font-size: 2rem; margin-bottom: 12px; }
+    .btn-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e8eaed;
+      margin-bottom: 6px;
+    }
+    .btn-desc { font-size: 0.8rem; color: #8a94b8; line-height: 1.4; }
+    /* operator gate badge — styled via inline style on each span */
+    .btn-main {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 10px 0;
+      background: #c9aa71;
+      color: #0f1117;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-main:hover { opacity: 0.88; }
+    .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Result Panel ───────────────────────────────────────────────────── */
+    .result-panel {
+      display: none;
+      background: #1a1d2e;
+      border: 1px solid #2a2d3e;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-top: 8px;
+    }
+    .result-panel.visible { display: block; }
+    .result-panel h3 {
+      font-size: 0.9rem;
+      color: #c9aa71;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .status-msg { font-size: 0.85rem; color: #8a94b8; }
+    .status-msg.error { color: #e06c75; }
+    .status-msg.ok { color: #98c379; }
+
+    /* ── Button 3 Summary ──────────────────────────────────────────────── */
+    #b3-result-panel .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .state-card {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .state-card .state-count {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #c9aa71;
+      line-height: 1;
+    }
+    .state-card .state-label {
+      font-size: 0.7rem;
+      color: #8a94b8;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+    .state-card[data-state="Results Found"] .state-count { color: #98c379; }
+    .state-card[data-state="Needs Source"] .state-count { color: #e5c07b; }
+    .state-card[data-state="Conflict"] .state-count { color: #e06c75; }
+    .state-card[data-state="No Result Yet"] .state-count { color: #8a94b8; }
+    .state-card[data-state="Ready to Compare"] .state-count { color: #61afef; }
+
+    .b3-total {
+      font-size: 0.78rem;
+      color: #5a6480;
+      margin-top: 12px;
+      text-align: right;
+    }
+    .b3-gate-notice {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(201,170,113,0.06);
+      border: 1px solid rgba(201,170,113,0.2);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #c9aa71;
+    }
+
+    /* ── Spinner ────────────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid #2a2d3e;
+      border-top-color: #c9aa71;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Advanced Link ──────────────────────────────────────────────────── */
+    .advanced-link {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.8rem;
+    }
+    .advanced-link a {
+      color: #5a6480;
+      text-decoration: none;
+      border-bottom: 1px solid #2a2d3e;
+      padding-bottom: 1px;
+    }
+    .advanced-link a:hover { color: #8a94b8; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&#9876; AI-RISA Premium Report Factory</h1>
+  <span class="version">Operator Dashboard v1</span>
+</div>
+
+<div class="main">
+  <p class="dashboard-title">Three-Button Operator Console</p>
+
+  <!-- ── The Three Buttons ───────────────────────────────────────────── -->
+  <div class="three-buttons">
+
+    <!-- Button 1: Find & Build Fight Queue -->
+    <div class="btn-card" id="b1-card">
+      <div class="btn-icon">&#128269;</div>
+      <div class="btn-label">Find &amp; Build Fight Queue</div>
+      <div class="btn-desc">Search upcoming events, extract matchups, rank report readiness.</div>
+      <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
+      <button class="btn-main" id="b1-btn" onclick="handleButton1Click()">Find Fights</button>
+    </div>
+
+    <!-- Button 2: Generate Premium PDF Reports -->
+    <div class="btn-card" id="b2-card">
+      <div class="btn-icon">&#128196;</div>
+      <div class="btn-label">Generate Premium PDF Reports</div>
+      <div class="btn-desc">Select a fight from the queue and generate a customer-ready PDF report.</div>
+      <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
+      <button class="btn-main" id="b2-btn" onclick="handleButton2Click()">Generate Report</button>
+    </div>
+
+    <!-- Button 3: Find Results & Improve Accuracy -->
+    <div class="btn-card" id="b3-card">
+      <div class="btn-icon">&#127919;</div>
+      <div class="btn-label">Find Results &amp; Improve Accuracy</div>
+      <div class="btn-desc">Auto-search real-life results, compare vs AI-RISA analysis, review accuracy.</div>
+      <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
+      <button class="btn-main" id="b3-btn" onclick="handleButton3Click()">Find Results</button>
+    </div>
+
+  </div><!-- /.three-buttons -->
+
+  <!-- ── Button 1 Result Area ──────────────────────────────────────── -->
+  <div class="result-panel" id="b1-result-panel">
+    <h3>Fight Queue</h3>
+    <div id="b1-status" class="status-msg">Loading fight queue…</div>
+  </div>
+
+  <!-- ── Button 2 Result Area ──────────────────────────────────────── -->
+  <div class="result-panel" id="b2-result-panel">
+    <h3>Report Generation</h3>
+    <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
+  </div>
+
+  <!-- ── Button 3 Result Area ──────────────────────────────────────── -->
+  <div class="result-panel" id="b3-result-panel">
+    <h3>Find Results &amp; Compare — Preview</h3>
+    <div id="b3-status" class="status-msg"></div>
+
+    <!-- Summary grid: 5 simple state labels only -->
+    <div class="summary-grid" id="b3-summary-grid" style="display:none;">
+      <div class="state-card" data-state="Results Found">
+        <div class="state-count" id="b3-count-results-found">—</div>
+        <div class="state-label">Results Found</div>
+      </div>
+      <div class="state-card" data-state="Needs Source">
+        <div class="state-count" id="b3-count-needs-source">—</div>
+        <div class="state-label">Needs Source</div>
+      </div>
+      <div class="state-card" data-state="Conflict">
+        <div class="state-count" id="b3-count-conflict">—</div>
+        <div class="state-label">Conflict</div>
+      </div>
+      <div class="state-card" data-state="No Result Yet">
+        <div class="state-count" id="b3-count-no-result-yet">—</div>
+        <div class="state-label">No Result Yet</div>
+      </div>
+      <div class="state-card" data-state="Ready to Compare">
+        <div class="state-count" id="b3-count-ready-to-compare">—</div>
+        <div class="state-label">Ready to Compare</div>
+      </div>
+    </div>
+
+    <div class="b3-total" id="b3-total" style="display:none;"></div>
+
+    <div class="b3-gate-notice" id="b3-gate-notice" style="display:none;">
+      &#128274; Preview complete. Use Advanced Dashboard to submit confirmed results.
+    </div>
+  </div><!-- /#b3-result-panel -->
+
+  <div class="advanced-link">
+    <a href="/advanced-dashboard">Open Advanced Dashboard →</a>
+  </div>
+</div><!-- /.main -->
+
+<script>
+/* =========================================================
+   AI-RISA Operator Dashboard — Three-Button JavaScript
+   ========================================================= */
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function showPanel(id) {
+  document.querySelectorAll('.result-panel').forEach(p => p.classList.remove('visible'));
+  const panel = document.getElementById(id);
+  if (panel) panel.classList.add('visible');
+}
+
+function setStatus(id, html, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = html;
+  el.className = 'status-msg' + (cls ? ' ' + cls : '');
+}
+
+// ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
+
+function handleButton1Click() {
+  showPanel('b1-result-panel');
+  setStatus('b1-status', 'Loading fight queue…');
+  fetch('/api/operator/button1/fight-queue', { method: 'GET' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        const count = data.total || 0;
+        setStatus('b1-status',
+          count === 0
+            ? 'No fights in the queue yet. Use the Advanced Dashboard to search for events.'
+            : count + ' fight(s) found.',
+          'ok');
+      } else {
+        setStatus('b1-status', 'Error loading fight queue.', 'error');
+      }
+    })
+    .catch(() => setStatus('b1-status', 'Network error loading fight queue.', 'error'));
+}
+
+// ── Button 2: Generate Premium PDF ───────────────────────────────────────────
+
+function handleButton2Click() {
+  showPanel('b2-result-panel');
+  setStatus('b2-status', 'Select a fight from the queue, then approve PDF generation.');
+}
+
+// ── Button 3: Find Results & Compare ─────────────────────────────────────────
+//
+// Explicit endpoint:
+//   POST /api/operator/button3/auto-result-source-yield-live-executor-preview
+//
+// Renders ONLY the five simple state counts.
+// Advanced fields (executor diagnostics, telemetry) are intentionally not rendered here.
+
+const B3_EXECUTOR_ENDPOINT =
+  '/api/operator/button3/auto-result-source-yield-live-executor-preview';
+
+function handleButton3Click() {
+  showPanel('b3-result-panel');
+
+  // Hide summary grid and gate notice while loading
+  const grid = document.getElementById('b3-summary-grid');
+  const total = document.getElementById('b3-total');
+  const gate  = document.getElementById('b3-gate-notice');
+  if (grid)  grid.style.display = 'none';
+  if (total) total.style.display = 'none';
+  if (gate)  gate.style.display = 'none';
+
+  setStatus('b3-status',
+    '<span class="spinner"></span>Scanning for results (preview only, no changes made)…');
+
+  fetch(B3_EXECUTOR_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      limit: 44,
+      include_advanced_diagnostics: false   // never expose in normal mode
+    })
+  })
+  .then(r => r.json())
+  .then(data => renderButton3Results(data))
+  .catch(err => {
+    setStatus('b3-status',
+      'Could not reach the result scanner. Check connection and try again.', 'error');
+  });
+}
+
+function renderButton3Results(data) {
+  const grid  = document.getElementById('b3-summary-grid');
+  const total = document.getElementById('b3-total');
+  const gate  = document.getElementById('b3-gate-notice');
+
+  if (!data || !data.ok) {
+    setStatus('b3-status',
+      'Result scanner returned an error. No changes were made.', 'error');
+    return;
+  }
+
+  const summary = data.summary || {};
+
+  // ── Render only the five simple state counts ─────────────────────────────
+  // Executor diagnostics and telemetry are intentionally NOT rendered in normal mode.
+
+  const stateMap = {
+    'Results Found':    'b3-count-results-found',
+    'Needs Source':     'b3-count-needs-source',
+    'Conflict':         'b3-count-conflict',
+    'No Result Yet':    'b3-count-no-result-yet',
+    'Ready to Compare': 'b3-count-ready-to-compare',
+  };
+
+  for (const [state, elemId] of Object.entries(stateMap)) {
+    const el = document.getElementById(elemId);
+    if (el) el.textContent = (summary[state] !== undefined ? summary[state] : 0);
+  }
+
+  if (grid)  grid.style.display = '';
+  if (total) {
+    const t = summary.total_rows !== undefined ? summary.total_rows : '—';
+    total.textContent = 'Total rows scanned: ' + t;
+    total.style.display = '';
+  }
+  if (gate) gate.style.display = '';
+
+  setStatus('b3-status', '&#10003; Preview complete — read-only, no changes made.', 'ok');
+}
+</script>
+</body>
+</html>
