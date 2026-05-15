@@ -26,6 +26,9 @@ from button3_auto_result_source_yield_live_executor_preview import (
     build_readonly_executor_preview_response,
 )
 from operator_dashboard.local_ai_orchestrator_input_context_pack import build_context_pack
+from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader import (
+    build_runtime_context_pack,
+)
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
 from operator_dashboard.local_ai_orchestrator_workflow_plan import (
     build_three_button_workflow_plan,
@@ -314,6 +317,8 @@ def local_ai_orchestrator_workflow_preview():
     input_ref_payload = body.get("input_ref", {}) or {}
     context_pack_payload = body.get("context_pack")
     has_context_pack = "context_pack" in body
+    has_runtime_context = "use_runtime_context" in body
+    use_runtime_context = body.get("use_runtime_context", False)
     execute_preview = bool(body.get("execute_preview", False))
 
     if has_context_pack and not isinstance(context_pack_payload, dict):
@@ -323,7 +328,14 @@ def local_ai_orchestrator_workflow_preview():
             "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
         }), 400
 
-    if not has_context_pack and not isinstance(input_ref_payload, dict):
+    if has_runtime_context and not isinstance(use_runtime_context, bool):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_use_runtime_context",
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 400
+
+    if (not has_context_pack and not use_runtime_context) and not isinstance(input_ref_payload, dict):
         return jsonify({
             "ok": False,
             "error": "invalid_input_ref",
@@ -334,6 +346,9 @@ def local_ai_orchestrator_workflow_preview():
         if has_context_pack:
             built_context_pack = build_context_pack(source_button, context_pack_payload)
             job_input_ref = built_context_pack.to_job_input_ref()
+        elif use_runtime_context:
+            runtime_context_pack = build_runtime_context_pack(source_button)
+            job_input_ref = runtime_context_pack.to_job_input_ref()
         else:
             kind = str(input_ref_payload.get("kind", "empty") or "empty")
             ref_id = str(input_ref_payload.get("ref_id", "") or "")
