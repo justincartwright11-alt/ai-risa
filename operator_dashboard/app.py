@@ -33,6 +33,9 @@ from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputR
 from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
     run_gate1_save_fights_dry_run_apply_preview,
 )
+from operator_dashboard.local_ai_orchestrator_gate1_approved_save_writer import (
+    run_gate1_approved_save_writer_scaffold,
+)
 from operator_dashboard.local_ai_orchestrator_workflow_plan import (
     build_three_button_workflow_plan,
     run_workflow_preview,
@@ -437,6 +440,60 @@ def local_ai_gate1_save_fights_dry_run_apply_preview():
         "blocked": list(result_payload.get("blocked_candidate_ids", [])),
         "blocking_reasons": list(result_payload.get("blocking_reasons", [])),
         "eligible_for_future_approval": bool(result_payload.get("eligible_for_future_approval", False)),
+    }
+
+    return jsonify(response)
+
+
+@app.route("/api/local-ai/gate1/save-fights/approved-save-writer-preview", methods=["POST"])
+def local_ai_gate1_approved_save_writer_preview():
+    """Return preview-only Gate 1 approved save writer scaffold projection."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "scaffold_only": True,
+            "live_write_enabled": False,
+            "write_performed": False,
+            "queue_write_performed": False,
+            "database_write_performed": False,
+            "audit_record_preview": None,
+            "rollback_pointer_preview": None,
+            "idempotency_key": None,
+            "would_write": False,
+            "blocking_reasons": ["request body must be an object"],
+        }), 400
+
+    scaffold_request = {
+        "gate_approval_token_preview": body.get("gate_approval_token_preview"),
+        "candidate_scope": body.get("candidate_scope"),
+        "candidate_rows": body.get("candidate_rows", []),
+        "operator_approved": body.get("operator_approved", False),
+        "idempotency_key": body.get("idempotency_key"),
+        "write_target": body.get("write_target"),
+        "dry_run_required": bool(body.get("dry_run_required", True)),
+        "live_write_enabled": False,
+    }
+    if not isinstance(scaffold_request["candidate_rows"], list):
+        scaffold_request["candidate_rows"] = []
+
+    result = run_gate1_approved_save_writer_scaffold(scaffold_request)
+    result_payload = result.to_dict()
+
+    response = {
+        "ok": bool(result_payload.get("ok", False)),
+        "scaffold_only": True,
+        "live_write_enabled": False,
+        "write_performed": False,
+        "queue_write_performed": False,
+        "database_write_performed": False,
+        "audit_record_preview": result_payload.get("audit_record_preview"),
+        "rollback_pointer_preview": result_payload.get("rollback_pointer_preview"),
+        "idempotency_key": result_payload.get("idempotency_key"),
+        "would_write": bool(result_payload.get("would_write", False)),
+        "blocking_reasons": list(result_payload.get("blocking_reasons", [])),
     }
 
     return jsonify(response)
