@@ -25,6 +25,7 @@ from flask import Flask, render_template, request, jsonify
 from button3_auto_result_source_yield_live_executor_preview import (
     build_readonly_executor_preview_response,
 )
+from operator_dashboard.local_ai_orchestrator_input_context_pack import build_context_pack
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
 from operator_dashboard.local_ai_orchestrator_workflow_plan import (
     build_three_button_workflow_plan,
@@ -311,9 +312,18 @@ def local_ai_orchestrator_workflow_preview():
 
     source_button = body.get("source_button", "")
     input_ref_payload = body.get("input_ref", {}) or {}
+    context_pack_payload = body.get("context_pack")
+    has_context_pack = "context_pack" in body
     execute_preview = bool(body.get("execute_preview", False))
 
-    if not isinstance(input_ref_payload, dict):
+    if has_context_pack and not isinstance(context_pack_payload, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_context_pack",
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 400
+
+    if not has_context_pack and not isinstance(input_ref_payload, dict):
         return jsonify({
             "ok": False,
             "error": "invalid_input_ref",
@@ -321,18 +331,22 @@ def local_ai_orchestrator_workflow_preview():
         }), 400
 
     try:
-        kind = str(input_ref_payload.get("kind", "empty") or "empty")
-        ref_id = str(input_ref_payload.get("ref_id", "") or "")
-        payload = input_ref_payload.get("payload", {})
-        if not isinstance(payload, dict):
-            payload = {}
+        if has_context_pack:
+            built_context_pack = build_context_pack(source_button, context_pack_payload)
+            job_input_ref = built_context_pack.to_job_input_ref()
+        else:
+            kind = str(input_ref_payload.get("kind", "empty") or "empty")
+            ref_id = str(input_ref_payload.get("ref_id", "") or "")
+            payload = input_ref_payload.get("payload", {})
+            if not isinstance(payload, dict):
+                payload = {}
 
-        job_input_ref = LocalAIJobInputRef(
-            ref_type=kind,
-            ref_key=ref_id or kind,
-            snapshot_hash=None,
-            metadata={"payload": payload},
-        )
+            job_input_ref = LocalAIJobInputRef(
+                ref_type=kind,
+                ref_key=ref_id or kind,
+                snapshot_hash=None,
+                metadata={"payload": payload},
+            )
 
         workflow = build_three_button_workflow_plan(source_button, job_input_ref)
         if execute_preview:
