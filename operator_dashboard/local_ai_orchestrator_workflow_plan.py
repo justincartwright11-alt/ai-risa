@@ -6,10 +6,10 @@ keeping all actions read-only and approval-gated.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 import json
 import uuid
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from operator_dashboard.local_ai_orchestrator_job_schema import (
     ALLOWED_SOURCE_BUTTONS,
@@ -61,6 +61,41 @@ def _deterministic_workflow_id(source_button: str, input_ref: LocalAIJobInputRef
     return f"workflow_{uuid.uuid5(uuid.NAMESPACE_URL, basis).hex}"
 
 
+def _build_gate_approval_token_preview(
+    source_button: str,
+    workflow_id: str,
+    input_ref: LocalAIJobInputRef,
+) -> Dict[str, Any]:
+    """Build preview-only gate approval token contract for future write authorization."""
+    if source_button != "button1_find_fights":
+        return {}
+
+    token_basis = "|".join(
+        [
+            "gate1_save_fights_preview",
+            source_button,
+            workflow_id,
+            input_ref.ref_type,
+            input_ref.ref_key,
+            input_ref.snapshot_hash or "",
+        ]
+    )
+    token = f"g1_preview_{uuid.uuid5(uuid.NAMESPACE_URL, token_basis).hex}"
+
+    return {
+        "contract_name": "gate1_save_fights_approval_token_preview_v1",
+        "token": token,
+        "source_button": source_button,
+        "gate_name": GATE_NAME_BY_BUTTON[source_button],
+        "candidate_action": "save_fights",
+        "approval_required": True,
+        "preview_only": True,
+        "write_authorized": False,
+        "queue_write_performed": False,
+        "database_write_performed": False,
+    }
+
+
 @dataclass
 class LocalAIWorkflowPreview:
     workflow_id: str
@@ -69,6 +104,7 @@ class LocalAIWorkflowPreview:
     status: str
     gate_required: bool
     gate_name: str
+    gate_approval_token_preview: Dict[str, Any] = field(default_factory=dict)
     preview_only: bool = True
     mutation_performed: bool = False
     queue_write_performed: bool = False
@@ -89,6 +125,38 @@ class LocalAIWorkflowPreview:
 
         if self.gate_name != GATE_NAME_BY_BUTTON[self.source_button]:
             raise ValueError("gate_name does not match source_button")
+
+        if self.source_button == "button1_find_fights":
+            token_preview = self.gate_approval_token_preview
+            if not isinstance(token_preview, dict) or not token_preview:
+                raise ValueError("button1 requires gate_approval_token_preview")
+
+            required_keys = {
+                "contract_name",
+                "token",
+                "source_button",
+                "gate_name",
+                "candidate_action",
+                "approval_required",
+                "preview_only",
+                "write_authorized",
+                "queue_write_performed",
+                "database_write_performed",
+            }
+            if not required_keys.issubset(set(token_preview.keys())):
+                raise ValueError("gate_approval_token_preview missing required keys")
+
+            if token_preview.get("preview_only") is not True:
+                raise ValueError("gate_approval_token_preview.preview_only must be true")
+            if token_preview.get("write_authorized") is not False:
+                raise ValueError("gate_approval_token_preview.write_authorized must be false")
+            if token_preview.get("queue_write_performed") is not False:
+                raise ValueError("gate_approval_token_preview.queue_write_performed must be false")
+            if token_preview.get("database_write_performed") is not False:
+                raise ValueError("gate_approval_token_preview.database_write_performed must be false")
+        else:
+            if self.gate_approval_token_preview:
+                raise ValueError("gate_approval_token_preview only allowed for button1")
 
         if not self.preview_only:
             raise ValueError("preview_only must remain true")
@@ -136,13 +204,15 @@ def build_three_button_workflow_plan(source_button: str, input_ref: LocalAIJobIn
         for job_type in job_types
     ]
 
+    workflow_id = _deterministic_workflow_id(source_button, input_ref)
     plan = LocalAIWorkflowPreview(
-        workflow_id=_deterministic_workflow_id(source_button, input_ref),
+        workflow_id=workflow_id,
         source_button=source_button,
         jobs=jobs,
         status="preview_planned",
         gate_required=True,
         gate_name=GATE_NAME_BY_BUTTON[source_button],
+        gate_approval_token_preview=_build_gate_approval_token_preview(source_button, workflow_id, input_ref),
     )
     plan.validate()
     return plan
@@ -170,6 +240,7 @@ def run_workflow_preview(plan: LocalAIWorkflowPreview) -> LocalAIWorkflowPreview
         status=overall_status,
         gate_required=plan.gate_required,
         gate_name=plan.gate_name,
+        gate_approval_token_preview=dict(plan.gate_approval_token_preview),
         preview_only=True,
         mutation_performed=False,
         queue_write_performed=False,
