@@ -294,50 +294,78 @@ function setStatus(id, html, cls) {
   el.className = 'status-msg' + (cls ? ' ' + cls : '');
 }
 
+const LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT =
+  '/api/local-ai/orchestrator/workflow-preview';
+
+const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
+const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
+const SOURCE_BUTTON_FIND_RESULTS = 'button3_find_results';
+
+function requestLocalAiWorkflowPreview(sourceButton) {
+  return fetch(LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      source_button: sourceButton,
+      input_ref: {
+        kind: 'empty',
+        payload: {}
+      },
+      execute_preview: true
+    })
+  }).then(r => r.json());
+}
+
+function renderSimpleWorkflowSummary(statusId, responseData) {
+  if (!responseData || !responseData.ok || !responseData.workflow) {
+    setStatus(statusId, 'Local AI preview failed. No changes were made.', 'error');
+    return;
+  }
+
+  const workflow = responseData.workflow;
+  const jobs = Array.isArray(workflow.jobs) ? workflow.jobs : [];
+  const jobsPlanned = jobs.length;
+  const jobsPreviewed = jobs.filter(j => j.status === 'preview_ready').length;
+  const blockedCount = jobs.filter(j => j.status === 'blocked').length;
+
+  const summaryHtml = [
+    'Local AI preview ready',
+    'Jobs planned: ' + jobsPlanned,
+    'Jobs previewed: ' + jobsPreviewed,
+    'Gate required: ' + (workflow.gate_required ? 'Yes' : 'No'),
+    'Gate name: ' + (workflow.gate_name || '—'),
+    'Blocked count: ' + blockedCount,
+  ].join('<br>');
+
+  setStatus(statusId, summaryHtml, 'ok');
+}
+
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
 
 function handleButton1Click() {
   showPanel('b1-result-panel');
-  setStatus('b1-status', 'Loading fight queue…');
-  fetch('/api/operator/button1/fight-queue', { method: 'GET' })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        const count = data.total || 0;
-        setStatus('b1-status',
-          count === 0
-            ? 'No fights in the queue yet. Use the Advanced Dashboard to search for events.'
-            : count + ' fight(s) found.',
-          'ok');
-      } else {
-        setStatus('b1-status', 'Error loading fight queue.', 'error');
-      }
-    })
-    .catch(() => setStatus('b1-status', 'Network error loading fight queue.', 'error'));
+  setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
+  requestLocalAiWorkflowPreview(SOURCE_BUTTON_FIND_FIGHTS)
+    .then(data => renderSimpleWorkflowSummary('b1-status', data))
+    .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 
 // ── Button 2: Generate Premium PDF ───────────────────────────────────────────
 
 function handleButton2Click() {
   showPanel('b2-result-panel');
-  setStatus('b2-status', 'Select a fight from the queue, then approve PDF generation.');
+  setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
+  requestLocalAiWorkflowPreview(SOURCE_BUTTON_GENERATE_PDFS)
+    .then(data => renderSimpleWorkflowSummary('b2-status', data))
+    .catch(() => setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────
-//
-// Explicit endpoint:
-//   POST /api/operator/button3/auto-result-source-yield-live-executor-preview
-//
-// Renders ONLY the five simple state counts.
-// Advanced fields (executor diagnostics, telemetry) are intentionally not rendered here.
-
-const B3_EXECUTOR_ENDPOINT =
-  '/api/operator/button3/auto-result-source-yield-live-executor-preview';
 
 function handleButton3Click() {
   showPanel('b3-result-panel');
 
-  // Hide summary grid and gate notice while loading
+  // Hide legacy summary UI; normal mode now shows simple workflow status only.
   const grid = document.getElementById('b3-summary-grid');
   const total = document.getElementById('b3-total');
   const gate  = document.getElementById('b3-gate-notice');
@@ -345,63 +373,10 @@ function handleButton3Click() {
   if (total) total.style.display = 'none';
   if (gate)  gate.style.display = 'none';
 
-  setStatus('b3-status',
-    '<span class="spinner"></span>Scanning for results (preview only, no changes made)…');
-
-  fetch(B3_EXECUTOR_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      limit: 44,
-      include_advanced_diagnostics: false   // never expose in normal mode
-    })
-  })
-  .then(r => r.json())
-  .then(data => renderButton3Results(data))
-  .catch(err => {
-    setStatus('b3-status',
-      'Could not reach the result scanner. Check connection and try again.', 'error');
-  });
-}
-
-function renderButton3Results(data) {
-  const grid  = document.getElementById('b3-summary-grid');
-  const total = document.getElementById('b3-total');
-  const gate  = document.getElementById('b3-gate-notice');
-
-  if (!data || !data.ok) {
-    setStatus('b3-status',
-      'Result scanner returned an error. No changes were made.', 'error');
-    return;
-  }
-
-  const summary = data.summary || {};
-
-  // ── Render only the five simple state counts ─────────────────────────────
-  // Executor diagnostics and telemetry are intentionally NOT rendered in normal mode.
-
-  const stateMap = {
-    'Results Found':    'b3-count-results-found',
-    'Needs Source':     'b3-count-needs-source',
-    'Conflict':         'b3-count-conflict',
-    'No Result Yet':    'b3-count-no-result-yet',
-    'Ready to Compare': 'b3-count-ready-to-compare',
-  };
-
-  for (const [state, elemId] of Object.entries(stateMap)) {
-    const el = document.getElementById(elemId);
-    if (el) el.textContent = (summary[state] !== undefined ? summary[state] : 0);
-  }
-
-  if (grid)  grid.style.display = '';
-  if (total) {
-    const t = summary.total_rows !== undefined ? summary.total_rows : '—';
-    total.textContent = 'Total rows scanned: ' + t;
-    total.style.display = '';
-  }
-  if (gate) gate.style.display = '';
-
-  setStatus('b3-status', '&#10003; Preview complete — read-only, no changes made.', 'ok');
+  setStatus('b3-status', '<span class="spinner"></span>Running local AI workflow preview…');
+  requestLocalAiWorkflowPreview(SOURCE_BUTTON_FIND_RESULTS)
+    .then(data => renderSimpleWorkflowSummary('b3-status', data))
+    .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 </script>
 </body>
