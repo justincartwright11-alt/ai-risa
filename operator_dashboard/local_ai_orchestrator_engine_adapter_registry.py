@@ -42,6 +42,17 @@ _BUTTON1_SUMMARY_FIELDS = [
     "duplicate_or_conflict_count",
 ]
 
+_BUTTON2_SUMMARY_FIELDS = [
+    "selected_fight_count",
+    "report_ready_count",
+    "draft_only_count",
+    "missing_analysis_count",
+    "qa_pass_count",
+    "qa_blocked_count",
+    "pdf_preview_available_count",
+    "delivery_candidate_count",
+]
+
 
 def _coerce_count(value: Any) -> int:
     try:
@@ -81,6 +92,41 @@ def _button1_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
         "duplicate_or_conflict_count": _coerce_count(payload.get("duplicate_or_conflict_count", len(duplicate_rows))),
         "approval_required": True,
         "gate_name": "Approve Save Fights",
+    }
+    return summary
+
+
+def _button2_payload(job: LocalAIJob) -> Dict[str, Any]:
+    metadata = job.input_ref.metadata if isinstance(job.input_ref.metadata, dict) else {}
+    payload = metadata.get("payload", {})
+    return payload if isinstance(payload, dict) else {}
+
+
+def _button2_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
+    payload = _button2_payload(job)
+
+    selected_fights = payload.get("selected_fights", [])
+    qa_pass_rows = payload.get("qa_pass_rows", [])
+    qa_blocked_rows = payload.get("qa_blocked_rows", [])
+
+    if not isinstance(selected_fights, list):
+        selected_fights = []
+    if not isinstance(qa_pass_rows, list):
+        qa_pass_rows = []
+    if not isinstance(qa_blocked_rows, list):
+        qa_blocked_rows = []
+
+    summary = {
+        "selected_fight_count": _coerce_count(payload.get("selected_fight_count", len(selected_fights))),
+        "report_ready_count": _coerce_count(payload.get("report_ready_count", 0)),
+        "draft_only_count": _coerce_count(payload.get("draft_only_count", 0)),
+        "missing_analysis_count": _coerce_count(payload.get("missing_analysis_count", 0)),
+        "qa_pass_count": _coerce_count(payload.get("qa_pass_count", len(qa_pass_rows))),
+        "qa_blocked_count": _coerce_count(payload.get("qa_blocked_count", len(qa_blocked_rows))),
+        "pdf_preview_available_count": _coerce_count(payload.get("pdf_preview_available_count", 0)),
+        "delivery_candidate_count": _coerce_count(payload.get("delivery_candidate_count", 0)),
+        "approval_required": True,
+        "gate_name": "Approve Customer PDF Delivery",
     }
     return summary
 
@@ -131,34 +177,23 @@ def _queue_candidate_adapter(job: LocalAIJob) -> AdapterPreviewResult:
 
 
 def _report_generation_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "report_generation_preview")
-    summary.update({"sections_estimate": 26})
-    return AdapterPreviewResult(summary=summary, metrics={"content_depth_score": 0.78})
+    summary = _button2_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _report_quality_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "report_quality_preview")
-    summary.update({"qa_status": "pass_with_warnings"})
-    return AdapterPreviewResult(summary=summary, metrics={"qa_score": 0.88})
+    summary = _button2_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _pdf_preview_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "pdf_preview")
-    summary.update({
-        "pdf_preview_available": True,
-        "export_approved": False,
-        "approval_required": True,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={})
+    summary = _button2_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _delivery_candidate_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "delivery_candidate_preview")
-    summary.update({
-        "delivery_candidate_ready": True,
-        "approval_required": True,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={})
+    summary = _button2_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _result_search_adapter(job: LocalAIJob) -> AdapterPreviewResult:
