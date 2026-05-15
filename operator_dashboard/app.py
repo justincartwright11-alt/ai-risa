@@ -25,8 +25,24 @@ from flask import Flask, render_template, request, jsonify
 from button3_auto_result_source_yield_live_executor_preview import (
     build_readonly_executor_preview_response,
 )
+from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
+from operator_dashboard.local_ai_orchestrator_workflow_plan import (
+    build_three_button_workflow_plan,
+    run_workflow_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
+
+_LOCAL_AI_SAFE_TELEMETRY = {
+    "preview_only": True,
+    "mutation_performed": False,
+    "queue_write_performed": False,
+    "report_export_approved": False,
+    "durable_write_performed": False,
+    "learning_apply_performed": False,
+    "calibration_write_performed": False,
+    "auto_apply_performed": False,
+}
 
 # ─── Data Helpers ──────────────────────────────────────────────────────────────
 
@@ -278,6 +294,70 @@ def button3_apply_result():
             "message": "Result apply requires operator approval."
         }), 403
     return jsonify({"ok": True, "message": "gate_passed_no_result_provided"})
+
+
+@app.route("/api/local-ai/orchestrator/workflow-preview", methods=["POST"])
+def local_ai_orchestrator_workflow_preview():
+    """Return preview-only workflow plan (or preview run) for one source button."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 400
+
+    source_button = body.get("source_button", "")
+    input_ref_payload = body.get("input_ref", {}) or {}
+    execute_preview = bool(body.get("execute_preview", False))
+
+    if not isinstance(input_ref_payload, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_input_ref",
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 400
+
+    try:
+        kind = str(input_ref_payload.get("kind", "empty") or "empty")
+        ref_id = str(input_ref_payload.get("ref_id", "") or "")
+        payload = input_ref_payload.get("payload", {})
+        if not isinstance(payload, dict):
+            payload = {}
+
+        job_input_ref = LocalAIJobInputRef(
+            ref_type=kind,
+            ref_key=ref_id or kind,
+            snapshot_hash=None,
+            metadata={"payload": payload},
+        )
+
+        workflow = build_three_button_workflow_plan(source_button, job_input_ref)
+        if execute_preview:
+            workflow = run_workflow_preview(workflow)
+
+        response = {
+            "ok": True,
+            "workflow": workflow.to_dict(),
+            "execute_preview": execute_preview,
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }
+        return jsonify(response)
+    except ValueError as exc:
+        return jsonify({
+            "ok": False,
+            "error": str(exc),
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 400
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "error": "local_ai_workflow_preview_failed",
+            "detail": str(exc),
+            "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
+        }), 500
 
 
 if __name__ == "__main__":
