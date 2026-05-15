@@ -60,12 +60,13 @@ def test_registry_run_preview_returns_summary_and_metrics():
     assert result.summary["preview_only"] is True
 
 
-def test_discovery_and_result_search_disable_live_execution_flags():
+def test_discovery_and_result_search_preview_paths_are_safe():
     registry = LocalAIOrchestratorEngineAdapterRegistry()
     discovery = registry.run_preview(_job("discovery_job"))
     result_search = registry.run_preview(_job("result_search_job", "button3_find_results"))
     assert discovery.summary["live_search_executed"] is False
-    assert result_search.summary["live_search_executed"] is False
+    assert result_search.summary["total_rows"] == 0
+    assert "Results Found" in result_search.summary
 
 
 def test_permanent_action_candidates_keep_approval_required_true_via_runner():

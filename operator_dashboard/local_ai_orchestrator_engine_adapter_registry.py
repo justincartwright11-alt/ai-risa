@@ -11,6 +11,18 @@ from typing import Any, Callable, Dict
 
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJob
 
+try:
+    from operator_dashboard.button3_auto_result_source_yield_live_executor_preview import (
+        build_readonly_executor_preview_response as _button3_build_readonly_executor_preview_response,
+    )
+except Exception:
+    try:
+        from button3_auto_result_source_yield_live_executor_preview import (
+            build_readonly_executor_preview_response as _button3_build_readonly_executor_preview_response,
+        )
+    except Exception:
+        _button3_build_readonly_executor_preview_response = None
+
 
 @dataclass(frozen=True)
 class AdapterPreviewResult:
@@ -109,12 +121,66 @@ def _delivery_candidate_adapter(job: LocalAIJob) -> AdapterPreviewResult:
 
 
 def _result_search_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "result_search_preview")
-    summary.update({
-        "source_checks_estimate": 5,
-        "live_search_executed": False,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={})
+    payload = job.input_ref.metadata.get("payload", {}) if isinstance(job.input_ref.metadata, dict) else {}
+    waiting_rows = payload.get("waiting_rows", []) if isinstance(payload, dict) else []
+    if not isinstance(waiting_rows, list):
+        waiting_rows = []
+
+    state_keys = [
+        "Results Found",
+        "Needs Source",
+        "Conflict",
+        "No Result Yet",
+        "Ready to Compare",
+    ]
+
+    # Safe no-input preview path. No fake rows or candidates are synthesized.
+    if not waiting_rows:
+        summary = {k: 0 for k in state_keys}
+        summary["total_rows"] = 0
+        return AdapterPreviewResult(
+            summary=summary,
+            metrics={
+                "source_yield_preview_hooked": bool(_button3_build_readonly_executor_preview_response),
+                "used_executor_preview": False,
+            },
+        )
+
+    if _button3_build_readonly_executor_preview_response is None:
+        summary = {k: 0 for k in state_keys}
+        summary["total_rows"] = len(waiting_rows)
+        return AdapterPreviewResult(
+            summary=summary,
+            metrics={
+                "source_yield_preview_hooked": False,
+                "used_executor_preview": False,
+            },
+        )
+
+    response = _button3_build_readonly_executor_preview_response(
+        waiting_rows=waiting_rows,
+        provider=None,
+        include_diagnostics=False,
+    )
+    source_summary = response.get("summary", {}) if isinstance(response, dict) else {}
+
+    # Summary-only surface for normal-mode adapter output.
+    summary = {
+        "Results Found": int(source_summary.get("Results Found", 0) or 0),
+        "Needs Source": int(source_summary.get("Needs Source", 0) or 0),
+        "Conflict": int(source_summary.get("Conflict", 0) or 0),
+        "No Result Yet": int(source_summary.get("No Result Yet", 0) or 0),
+        "Ready to Compare": int(source_summary.get("Ready to Compare", 0) or 0),
+        "total_rows": int(source_summary.get("total_rows", len(waiting_rows)) or 0),
+    }
+
+    return AdapterPreviewResult(
+        summary=summary,
+        metrics={
+            "source_yield_preview_hooked": True,
+            "used_executor_preview": True,
+        },
+    )
 
 
 def _result_match_adapter(job: LocalAIJob) -> AdapterPreviewResult:
