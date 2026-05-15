@@ -301,19 +301,97 @@ const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
 const SOURCE_BUTTON_FIND_RESULTS = 'button3_find_results';
 
-function requestLocalAiWorkflowPreview(sourceButton) {
+function postLocalAiWorkflowPreview(payload) {
   return fetch(LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      source_button: sourceButton,
-      input_ref: {
-        kind: 'empty',
-        payload: {}
-      },
-      execute_preview: true
-    })
-  }).then(r => r.json());
+    body: JSON.stringify(payload)
+  }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      if (!result.ok || !result.data || result.data.ok === false) {
+        throw new Error('workflow_preview_failed');
+      }
+      return result.data;
+    });
+}
+
+function requestLocalAiWorkflowPreviewWithFallback(sourceButton, contextPack) {
+  const contextPackPayload = {
+    source_button: sourceButton,
+    context_pack: contextPack,
+    execute_preview: true
+  };
+
+  const legacyPayload = {
+    source_button: sourceButton,
+    input_ref: {
+      kind: 'empty',
+      payload: {}
+    },
+    execute_preview: true
+  };
+
+  return postLocalAiWorkflowPreview(contextPackPayload)
+    .catch(() => postLocalAiWorkflowPreview(legacyPayload));
+}
+
+function readOptionalTextFromVisibleInput(possibleIds) {
+  if (!Array.isArray(possibleIds)) return '';
+  for (const id of possibleIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const raw = typeof el.value === 'string' ? el.value : (typeof el.textContent === 'string' ? el.textContent : '');
+    const txt = String(raw || '').trim();
+    if (txt) return txt;
+  }
+  return '';
+}
+
+function safeArrayFromWindowState(stateKey) {
+  const value = window[stateKey];
+  return Array.isArray(value) ? value : [];
+}
+
+function buildButton1ContextPack() {
+  return {
+    manual_text: readOptionalTextFromVisibleInput([
+      'b1-manual-text',
+      'b1-manual-input',
+      'fight-search-input',
+      'manual-text-input'
+    ]),
+    approved_source_refs: [],
+    event_hint: '',
+    promotion_hint: '',
+    date_window: {},
+    candidate_rows: []
+  };
+}
+
+function buildButton2ContextPack() {
+  const selectedFights = safeArrayFromWindowState('selectedFights')
+    .concat(safeArrayFromWindowState('selected_fights'));
+
+  return {
+    selected_fights: selectedFights,
+    queued_fight_refs: [],
+    report_status_refs: [],
+    analysis_ready_refs: [],
+    customer_ready_refs: []
+  };
+}
+
+function buildButton3ContextPack() {
+  const waitingRows = safeArrayFromWindowState('waitingRowsPreview')
+    .concat(safeArrayFromWindowState('waiting_rows'));
+
+  return {
+    waiting_rows: waitingRows,
+    selected_keys: [],
+    result_source_refs: [],
+    report_refs: [],
+    comparison_refs: []
+  };
 }
 
 function renderSimpleWorkflowSummary(statusId, responseData) {
@@ -345,7 +423,7 @@ function renderSimpleWorkflowSummary(statusId, responseData) {
 function handleButton1Click() {
   showPanel('b1-result-panel');
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreview(SOURCE_BUTTON_FIND_FIGHTS)
+  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_FIGHTS, buildButton1ContextPack())
     .then(data => renderSimpleWorkflowSummary('b1-status', data))
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
@@ -355,7 +433,7 @@ function handleButton1Click() {
 function handleButton2Click() {
   showPanel('b2-result-panel');
   setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreview(SOURCE_BUTTON_GENERATE_PDFS)
+  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_GENERATE_PDFS, buildButton2ContextPack())
     .then(data => renderSimpleWorkflowSummary('b2-status', data))
     .catch(() => setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
@@ -374,7 +452,7 @@ function handleButton3Click() {
   if (gate)  gate.style.display = 'none';
 
   setStatus('b3-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreview(SOURCE_BUTTON_FIND_RESULTS)
+  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_RESULTS, buildButton3ContextPack())
     .then(data => renderSimpleWorkflowSummary('b3-status', data))
     .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
