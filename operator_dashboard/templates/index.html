@@ -315,10 +315,10 @@ function postLocalAiWorkflowPreview(payload) {
     });
 }
 
-function requestLocalAiWorkflowPreviewWithFallback(sourceButton, contextPack) {
-  const contextPackPayload = {
+function requestLocalAiWorkflowPreviewWithRuntimeContext(sourceButton) {
+  const runtimeContextPayload = {
     source_button: sourceButton,
-    context_pack: contextPack,
+    use_runtime_context: true,
     execute_preview: true
   };
 
@@ -331,7 +331,7 @@ function requestLocalAiWorkflowPreviewWithFallback(sourceButton, contextPack) {
     execute_preview: true
   };
 
-  return postLocalAiWorkflowPreview(contextPackPayload)
+  return postLocalAiWorkflowPreview(runtimeContextPayload)
     .catch(() => postLocalAiWorkflowPreview(legacyPayload));
 }
 
@@ -423,7 +423,7 @@ function renderSimpleWorkflowSummary(statusId, responseData) {
 function handleButton1Click() {
   showPanel('b1-result-panel');
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_FIGHTS, buildButton1ContextPack())
+  requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)
     .then(data => renderSimpleWorkflowSummary('b1-status', data))
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
@@ -433,7 +433,7 @@ function handleButton1Click() {
 function handleButton2Click() {
   showPanel('b2-result-panel');
   setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_GENERATE_PDFS, buildButton2ContextPack())
+  requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
     .then(data => renderSimpleWorkflowSummary('b2-status', data))
     .catch(() => setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
@@ -452,7 +452,7 @@ function handleButton3Click() {
   if (gate)  gate.style.display = 'none';
 
   setStatus('b3-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_RESULTS, buildButton3ContextPack())
+  requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_RESULTS)
     .then(data => renderSimpleWorkflowSummary('b3-status', data))
     .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }

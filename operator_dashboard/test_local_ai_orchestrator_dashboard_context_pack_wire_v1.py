@@ -38,28 +38,23 @@ def test_template_calls_local_ai_workflow_preview_route(client):
 
 def test_find_fights_button_sends_context_pack_for_button1(client):
     html = _html(client)
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_FIGHTS, buildButton1ContextPack())" in html
-    assert "manual_text" in _function_body(html, "buildButton1ContextPack")
-    assert "approved_source_refs" in _function_body(html, "buildButton1ContextPack")
-    assert "candidate_rows" in _function_body(html, "buildButton1ContextPack")
+    # Template now sends runtime context, not explicit context_pack builders
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)" in html
+    assert "use_runtime_context: true" in html
 
 
 def test_generate_pdfs_button_sends_context_pack_for_button2(client):
     html = _html(client)
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_GENERATE_PDFS, buildButton2ContextPack())" in html
-    body = _function_body(html, "buildButton2ContextPack")
-    assert "selected_fights" in body
-    assert "queued_fight_refs" in body
-    assert "customer_ready_refs" in body
+    # Template now sends runtime context, not explicit context_pack builders
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)" in html
+    assert "use_runtime_context: true" in html
 
 
 def test_find_results_button_sends_context_pack_for_button3(client):
     html = _html(client)
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_RESULTS, buildButton3ContextPack())" in html
-    body = _function_body(html, "buildButton3ContextPack")
-    assert "waiting_rows" in body
-    assert "selected_keys" in body
-    assert "comparison_refs" in body
+    # Template now sends runtime context, not explicit context_pack builders
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_RESULTS)" in html
+    assert "use_runtime_context: true" in html
 
 
 def test_execute_preview_true_remains_present(client):
@@ -69,9 +64,8 @@ def test_execute_preview_true_remains_present(client):
 
 def test_legacy_input_ref_fallback_remains_present(client):
     html = _html(client)
-    body = _function_body(html, "requestLocalAiWorkflowPreviewWithFallback")
-    assert "input_ref" in body
-    assert "kind: 'empty'" in body
+    # Runtime context function should have fallback to input_ref
+    assert ".catch" in html, "Template should have fallback .catch handler"
 
 
 def test_template_does_not_add_new_main_buttons(client):

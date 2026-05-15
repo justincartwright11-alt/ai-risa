@@ -59,9 +59,11 @@ def test_dashboard_has_three_buttons_three_gates_and_context_pack_wire(client):
     assert len(re.findall(r'class="btn-main"', html)) == 3
     assert len(re.findall(r'btn-gate', html)) == 3
 
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_FIGHTS, buildButton1ContextPack())" in html
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_GENERATE_PDFS, buildButton2ContextPack())" in html
-    assert "requestLocalAiWorkflowPreviewWithFallback(SOURCE_BUTTON_FIND_RESULTS, buildButton3ContextPack())" in html
+    # Dashboard now uses runtime context instead of explicit context_pack builders
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)" in html
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)" in html
+    assert "requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_RESULTS)" in html
+    assert "use_runtime_context: true" in html
     assert "execute_preview: true" in html
 
 
