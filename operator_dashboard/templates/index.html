@@ -296,6 +296,8 @@ function setStatus(id, html, cls) {
 
 const LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT =
   '/api/local-ai/orchestrator/workflow-preview';
+const LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT =
+  '/api/local-ai/gate1/save-fights/dry-run-apply-preview';
 
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
@@ -310,6 +312,20 @@ function postLocalAiWorkflowPreview(payload) {
     .then(result => {
       if (!result.ok || !result.data || result.data.ok === false) {
         throw new Error('workflow_preview_failed');
+      }
+      return result.data;
+    });
+}
+
+function postLocalAiGate1DryRunApplyPreview(payload) {
+  return fetch(LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      if (!result.ok || !result.data) {
+        throw new Error('gate1_dry_run_apply_preview_failed');
       }
       return result.data;
     });
@@ -418,13 +434,61 @@ function renderSimpleWorkflowSummary(statusId, responseData) {
   setStatus(statusId, summaryHtml, 'ok');
 }
 
+function extractButton1CandidateRowsFromWorkflow(responseData) {
+  const workflow = responseData && responseData.workflow ? responseData.workflow : null;
+  const jobs = workflow && Array.isArray(workflow.jobs) ? workflow.jobs : [];
+  for (const job of jobs) {
+    const inputRef = job && job.input_ref ? job.input_ref : null;
+    const metadata = inputRef && inputRef['metadata'] ? inputRef['metadata'] : null;
+    const payload = metadata && metadata['payload'] ? metadata['payload'] : null;
+    if (payload && Array.isArray(payload.candidate_rows)) {
+      return payload.candidate_rows;
+    }
+  }
+  return [];
+}
+
+function renderButton1Gate1DryRunPreview(statusId, workflowData, gateDryRunData) {
+  if (!workflowData || !workflowData.ok || !workflowData.workflow) {
+    setStatus(statusId, 'Local AI preview failed. No changes were made.', 'error');
+    return;
+  }
+
+  const dry = gateDryRunData || {};
+  const wouldSave = Array.isArray(dry.would_save) ? dry.would_save : [];
+  const blocked = Array.isArray(dry.blocked) ? dry.blocked : [];
+  const reasons = Array.isArray(dry.blocking_reasons) ? dry.blocking_reasons : [];
+  const reasonsText = reasons.length ? reasons.join('; ') : 'None';
+
+  const summaryHtml = [
+    'Gate 1 dry-run preview ready',
+    'Would save count: ' + wouldSave.length,
+    'Blocked count: ' + blocked.length,
+    'Blocking reasons: ' + reasonsText,
+    'Eligible for future approval: ' + (dry.eligible_for_future_approval ? 'Yes' : 'No'),
+    'Gate 1 token check status: ' + (dry.ok ? 'Pass' : 'Fail')
+  ].join('<br>');
+
+  setStatus(statusId, summaryHtml, dry.ok ? 'ok' : 'error');
+}
+
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
 
 function handleButton1Click() {
   showPanel('b1-result-panel');
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)
-    .then(data => renderSimpleWorkflowSummary('b1-status', data))
+    .then(data => {
+      const workflow = data && data.workflow ? data.workflow : {};
+      const tokenPreview = workflow.gate_approval_token_preview || null;
+      const candidateRows = extractButton1CandidateRowsFromWorkflow(data);
+
+      return postLocalAiGate1DryRunApplyPreview({
+        gate_approval_token_preview: tokenPreview,
+        candidate_rows: candidateRows
+      }).then(dryRunData => ({ workflowData: data, dryRunData: dryRunData }));
+    })
+    .then(result => renderButton1Gate1DryRunPreview('b1-status', result.workflowData, result.dryRunData))
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 
