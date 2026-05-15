@@ -32,6 +32,59 @@ class AdapterPreviewResult:
     metrics: Dict[str, Any]
 
 
+_BUTTON1_SUMMARY_FIELDS = [
+    "discovered_count",
+    "extracted_count",
+    "ready_for_report_count",
+    "needs_fixture_data_count",
+    "draft_only_count",
+    "blocked_on_missing_fighter_count",
+    "duplicate_or_conflict_count",
+]
+
+
+def _coerce_count(value: Any) -> int:
+    try:
+        out = int(value)
+        return out if out >= 0 else 0
+    except Exception:
+        return 0
+
+
+def _button1_payload(job: LocalAIJob) -> Dict[str, Any]:
+    metadata = job.input_ref.metadata if isinstance(job.input_ref.metadata, dict) else {}
+    payload = metadata.get("payload", {})
+    return payload if isinstance(payload, dict) else {}
+
+
+def _button1_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
+    payload = _button1_payload(job)
+
+    discovered_rows = payload.get("discovered_rows", [])
+    extracted_rows = payload.get("extracted_rows", [])
+    duplicate_rows = payload.get("duplicate_rows", [])
+
+    if not isinstance(discovered_rows, list):
+        discovered_rows = []
+    if not isinstance(extracted_rows, list):
+        extracted_rows = []
+    if not isinstance(duplicate_rows, list):
+        duplicate_rows = []
+
+    summary = {
+        "discovered_count": _coerce_count(payload.get("discovered_count", len(discovered_rows))),
+        "extracted_count": _coerce_count(payload.get("extracted_count", len(extracted_rows))),
+        "ready_for_report_count": _coerce_count(payload.get("ready_for_report_count", 0)),
+        "needs_fixture_data_count": _coerce_count(payload.get("needs_fixture_data_count", 0)),
+        "draft_only_count": _coerce_count(payload.get("draft_only_count", 0)),
+        "blocked_on_missing_fighter_count": _coerce_count(payload.get("blocked_on_missing_fighter_count", 0)),
+        "duplicate_or_conflict_count": _coerce_count(payload.get("duplicate_or_conflict_count", len(duplicate_rows))),
+        "approval_required": True,
+        "gate_name": "Approve Save Fights",
+    }
+    return summary
+
+
 def _base_summary(job: LocalAIJob, stage: str) -> Dict[str, Any]:
     return {
         "stage": stage,
@@ -42,51 +95,39 @@ def _base_summary(job: LocalAIJob, stage: str) -> Dict[str, Any]:
 
 
 def _discovery_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "discovery_preview")
-    summary.update({
-        "candidate_events_estimate": 3,
-        "live_search_executed": False,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={"confidence": 0.8})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(
+        summary=summary,
+        metrics={
+            "readonly_preview": True,
+            "live_search_executed": False,
+        },
+    )
 
 
 def _extraction_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "extraction_preview")
-    summary.update({"candidate_fights_estimate": 8})
-    return AdapterPreviewResult(summary=summary, metrics={"parse_coverage": 0.9})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _normalization_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "normalization_preview")
-    summary.update({"normalized_name_pairs_estimate": 8})
-    return AdapterPreviewResult(summary=summary, metrics={})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _dedupe_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "dedupe_preview")
-    summary.update({
-        "duplicates_detected_estimate": 1,
-        "unique_fights_estimate": 7,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _ranking_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "ranking_preview")
-    summary.update({
-        "ranked_fights_estimate": 7,
-        "ready_for_queue_candidates_estimate": 4,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={"avg_readiness": 0.74})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _queue_candidate_adapter(job: LocalAIJob) -> AdapterPreviewResult:
-    summary = _base_summary(job, "queue_candidate_preview")
-    summary.update({
-        "candidate_queue_rows": 4,
-        "approval_required": True,
-    })
-    return AdapterPreviewResult(summary=summary, metrics={})
+    summary = _button1_safe_summary(job)
+    return AdapterPreviewResult(summary=summary, metrics={"readonly_preview": True})
 
 
 def _report_generation_adapter(job: LocalAIJob) -> AdapterPreviewResult:

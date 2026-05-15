@@ -57,14 +57,15 @@ def test_registry_run_preview_returns_summary_and_metrics():
     result = registry.run_preview(_job("discovery_job"))
     assert isinstance(result.summary, dict)
     assert isinstance(result.metrics, dict)
-    assert result.summary["preview_only"] is True
+    assert result.summary["discovered_count"] == 0
+    assert result.summary["gate_name"] == "Approve Save Fights"
 
 
 def test_discovery_and_result_search_preview_paths_are_safe():
     registry = LocalAIOrchestratorEngineAdapterRegistry()
     discovery = registry.run_preview(_job("discovery_job"))
     result_search = registry.run_preview(_job("result_search_job", "button3_find_results"))
-    assert discovery.summary["live_search_executed"] is False
+    assert discovery.metrics["live_search_executed"] is False
     assert result_search.summary["total_rows"] == 0
     assert "Results Found" in result_search.summary
 
