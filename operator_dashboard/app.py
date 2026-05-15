@@ -30,6 +30,9 @@ from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader im
     build_runtime_context_pack,
 )
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
+from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
+    run_gate1_save_fights_dry_run_apply_preview,
+)
 from operator_dashboard.local_ai_orchestrator_workflow_plan import (
     build_three_button_workflow_plan,
     run_workflow_preview,
@@ -387,6 +390,56 @@ def local_ai_orchestrator_workflow_preview():
             "detail": str(exc),
             "telemetry": dict(_LOCAL_AI_SAFE_TELEMETRY),
         }), 500
+
+
+@app.route("/api/local-ai/gate1/save-fights/dry-run-apply-preview", methods=["POST"])
+def local_ai_gate1_save_fights_dry_run_apply_preview():
+    """Return preview-only Gate 1 save-fights dry-run apply projection."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "preview_only": True,
+            "write_authorized": False,
+            "mutation_performed": False,
+            "queue_write_performed": False,
+            "database_write_performed": False,
+            "blocking_reasons": ["request body must be an object"],
+            "eligible_for_future_approval": False,
+            "would_save": [],
+            "blocked": [],
+        }), 400
+
+    token_preview = body.get("gate_approval_token_preview")
+    candidate_scope = body.get("candidate_scope")
+    candidate_rows = body.get("candidate_rows", [])
+    if not isinstance(candidate_rows, list):
+        candidate_rows = []
+
+    result = run_gate1_save_fights_dry_run_apply_preview(
+        gate_approval_token_preview=token_preview,
+        candidate_rows=candidate_rows,
+        candidate_scope=candidate_scope,
+    )
+    result_payload = result.to_dict()
+
+    response = {
+        "ok": bool(result_payload.get("ok", False)),
+        "preview_only": True,
+        "write_authorized": False,
+        "mutation_performed": False,
+        "queue_write_performed": False,
+        "database_write_performed": False,
+        "would_save": list(result_payload.get("would_save_candidate_ids", [])),
+        "blocked": list(result_payload.get("blocked_candidate_ids", [])),
+        "blocking_reasons": list(result_payload.get("blocking_reasons", [])),
+        "eligible_for_future_approval": bool(result_payload.get("eligible_for_future_approval", False)),
+    }
+
+    return jsonify(response)
 
 
 if __name__ == "__main__":
