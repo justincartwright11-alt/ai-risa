@@ -58,6 +58,9 @@ from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
 from operator_dashboard.button2_dossier_handoff_report_context_preview import (
     build_button2_dossier_handoff_report_context_preview,
 )
+from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
+    generate_button2_report_render_gate_integration,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -188,16 +191,18 @@ def generate_report():
     """
     [OPERATOR GATE] Generate a premium PDF report.
     Requires explicit operator approval.
+    
+    Request body (JSON):
+      operator_approved: bool (must be True)
+      fight_id: str (required, e.g. "bahram_rajabzadeh_vs_donovan_wisse")
+      ingest_payload: dict (required, handoff context from Button 1)
+    
+    Response: JSON with ok, error/message, output_path (if success), telemetry flags
     """
     data = request.get_json(silent=True) or {}
-    approved = data.get("operator_approved", False)
-    if not approved:
-        return jsonify({
-            "ok": False,
-            "error": "operator_approval_required",
-            "message": "PDF generation must be approved by operator."
-        }), 403
-    return jsonify({"ok": True, "message": "gate_passed_no_fight_selected"})
+    result = generate_button2_report_render_gate_integration(data)
+    status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
+    return jsonify(result), status_code
 
 
 @app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])
