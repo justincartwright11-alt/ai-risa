@@ -282,6 +282,61 @@
       line-height: 1.4;
       color: #b0b3c1;
     }
+
+    /* ── Button 1 Dossier Export Preview (Read-Only UI) ─────────────── */
+    .b1-export-preview-card {
+      margin-top: 16px;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-left: 3px solid #c9aa71;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .b1-export-preview-card h4 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #c9aa71;
+      margin-bottom: 8px;
+    }
+    .b1-export-preview-note {
+      font-size: 0.78rem;
+      color: #8a94b8;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .b1-export-preview-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      background: #141824;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      color: #e8eaed;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .b1-export-preview-flags {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 10px;
+      margin-bottom: 10px;
+    }
+    .b1-export-preview-flag {
+      font-size: 0.74rem;
+      color: #98c379;
+    }
+    .b1-export-preview-warning {
+      font-size: 0.76rem;
+      color: #e5c07b;
+      background: rgba(229, 192, 123, 0.08);
+      border: 1px solid rgba(229, 192, 123, 0.25);
+      border-radius: 6px;
+      padding: 8px;
+      line-height: 1.35;
+    }
   </style>
 </head>
 <body>
@@ -331,6 +386,25 @@
     <h3>Fight Queue</h3>
     <div id="b1-profile-cards-container" class="profile-preview-cards-container" style="display:none;"></div>
     <div id="b1-status" class="status-msg">Loading fight queue…</div>
+    <div class="b1-export-preview-card" id="b1-dossier-export-preview-card">
+      <h4>Copy-Safe Dossier Export Preview (Read-Only)</h4>
+      <p class="b1-export-preview-note">
+        Preview text may be shown. Nothing may be saved, exported, delivered, or written.
+      </p>
+      <pre id="b1-dossier-export-preview-text" class="b1-export-preview-text"></pre>
+      <div class="b1-export-preview-flags" id="b1-dossier-export-preview-flags">
+        <div class="b1-export-preview-flag" id="b1-flag-preview-only">preview_only=true</div>
+        <div class="b1-export-preview-flag" id="b1-flag-export-performed">export_performed=false</div>
+        <div class="b1-export-preview-flag" id="b1-flag-file-write">file_write_performed=false</div>
+        <div class="b1-export-preview-flag" id="b1-flag-delivery">delivery_performed=false</div>
+        <div class="b1-export-preview-flag" id="b1-flag-profile-merge">profile_create_update_merge=false</div>
+        <div class="b1-export-preview-flag" id="b1-flag-db-ranking">database_ranking_writes=false</div>
+        <div class="b1-export-preview-flag" id="b1-flag-learning">result_report_learning_calibration=false</div>
+      </div>
+      <div class="b1-export-preview-warning" id="b1-dossier-export-preview-warning">
+        Read-only warning: Export disabled. Delivery disabled. File write disabled.
+      </div>
+    </div>
   </div>
 
   <!-- ── Button 2 Result Area ──────────────────────────────────────── -->
@@ -563,6 +637,59 @@ function renderSimpleWorkflowSummary(statusId, responseData) {
   ].join('<br>');
 
   setStatus(statusId, summaryHtml, 'ok');
+}
+
+function getDefaultButton1DossierPreviewText() {
+  return [
+    'Fighter Intelligence Dossier Preview',
+    'Fighter: Unknown Fighter',
+    'Promotion: Unknown Promotion',
+    'Division: Unknown Division',
+    'Record: 0W-0L-0D',
+    'Confidence: Unknown',
+    'Source: Unknown Source',
+    '',
+    'Read-only preview. No profile create, update, merge, ranking, database, learning, or calibration action was performed.'
+  ].join('\n');
+}
+
+function renderButton1DossierExportPreview(previewData) {
+  const payload = (previewData && typeof previewData === 'object') ? previewData : {};
+  const previewText = typeof payload.preview === 'string' && payload.preview.trim().length > 0
+    ? payload.preview
+    : getDefaultButton1DossierPreviewText();
+
+  const textEl = document.getElementById('b1-dossier-export-preview-text');
+  if (textEl) {
+    textEl.textContent = previewText;
+  }
+
+  const flags = {
+    preview_only: true,
+    export_performed: false,
+    file_write_performed: false,
+    delivery_performed: false,
+    profile_create_update_merge: false,
+    database_ranking_writes: false,
+    result_report_learning_calibration: false
+  };
+
+  const map = {
+    'b1-flag-preview-only': 'preview_only=' + String(flags.preview_only),
+    'b1-flag-export-performed': 'export_performed=' + String(flags.export_performed),
+    'b1-flag-file-write': 'file_write_performed=' + String(flags.file_write_performed),
+    'b1-flag-delivery': 'delivery_performed=' + String(flags.delivery_performed),
+    'b1-flag-profile-merge': 'profile_create_update_merge=' + String(flags.profile_create_update_merge),
+    'b1-flag-db-ranking': 'database_ranking_writes=' + String(flags.database_ranking_writes),
+    'b1-flag-learning': 'result_report_learning_calibration=' + String(flags.result_report_learning_calibration)
+  };
+
+  Object.keys(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = map[id];
+    }
+  });
 }
 
 function extractButton1CandidateRowsFromWorkflow(responseData) {
@@ -1583,6 +1710,7 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
 
 function handleButton1Click() {
   showPanel('b1-result-panel');
+  renderButton1DossierExportPreview(window.button1DossierExportPreview || null);
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)
     .then(data => {
