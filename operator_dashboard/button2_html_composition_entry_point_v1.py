@@ -8,6 +8,7 @@
 #             No export, delivery, or Gate 2 bypass. preview_only=True always.
 
 import html as _html
+import json as _json
 from operator_dashboard.button2_customer_pdf_typography_tokens_v1 import (
     generate_typography_css_stylesheet,
     get_typography_token,
@@ -23,6 +24,148 @@ _BASE_FLAGS = {
     "export_performed": False,
     "delivery_performed": False,
 }
+
+_HIERARCHY_LEVELS = {"H0", "H1", "H2", "Body", "Meta"}
+_PAGE_BLOCK_ROLES = {
+    "report_identity_block",
+    "fighter_context_block",
+    "matchup_signal_block",
+    "analysis_block",
+    "sources_calibration_block",
+    "footer_metadata_block",
+}
+_CANONICAL_SECTION_ORDER = [
+    "fighter_a_context",
+    "fighter_b_context",
+    "matchup_signal",
+    "detailed_analysis",
+    "sources_and_calibration",
+]
+
+
+def _canonical_hierarchy_blocks():
+    """Return canonical hierarchy blocks and levels for metadata emission."""
+    return [
+        {
+            "block_id": "report_identity",
+            "role": "report_identity_block",
+            "level": "H0",
+            "title": "AI-RISA Premium Fight Report",
+            "sequence": 0,
+            "children": [
+                {
+                    "level": "H2",
+                    "title": "Report Summary",
+                    "sequence": 1,
+                }
+            ],
+        },
+        {
+            "block_id": "report_summary",
+            "role": "analysis_block",
+            "level": "H1",
+            "title": "Report Summary",
+            "sequence": 1,
+            "children": [],
+        },
+        {
+            "block_id": "source_traceability",
+            "role": "sources_calibration_block",
+            "level": "H1",
+            "title": "Source Traceability",
+            "sequence": 2,
+            "children": [
+                {
+                    "level": "H2",
+                    "title": "Source Citations",
+                    "sequence": 1,
+                }
+            ],
+        },
+        {
+            "block_id": "meta_footer",
+            "role": "footer_metadata_block",
+            "level": "Meta",
+            "title": "Metadata Footer",
+            "sequence": 3,
+            "children": [
+                {
+                    "level": "Body",
+                    "title": "QA and provenance rows",
+                    "sequence": 1,
+                }
+            ],
+        },
+    ]
+
+
+def _validate_hierarchy_markers(hierarchy_markers):
+    """Validate optional hierarchy markers. Missing/invalid markers are not certified."""
+    if hierarchy_markers is None:
+        return {
+            "valid": False,
+            "status": "missing",
+            "issues": ["missing_hierarchy_markers"],
+        }
+
+    if not isinstance(hierarchy_markers, list):
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["hierarchy_markers_not_list"],
+        }
+
+    if not hierarchy_markers:
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["hierarchy_markers_empty"],
+        }
+
+    issues = []
+    for index, marker in enumerate(hierarchy_markers):
+        if not isinstance(marker, dict):
+            issues.append(f"marker_{index}_not_dict")
+            continue
+        level = marker.get("level")
+        role = marker.get("role")
+        # Backward compatibility: legacy markers used block/order keys only.
+        if level is None and role is None and "block" in marker:
+            continue
+        if level not in _HIERARCHY_LEVELS:
+            issues.append(f"marker_{index}_invalid_level")
+        if role is not None and role not in _PAGE_BLOCK_ROLES:
+            issues.append(f"marker_{index}_invalid_role")
+
+    if issues:
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": issues,
+        }
+
+    return {
+        "valid": True,
+        "status": "valid",
+        "issues": [],
+    }
+
+
+def _hierarchy_metadata_payload(report_context_preview):
+    """Build a deterministic hierarchy payload for HTML embedding."""
+    validation = _validate_hierarchy_markers(
+        report_context_preview.get("hierarchy_markers")
+    )
+
+    return {
+        "schema_version": "button2.page_hierarchy.v1",
+        "report_id": _esc(report_context_preview.get("fight_id"), "unknown_fight"),
+        "hierarchy_validation_status": validation["status"],
+        "hierarchy_validation_issues": validation["issues"],
+        "required_levels": ["H0", "H1", "H2", "Body", "Meta"],
+        "canonical_section_order": _CANONICAL_SECTION_ORDER,
+        "blocks": _canonical_hierarchy_blocks(),
+    }
 
 
 def _esc(value, fallback=""):
@@ -83,26 +226,44 @@ _HTML_TEMPLATE = """\
     pre  {{ white-space: pre-wrap; word-break: break-word; }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
+        .hierarchy-metadata {{ display: none; }}
   </style>
 </head>
 <body>
-  <h1 class="typography-report-title">AI-RISA Premium Fight Report</h1>
+    <h1 class="typography-report-title" data-hierarchy-level="H0" data-page-block-role="report_identity_block">AI-RISA Premium Fight Report</h1>
 
-  <h2 class="typography-section-header-l1">Report Summary</h2>
-  <pre class="typography-body-secondary">{handoff_summary_preview}</pre>
+    <section class="page-block-summary" data-page-block-role="analysis_block">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Report Summary</h2>
+        <div class="hierarchy-marker" data-hierarchy-level="H2" data-hierarchy-title="Executive Summary"></div>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
+    </section>
 
-  <h2 class="typography-section-header-l1">Source Traceability</h2>
-  <ul class="typography-list-item">
-    {source_traceability_items}
-  </ul>
+    <section class="page-block-sources" data-page-block-role="sources_calibration_block">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Source Traceability</h2>
+        <div class="hierarchy-marker" data-hierarchy-level="H2" data-hierarchy-title="Source Citations"></div>
+        <ul class="typography-list-item" data-hierarchy-level="Body">
+            {source_traceability_items}
+        </ul>
+    </section>
 
-  <div class="meta-footer typography-page-metadata">
+    <div class="meta-footer typography-page-metadata" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block">
     <div class="qa-row">Source context: {source_context_kind}</div>
     <div class="qa-row">Ingest mode: {source_ingest_mode}</div>
     <div class="qa-row">Overlap proof: {overlap_proof_label}</div>
     <div class="qa-row">Off-page text proof: {off_page_text_proof_label}</div>
     <div class="qa-row">Visual certification: {visual_certification_status}</div>
+        <div class="qa-row">Hierarchy validation: {hierarchy_validation_status}</div>
   </div>
+
+    <section
+        id="button2-hierarchy-metadata"
+        class="hierarchy-metadata"
+        data-hierarchy-schema-version="{hierarchy_schema_version}"
+        data-hierarchy-validation-status="{hierarchy_validation_status}"
+        data-canonical-section-order="{canonical_section_order}"
+    >
+        <pre data-hierarchy-level="Meta">{hierarchy_metadata_json}</pre>
+    </section>
 </body>
 </html>"""
 
@@ -157,6 +318,15 @@ def build_button2_report_html(report_context_preview):
 
     # Summary is pre-escaped by upstream _safe_text(); trust it directly.
     # All other fields are escaped at composition time.
+
+    hierarchy_payload = _hierarchy_metadata_payload(report_context_preview)
+    hierarchy_valid = hierarchy_payload["hierarchy_validation_status"] == "valid"
+    visual_certification_value = report_context_preview.get(
+        "visual_certification_status", "not_certified"
+    )
+    # Fail closed for hierarchy contract issues: downgrade to not_certified.
+    if not hierarchy_valid:
+        visual_certification_value = "not_certified"
     
     # Generate typography CSS stylesheet from locked tokens
     typography_css = generate_typography_css_stylesheet()
@@ -179,8 +349,20 @@ def build_button2_report_html(report_context_preview):
         off_page_text_proof_label=_proof_label(
             report_context_preview.get("off_page_text_proof", "unavailable")
         ),
-        visual_certification_status=_esc(
-            report_context_preview.get("visual_certification_status"), "not_certified"
+        visual_certification_status=_esc(visual_certification_value, "not_certified"),
+        hierarchy_validation_status=_esc(
+            hierarchy_payload["hierarchy_validation_status"], "invalid"
+        ),
+        hierarchy_schema_version=_esc(
+            hierarchy_payload["schema_version"], "button2.page_hierarchy.v1"
+        ),
+        canonical_section_order=_esc(
+            "|".join(hierarchy_payload["canonical_section_order"]),
+            "",
+        ),
+        hierarchy_metadata_json=_esc(
+            _json.dumps(hierarchy_payload, separators=(",", ":"), sort_keys=True),
+            "{}",
         ),
     )
 
