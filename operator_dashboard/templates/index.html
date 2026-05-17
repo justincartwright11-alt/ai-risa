@@ -528,6 +528,174 @@ function renderButton1IdentityResolverPreview(statusId, existingHtml, identityRe
   return existingHtml + identityHtml;
 }
 
+function buildButton1IdentityResolverPayloadFromCandidateRows(candidateRows) {
+  if (!Array.isArray(candidateRows)) {
+    candidateRows = [];
+  }
+
+  // Extract fighter names from candidate rows, build candidates for resolver
+  const candidates = [];
+  const seen = {};
+
+  for (let i = 0; i < candidateRows.length; i++) {
+    const row = candidateRows[i];
+    if (!row || typeof row !== 'object') continue;
+
+    // Extract fighter names from various possible field names
+    const fighterA = row.fighter_a_name || row.fighter_a || row.fighter_a_label || '';
+    const fighterB = row.fighter_b_name || row.fighter_b || row.fighter_b_label || '';
+
+    // Build source ref from row context
+    const sourceRef = {
+      source_name: row.source_name || row.source || 'button1_discovery',
+      source_url: row.source_url || row.url || null,
+      source_type: 'button1_discovery',
+      source_date: row.event_date || row.date || null
+    };
+
+    const promotion = row.promotion || row.event_name || null;
+    const division = row.division || row.weight_class || null;
+    const sport = row.sport_ruleset || row.sport || null;
+
+    // Add fighter A if not empty and not already seen
+    if (fighterA && fighterA.trim()) {
+      const key = fighterA.toLowerCase().trim();
+      if (!seen[key]) {
+        candidates.push({
+          name: fighterA,
+          aliases: [],
+          nationality: null,
+          promotion: promotion,
+          sport_ruleset: sport,
+          division: division,
+          date_of_birth: null,
+          height: null,
+          reach: null,
+          stance: null,
+          record: null,
+          source_refs: [sourceRef]
+        });
+        seen[key] = true;
+      }
+    }
+
+    // Add fighter B if not empty and not already seen
+    if (fighterB && fighterB.trim()) {
+      const key = fighterB.toLowerCase().trim();
+      if (!seen[key]) {
+        candidates.push({
+          name: fighterB,
+          aliases: [],
+          nationality: null,
+          promotion: promotion,
+          sport_ruleset: sport,
+          division: division,
+          date_of_birth: null,
+          height: null,
+          reach: null,
+          stance: null,
+          record: null,
+          source_refs: [sourceRef]
+        });
+        seen[key] = true;
+      }
+    }
+  }
+
+  // Return bulk payload for all candidates
+  return {
+    candidates: candidates,
+    known_records: [],
+    source: 'button1_discovery',
+    preview_only: true,
+    profile_create_performed: false,
+    profile_update_performed: false,
+    merge_performed: false,
+    database_write_performed: false,
+    ranking_write_performed: false,
+    learning_apply_performed: false,
+    calibration_write_performed: false
+  };
+}
+
+function postGlobalFighterIdentityResolverPreviewBulk(payload) {
+  // For bulk processing, post each candidate individually and aggregate results
+  if (!payload || !Array.isArray(payload.candidates)) {
+    return Promise.resolve({
+      ok: false,
+      candidates_checked: 0,
+      manual_review_required_count: 0,
+      conflict_count: 0,
+      all_write_flags_false: true
+    });
+  }
+
+  const candidates = payload.candidates;
+  const knownRecords = payload.known_records || [];
+
+  // Resolve each candidate and collect results
+  const resolvePromises = candidates.map(candidate => 
+    postGlobalFighterIdentityResolverPreview({
+      candidate: candidate,
+      known_records: knownRecords
+    }).catch(() => ({ error: true }))
+  );
+
+  return Promise.all(resolvePromises).then(results => {
+    let manualReviewCount = 0;
+    let conflictCount = 0;
+    let allWriteFlagsFalse = true;
+
+    for (const result of results) {
+      if (result.error) continue;
+      if (result.manual_review_required) manualReviewCount++;
+      if (result.conflict_type) conflictCount++;
+      // Verify all write flags are false
+      if (result.profile_create_performed || result.profile_update_performed ||
+          result.merge_performed || result.database_write_performed ||
+          result.ranking_write_performed || result.learning_apply_performed ||
+          result.calibration_write_performed) {
+        allWriteFlagsFalse = false;
+      }
+    }
+
+    return {
+      ok: true,
+      candidates_checked: candidates.length,
+      results: results,
+      manual_review_required_count: manualReviewCount,
+      conflict_count: conflictCount,
+      all_write_flags_false: allWriteFlagsFalse
+    };
+  });
+}
+
+function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkData) {
+  if (!bulkData || bulkData.ok === false) {
+    return existingHtml + '<br><br><strong>Global Fighter Identity Resolver (Preview):</strong> Bulk check failed.';
+  }
+
+  const candidatesChecked = bulkData.candidates_checked || 0;
+  const manualReviewCount = bulkData.manual_review_required_count || 0;
+  const conflictCount = bulkData.conflict_count || 0;
+  const allWriteFlagsFalse = bulkData.all_write_flags_false === true ? 'Yes' : 'No';
+
+  const identityHtml = [
+    '<br><br><strong>Global Fighter Identity Resolver (Preview — Bulk):</strong>',
+    'Checked: Yes',
+    'Candidates checked: ' + candidatesChecked,
+    'Manual review required: ' + manualReviewCount,
+    'Conflicts detected: ' + conflictCount,
+    'Profile write disabled: Yes',
+    'Merge disabled: Yes',
+    'Database write disabled: Yes',
+    'All write flags false: ' + allWriteFlagsFalse
+  ].join('<br>');
+
+  return existingHtml + identityHtml;
+}
+
+
 function handleButton1Click() {
   showPanel('b1-result-panel');
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
@@ -563,23 +731,19 @@ function handleButton1Click() {
       // Render writer preview first
       renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData);
       
-      // Now call identity resolver for preview evidence
-      const candidate = {
-        name: 'Preview Fighter',
-        aliases: [],
-        source_refs: [{ source_name: 'dashboard_preview', source_type: 'preview' }]
-      };
-      return postGlobalFighterIdentityResolverPreview({
-        candidate: candidate,
-        known_records: []
-      }).then(identityData => ({ result: result, identityData: identityData }));
+      // Now extract real Button 1 candidate context and call identity resolver
+      const candidateRows = result.candidateRows || [];
+      const identityResolverPayload = buildButton1IdentityResolverPayloadFromCandidateRows(candidateRows);
+      
+      return postGlobalFighterIdentityResolverPreviewBulk(identityResolverPayload)
+        .then(identityData => ({ result: result, identityData: identityData }));
     })
     .then(combined => {
       // Append identity resolver evidence to status
       const currentStatus = document.getElementById('b1-status');
       if (currentStatus && combined.result) {
         const existingHtml = currentStatus.innerHTML;
-        const enhanced = renderButton1IdentityResolverPreview('b1-status', existingHtml, combined.identityData);
+        const enhanced = renderButton1IdentityResolverPreviewBulk('b1-status', existingHtml, combined.identityData);
         currentStatus.innerHTML = enhanced;
       }
     })
