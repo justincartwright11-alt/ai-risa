@@ -708,14 +708,20 @@ function buildButton1IdentityResolverPayloadFromCandidateRows(candidateRows, kno
   };
 }
 
-function postGlobalFighterKnownRecordsLoaderPreview() {
+// Accepts optional sourcePackFields: {manual_operator_records, ...}
+function postGlobalFighterKnownRecordsLoaderPreview(sourcePackFields) {
+  const basePayload = {
+    in_memory_records: null,
+    local_seed_records: null
+  };
+  // If sourcePackFields provided, merge them in
+  const payload = sourcePackFields && typeof sourcePackFields === 'object'
+    ? { ...basePayload, ...sourcePackFields }
+    : basePayload;
   return fetch('/api/global-fighters/known-records/loader-preview', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      in_memory_records: null,
-      local_seed_records: null
-    })
+    body: JSON.stringify(payload)
   })
     .then(response => response.json())
     .catch(err => ({
@@ -1130,8 +1136,12 @@ function handleButton1Click() {
       // Render writer preview first
       renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData);
       
-      // Now call readonly loader API to get known records for identity matching
-      return postGlobalFighterKnownRecordsLoaderPreview().then(loaderData => ({
+      // Optionally build source-pack preview fields (summary-only, no new UI)
+      let sourcePackFields = null;
+      // Example: if workflowData or candidateRows provide richer context, build fields here
+      // For now, keep summary-only: do not expose raw internals or new UI
+      // sourcePackFields = { manual_operator_records: ..., ... } // (future: fill from context)
+      return postGlobalFighterKnownRecordsLoaderPreview(sourcePackFields).then(loaderData => ({
         result: result,
         loaderData: loaderData
       }));

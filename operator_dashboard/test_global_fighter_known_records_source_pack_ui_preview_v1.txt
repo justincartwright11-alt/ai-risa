@@ -1,0 +1,18 @@
+Button 1 source-pack UI preview smoke checklist
+
+- [x] No new button, gate, or route appears
+- [x] Loader API is called with summary-only payload (no raw source-pack internals rendered)
+- [x] Dashboard summary shows: source-pack loaded, records compared, source type, write disabled flags
+- [x] All write flags remain false in UI summary
+- [x] No profile/database/ranking controls appear
+- [x] Normal dashboard remains 3 buttons / 3 gates
+- [x] Legacy in_memory/local_seed path still works
+- [x] No filesystem writes, no live web calls
+
+Manual test steps:
+1. Click Button 1 (Find & Build Fight Queue)
+2. Observe loader API request payload (should be summary-only, no raw internals)
+3. Observe dashboard summary: should show known records loaded, source type, preview-only, write disabled
+4. Confirm no new UI controls, no new buttons/gates, no raw source-pack internals
+5. Confirm all write flags remain false in summary
+6. Repeat with legacy path (no source-pack fields): behavior unchanged
