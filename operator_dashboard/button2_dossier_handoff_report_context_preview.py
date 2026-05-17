@@ -53,6 +53,8 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
         "No dossier summary preview provided.",
     )
 
+
+    # --- Visual QA metadata markers (preview-level, not certified) ---
     report_context_preview = {
         "destination_marker": _EXPECTED_DESTINATION_MARKER,
         "report_context_kind": "dossier_handoff_report_context_preview",
@@ -65,6 +67,20 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
             "preview_only",
         ),
         "handoff_summary_preview": handoff_summary_preview,
+        # --- Metadata markers (all preview/unavailable/not_certified) ---
+        "page_block_boundaries": [
+            {"id": "block-1", "type": "summary", "bounds": [0, 0, 400, 100], "page_index": 0}
+        ],
+        "hierarchy_markers": [
+            {"block": "executive_summary", "order": 0},
+            {"block": "dossier_handoff_report_context_preview", "order": 1}
+        ],
+        "source_traceability": [
+            {"id": "SRC-CTX", "type": report_context_preview["source_context_kind"] if "source_context_kind" in locals() else "unknown", "date": "n/a"}
+        ],
+        "overlap_proof": "unavailable",
+        "off_page_text_proof": "unavailable",
+        "visual_certification_status": "not_certified",
     }
 
     return {
