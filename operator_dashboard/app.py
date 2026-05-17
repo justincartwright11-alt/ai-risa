@@ -751,46 +751,48 @@ def global_fighters_known_records_loader_preview():
             "calibration_write_performed": False,
         }), 400
 
-    # Extract records from request
-    in_memory_records = body.get("in_memory_records")
-    if in_memory_records is not None and not isinstance(in_memory_records, list):
-        return jsonify({
-            "ok": False,
-            "error": "in_memory_records_must_be_list",
-            "preview_only": True,
-            "profile_create_performed": False,
-            "profile_update_performed": False,
-            "merge_performed": False,
-            "database_write_performed": False,
-            "ranking_write_performed": False,
-            "learning_apply_performed": False,
-            "calibration_write_performed": False,
-        }), 400
 
-    local_seed_records = body.get("local_seed_records")
-    if local_seed_records is not None and not isinstance(local_seed_records, list):
-        return jsonify({
-            "ok": False,
-            "error": "local_seed_records_must_be_list",
-            "preview_only": True,
-            "profile_create_performed": False,
-            "profile_update_performed": False,
-            "merge_performed": False,
-            "database_write_performed": False,
-            "ranking_write_performed": False,
-            "learning_apply_performed": False,
-            "calibration_write_performed": False,
-        }), 400
+    # Extract and validate all six source-pack fields
+    def _get_list_field(field):
+        val = body.get(field)
+        if val is not None and not isinstance(val, list):
+            return None, f"{field}_must_be_list"
+        return val, None
 
-    # Call readonly loader
+    in_memory_records, err1 = _get_list_field("in_memory_records")
+    local_seed_records, err2 = _get_list_field("local_seed_records")
+    manual_operator_records, err3 = _get_list_field("manual_operator_records")
+    approved_historical_records, err4 = _get_list_field("approved_historical_records")
+    report_history_records, err5 = _get_list_field("report_history_records")
+    result_ledger_records, err6 = _get_list_field("result_ledger_records")
+    global_read_projection_records, err7 = _get_list_field("global_read_projection_records")
+
+    for err in [err1, err2, err3, err4, err5, err6, err7]:
+        if err:
+            return jsonify({
+                "ok": False,
+                "error": err,
+                "preview_only": True,
+                "profile_create_performed": False,
+                "profile_update_performed": False,
+                "merge_performed": False,
+                "database_write_performed": False,
+                "ranking_write_performed": False,
+                "learning_apply_performed": False,
+                "calibration_write_performed": False,
+            }), 400
+
+    # Call readonly loader with all possible fields
     try:
         result = load_known_records_readonly_preview(
             in_memory_records=in_memory_records,
             local_seed_records=local_seed_records,
+            manual_operator_records=manual_operator_records,
+            approved_historical_records=approved_historical_records,
+            report_history_records=report_history_records,
+            result_ledger_records=result_ledger_records,
+            global_read_projection_records=global_read_projection_records,
         )
-        result_dict = result.to_dict()
-
-        # Build response
         response = {
             "ok": True,
             "known_records": result.known_records,
