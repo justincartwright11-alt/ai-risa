@@ -296,6 +296,8 @@ function setStatus(id, html, cls) {
 
 const LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT =
   '/api/local-ai/orchestrator/workflow-preview';
+const LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT =
+  '/api/local-ai/gate1/save-fights/dry-run-apply-preview';
 const LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT =
   '/api/local-ai/gate1/save-fights/approved-save-writer-preview';
 
@@ -326,6 +328,20 @@ function postLocalAiGate1ApprovedSaveWriterPreview(payload) {
     .then(result => {
       if (!result.ok || !result.data) {
         throw new Error('gate1_approved_save_writer_preview_failed');
+      }
+      return result.data;
+    });
+}
+
+function postLocalAiGate1DryRunApplyPreview(payload) {
+  return fetch(LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      if (!result.ok || !result.data) {
+        throw new Error('gate1_dry_run_apply_preview_failed');
       }
       return result.data;
     });
@@ -769,6 +785,85 @@ function buildButton1RowEvidenceSummaryHtml(rowEvidenceList) {
   return summaryLines.concat(rowLines).join('<br>');
 }
 
+function buildIdentityEvidenceByFighterName(bulkData) {
+  const byName = {};
+  const results = bulkData && Array.isArray(bulkData.results) ? bulkData.results : [];
+  for (const result of results) {
+    if (!result || result.error) continue;
+    const mapped = mapIdentityResultToCandidateRowEvidence(result);
+    const key = (mapped.fighter_name || '').toLowerCase().trim();
+    if (!key) continue;
+    byName[key] = mapped;
+  }
+  return byName;
+}
+
+function buildButton1CandidateRowsWithIdentityBlockingReasons(candidateRows, bulkData) {
+  const rows = Array.isArray(candidateRows) ? candidateRows : [];
+  const evidenceByFighterName = buildIdentityEvidenceByFighterName(bulkData);
+
+  return rows.map(row => {
+    const enriched = Object.assign({}, row || {});
+    const fighterAName = String(enriched.fighter_a_name || enriched.fighter_a || '').trim();
+    const fighterBName = String(enriched.fighter_b_name || enriched.fighter_b || '').trim();
+    const fighterAEvidence = evidenceByFighterName[fighterAName.toLowerCase()] || null;
+    const fighterBEvidence = evidenceByFighterName[fighterBName.toLowerCase()] || null;
+
+    const fighterAStatus = fighterAEvidence ? fighterAEvidence.fighter_identity_status : '';
+    const fighterBStatus = fighterBEvidence ? fighterBEvidence.fighter_identity_status : '';
+    const blockingReasons = [];
+
+    if (fighterAEvidence && Array.isArray(fighterAEvidence.identity_blocking_reasons)) {
+      for (const reason of fighterAEvidence.identity_blocking_reasons) {
+        if (typeof reason === 'string' && reason.trim()) {
+          blockingReasons.push('fighter_a:' + reason.trim());
+        }
+      }
+    }
+    if (fighterBEvidence && Array.isArray(fighterBEvidence.identity_blocking_reasons)) {
+      for (const reason of fighterBEvidence.identity_blocking_reasons) {
+        if (typeof reason === 'string' && reason.trim()) {
+          blockingReasons.push('fighter_b:' + reason.trim());
+        }
+      }
+    }
+
+    enriched.fighter_a_identity_status = fighterAStatus;
+    enriched.fighter_b_identity_status = fighterBStatus;
+    enriched.identity_blocking_reasons = blockingReasons;
+    enriched.identity_ready_for_queue_review = !(
+      isIdentityStatusBlockingForQueueSavePreview(fighterAStatus) ||
+      isIdentityStatusBlockingForQueueSavePreview(fighterBStatus) ||
+      blockingReasons.length > 0
+    );
+    return enriched;
+  });
+}
+
+function renderButton1Gate1DryRunIdentityAlignment(statusId, existingHtml, dryRunData) {
+  if (!dryRunData || dryRunData.ok === false) {
+    return existingHtml + '<br><br><strong>Gate 1 Dry-Run Identity Alignment:</strong> Check failed.';
+  }
+
+  const identityBlockedCount = Number.isFinite(dryRunData.identity_blocked_count)
+    ? dryRunData.identity_blocked_count
+    : 0;
+  const blockedCount = Array.isArray(dryRunData.blocked) ? dryRunData.blocked.length : 0;
+  const wouldSaveCount = Array.isArray(dryRunData.would_save) ? dryRunData.would_save.length : 0;
+
+  const gate1Html = [
+    '<br><br><strong>Gate 1 Dry-Run Identity Alignment (Preview):</strong>',
+    'Identity-blocked rows: ' + identityBlockedCount,
+    'Blocked rows: ' + blockedCount,
+    'Would-save rows: ' + wouldSaveCount,
+    'Profile write disabled: Yes',
+    'Merge disabled: Yes',
+    'Database write disabled: Yes'
+  ].join('<br>');
+
+  return existingHtml + gate1Html;
+}
+
 function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkData) {
   if (!bulkData || bulkData.ok === false) {
     return existingHtml + '<br><br><strong>Global Fighter Identity Resolver (Preview):</strong> Bulk check failed.';
@@ -849,6 +944,34 @@ function handleButton1Click() {
         const existingHtml = currentStatus.innerHTML;
         const enhanced = renderButton1IdentityResolverPreviewBulk('b1-status', existingHtml, combined.identityData);
         currentStatus.innerHTML = enhanced;
+      }
+
+      // Carry row-level identity_blocking_reasons into Gate 1 dry-run preview.
+      const workflow = combined.result && combined.result.workflowData ? combined.result.workflowData.workflow : {};
+      const tokenPreview = workflow && workflow.gate_approval_token_preview ? workflow.gate_approval_token_preview : null;
+      const candidateRows = combined.result && Array.isArray(combined.result.candidateRows)
+        ? combined.result.candidateRows
+        : [];
+      const candidateScope = candidateRows
+        .map(row => row && (row.candidate_id || row.fight_id || row.fight_key || row.matchup_key || row.id || row.fight_name))
+        .filter(v => typeof v === 'string' && v.trim().length > 0);
+      const rowsWithIdentityBlocking = buildButton1CandidateRowsWithIdentityBlockingReasons(candidateRows, combined.identityData);
+
+      return postLocalAiGate1DryRunApplyPreview({
+        gate_approval_token_preview: tokenPreview,
+        candidate_scope: candidateScope,
+        candidate_rows: rowsWithIdentityBlocking
+      }).then(dryRunData => ({ dryRunData: dryRunData }));
+    })
+    .then(gate1Result => {
+      const currentStatus = document.getElementById('b1-status');
+      if (currentStatus) {
+        const existingHtml = currentStatus.innerHTML;
+        currentStatus.innerHTML = renderButton1Gate1DryRunIdentityAlignment(
+          'b1-status',
+          existingHtml,
+          gate1Result ? gate1Result.dryRunData : null
+        );
       }
     })
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));

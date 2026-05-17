@@ -188,3 +188,38 @@ def test_route_response_serializes_to_json(client):
     resp = client.post(ROUTE, json=_payload(token=_valid_token(), candidate_rows=[_candidate_row("good")]))
     payload = resp.get_json()
     _ = json.dumps(payload)
+
+
+def test_identity_conflict_row_is_reported_in_identity_blocked_projection(client):
+    row = _candidate_row("id_conflict")
+    row["fighter_a_identity_status"] = "identity_conflict"
+    row["identity_blocking_reasons"] = ["fighter_a:identity_conflict"]
+    row["identity_ready_for_queue_review"] = False
+
+    resp = client.post(ROUTE, json=_payload(token=_valid_token(), candidate_rows=[row]))
+    data = resp.get_json()
+
+    assert "id_conflict" in data["blocked"]
+    assert "id_conflict" in data["identity_blocked"]
+    assert data["identity_blocked_count"] >= 1
+    assert "id_conflict" in data["identity_blocking_reasons_by_candidate"]
+
+
+def test_identity_source_missing_and_ambiguous_rows_are_blocked(client):
+    source_missing = _candidate_row("id_src_missing")
+    source_missing["fighter_b_identity_status"] = "identity_source_missing"
+
+    ambiguous = _candidate_row("id_ambiguous")
+    ambiguous["fighter_a_identity_status"] = "identity_ambiguous"
+
+    good = _candidate_row("id_good")
+
+    resp = client.post(
+        ROUTE,
+        json=_payload(token=_valid_token(), candidate_rows=[source_missing, ambiguous, good]),
+    )
+    data = resp.get_json()
+
+    assert "id_src_missing" in data["blocked"]
+    assert "id_ambiguous" in data["blocked"]
+    assert "id_good" in data["would_save"]

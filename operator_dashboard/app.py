@@ -444,6 +444,11 @@ def local_ai_gate1_save_fights_dry_run_apply_preview():
         "database_write_performed": False,
         "would_save": list(result_payload.get("would_save_candidate_ids", [])),
         "blocked": list(result_payload.get("blocked_candidate_ids", [])),
+        "identity_blocked": list(result_payload.get("identity_blocked_candidate_ids", [])),
+        "identity_blocked_count": int(result_payload.get("identity_blocked_count", 0) or 0),
+        "identity_blocking_reasons_by_candidate": dict(
+            result_payload.get("identity_blocking_reasons_by_candidate", {}) or {}
+        ),
         "blocking_reasons": list(result_payload.get("blocking_reasons", [])),
         "eligible_for_future_approval": bool(result_payload.get("eligible_for_future_approval", False)),
     }

@@ -25,6 +25,17 @@ def _safe_text(value: Any) -> str:
     return ""
 
 
+def _safe_text_list(value: Any) -> List[str]:
+    if not isinstance(value, list):
+        return []
+    out: List[str] = []
+    for item in value:
+        txt = _safe_text(item)
+        if txt:
+            out.append(txt)
+    return out
+
+
 def _candidate_identifier(row: Mapping[str, Any]) -> str:
     for key in ("candidate_id", "fight_id", "fight_key", "matchup_key", "id", "fight_name"):
         value = _safe_text(row.get(key))
@@ -106,6 +117,41 @@ def _resolve_scope(token_preview: Mapping[str, Any], candidate_scope: Any) -> Op
     return _normalize_scope_values(raw_scope)
 
 
+def _identity_status_values(row: Mapping[str, Any]) -> List[str]:
+    keys = [
+        "identity_status",
+        "fighter_a_identity_status",
+        "fighter_b_identity_status",
+    ]
+    statuses: List[str] = []
+    for key in keys:
+        status = _safe_text(row.get(key)).lower()
+        if status:
+            statuses.append(status)
+    return statuses
+
+
+def _identity_blocking_reasons_for_row(row: Mapping[str, Any]) -> List[str]:
+    reasons = _safe_text_list(row.get("identity_blocking_reasons"))
+    blocking_statuses = {"identity_conflict", "identity_source_missing", "identity_ambiguous"}
+    for status in _identity_status_values(row):
+        if status in blocking_statuses:
+            reasons.append(f"identity_status_blocked:{status}")
+
+    ready_for_queue_review = row.get("identity_ready_for_queue_review")
+    if ready_for_queue_review is False:
+        reasons.append("identity_ready_for_queue_review=false")
+
+    # Preserve order and dedupe.
+    deduped: List[str] = []
+    seen = set()
+    for reason in reasons:
+        if reason not in seen:
+            deduped.append(reason)
+            seen.add(reason)
+    return deduped
+
+
 @dataclass
 class Gate1SaveFightsDryRunApplyPreviewResult:
     ok: bool
@@ -122,9 +168,12 @@ class Gate1SaveFightsDryRunApplyPreviewResult:
     would_save_count: int = 0
     duplicate_or_conflict_count: int = 0
     provenance_missing_count: int = 0
+    identity_blocked_count: int = 0
     blocking_reasons: List[str] = None
     would_save_candidate_ids: List[str] = None
     blocked_candidate_ids: List[str] = None
+    identity_blocked_candidate_ids: List[str] = None
+    identity_blocking_reasons_by_candidate: Dict[str, List[str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
@@ -134,6 +183,10 @@ class Gate1SaveFightsDryRunApplyPreviewResult:
             data["would_save_candidate_ids"] = []
         if data["blocked_candidate_ids"] is None:
             data["blocked_candidate_ids"] = []
+        if data["identity_blocked_candidate_ids"] is None:
+            data["identity_blocked_candidate_ids"] = []
+        if data["identity_blocking_reasons_by_candidate"] is None:
+            data["identity_blocking_reasons_by_candidate"] = {}
         return data
 
     def to_json(self) -> str:
@@ -164,8 +217,11 @@ def run_gate1_save_fights_dry_run_apply_preview(
 
     duplicate_or_conflict_count = 0
     provenance_missing_count = 0
+    identity_blocked_count = 0
     would_save_candidate_ids: List[str] = []
     blocked_candidate_ids: List[str] = []
+    identity_blocked_candidate_ids: List[str] = []
+    identity_blocking_reasons_by_candidate: Dict[str, List[str]] = {}
 
     for idx, row in enumerate(scoped_rows):
         candidate_id = _candidate_identifier(row) or f"index:{idx}"
@@ -178,6 +234,13 @@ def run_gate1_save_fights_dry_run_apply_preview(
         if not _has_provenance(row):
             provenance_missing_count += 1
             blocked = True
+
+        identity_blocking_reasons = _identity_blocking_reasons_for_row(row)
+        if identity_blocking_reasons:
+            identity_blocked_count += 1
+            blocked = True
+            identity_blocked_candidate_ids.append(candidate_id)
+            identity_blocking_reasons_by_candidate[candidate_id] = identity_blocking_reasons
 
         if blocked:
             blocked_candidate_ids.append(candidate_id)
@@ -205,9 +268,12 @@ def run_gate1_save_fights_dry_run_apply_preview(
         would_save_count=len(would_save_candidate_ids),
         duplicate_or_conflict_count=duplicate_or_conflict_count,
         provenance_missing_count=provenance_missing_count,
+        identity_blocked_count=identity_blocked_count,
         blocking_reasons=blocking_reasons,
         would_save_candidate_ids=would_save_candidate_ids,
         blocked_candidate_ids=blocked_candidate_ids,
+        identity_blocked_candidate_ids=identity_blocked_candidate_ids,
+        identity_blocking_reasons_by_candidate=identity_blocking_reasons_by_candidate,
     )
 
 

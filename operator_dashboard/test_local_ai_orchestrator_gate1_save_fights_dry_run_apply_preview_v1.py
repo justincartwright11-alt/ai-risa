@@ -205,3 +205,56 @@ def test_dry_run_performs_no_live_web_calls(monkeypatch):
 
     result = run_gate1_save_fights_dry_run_apply_preview(_valid_token(), [_candidate_row("c1")])
     assert result.ok is True
+
+
+def test_identity_conflict_status_blocks_would_save_preview():
+    token = _valid_token()
+    rows = [
+        {
+            **_candidate_row("conflict_row"),
+            "fighter_a_identity_status": "identity_conflict",
+            "identity_blocking_reasons": ["fighter_a:conflict"],
+            "identity_ready_for_queue_review": False,
+        }
+    ]
+
+    result = run_gate1_save_fights_dry_run_apply_preview(token, rows)
+
+    assert result.would_save_count == 0
+    assert "conflict_row" in result.blocked_candidate_ids
+    assert "conflict_row" in result.identity_blocked_candidate_ids
+    assert result.identity_blocked_count == 1
+    assert result.identity_blocking_reasons_by_candidate.get("conflict_row")
+
+
+def test_identity_source_missing_status_blocks_would_save_preview():
+    token = _valid_token()
+    rows = [
+        {
+            **_candidate_row("source_missing_row"),
+            "fighter_b_identity_status": "identity_source_missing",
+            "identity_ready_for_queue_review": False,
+        }
+    ]
+
+    result = run_gate1_save_fights_dry_run_apply_preview(token, rows)
+
+    assert result.would_save_count == 0
+    assert "source_missing_row" in result.blocked_candidate_ids
+    assert "source_missing_row" in result.identity_blocked_candidate_ids
+
+
+def test_identity_ambiguous_status_blocks_would_save_preview():
+    token = _valid_token()
+    rows = [
+        {
+            **_candidate_row("ambiguous_row"),
+            "fighter_a_identity_status": "identity_ambiguous",
+        }
+    ]
+
+    result = run_gate1_save_fights_dry_run_apply_preview(token, rows)
+
+    assert result.would_save_count == 0
+    assert "ambiguous_row" in result.blocked_candidate_ids
+    assert "ambiguous_row" in result.identity_blocked_candidate_ids
