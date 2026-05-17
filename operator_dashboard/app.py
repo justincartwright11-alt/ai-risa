@@ -52,6 +52,9 @@ from operator_dashboard.global_fighter_known_records_readonly_loader import (
 from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview import (
     build_button1_to_button2_readonly_dossier_handoff_preview,
 )
+from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
+    build_button2_readonly_dossier_handoff_ingest_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -192,6 +195,40 @@ def generate_report():
             "message": "PDF generation must be approved by operator."
         }), 403
     return jsonify({"ok": True, "message": "gate_passed_no_fight_selected"})
+
+
+@app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])
+def button2_dossier_handoff_ingest_preview():
+    """Return preview-only Button 2 ingest context from Button 1 handoff payload."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "destination_marker": "",
+            "button2_ingest_preview_context": None,
+            "preview_only": True,
+            "button2_generation_performed": False,
+            "pdf_generation_performed": False,
+            "file_write_performed": False,
+            "export_performed": False,
+            "delivery_performed": False,
+            "report_write_performed": False,
+            "gate2_approval_required": True,
+            "profile_create_update_merge": False,
+            "database_ranking_writes": False,
+            "result_report_learning_calibration": False,
+        }), 400
+
+    handoff_payload = body.get("handoff_payload", body)
+    if not isinstance(handoff_payload, dict):
+        handoff_payload = {}
+
+    result = build_button2_readonly_dossier_handoff_ingest_preview(handoff_payload)
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
 
 
 # ─── Button 3 API ─────────────────────────────────────────────────────────────
