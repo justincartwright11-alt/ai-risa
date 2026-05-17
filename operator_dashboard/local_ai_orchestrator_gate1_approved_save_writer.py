@@ -83,6 +83,7 @@ def run_gate1_approved_save_writer_scaffold(request, storage_adapter=None):
 
     # Fail closed if live write is requested
     if live_write_enabled is True:
+        # Even if the rest of the request is valid, fail closed and force ok=False
         return Gate1ApprovedSaveWriterScaffoldResult(
             ok=False, scaffold_only=True, live_write_enabled=False, write_performed=False,
             queue_write_performed=False, database_write_performed=False,
@@ -240,6 +241,15 @@ def run_gate1_approved_save_writer_scaffold(request, storage_adapter=None):
         test_write_performed = bool(storage_result.test_write_performed)
         persisted_preview_refs = list(storage_result.persisted_preview_refs or [])
 
+    # If live_write_enabled was True, always fail closed and set ok=False
+    if request.get("live_write_enabled", False) is True:
+        return Gate1ApprovedSaveWriterScaffoldResult(
+            ok=False, scaffold_only=True, live_write_enabled=False, write_performed=False,
+            queue_write_performed=False, database_write_performed=False,
+            audit_record_preview=None, rollback_pointer_preview=None, idempotency_key=idempotency_key,
+            would_write=False, blocking_reasons=["live_write_enabled_not_allowed"],
+            storage_adapter_checked=bool(storage_adapter), test_write_performed=False, persisted_preview_refs=[]
+        )
     return Gate1ApprovedSaveWriterScaffoldResult(
         ok=True, scaffold_only=True, live_write_enabled=False, write_performed=False,
         queue_write_performed=False, database_write_performed=False,

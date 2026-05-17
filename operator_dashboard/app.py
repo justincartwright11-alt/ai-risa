@@ -466,6 +466,27 @@ def local_ai_gate1_approved_save_writer_preview():
             "blocking_reasons": ["request body must be an object"],
         }), 400
 
+    # Storage preview mode binding
+    storage_preview_mode = body.get("storage_preview_mode", "none")
+    allowed_modes = {"none", "in_memory"}
+    storage_adapter = None
+    if storage_preview_mode not in allowed_modes:
+        return jsonify({
+            "ok": False,
+            "scaffold_only": True,
+            "live_write_enabled": False,
+            "write_performed": False,
+            "queue_write_performed": False,
+            "database_write_performed": False,
+            "storage_adapter_checked": False,
+            "test_write_performed": False,
+            "persisted_preview_refs": [],
+            "blocking_reasons": ["invalid storage_preview_mode"],
+        }), 400
+    elif storage_preview_mode == "in_memory":
+        from operator_dashboard.local_ai_orchestrator_gate1_save_storage_adapter import InMemoryGate1SaveStorageAdapter
+        storage_adapter = InMemoryGate1SaveStorageAdapter()
+
     scaffold_request = {
         "gate_approval_token_preview": body.get("gate_approval_token_preview"),
         "candidate_scope": body.get("candidate_scope"),
@@ -474,12 +495,12 @@ def local_ai_gate1_approved_save_writer_preview():
         "idempotency_key": body.get("idempotency_key"),
         "write_target": body.get("write_target"),
         "dry_run_required": bool(body.get("dry_run_required", True)),
-        "live_write_enabled": False,
+        "live_write_enabled": bool(body.get("live_write_enabled", False)),
     }
     if not isinstance(scaffold_request["candidate_rows"], list):
         scaffold_request["candidate_rows"] = []
 
-    result = run_gate1_approved_save_writer_scaffold(scaffold_request)
+    result = run_gate1_approved_save_writer_scaffold(scaffold_request, storage_adapter=storage_adapter)
     result_payload = result.to_dict()
 
     response = {
@@ -494,6 +515,9 @@ def local_ai_gate1_approved_save_writer_preview():
         "idempotency_key": result_payload.get("idempotency_key"),
         "would_write": bool(result_payload.get("would_write", False)),
         "blocking_reasons": list(result_payload.get("blocking_reasons", [])),
+            "storage_adapter_checked": bool(result_payload.get("storage_adapter_checked", False)),
+            "test_write_performed": bool(result_payload.get("test_write_performed", False)),
+            "persisted_preview_refs": list(result_payload.get("persisted_preview_refs", [])),
     }
 
     return jsonify(response)
