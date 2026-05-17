@@ -463,12 +463,16 @@ function renderButton1Gate1ApprovedSavePreview(statusId, workflowData, writerPre
     ? writer.audit_record_preview.candidate_rows_count
     : 0;
   const wouldWriteCount = writer.would_write ? candidateCount : 0;
+  const storageChecked = writer.storage_adapter_checked === true ? 'Yes' : 'No';
+  const persistedRefsCount = Array.isArray(writer.persisted_preview_refs) ? writer.persisted_preview_refs.length : 0;
 
   const summaryHtml = [
     'Writer preview checked',
     'Would write count: ' + wouldWriteCount,
     'Audit preview ready: ' + auditReady,
     'Rollback preview ready: ' + rollbackReady,
+    'Storage preview checked: ' + storageChecked,
+    'Persisted preview refs count: ' + persistedRefsCount,
     'Blocking reasons: ' + reasonsText,
     'Live write disabled: ' + (writer.live_write_enabled === false ? 'Yes' : 'No')
   ].join('<br>');
@@ -501,7 +505,8 @@ function handleButton1Click() {
         idempotency_key: 'dashboard-preview-' + String(operationId),
         write_target: 'queue_preview',
         dry_run_required: true,
-        live_write_enabled: false
+        live_write_enabled: false,
+        storage_preview_mode: 'in_memory'
       }).then(writerPreviewData => ({ workflowData: data, writerPreviewData: writerPreviewData }));
     })
     .then(result => renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData))
