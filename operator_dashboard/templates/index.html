@@ -296,8 +296,8 @@ function setStatus(id, html, cls) {
 
 const LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT =
   '/api/local-ai/orchestrator/workflow-preview';
-const LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT =
-  '/api/local-ai/gate1/save-fights/dry-run-apply-preview';
+const LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT =
+  '/api/local-ai/gate1/save-fights/approved-save-writer-preview';
 
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
@@ -317,15 +317,15 @@ function postLocalAiWorkflowPreview(payload) {
     });
 }
 
-function postLocalAiGate1DryRunApplyPreview(payload) {
-  return fetch(LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT, {
+function postLocalAiGate1ApprovedSaveWriterPreview(payload) {
+  return fetch(LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
     .then(result => {
       if (!result.ok || !result.data) {
-        throw new Error('gate1_dry_run_apply_preview_failed');
+        throw new Error('gate1_approved_save_writer_preview_failed');
       }
       return result.data;
     });
@@ -448,28 +448,32 @@ function extractButton1CandidateRowsFromWorkflow(responseData) {
   return [];
 }
 
-function renderButton1Gate1DryRunPreview(statusId, workflowData, gateDryRunData) {
+function renderButton1Gate1ApprovedSavePreview(statusId, workflowData, writerPreviewData) {
   if (!workflowData || !workflowData.ok || !workflowData.workflow) {
     setStatus(statusId, 'Local AI preview failed. No changes were made.', 'error');
     return;
   }
 
-  const dry = gateDryRunData || {};
-  const wouldSave = Array.isArray(dry.would_save) ? dry.would_save : [];
-  const blocked = Array.isArray(dry.blocked) ? dry.blocked : [];
-  const reasons = Array.isArray(dry.blocking_reasons) ? dry.blocking_reasons : [];
+  const writer = writerPreviewData || {};
+  const reasons = Array.isArray(writer.blocking_reasons) ? writer.blocking_reasons : [];
   const reasonsText = reasons.length ? reasons.join('; ') : 'None';
+  const auditReady = writer.audit_record_preview ? 'Yes' : 'No';
+  const rollbackReady = writer.rollback_pointer_preview ? 'Yes' : 'No';
+  const candidateCount = writer.audit_record_preview && Number.isFinite(writer.audit_record_preview.candidate_rows_count)
+    ? writer.audit_record_preview.candidate_rows_count
+    : 0;
+  const wouldWriteCount = writer.would_write ? candidateCount : 0;
 
   const summaryHtml = [
-    'Gate 1 dry-run preview ready',
-    'Would save count: ' + wouldSave.length,
-    'Blocked count: ' + blocked.length,
+    'Writer preview checked',
+    'Would write count: ' + wouldWriteCount,
+    'Audit preview ready: ' + auditReady,
+    'Rollback preview ready: ' + rollbackReady,
     'Blocking reasons: ' + reasonsText,
-    'Eligible for future approval: ' + (dry.eligible_for_future_approval ? 'Yes' : 'No'),
-    'Gate 1 token check status: ' + (dry.ok ? 'Pass' : 'Fail')
+    'Live write disabled: ' + (writer.live_write_enabled === false ? 'Yes' : 'No')
   ].join('<br>');
 
-  setStatus(statusId, summaryHtml, dry.ok ? 'ok' : 'error');
+  setStatus(statusId, summaryHtml, writer.ok ? 'ok' : 'error');
 }
 
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
@@ -482,13 +486,25 @@ function handleButton1Click() {
       const workflow = data && data.workflow ? data.workflow : {};
       const tokenPreview = workflow.gate_approval_token_preview || null;
       const candidateRows = extractButton1CandidateRowsFromWorkflow(data);
+      const candidateScope = candidateRows
+        .map(row => row && (row.candidate_id || row.fight_id || row.fight_key || row.matchup_key || row.id || row.fight_name))
+        .filter(v => typeof v === 'string' && v.trim().length > 0);
+      const operationId = tokenPreview && (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
+        ? (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
+        : 'preview';
 
-      return postLocalAiGate1DryRunApplyPreview({
+      return postLocalAiGate1ApprovedSaveWriterPreview({
         gate_approval_token_preview: tokenPreview,
-        candidate_rows: candidateRows
-      }).then(dryRunData => ({ workflowData: data, dryRunData: dryRunData }));
+        candidate_scope: candidateScope,
+        candidate_rows: candidateRows,
+        operator_approved: true,
+        idempotency_key: 'dashboard-preview-' + String(operationId),
+        write_target: 'queue_preview',
+        dry_run_required: true,
+        live_write_enabled: false
+      }).then(writerPreviewData => ({ workflowData: data, writerPreviewData: writerPreviewData }));
     })
-    .then(result => renderButton1Gate1DryRunPreview('b1-status', result.workflowData, result.dryRunData))
+    .then(result => renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData))
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 
