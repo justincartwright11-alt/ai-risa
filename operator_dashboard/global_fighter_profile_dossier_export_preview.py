@@ -1,3 +1,5 @@
+import html
+
 def build_dossier_preview(dossier_data):
     """
     Build a read-only preview of the fighter intelligence dossier.
@@ -8,13 +10,13 @@ def build_dossier_preview(dossier_data):
     Returns:
         dict: Preview summary with metadata.
     """
-    # Generate a human-readable copy-safe summary
-    fighter_name = dossier_data.get("fighter_name", "Unknown Fighter")
-    promotion = dossier_data.get("promotion", "Unknown Promotion")
-    division = dossier_data.get("division", "Unknown Division")
-    record = dossier_data.get("record", "0W-0L-0D")
-    confidence = dossier_data.get("confidence", "Unknown")
-    source = dossier_data.get("source", "Unknown Source")
+    # Sanitize input fields to escape HTML/XSS payloads
+    fighter_name = html.escape(dossier_data.get("fighter_name", "Unknown Fighter"))
+    promotion = html.escape(dossier_data.get("promotion", "Unknown Promotion"))
+    division = html.escape(dossier_data.get("division", "Unknown Division"))
+    record = html.escape(dossier_data.get("record", "0W-0L-0D"))
+    confidence = html.escape(dossier_data.get("confidence", "Unknown"))
+    source = html.escape(dossier_data.get("source", "Unknown Source"))
 
     preview_text = (
         f"Fighter Intelligence Dossier Preview\n"
