@@ -78,6 +78,9 @@ _RISK_TYPES = {
 _RISK_SEVERITIES = {"watch", "elevated", "critical"}
 _ROUND_CONTROL_EXPECTATIONS = {"fighter_a", "fighter_b", "swing", "contested"}
 _DOMINANCE_SIGNALS = {"low", "medium", "high"}
+_STATUS_LABELS = {"DRAFT", "FINAL", "INTERNAL_REVIEW"}
+_CONFIDENTIALITY_LABELS = {"PUBLIC", "CONFIDENTIAL", "STRICTLY_CONFIDENTIAL"}
+_WATERMARK_TYPES = {"none", "draft", "confidential"}
 
 
 def _default_section_block_metadata():
@@ -139,6 +142,28 @@ def _default_page_break_metadata():
         }
     ]
 
+def _default_header_footer_watermark_metadata():
+    return {
+        "header": {
+            "report_title": "AI-RISA Premium Fight Report",
+            "event_name": "Sample Event",
+            "event_date": "2026-05-17",
+            "status_label": "DRAFT",
+            "confidentiality_label": "CONFIDENTIAL",
+        },
+        "footer": {
+            "page_number_format": "Page {n} of {m}",
+            "operator_label": "Operator",
+            "generated_timestamp": "2026-05-17T12:00:00Z",
+        },
+        "watermark": {
+            "watermark_enabled": True,
+            "watermark_type": "draft",
+            "watermark_text": "DRAFT",
+            "watermark_opacity": 0.12,
+            "watermark_angle": 45,
+        },
+    }
 
 def _default_chart_and_scenario_metadata():
     return {
@@ -635,6 +660,93 @@ def _esc(value, fallback=""):
     return _html.escape(text)
 
 
+def _validate_header_footer_watermark_metadata(hfw_metadata):
+    """Validate header/footer/watermark metadata. Invalid metadata is not certified."""
+    if hfw_metadata is None:
+        return {
+            "valid": False,
+            "status": "missing",
+            "issues": ["missing_header_footer_watermark_metadata"],
+        }
+    if not isinstance(hfw_metadata, dict):
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["header_footer_watermark_metadata_not_dict"],
+        }
+
+    issues = []
+
+    header = hfw_metadata.get("header")
+    if not isinstance(header, dict):
+        issues.append("header_missing_or_invalid")
+    else:
+        if not header.get("report_title"):
+            issues.append("header_missing_report_title")
+        status_label = header.get("status_label")
+        if status_label is not None and status_label not in _STATUS_LABELS:
+            issues.append("header_invalid_status_label")
+        confidentiality_label = header.get("confidentiality_label")
+        if confidentiality_label is not None and confidentiality_label not in _CONFIDENTIALITY_LABELS:
+            issues.append("header_invalid_confidentiality_label")
+
+    footer = hfw_metadata.get("footer")
+    if not isinstance(footer, dict):
+        issues.append("footer_missing_or_invalid")
+    else:
+        page_num_format = footer.get("page_number_format")
+        if not page_num_format:
+            issues.append("footer_missing_page_number_format")
+        elif "{n}" not in page_num_format or "{m}" not in page_num_format:
+            issues.append("footer_page_number_format_missing_tokens")
+
+    watermark = hfw_metadata.get("watermark")
+    if not isinstance(watermark, dict):
+        issues.append("watermark_missing_or_invalid")
+    else:
+        if not isinstance(watermark.get("watermark_enabled"), bool):
+            issues.append("watermark_invalid_watermark_enabled")
+        watermark_type = watermark.get("watermark_type")
+        if watermark_type not in _WATERMARK_TYPES:
+            issues.append("watermark_invalid_watermark_type")
+
+        if watermark_type != "none":
+            if not watermark.get("watermark_text"):
+                issues.append("watermark_missing_text_for_non_none_type")
+
+        opacity = watermark.get("watermark_opacity")
+        if opacity is not None:
+            if not isinstance(opacity, (int, float)) or opacity < 0.05 or opacity > 0.20:
+                issues.append("watermark_invalid_opacity")
+
+    return {
+        "valid": len(issues) == 0,
+        "status": "valid" if not issues else "invalid",
+        "issues": issues,
+    }
+
+
+def _header_footer_watermark_payload(report_context_preview):
+    """Build and validate deterministic header/footer/watermark metadata payload."""
+    hfw_metadata = report_context_preview.get("header_footer_watermark_metadata")
+    hfw_provided = "header_footer_watermark_metadata" in report_context_preview
+
+    if not hfw_provided:
+        hfw_metadata = _default_header_footer_watermark_metadata()
+
+    validation = _validate_header_footer_watermark_metadata(hfw_metadata)
+
+    return {
+        "schema_version": "button2.header_footer_watermark.v1",
+        "validation_status": validation["status"],
+        "validation_issues": validation["issues"],
+        "allowed_status_labels": sorted(_STATUS_LABELS),
+        "allowed_confidentiality_labels": sorted(_CONFIDENTIALITY_LABELS),
+        "allowed_watermark_types": sorted(_WATERMARK_TYPES),
+        "header_footer_watermark": hfw_metadata,
+    }
+
+
 def _proof_label(proof_value):
     """Render a proof field value as a safe escaped label string."""
     if isinstance(proof_value, dict):
@@ -685,7 +797,8 @@ _HTML_TEMPLATE = """\
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
     .page-breaks-metadata {{ display: none; }}
-        .chart-scenario-metadata {{ display: none; }}
+    .chart-scenario-metadata {{ display: none; }}
+    .header-footer-watermark-metadata {{ display: none; }}
   </style>
 </head>
 <body>
@@ -713,7 +826,8 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Visual certification: {visual_certification_status}</div>
     <div class="qa-row">Hierarchy validation: {hierarchy_validation_status}</div>
     <div class="qa-row">Page-break metadata validation: {page_breaks_metadata_validation_status}</div>
-        <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
+    <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
+    <div class="qa-row">Header/footer/watermark metadata validation: {hfw_metadata_validation_status}</div>
   </div>
 
     <section
@@ -743,6 +857,15 @@ _HTML_TEMPLATE = """\
         data-chart-scenario-validation-status="{chart_metadata_validation_status}"
     >
         <pre data-hierarchy-level="Meta">{chart_metadata_json}</pre>
+    </section>
+
+    <section
+        id="button2-header-footer-watermark-metadata"
+        class="header-footer-watermark-metadata"
+        data-header-footer-watermark-schema-version="{hfw_schema_version}"
+        data-header-footer-watermark-validation-status="{hfw_metadata_validation_status}"
+    >
+        <pre data-hierarchy-level="Meta">{hfw_metadata_json}</pre>
     </section>
 </body>
 </html>"""
@@ -805,11 +928,13 @@ def build_button2_report_html(report_context_preview):
     page_breaks_valid = page_breaks_payload["validation_status"] == "valid"
     chart_payload = _chart_and_scenario_payload(report_context_preview)
     chart_valid = chart_payload["validation_status"] == "valid"
+    hfw_payload = _header_footer_watermark_payload(report_context_preview)
+    hfw_valid = hfw_payload["validation_status"] == "valid"
     visual_certification_value = report_context_preview.get(
         "visual_certification_status", "not_certified"
     )
-    # Fail closed for hierarchy or page-break contract issues.
-    if not hierarchy_valid or not page_breaks_valid or not chart_valid:
+    # Fail closed for hierarchy, page-break, chart, or hfw contract issues.
+    if not hierarchy_valid or not page_breaks_valid or not chart_valid or not hfw_valid:
         visual_certification_value = "not_certified"
     
     # Generate typography CSS stylesheet from locked tokens
@@ -870,6 +995,16 @@ def build_button2_report_html(report_context_preview):
         ),
         chart_metadata_json=_esc(
             _json.dumps(chart_payload, separators=(",", ":"), sort_keys=True),
+            "{}",
+        ),
+        hfw_metadata_validation_status=_esc(
+            hfw_payload["validation_status"], "invalid"
+        ),
+        hfw_schema_version=_esc(
+            hfw_payload["schema_version"], "button2.header_footer_watermark.v1"
+        ),
+        hfw_metadata_json=_esc(
+            _json.dumps(hfw_payload, separators=(",", ":"), sort_keys=True),
             "{}",
         ),
     )
