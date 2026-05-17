@@ -8,6 +8,10 @@
 #             No export, delivery, or Gate 2 bypass. preview_only=True always.
 
 import html as _html
+from operator_dashboard.button2_customer_pdf_typography_tokens_v1 import (
+    generate_typography_css_stylesheet,
+    get_typography_token,
+)
 
 _DESTINATION_MARKER = "button2_report_generation_preview"
 _CONTEXT_KIND = "dossier_handoff_report_context_preview"
@@ -61,27 +65,38 @@ _HTML_TEMPLATE = """\
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI-RISA Premium Report</title>
   <style>
-    body {{ font-family: sans-serif; font-size: 11pt; margin: 2cm; color: #111; }}
-    h1   {{ font-size: 16pt; margin-bottom: 0.5em; }}
-    h2   {{ font-size: 13pt; margin-top: 1.5em; margin-bottom: 0.3em; border-bottom: 1px solid #ccc; }}
-    pre  {{ font-size: 9pt; white-space: pre-wrap; word-break: break-word; }}
+    /* Base typography and layout */
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      margin: 0.75in;
+      color: #111111;
+      line-height: 1.5;
+    }}
+
+    /* Typography tokens stylesheet */
+    {typography_css_stylesheet}
+
+    /* Structural and semantic styling (layout only, no typography changes) */
+    h1   {{ margin-bottom: 0.5em; }}
+    h2   {{ margin-top: 1.5em; border-bottom: 1px solid #cccccc; }}
     ul   {{ margin: 0.5em 0; padding-left: 1.5em; }}
-    .meta-footer {{ font-size: 8pt; color: #888; margin-top: 2em; border-top: 1px solid #eee; padding-top: 0.5em; }}
+    pre  {{ white-space: pre-wrap; word-break: break-word; }}
+    .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
   </style>
 </head>
 <body>
-  <h1>AI-RISA Premium Fight Report</h1>
+  <h1 class="typography-report-title">AI-RISA Premium Fight Report</h1>
 
-  <h2>Report Summary</h2>
-  <pre>{handoff_summary_preview}</pre>
+  <h2 class="typography-section-header-l1">Report Summary</h2>
+  <pre class="typography-body-secondary">{handoff_summary_preview}</pre>
 
-  <h2>Source Traceability</h2>
-  <ul>
+  <h2 class="typography-section-header-l1">Source Traceability</h2>
+  <ul class="typography-list-item">
     {source_traceability_items}
   </ul>
 
-  <div class="meta-footer">
+  <div class="meta-footer typography-page-metadata">
     <div class="qa-row">Source context: {source_context_kind}</div>
     <div class="qa-row">Ingest mode: {source_ingest_mode}</div>
     <div class="qa-row">Overlap proof: {overlap_proof_label}</div>
@@ -142,7 +157,12 @@ def build_button2_report_html(report_context_preview):
 
     # Summary is pre-escaped by upstream _safe_text(); trust it directly.
     # All other fields are escaped at composition time.
+    
+    # Generate typography CSS stylesheet from locked tokens
+    typography_css = generate_typography_css_stylesheet()
+    
     html_content = _HTML_TEMPLATE.format(
+        typography_css_stylesheet=typography_css,
         handoff_summary_preview=summary_raw,
         source_traceability_items=_source_traceability_html(
             report_context_preview.get("source_traceability", [])

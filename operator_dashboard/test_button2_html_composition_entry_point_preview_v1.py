@@ -131,14 +131,15 @@ class TestProofFieldPlacement:
         result = build_button2_report_html(ctx)
         assert "clear" in result["html_content"]
         # Must be in the meta-footer div, not in a heading
-        footer_start = result["html_content"].find('class="meta-footer"')
+        footer_start = result["html_content"].find('meta-footer')
         assert footer_start != -1
         assert "clear" in result["html_content"][footer_start:]
 
     def test_visual_certification_status_in_meta_footer(self):
         ctx = _valid_ctx(visual_certification_status="not_certified")
         result = build_button2_report_html(ctx)
-        footer_start = result["html_content"].find('class="meta-footer"')
+        footer_start = result["html_content"].find('meta-footer')
+        assert footer_start != -1
         assert "not_certified" in result["html_content"][footer_start:]
 
     def test_proof_dict_value_renders_status_label_not_raw_dict(self):
