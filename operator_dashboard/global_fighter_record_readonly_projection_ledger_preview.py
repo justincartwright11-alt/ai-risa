@@ -278,6 +278,10 @@ def _normalize_projection_row(raw: Mapping[str, Any], src_type: str) -> Dict[str
             ("projection_generated_at_preview", "projection_snapshot_ts", "loader_snapshot_ts", "snapshot_ts")
         )
         or "generated_in_preview",
+        "projection_record_origin_id": pick_text(
+            ("projection_record_origin_id", "projection_origin_id", "loader_record_origin_id", "record_origin_id")
+        )
+        or None,
     }
 
     return out

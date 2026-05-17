@@ -287,6 +287,14 @@ def test_21_normalizes_report_history_projection_shape_preview_only():
                     "win_loss_record": {"wins": 12, "losses": 2, "draws": 0},
                     "career_years": [2015, 2026],
                     "confidence": "B",
+                    "source_refs": [
+                        {
+                            "source_name": "report_history_projection",
+                            "source_type": "report_history",
+                            "source_url": "https://example.test/report",
+                            "source_date": "2026-05-17",
+                        }
+                    ],
                 },
             }
         ]
@@ -319,6 +327,15 @@ def test_22_normalizes_global_projection_nested_known_record_shape():
                         "display_name": "Tom Aspinall",
                         "aliases": ["Honey Badger"],
                         "country": "UK",
+                        "confidence": "A",
+                        "source_refs": [
+                            {
+                                "source_name": "global_db_projection",
+                                "source_type": "global_read_projection",
+                                "source_url": "https://example.test/global",
+                                "source_date": "2026-05-17",
+                            }
+                        ],
                         "projection_origin_id": "gdb:row:42",
                         "projection_snapshot_ts": "2026-05-17T00:00:00Z",
                     }
@@ -351,6 +368,14 @@ def test_23_accepts_records_container_shape_for_advanced_projection_source():
                         "fighter_id": "ah-1",
                         "fighter_name": "Sean Strickland",
                         "confidence": "A",
+                            "source_refs": [
+                                {
+                                    "source_name": "approved_projection",
+                                    "source_type": "approved_historical",
+                                    "source_url": "https://example.test/approved",
+                                    "source_date": "2026-05-17",
+                                }
+                            ],
                     }
                 }
             ]

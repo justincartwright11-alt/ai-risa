@@ -9,6 +9,10 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
+from operator_dashboard.global_fighter_record_readonly_projection_ledger_preview import (
+    build_projection_ledger_known_records_preview,
+)
+
 
 def _safe_text(value: Any) -> str:
     if isinstance(value, str):
@@ -232,6 +236,76 @@ def _normalize_advanced_projection_record(raw: Mapping[str, Any], src_type: str)
     return normalized
 
 
+def _looks_like_projection_record(raw: Mapping[str, Any]) -> bool:
+    projection_markers = {
+        "projection",
+        "known_record",
+        "projection_known_record",
+        "fighter_projection",
+        "payload",
+        "source_refs",
+        "projection_source_name",
+        "projection_generated_at_preview",
+    }
+    return any(marker in raw for marker in projection_markers)
+
+
+def _normalize_projection_row_via_ledger(
+    raw: Mapping[str, Any],
+    src_type: str,
+) -> Tuple[Optional[Dict[str, Any]], int, int, List[str]]:
+    kwargs = {
+        "manual_operator_records": None,
+        "approved_historical_records": None,
+        "result_ledger_records": None,
+        "report_history_records": None,
+        "local_seed_records": None,
+        "global_read_projection_records": None,
+    }
+
+    if src_type == "approved_historical":
+        kwargs["approved_historical_records"] = [raw]
+    elif src_type == "result_ledger":
+        kwargs["result_ledger_records"] = [raw]
+    elif src_type == "report_history":
+        kwargs["report_history_records"] = [raw]
+    elif src_type == "global_read_projection":
+        kwargs["global_read_projection_records"] = [raw]
+    else:
+        return None, 0, 0, []
+
+    result = build_projection_ledger_known_records_preview(**kwargs)
+    if result.records_accepted_count <= 0 or not result.known_records:
+        return None, result.malformed_records_count, result.blocked_records_count, list(result.errors or [])
+
+    normalized = result.known_records[0]
+    mapped: Dict[str, Any] = {
+        "fighter_global_id": normalized.get("fighter_global_id"),
+        "full_name": normalized.get("full_name"),
+        "known_aliases": normalized.get("known_aliases"),
+        "nationality": normalized.get("nationality"),
+        "promotion": normalized.get("promotion"),
+        "sport_ruleset": normalized.get("sport_ruleset"),
+        "division": normalized.get("division"),
+        "date_of_birth": normalized.get("date_of_birth"),
+        "height": normalized.get("height"),
+        "reach": normalized.get("reach"),
+        "stance": normalized.get("stance"),
+        "record": normalized.get("record"),
+        "active_years": normalized.get("active_years"),
+        "confidence_grade": normalized.get("confidence_grade"),
+        "loader_source_type": normalized.get("projection_source_type") or src_type,
+        "loader_source_name": normalized.get("projection_source_name") or src_type,
+        "loader_snapshot_ts": normalized.get("projection_generated_at_preview"),
+        "loader_record_origin_id": normalized.get("projection_record_origin_id"),
+    }
+
+    if isinstance(normalized.get("completeness_flags"), dict):
+        mapped["completeness_flags"] = dict(normalized.get("completeness_flags"))
+
+    return mapped, result.malformed_records_count, result.blocked_records_count, list(result.errors or [])
+
+
 def _norm_name(name: str) -> str:
     return " ".join(_safe_text(name).lower().split())
 
@@ -244,6 +318,7 @@ class SourcePackPreviewResult:
     records_received_count: int
     records_accepted_count: int
     malformed_records_count: int
+    blocked_records_count: int = 0
     source_type: str = "source_pack"
     preview_only: bool = True
     profile_create_performed: bool = False
@@ -447,6 +522,7 @@ def build_known_records_source_pack_preview(
 
     received_count = sum(len(rows) for rows in source_rows.values())
     malformed_count = 0
+    blocked_count = 0
 
     sanitized_with_meta: List[Tuple[Dict[str, Any], int]] = []
     for src in source_order:
@@ -457,7 +533,15 @@ def build_known_records_source_pack_preview(
                 continue
 
             candidate = raw
-            if src in advanced_projection_sources:
+            if src in advanced_projection_sources and _looks_like_projection_record(raw):
+                candidate, malformed_inc, blocked_inc, ledger_errors = _normalize_projection_row_via_ledger(raw, src)
+                malformed_count += malformed_inc
+                blocked_count += blocked_inc
+                if ledger_errors:
+                    errors.extend(ledger_errors)
+                if candidate is None:
+                    continue
+            elif src in advanced_projection_sources:
                 candidate = _normalize_advanced_projection_record(raw, src)
 
             sanitized = _sanitize_single_known_record(candidate, src)
@@ -512,6 +596,7 @@ def build_known_records_source_pack_preview(
         records_received_count=received_count,
         records_accepted_count=len(final_known_records),
         malformed_records_count=malformed_count,
+        blocked_records_count=blocked_count,
         errors=errors,
     )
 
