@@ -46,6 +46,9 @@ from operator_dashboard.global_fighter_identity_resolver_preview import (
     KnownFighterRecord,
     SourceRef,
 )
+from operator_dashboard.global_fighter_known_records_readonly_loader import (
+    load_known_records_readonly_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -702,6 +705,114 @@ def global_fighters_identity_resolver_preview():
         return jsonify({
             "ok": False,
             "error": "resolver_failed",
+            "detail": str(e),
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 500
+
+
+@app.route("/api/global-fighters/known-records/loader-preview", methods=["POST"])
+def global_fighters_known_records_loader_preview():
+    """
+    Preview-only Known Fighter Records Loader API.
+
+    Accepts:
+      in_memory_records: list of known fighter records (optional)
+      local_seed_records: list of seed records (optional)
+
+    Returns:
+      JSON with sanitized known_records, source type, counts, and no-op write flags.
+
+    GOVERNANCE:
+      preview_only = True
+      No profile creates, updates, merges, or database writes.
+      Fails closed on malformed records.
+    """
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    # Extract records from request
+    in_memory_records = body.get("in_memory_records")
+    if in_memory_records is not None and not isinstance(in_memory_records, list):
+        return jsonify({
+            "ok": False,
+            "error": "in_memory_records_must_be_list",
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    local_seed_records = body.get("local_seed_records")
+    if local_seed_records is not None and not isinstance(local_seed_records, list):
+        return jsonify({
+            "ok": False,
+            "error": "local_seed_records_must_be_list",
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    # Call readonly loader
+    try:
+        result = load_known_records_readonly_preview(
+            in_memory_records=in_memory_records,
+            local_seed_records=local_seed_records,
+        )
+        result_dict = result.to_dict()
+
+        # Build response
+        response = {
+            "ok": True,
+            "known_records": result.known_records,
+            "records_received_count": result.records_received_count,
+            "records_accepted_count": result.records_accepted_count,
+            "malformed_records_count": result.malformed_records_count,
+            "source_type": result.source_type,
+            "errors": result.errors or [],
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": "loader_failed",
             "detail": str(e),
             "preview_only": True,
             "profile_create_performed": False,
