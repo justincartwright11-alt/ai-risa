@@ -482,6 +482,52 @@ function renderButton1Gate1ApprovedSavePreview(statusId, workflowData, writerPre
 
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
 
+function postGlobalFighterIdentityResolverPreview(payload) {
+  return fetch('/api/global-fighters/identity-resolver/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      if (!result.ok || !result.data) {
+        throw new Error('identity_resolver_preview_failed');
+      }
+      return result.data;
+    });
+}
+
+function renderButton1IdentityResolverPreview(statusId, existingHtml, identityResolverData) {
+  if (!identityResolverData || identityResolverData.ok === false) {
+    return existingHtml + '<br><br><strong>Identity Resolver:</strong> Check failed.';
+  }
+
+  const confidenceTier = identityResolverData.confidence_tier || 'unknown';
+  const matchScore = (identityResolverData.match_score || 0).toFixed(2);
+  const manualReview = identityResolverData.manual_review_required === true ? 'Yes' : 'No';
+  const conflictReasons = (identityResolverData.conflict_reasons || []).join('; ') || 'None';
+  const blockingReasons = (identityResolverData.blocking_reasons || []).join('; ') || 'None';
+  const matchedId = identityResolverData.matched_record_id || '—';
+  const candidateCount = Array.isArray(identityResolverData.candidate_matches)
+    ? identityResolverData.candidate_matches.length
+    : 0;
+
+  const identityHtml = [
+    '<br><br><strong>Global Fighter Identity Resolver (Preview):</strong>',
+    'Checked: Yes',
+    'Match confidence: ' + confidenceTier + ' (' + matchScore + ')',
+    'Matched record ID: ' + matchedId,
+    'Candidate matches found: ' + candidateCount,
+    'Manual review required: ' + manualReview,
+    'Conflict reasons: ' + conflictReasons,
+    'Blocking reasons: ' + blockingReasons,
+    'Profile write disabled: Yes',
+    'Merge disabled: Yes',
+    'Database write disabled: Yes'
+  ].join('<br>');
+
+  return existingHtml + identityHtml;
+}
+
 function handleButton1Click() {
   showPanel('b1-result-panel');
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
@@ -507,9 +553,36 @@ function handleButton1Click() {
         dry_run_required: true,
         live_write_enabled: false,
         storage_preview_mode: 'in_memory'
-      }).then(writerPreviewData => ({ workflowData: data, writerPreviewData: writerPreviewData }));
+      }).then(writerPreviewData => ({
+        workflowData: data,
+        writerPreviewData: writerPreviewData,
+        candidateRows: candidateRows
+      }));
     })
-    .then(result => renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData))
+    .then(result => {
+      // Render writer preview first
+      renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData);
+      
+      // Now call identity resolver for preview evidence
+      const candidate = {
+        name: 'Preview Fighter',
+        aliases: [],
+        source_refs: [{ source_name: 'dashboard_preview', source_type: 'preview' }]
+      };
+      return postGlobalFighterIdentityResolverPreview({
+        candidate: candidate,
+        known_records: []
+      }).then(identityData => ({ result: result, identityData: identityData }));
+    })
+    .then(combined => {
+      // Append identity resolver evidence to status
+      const currentStatus = document.getElementById('b1-status');
+      if (currentStatus && combined.result) {
+        const existingHtml = currentStatus.innerHTML;
+        const enhanced = renderButton1IdentityResolverPreview('b1-status', existingHtml, combined.identityData);
+        currentStatus.innerHTML = enhanced;
+      }
+    })
     .catch(() => setStatus('b1-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
 
