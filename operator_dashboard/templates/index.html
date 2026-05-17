@@ -670,6 +670,105 @@ function postGlobalFighterIdentityResolverPreviewBulk(payload) {
   });
 }
 
+function mapIdentityResultToCandidateRowEvidence(identityResult) {
+  const result = identityResult || {};
+  const conflictType = result.conflict_type || null;
+  const manualReviewRequired = result.manual_review_required === true;
+  const candidateMatches = Array.isArray(result.candidate_matches) ? result.candidate_matches : [];
+  const confidenceTier = result.confidence_tier || 'no_match';
+  const matchedRecordIdPreview = result.matched_record_id || null;
+  const conflictReasons = Array.isArray(result.conflict_reasons) ? result.conflict_reasons : [];
+  const blockingReasons = Array.isArray(result.blocking_reasons) ? result.blocking_reasons : [];
+  const sourceMissing = conflictType === 'missing_source_provenance';
+  const ambiguous = candidateMatches.length > 1;
+
+  let identityStatus = 'identity_clear';
+  if (sourceMissing) {
+    identityStatus = 'identity_source_missing';
+  } else if (ambiguous) {
+    identityStatus = 'identity_ambiguous';
+  } else if (conflictType) {
+    identityStatus = 'identity_conflict';
+  } else if (confidenceTier === 'no_match') {
+    identityStatus = 'identity_no_match';
+  } else if (manualReviewRequired) {
+    identityStatus = 'identity_needs_review';
+  }
+
+  const statusLabelMap = {
+    identity_clear: 'Identity: Clear',
+    identity_needs_review: 'Identity: Needs Review',
+    identity_conflict: 'Identity: Conflict',
+    identity_no_match: 'Identity: No Match',
+    identity_source_missing: 'Identity: Source Missing',
+    identity_ambiguous: 'Identity: Needs Review'
+  };
+
+  return {
+    fighter_name: result && result.incoming_candidate ? (result.incoming_candidate.name || 'Unknown Fighter') : 'Unknown Fighter',
+    fighter_identity_status: identityStatus,
+    fighter_identity_status_label: statusLabelMap[identityStatus] || 'Identity: Needs Review',
+    fighter_match_confidence: confidenceTier,
+    fighter_manual_review_required: manualReviewRequired,
+    fighter_conflict_reasons: conflictReasons,
+    fighter_matched_record_id_preview: matchedRecordIdPreview,
+    identity_blocking_reasons: blockingReasons,
+    identity_ready_for_queue_review: !isIdentityStatusBlockingForQueueSavePreview(identityStatus)
+  };
+}
+
+function isIdentityStatusBlockingForQueueSavePreview(identityStatus) {
+  return (
+    identityStatus === 'identity_conflict' ||
+    identityStatus === 'identity_source_missing' ||
+    identityStatus === 'identity_ambiguous'
+  );
+}
+
+function buildButton1RowEvidenceSummaryHtml(rowEvidenceList) {
+  const rows = Array.isArray(rowEvidenceList) ? rowEvidenceList : [];
+  if (!rows.length) {
+    return [
+      'Candidates checked: 0',
+      'Manual review required: 0',
+      'Conflicts detected: 0',
+      'Source missing: 0',
+      'Queue-save preview blocked rows: 0'
+    ].join('<br>');
+  }
+
+  let manualReviewCount = 0;
+  let conflictCount = 0;
+  let sourceMissingCount = 0;
+  let blockedCount = 0;
+
+  const rowLines = [];
+  for (const row of rows) {
+    if (row.fighter_manual_review_required) manualReviewCount++;
+    if (row.fighter_identity_status === 'identity_conflict') conflictCount++;
+    if (row.fighter_identity_status === 'identity_source_missing') sourceMissingCount++;
+    if (isIdentityStatusBlockingForQueueSavePreview(row.fighter_identity_status)) blockedCount++;
+
+    rowLines.push(
+      '• ' + row.fighter_name +
+      ' — ' + row.fighter_identity_status_label +
+      ' | Match confidence: ' + row.fighter_match_confidence +
+      ' | Manual review required: ' + (row.fighter_manual_review_required ? 'Yes' : 'No')
+    );
+  }
+
+  const summaryLines = [
+    'Candidates checked: ' + rows.length,
+    'Manual review required: ' + manualReviewCount,
+    'Conflicts detected: ' + conflictCount,
+    'Source missing: ' + sourceMissingCount,
+    'Queue-save preview blocked rows: ' + blockedCount,
+    'Queue-save preview ready rows: ' + (rows.length - blockedCount)
+  ];
+
+  return summaryLines.concat(rowLines).join('<br>');
+}
+
 function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkData) {
   if (!bulkData || bulkData.ok === false) {
     return existingHtml + '<br><br><strong>Global Fighter Identity Resolver (Preview):</strong> Bulk check failed.';
@@ -679,6 +778,10 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
   const manualReviewCount = bulkData.manual_review_required_count || 0;
   const conflictCount = bulkData.conflict_count || 0;
   const allWriteFlagsFalse = bulkData.all_write_flags_false === true ? 'Yes' : 'No';
+  const rowEvidence = (Array.isArray(bulkData.results) ? bulkData.results : [])
+    .filter(r => r && !r.error)
+    .map(mapIdentityResultToCandidateRowEvidence);
+  const rowEvidenceHtml = buildButton1RowEvidenceSummaryHtml(rowEvidence);
 
   const identityHtml = [
     '<br><br><strong>Global Fighter Identity Resolver (Preview — Bulk):</strong>',
@@ -686,6 +789,7 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
     'Candidates checked: ' + candidatesChecked,
     'Manual review required: ' + manualReviewCount,
     'Conflicts detected: ' + conflictCount,
+    rowEvidenceHtml,
     'Profile write disabled: Yes',
     'Merge disabled: Yes',
     'Database write disabled: Yes',
