@@ -53,6 +53,31 @@ _WIDOW_ORPHAN_RULES = [
     "no_single_list_item_orphan",
     "no_lonely_chart_under_one_inch_space",
 ]
+_CHART_TYPES = {
+    "scenario_tree",
+    "method_pathway",
+    "round_control",
+    "risk_collapse_markers",
+    "comparison_chart",
+}
+_ALLOWED_CHART_PLACEMENT_BLOCK_ROLES = {
+    "matchup_signal_block",
+    "analysis_block",
+}
+_DISALLOWED_CHART_PLACEMENT_BLOCK_ROLES = {
+    "report_identity_block",
+    "footer_metadata_block",
+}
+_METHOD_TYPES = {"ko_tko", "submission", "decision", "attritional_breakdown"}
+_RISK_TYPES = {
+    "gas_tank_drop",
+    "damage_accumulation",
+    "defensive_breakdown",
+    "pace_collapse",
+}
+_RISK_SEVERITIES = {"watch", "elevated", "critical"}
+_ROUND_CONTROL_EXPECTATIONS = {"fighter_a", "fighter_b", "swing", "contested"}
+_DOMINANCE_SIGNALS = {"low", "medium", "high"}
 
 
 def _default_section_block_metadata():
@@ -113,6 +138,66 @@ def _default_page_break_metadata():
             "widow_orphan_rule_applied": False,
         }
     ]
+
+
+def _default_chart_and_scenario_metadata():
+    return {
+        "charts": [
+            {
+                "chart_id": "chart_scenario_tree_001",
+                "chart_type": "scenario_tree",
+                "title": "Primary Scenario Pathways",
+                "intent": "Explain major tactical branches",
+                "placement_block_id": "matchup_signal",
+                "placement_block_role": "matchup_signal_block",
+                "size_contract": {
+                    "max_width_in": 6.5,
+                    "max_height_in": 3.5,
+                },
+                "print_readability_contract": {
+                    "min_label_pt": 9,
+                    "min_stroke_pt": 1,
+                    "min_contrast_ratio": 4.5,
+                },
+                "source_citations": ["SRC-001"],
+            }
+        ],
+        "scenario_tree": {
+            "root_node": "baseline",
+            "branches": ["pace_advantage", "distance_control"],
+            "terminal_nodes": ["late_finish", "decision_path"],
+            "confidence_band": "58-66%",
+        },
+        "method_pathways": [
+            {
+                "pathway_id": "method_001",
+                "method_type": "decision",
+                "trigger_factors": ["jab_volume", "distance_management"],
+                "counter_factors": ["pressure_pocket_entries"],
+                "evidence_links": ["SRC-001"],
+                "confidence_band": "52-60%",
+            }
+        ],
+        "round_control": [
+            {
+                "window_id": "round_window_001",
+                "round_range": "R1-R2",
+                "control_expectation": "fighter_a",
+                "dominance_signal": "medium",
+                "evidence_links": ["SRC-001"],
+            }
+        ],
+        "risk_collapse_markers": [
+            {
+                "marker_id": "risk_001",
+                "risk_type": "damage_accumulation",
+                "trigger_window": "R3-R5",
+                "severity": "elevated",
+                "mitigation_note": "Prioritize distance reset and clinch exits.",
+                "evidence_links": ["SRC-001"],
+            }
+        ],
+    }
 
 
 def _validate_section_block_metadata(section_blocks):
@@ -219,6 +304,153 @@ def _validate_page_break_metadata(page_breaks, section_block_ids):
         "valid": len(issues) == 0,
         "status": "valid" if not issues else "invalid",
         "issues": issues,
+    }
+
+
+def _validate_chart_and_scenario_metadata(chart_metadata):
+    if chart_metadata is None:
+        return {
+            "valid": False,
+            "status": "missing",
+            "issues": ["missing_chart_metadata"],
+        }
+    if not isinstance(chart_metadata, dict):
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["chart_metadata_not_dict"],
+        }
+
+    issues = []
+
+    charts = chart_metadata.get("charts")
+    if not isinstance(charts, list) or not charts:
+        issues.append("charts_missing_or_empty")
+    else:
+        for index, chart in enumerate(charts):
+            if not isinstance(chart, dict):
+                issues.append(f"chart_{index}_not_dict")
+                continue
+            chart_type = chart.get("chart_type")
+            placement_role = chart.get("placement_block_role")
+            citations = chart.get("source_citations")
+            size_contract = chart.get("size_contract")
+            readability_contract = chart.get("print_readability_contract")
+
+            if chart_type not in _CHART_TYPES:
+                issues.append(f"chart_{index}_invalid_chart_type")
+            if placement_role not in _ALLOWED_CHART_PLACEMENT_BLOCK_ROLES:
+                issues.append(f"chart_{index}_invalid_placement_role")
+            if placement_role in _DISALLOWED_CHART_PLACEMENT_BLOCK_ROLES:
+                issues.append(f"chart_{index}_disallowed_placement_role")
+            if not isinstance(citations, list) or not citations:
+                issues.append(f"chart_{index}_missing_source_citations")
+            if not isinstance(size_contract, dict):
+                issues.append(f"chart_{index}_invalid_size_contract")
+            else:
+                max_width = size_contract.get("max_width_in")
+                max_height = size_contract.get("max_height_in")
+                if not isinstance(max_width, (int, float)) or max_width > 6.5:
+                    issues.append(f"chart_{index}_invalid_max_width")
+                if not isinstance(max_height, (int, float)) or max_height > 4.0:
+                    issues.append(f"chart_{index}_invalid_max_height")
+            if not isinstance(readability_contract, dict):
+                issues.append(f"chart_{index}_invalid_readability_contract")
+            else:
+                min_label_pt = readability_contract.get("min_label_pt")
+                if not isinstance(min_label_pt, (int, float)) or min_label_pt < 9:
+                    issues.append(f"chart_{index}_invalid_min_label_pt")
+
+    scenario_tree = chart_metadata.get("scenario_tree")
+    if not isinstance(scenario_tree, dict):
+        issues.append("scenario_tree_missing_or_invalid")
+    else:
+        if not scenario_tree.get("root_node"):
+            issues.append("scenario_tree_missing_root_node")
+        if not isinstance(scenario_tree.get("branches"), list) or not scenario_tree.get("branches"):
+            issues.append("scenario_tree_missing_branches")
+        if not isinstance(scenario_tree.get("terminal_nodes"), list) or not scenario_tree.get("terminal_nodes"):
+            issues.append("scenario_tree_missing_terminal_nodes")
+        if not scenario_tree.get("confidence_band"):
+            issues.append("scenario_tree_missing_confidence_band")
+
+    method_pathways = chart_metadata.get("method_pathways")
+    if not isinstance(method_pathways, list) or not method_pathways:
+        issues.append("method_pathways_missing_or_empty")
+    else:
+        for index, pathway in enumerate(method_pathways):
+            if not isinstance(pathway, dict):
+                issues.append(f"method_pathway_{index}_not_dict")
+                continue
+            if pathway.get("method_type") not in _METHOD_TYPES:
+                issues.append(f"method_pathway_{index}_invalid_method_type")
+            if not isinstance(pathway.get("trigger_factors"), list) or not pathway.get("trigger_factors"):
+                issues.append(f"method_pathway_{index}_missing_trigger_factors")
+            if not isinstance(pathway.get("counter_factors"), list) or not pathway.get("counter_factors"):
+                issues.append(f"method_pathway_{index}_missing_counter_factors")
+            if not isinstance(pathway.get("evidence_links"), list) or not pathway.get("evidence_links"):
+                issues.append(f"method_pathway_{index}_missing_evidence_links")
+            if not pathway.get("confidence_band"):
+                issues.append(f"method_pathway_{index}_missing_confidence_band")
+
+    round_control = chart_metadata.get("round_control")
+    if not isinstance(round_control, list) or not round_control:
+        issues.append("round_control_missing_or_empty")
+    else:
+        for index, window in enumerate(round_control):
+            if not isinstance(window, dict):
+                issues.append(f"round_control_{index}_not_dict")
+                continue
+            if not window.get("round_range"):
+                issues.append(f"round_control_{index}_missing_round_range")
+            if window.get("control_expectation") not in _ROUND_CONTROL_EXPECTATIONS:
+                issues.append(f"round_control_{index}_invalid_control_expectation")
+            if window.get("dominance_signal") not in _DOMINANCE_SIGNALS:
+                issues.append(f"round_control_{index}_invalid_dominance_signal")
+            if not isinstance(window.get("evidence_links"), list) or not window.get("evidence_links"):
+                issues.append(f"round_control_{index}_missing_evidence_links")
+
+    risk_markers = chart_metadata.get("risk_collapse_markers")
+    if not isinstance(risk_markers, list) or not risk_markers:
+        issues.append("risk_markers_missing_or_empty")
+    else:
+        for index, marker in enumerate(risk_markers):
+            if not isinstance(marker, dict):
+                issues.append(f"risk_marker_{index}_not_dict")
+                continue
+            if marker.get("risk_type") not in _RISK_TYPES:
+                issues.append(f"risk_marker_{index}_invalid_risk_type")
+            if marker.get("severity") not in _RISK_SEVERITIES:
+                issues.append(f"risk_marker_{index}_invalid_severity")
+            if marker.get("severity") == "critical" and not marker.get("mitigation_note"):
+                issues.append(f"risk_marker_{index}_missing_mitigation_note")
+            if not isinstance(marker.get("evidence_links"), list) or not marker.get("evidence_links"):
+                issues.append(f"risk_marker_{index}_missing_evidence_links")
+
+    return {
+        "valid": len(issues) == 0,
+        "status": "valid" if not issues else "invalid",
+        "issues": issues,
+    }
+
+
+def _chart_and_scenario_payload(report_context_preview):
+    """Build and validate deterministic chart/scenario metadata payload."""
+    chart_metadata = report_context_preview.get("chart_and_scenario_metadata")
+    chart_metadata_provided = "chart_and_scenario_metadata" in report_context_preview
+    if not chart_metadata_provided:
+        chart_metadata = _default_chart_and_scenario_metadata()
+
+    validation = _validate_chart_and_scenario_metadata(chart_metadata)
+
+    return {
+        "schema_version": "button2.chart_and_scenario.v1",
+        "validation_status": validation["status"],
+        "validation_issues": validation["issues"],
+        "allowed_chart_types": sorted(_CHART_TYPES),
+        "allowed_placement_block_roles": sorted(_ALLOWED_CHART_PLACEMENT_BLOCK_ROLES),
+        "disallowed_placement_block_roles": sorted(_DISALLOWED_CHART_PLACEMENT_BLOCK_ROLES),
+        "chart_and_scenario": chart_metadata,
     }
 
 
@@ -453,6 +685,7 @@ _HTML_TEMPLATE = """\
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
     .page-breaks-metadata {{ display: none; }}
+        .chart-scenario-metadata {{ display: none; }}
   </style>
 </head>
 <body>
@@ -480,6 +713,7 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Visual certification: {visual_certification_status}</div>
     <div class="qa-row">Hierarchy validation: {hierarchy_validation_status}</div>
     <div class="qa-row">Page-break metadata validation: {page_breaks_metadata_validation_status}</div>
+        <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
   </div>
 
     <section
@@ -500,6 +734,15 @@ _HTML_TEMPLATE = """\
         data-page-breaks-policy-set="{page_breaks_policy_set}"
     >
         <pre data-hierarchy-level="Meta">{page_breaks_metadata_json}</pre>
+    </section>
+
+    <section
+        id="button2-chart-scenario-metadata"
+        class="chart-scenario-metadata"
+        data-chart-scenario-schema-version="{chart_schema_version}"
+        data-chart-scenario-validation-status="{chart_metadata_validation_status}"
+    >
+        <pre data-hierarchy-level="Meta">{chart_metadata_json}</pre>
     </section>
 </body>
 </html>"""
@@ -560,11 +803,13 @@ def build_button2_report_html(report_context_preview):
     hierarchy_valid = hierarchy_payload["hierarchy_validation_status"] == "valid"
     page_breaks_payload = _page_breaks_and_section_blocks_payload(report_context_preview)
     page_breaks_valid = page_breaks_payload["validation_status"] == "valid"
+    chart_payload = _chart_and_scenario_payload(report_context_preview)
+    chart_valid = chart_payload["validation_status"] == "valid"
     visual_certification_value = report_context_preview.get(
         "visual_certification_status", "not_certified"
     )
     # Fail closed for hierarchy or page-break contract issues.
-    if not hierarchy_valid or not page_breaks_valid:
+    if not hierarchy_valid or not page_breaks_valid or not chart_valid:
         visual_certification_value = "not_certified"
     
     # Generate typography CSS stylesheet from locked tokens
@@ -615,6 +860,16 @@ def build_button2_report_html(report_context_preview):
         ),
         page_breaks_metadata_json=_esc(
             _json.dumps(page_breaks_payload, separators=(",", ":"), sort_keys=True),
+            "{}",
+        ),
+        chart_metadata_validation_status=_esc(
+            chart_payload["validation_status"], "invalid"
+        ),
+        chart_schema_version=_esc(
+            chart_payload["schema_version"], "button2.chart_and_scenario.v1"
+        ),
+        chart_metadata_json=_esc(
+            _json.dumps(chart_payload, separators=(",", ":"), sort_keys=True),
             "{}",
         ),
     )
