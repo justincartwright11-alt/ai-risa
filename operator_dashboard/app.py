@@ -40,6 +40,12 @@ from operator_dashboard.local_ai_orchestrator_workflow_plan import (
     build_three_button_workflow_plan,
     run_workflow_preview,
 )
+from operator_dashboard.global_fighter_identity_resolver_preview import (
+    resolve_fighter_identity_preview,
+    IncomingFighterCandidate,
+    KnownFighterRecord,
+    SourceRef,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -521,6 +527,186 @@ def local_ai_gate1_approved_save_writer_preview():
     }
 
     return jsonify(response)
+
+
+@app.route("/api/global-fighters/identity-resolver/preview", methods=["POST"])
+def global_fighters_identity_resolver_preview():
+    """
+    Preview-only Global Fighter Identity Resolver API.
+
+    Accepts:
+      candidate: dict with fighter identity fields
+      known_records: list of dict with known global fighter records
+
+    Returns:
+      JSON with match results, confidence tier, and no-op write flags.
+
+    GOVERNANCE:
+      preview_only = True
+      No profile creates, updates, merges, or database writes.
+      Fails closed when source_refs are missing.
+    """
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    # Parse candidate
+    candidate_payload = body.get("candidate", {})
+    if not isinstance(candidate_payload, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_candidate",
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    # Parse source_refs
+    source_refs_payload = candidate_payload.get("source_refs", [])
+    if not isinstance(source_refs_payload, list):
+        source_refs_payload = []
+
+    source_refs = []
+    for sr in source_refs_payload:
+        if isinstance(sr, dict):
+            source_refs.append(SourceRef(
+                source_name=sr.get("source_name", "unknown"),
+                source_url=sr.get("source_url"),
+                source_type=sr.get("source_type", "unknown"),
+                source_date=sr.get("source_date"),
+            ))
+
+    # Build candidate
+    try:
+        candidate = IncomingFighterCandidate(
+            name=str(candidate_payload.get("name", "") or ""),
+            aliases=candidate_payload.get("aliases", []) if isinstance(candidate_payload.get("aliases"), list) else [],
+            nationality=candidate_payload.get("nationality"),
+            promotion=candidate_payload.get("promotion"),
+            sport_ruleset=candidate_payload.get("sport_ruleset"),
+            division=candidate_payload.get("division"),
+            date_of_birth=candidate_payload.get("date_of_birth"),
+            height=candidate_payload.get("height"),
+            reach=candidate_payload.get("reach"),
+            stance=candidate_payload.get("stance"),
+            record=candidate_payload.get("record"),
+            source_refs=source_refs,
+        )
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": "candidate_build_failed",
+            "detail": str(e),
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 400
+
+    # Parse known_records
+    known_records_payload = body.get("known_records", [])
+    if not isinstance(known_records_payload, list):
+        known_records_payload = []
+
+    known_records = []
+    for kr in known_records_payload:
+        if isinstance(kr, dict):
+            try:
+                known_records.append(KnownFighterRecord(
+                    fighter_global_id=str(kr.get("fighter_global_id", "") or ""),
+                    full_name=str(kr.get("full_name", "") or ""),
+                    known_aliases=kr.get("known_aliases", []) if isinstance(kr.get("known_aliases"), list) else [],
+                    nationality=kr.get("nationality"),
+                    promotion=kr.get("promotion"),
+                    sport_ruleset=kr.get("sport_ruleset"),
+                    division=kr.get("division"),
+                    date_of_birth=kr.get("date_of_birth"),
+                    height=kr.get("height"),
+                    reach=kr.get("reach"),
+                    stance=kr.get("stance"),
+                    record=kr.get("record"),
+                    confidence_grade=kr.get("confidence_grade", "C"),
+                ))
+            except Exception:
+                # Skip malformed records
+                continue
+
+    # Call preview resolver
+    try:
+        result = resolve_fighter_identity_preview(candidate, known_records)
+        result_dict = result.to_dict()
+
+        # Extract top match
+        top_match = None
+        if result.candidate_matches:
+            top_match = result.candidate_matches[0]
+
+        response = {
+            "ok": True,
+            "confidence_tier": top_match.confidence_tier.value if top_match else None,
+            "matched_record_id": top_match.fighter_global_id if top_match else None,
+            "match_score": top_match.confidence_score if top_match else 0.0,
+            "manual_review_required": result.manual_review_required,
+            "conflict_type": result.conflict_type,
+            "conflict_reasons": [result.conflict_type] if result.conflict_type else [],
+            "blocking_reasons": [result.conflict_type] if result.conflict_type else [],
+            "recommendation": result.recommendation,
+            "candidate_matches": [
+                {
+                    "fighter_global_id": m.fighter_global_id,
+                    "full_name": m.full_name,
+                    "confidence_tier": m.confidence_tier.value,
+                    "confidence_score": m.confidence_score,
+                    "rank": m.rank,
+                }
+                for m in result.candidate_matches
+            ],
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": "resolver_failed",
+            "detail": str(e),
+            "preview_only": True,
+            "profile_create_performed": False,
+            "profile_update_performed": False,
+            "merge_performed": False,
+            "database_write_performed": False,
+            "ranking_write_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+        }), 500
 
 
 if __name__ == "__main__":
