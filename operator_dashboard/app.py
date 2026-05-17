@@ -49,6 +49,9 @@ from operator_dashboard.global_fighter_identity_resolver_preview import (
 from operator_dashboard.global_fighter_known_records_readonly_loader import (
     load_known_records_readonly_preview,
 )
+from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview import (
+    build_button1_to_button2_readonly_dossier_handoff_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -135,6 +138,41 @@ def save_selected_fights():
         }), 403
     # In production: persist to database here.
     return jsonify({"ok": True, "saved": 0, "message": "gate_passed_no_fights_provided"})
+
+
+@app.route("/api/button1-to-button2/dossier-handoff-preview", methods=["POST"])
+def button1_to_button2_dossier_handoff_preview():
+    """Return preview-only sanitized Button1->Button2 dossier handoff payload."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "destination_marker": "button2_report_generation_preview",
+            "preview_only": True,
+            "button1_export_performed": False,
+            "button2_generation_performed": False,
+            "pdf_generation_performed": False,
+            "file_write_performed": False,
+            "delivery_performed": False,
+            "report_write_performed": False,
+            "profile_create_update_merge": False,
+            "database_ranking_writes": False,
+            "result_report_learning_calibration": False,
+        }), 400
+
+    dossier_data = body.get("dossier_data", body)
+    if not isinstance(dossier_data, dict):
+        dossier_data = {}
+
+    preview_payload = build_button1_to_button2_readonly_dossier_handoff_preview(dossier_data)
+    return jsonify({
+        "ok": True,
+        **preview_payload,
+        "button2_generation_performed": False,
+    })
 
 
 # ─── Button 2 API ─────────────────────────────────────────────────────────────
