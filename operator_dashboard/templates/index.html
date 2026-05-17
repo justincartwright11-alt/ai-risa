@@ -82,6 +82,91 @@
     .btn-main:hover { opacity: 0.88; }
     .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* ── Profile Preview Card ──────────────────────────────────────────── */
+    .profile-preview-cards-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      margin-bottom: 16px;
+    }
+    .profile-preview-card {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .profile-preview-card.fighter-a { border-left: 3px solid #61afef; }
+    .profile-preview-card.fighter-b { border-left: 3px solid #e5c07b; }
+    .profile-card-header {
+      font-weight: 700;
+      color: #c9aa71;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .profile-card-header .fighter-label {
+      font-size: 0.75rem;
+      color: #8a94b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .profile-card-header .confidence-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(201,170,113,0.15);
+      color: #c9aa71;
+    }
+    .profile-card-section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(138,148,184,0.2);
+    }
+    .profile-card-section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .profile-card-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+    .profile-card-field:last-child { margin-bottom: 0; }
+    .profile-card-label {
+      color: #8a94b8;
+      font-weight: 500;
+    }
+    .profile-card-value {
+      color: #e8eaed;
+      word-break: break-word;
+      text-align: right;
+      max-width: 55%;
+    }
+    .profile-card-footer {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(201,170,113,0.2);
+      font-size: 0.75rem;
+      color: #5a6480;
+      font-style: italic;
+    }
+    .profile-card-missing {
+      color: #e5c07b;
+      font-style: italic;
+    }
+    .profile-card-error {
+      background: rgba(224,108,117,0.1);
+      border: 1px solid rgba(224,108,117,0.3);
+      color: #e06c75;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
     /* ── Result Panel ───────────────────────────────────────────────────── */
     .result-panel {
       display: none;
@@ -224,6 +309,7 @@
   <!-- ── Button 1 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b1-result-panel">
     <h3>Fight Queue</h3>
+    <div id="b1-profile-cards-container" class="profile-preview-cards-container" style="display:none;"></div>
     <div id="b1-status" class="status-msg">Loading fight queue…</div>
   </div>
 
@@ -1210,6 +1296,238 @@ function renderButton1Gate1DryRunIdentityAlignment(statusId, existingHtml, dryRu
   return existingHtml + gate1Html;
 }
 
+// ── Profile Preview Card Rendering ────────────────────────────────────────────
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return '';
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getConfidenceBadgeColor(grade) {
+  const gradeMap = {
+    'A': '#98c379',
+    'B': '#61afef',
+    'C': '#c9aa71',
+    'D': '#e5c07b',
+    'F': '#e06c75'
+  };
+  return gradeMap[(String(grade || 'C')).toUpperCase()[0]] || '#8a94b8';
+}
+
+function formatProfileCardValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return '<span class="profile-card-missing">Not available</span>';
+  }
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return escapeHtml(value.join(', '));
+    }
+    if (value && typeof value === 'object' && value.wins !== undefined) {
+      // Record object
+      return escapeHtml((value.wins || 0) + 'W-' + (value.losses || 0) + 'L-' + (value.draws || 0) + 'D');
+    }
+    return '<span class="profile-card-missing">Not available</span>';
+  }
+  return escapeHtml(String(value));
+}
+
+function renderProfilePreviewCard(knownRecord, fighterLabel) {
+  if (!knownRecord || typeof knownRecord !== 'object') {
+    return '<div class="profile-preview-card profile-card-error">' +
+           'Could not load fighter profile. Data missing or invalid.' +
+           '</div>';
+  }
+
+  const fullName = String(knownRecord.full_name || knownRecord.fighter_name || knownRecord.name || '—');
+  const confidenceGrade = String(knownRecord.confidence_grade || 'C').toUpperCase()[0];
+  const aliases = knownRecord.known_aliases || knownRecord.aliases || [];
+  const nationality = knownRecord.nationality || null;
+  const promotion = knownRecord.promotion || null;
+  const sport = knownRecord.sport_ruleset || knownRecord.sport || null;
+  const division = knownRecord.division || null;
+  const stance = knownRecord.stance || null;
+  const height = knownRecord.height || null;
+  const reach = knownRecord.reach || null;
+  const record = knownRecord.record || null;
+  const activeYears = knownRecord.active_years || null;
+  const sourceType = knownRecord.loader_source_type || knownRecord.loader_source_name || 'unknown';
+
+  let cardHtml = '<div class="profile-preview-card ' + (fighterLabel === 'A' ? 'fighter-a' : 'fighter-b') + '">';
+  
+  // Header with name and confidence
+  cardHtml += '<div class="profile-card-header">';
+  cardHtml += '<div>';
+  cardHtml += '<div class="fighter-label">Fighter ' + escapeHtml(fighterLabel) + '</div>';
+  cardHtml += '<div style="color:#e8eaed;margin-top:4px;">' + escapeHtml(fullName) + '</div>';
+  cardHtml += '</div>';
+  cardHtml += '<div class="confidence-badge" style="background-color:' + getConfidenceBadgeColor(confidenceGrade) + '80;color:' + getConfidenceBadgeColor(confidenceGrade) + ';">';
+  cardHtml += 'Grade ' + escapeHtml(confidenceGrade);
+  cardHtml += '</div>';
+  cardHtml += '</div>';
+
+  // Identity section
+  if (aliases.length > 0 || nationality) {
+    cardHtml += '<div class="profile-card-section">';
+    if (aliases.length > 0) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Also known as:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(aliases) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (nationality) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Nationality:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(nationality) + '</span>';
+      cardHtml += '</div>';
+    }
+    cardHtml += '</div>';
+  }
+
+  // Context section (promotion, division, ruleset)
+  if (promotion || division || sport) {
+    cardHtml += '<div class="profile-card-section">';
+    if (promotion) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Promotion:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(promotion) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (division) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Division:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(division) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (sport) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Ruleset:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(sport) + '</span>';
+      cardHtml += '</div>';
+    }
+    cardHtml += '</div>';
+  }
+
+  // Physical section (stance, height, reach)
+  if (stance || height || reach) {
+    cardHtml += '<div class="profile-card-section">';
+    if (stance) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Stance:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(stance) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (height) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Height:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(height) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (reach) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Reach:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(reach) + '</span>';
+      cardHtml += '</div>';
+    }
+    cardHtml += '</div>';
+  }
+
+  // Record and history section
+  if (record || activeYears) {
+    cardHtml += '<div class="profile-card-section">';
+    if (record) {
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Record:</span>';
+      cardHtml += '<span class="profile-card-value">' + formatProfileCardValue(record) + '</span>';
+      cardHtml += '</div>';
+    }
+    if (activeYears && Array.isArray(activeYears) && activeYears.length === 2) {
+      const startYear = activeYears[0];
+      const endYear = activeYears[1];
+      cardHtml += '<div class="profile-card-field">';
+      cardHtml += '<span class="profile-card-label">Active years:</span>';
+      cardHtml += '<span class="profile-card-value">' + escapeHtml(String(startYear) + '–' + String(endYear)) + '</span>';
+      cardHtml += '</div>';
+    }
+    cardHtml += '</div>';
+  }
+
+  // Footer
+  cardHtml += '<div class="profile-card-footer">';
+  cardHtml += '⚠ Read-only profile reference. Intelligence preview only. No profile create/update/merge operations.';
+  cardHtml += '</div>';
+
+  cardHtml += '</div>';
+  return cardHtml;
+}
+
+function renderButton1ProfilePreviewCards(knownRecords, candidateRows) {
+  const container = document.getElementById('b1-profile-cards-container');
+  if (!container) return;
+
+  // Clear container
+  container.innerHTML = '';
+
+  // Get first candidate row to get Fighter A and B names
+  if (!Array.isArray(candidateRows) || candidateRows.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  const firstRow = candidateRows[0];
+  if (!firstRow) {
+    container.style.display = 'none';
+    return;
+  }
+
+  const fighterAName = String(firstRow.fighter_a_name || firstRow.fighter_a || '').trim().toLowerCase();
+  const fighterBName = String(firstRow.fighter_b_name || firstRow.fighter_b || '').trim().toLowerCase();
+
+  // Find matching known records
+  let fighterARecord = null;
+  let fighterBRecord = null;
+
+  if (Array.isArray(knownRecords)) {
+    for (const record of knownRecords) {
+      if (!record) continue;
+      const recordFullName = String(record.full_name || record.fighter_name || record.name || '').trim().toLowerCase();
+      const recordAliases = Array.isArray(record.known_aliases) ? record.known_aliases : [];
+
+      if (recordFullName === fighterAName || recordAliases.some(a => String(a || '').trim().toLowerCase() === fighterAName)) {
+        if (!fighterARecord) fighterARecord = record;
+      }
+      if (recordFullName === fighterBName || recordAliases.some(a => String(a || '').trim().toLowerCase() === fighterBName)) {
+        if (!fighterBRecord) fighterBRecord = record;
+      }
+    }
+  }
+
+  // Render cards
+  let cardsHtml = '';
+  if (fighterARecord) {
+    cardsHtml += renderProfilePreviewCard(fighterARecord, 'A');
+  } else {
+    cardsHtml += '<div class="profile-preview-card fighter-a profile-card-error">' +
+               'Fighter A profile not found in known records.' +
+               '</div>';
+  }
+
+  if (fighterBRecord) {
+    cardsHtml += renderProfilePreviewCard(fighterBRecord, 'B');
+  } else {
+    cardsHtml += '<div class="profile-preview-card fighter-b profile-card-error">' +
+               'Fighter B profile not found in known records.' +
+               '</div>';
+  }
+
+  container.innerHTML = cardsHtml;
+  container.style.display = 'grid';
+}
+
 function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkData) {
   if (!bulkData || bulkData.ok === false) {
     return existingHtml + '<br><br><strong>Global Fighter Identity Resolver (Preview):</strong> Bulk check failed.';
@@ -1293,10 +1611,16 @@ function handleButton1Click() {
         ? loaderData.known_records
         : [];
       
-      // Build identity resolver payload with loaded known records
+      // Render profile preview cards if we have known records
       const candidateRows = combined.result && Array.isArray(combined.result.candidateRows)
         ? combined.result.candidateRows
         : [];
+      
+      if (knownRecordsFromLoader.length > 0 && candidateRows.length > 0) {
+        renderButton1ProfilePreviewCards(knownRecordsFromLoader, candidateRows);
+      }
+      
+      // Build identity resolver payload with loaded known records
       const identityResolverPayload = buildButton1IdentityResolverPayloadFromCandidateRows(
         candidateRows,
         knownRecordsFromLoader
