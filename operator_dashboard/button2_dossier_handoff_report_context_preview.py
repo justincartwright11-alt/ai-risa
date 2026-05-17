@@ -1,5 +1,6 @@
 import html
 
+from operator_dashboard.button2_visual_intelligence_overlap_offpage_proof_instrumentation_v1 import run_geometry_proof
 
 _EXPECTED_DESTINATION_MARKER = "button2_report_generation_preview"
 
@@ -84,6 +85,15 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
         "off_page_text_proof": "unavailable",
         "visual_certification_status": "not_certified",
     }
+
+    # Optional: run real geometry proof if caller provides geometry_data in the ingest context.
+    # No layout changes, no PDF writes, no certification without operator_approval=True.
+    geometry_data = ingest_context.get("geometry_data")
+    if geometry_data is not None:
+        proof = run_geometry_proof(geometry_data)
+        report_context_preview["overlap_proof"] = proof["overlap_proof"]
+        report_context_preview["off_page_text_proof"] = proof["off_page_text_proof"]
+        report_context_preview["visual_certification_status"] = proof["visual_certification_status"]
 
     return {
         "ok": True,
