@@ -53,15 +53,17 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
         "No dossier summary preview provided.",
     )
 
+    # Extracted before dict literal so source_traceability can reference it correctly
+    source_context_kind_val = _safe_text(
+        ingest_context.get("context_kind", "button1_dossier_handoff"),
+        "button1_dossier_handoff",
+    )
 
     # --- Visual QA metadata markers (preview-level, not certified) ---
     report_context_preview = {
         "destination_marker": _EXPECTED_DESTINATION_MARKER,
         "report_context_kind": "dossier_handoff_report_context_preview",
-        "source_context_kind": _safe_text(
-            ingest_context.get("context_kind", "button1_dossier_handoff"),
-            "button1_dossier_handoff",
-        ),
+        "source_context_kind": source_context_kind_val,
         "source_ingest_mode": _safe_text(
             ingest_context.get("ingest_mode", "preview_only"),
             "preview_only",
@@ -76,7 +78,7 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
             {"block": "dossier_handoff_report_context_preview", "order": 1}
         ],
         "source_traceability": [
-            {"id": "SRC-CTX", "type": report_context_preview["source_context_kind"] if "source_context_kind" in locals() else "unknown", "date": "n/a"}
+            {"id": "SRC-CTX", "type": source_context_kind_val, "date": "n/a"}
         ],
         "overlap_proof": "unavailable",
         "off_page_text_proof": "unavailable",

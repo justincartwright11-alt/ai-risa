@@ -46,12 +46,14 @@ def test_smoke_malformed_report_context_fails_closed():
         map_report_context_to_visual_intelligence_contract({})
 
 def test_smoke_missing_source_summary_reported():
-    # Remove source_context_kind to simulate missing source summary
+    # source_traceability is now read from real metadata markers, not inferred from source_context_kind.
+    # Popping source_context_kind does NOT affect source_trace_block when source_traceability is present.
     result = build_button2_dossier_handoff_report_context_preview(_make_minimal_ingest_context())
     report_context = result["report_context_preview"].copy()
     report_context.pop("source_context_kind", None)
     contract = map_report_context_to_visual_intelligence_contract(report_context)
-    assert contract["source_trace_block"]["sources"][0]["type"] == "unknown"
+    # source_traceability still present with correct type; legacy fallback not triggered
+    assert contract["source_trace_block"]["sources"][0]["type"] == "button1_dossier_handoff"
 
 def test_smoke_overlap_off_page_signals_unavailable():
     result = build_button2_dossier_handoff_report_context_preview(_make_minimal_ingest_context())
