@@ -26,6 +26,14 @@ def _advanced_projection_row(fid: str, name: str):
                 "ruleset": "MMA",
                 "weight_class": "Middleweight",
                 "confidence": "A",
+                "source_refs": [
+                    {
+                        "source_name": "projection_source",
+                        "source_type": "projection",
+                        "source_url": "https://example.test/source",
+                        "source_date": "2026-05-17",
+                    }
+                ],
             }
         },
         "source_name": "projection_source",

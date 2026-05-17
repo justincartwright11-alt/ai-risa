@@ -92,6 +92,23 @@ def test_in_memory_button1_state_maps_into_candidate_rows_safely(tmp_path):
     assert len(payload["candidate_rows"]) == 2
 
 
+def test_button1_runtime_context_includes_advanced_projection_records(tmp_path):
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "approved_historical_records": [{"projection": {"known_record": {"fighter_id": "ah-1"}}}],
+            "report_history_records": [{"projection": {"known_record": {"fighter_id": "rh-1"}}}],
+            "result_ledger_records": [{"projection": {"known_record": {"fighter_id": "rl-1"}}}],
+            "global_read_projection_records": [{"projection": {"known_record": {"fighter_id": "gr-1"}}}],
+        },
+        workspace_root=str(tmp_path),
+    )
+    payload = pack.to_dict()["input_ref"]["payload"]
+    assert len(payload["approved_historical_records"]) == 1
+    assert len(payload["report_history_records"]) == 1
+    assert len(payload["result_ledger_records"]) == 1
+    assert len(payload["global_read_projection_records"]) == 1
+
+
 def test_in_memory_button2_state_maps_into_selected_fights_and_report_refs_safely(tmp_path):
     pack = build_button2_runtime_context(
         runtime_state_override={
@@ -157,6 +174,37 @@ def test_loader_output_can_be_passed_into_workflow_preview_route_as_context_pack
     data = resp.get_json()
     assert data["ok"] is True
     assert data["workflow"]["jobs"][0]["input_ref"]["ref_type"] == "result_review_preview"
+
+
+def test_button1_runtime_context_projection_records_flow_through_workflow_preview(client, tmp_path):
+    context_pack = build_runtime_context_payload(
+        "button1_find_fights",
+        runtime_state_override={
+            "approved_historical_records": [{"projection": {"known_record": {"fighter_id": "ah-1"}}}],
+            "report_history_records": [{"projection": {"known_record": {"fighter_id": "rh-1"}}}],
+            "result_ledger_records": [{"projection": {"known_record": {"fighter_id": "rl-1"}}}],
+            "global_read_projection_records": [{"projection": {"known_record": {"fighter_id": "gr-1"}}}],
+        },
+        workspace_root=str(tmp_path),
+    )
+
+    resp = client.post(
+        ROUTE,
+        json={
+            "source_button": "button1_find_fights",
+            "context_pack": context_pack,
+            "execute_preview": True,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["ok"] is True
+
+    payload = data["workflow"]["jobs"][0]["input_ref"]["metadata"]["payload"]
+    assert len(payload["approved_historical_records"]) == 1
+    assert len(payload["report_history_records"]) == 1
+    assert len(payload["result_ledger_records"]) == 1
+    assert len(payload["global_read_projection_records"]) == 1
 
 
 def test_loader_performs_no_filesystem_writes(tmp_path, monkeypatch):

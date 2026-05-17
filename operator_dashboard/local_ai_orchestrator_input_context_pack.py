@@ -121,6 +121,11 @@ def build_button1_find_fights_context(raw_input: Dict[str, Any] | None = None) -
         "promotion_hint": _sanitize_text(raw.get("promotion_hint", "")),
         "date_window": _sanitize_dict(raw.get("date_window", {})),
         "candidate_rows": _sanitize_list_of_dict(raw.get("candidate_rows", [])),
+        # Read-only advanced known-record projection context for Button 1 preview.
+        "approved_historical_records": _sanitize_list_of_dict(raw.get("approved_historical_records", [])),
+        "report_history_records": _sanitize_list_of_dict(raw.get("report_history_records", [])),
+        "result_ledger_records": _sanitize_list_of_dict(raw.get("result_ledger_records", [])),
+        "global_read_projection_records": _sanitize_list_of_dict(raw.get("global_read_projection_records", [])),
     }
 
     pack = LocalAIInputContextPack(

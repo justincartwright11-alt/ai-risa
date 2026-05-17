@@ -15,7 +15,6 @@ from typing import Any, Dict, List
 from operator_dashboard.local_ai_orchestrator_input_context_pack import (
     ALLOWED_SOURCE_BUTTONS,
     LocalAIInputContextPack,
-    build_button1_find_fights_context,
     build_button2_generate_pdfs_context,
     build_button3_find_results_context,
 )
@@ -93,6 +92,10 @@ def _normalize_runtime_state(runtime_state: Dict[str, Any]) -> Dict[str, Any]:
         "manual_intake_text": _safe_text(state.get("manual_intake_text", "")),
         "discovered_candidate_rows": _safe_list_of_dict(state.get("discovered_candidate_rows", [])),
         "approved_source_preview_rows": _safe_list(state.get("approved_source_preview_rows", [])),
+        "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
+        "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),
+        "result_ledger_records": _safe_list_of_dict(state.get("result_ledger_records", [])),
+        "global_read_projection_records": _safe_list_of_dict(state.get("global_read_projection_records", [])),
         "event_hint": _safe_text(state.get("event_hint", "")),
         "promotion_hint": _safe_text(state.get("promotion_hint", "")),
         "date_window": _safe_dict(state.get("date_window", {})),
@@ -134,6 +137,10 @@ def load_readonly_runtime_state(
         "manual_intake_text": status_text,
         "discovered_candidate_rows": event_rows,
         "approved_source_preview_rows": [],
+        "approved_historical_records": [],
+        "report_history_records": [],
+        "result_ledger_records": [],
+        "global_read_projection_records": [],
         "event_hint": "",
         "promotion_hint": "",
         "date_window": {},
@@ -169,15 +176,30 @@ def build_button1_runtime_context(
         state.get("local_candidate_rows", [])
     )
 
-    raw_input = {
+    payload = {
         "manual_text": state.get("manual_intake_text", ""),
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),
         "candidate_rows": candidate_rows,
+        # Advanced read-only known-record projection context for Button 1 preview.
+        "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
+        "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),
+        "result_ledger_records": _safe_list_of_dict(state.get("result_ledger_records", [])),
+        "global_read_projection_records": _safe_list_of_dict(state.get("global_read_projection_records", [])),
     }
-    return build_button1_find_fights_context(raw_input)
+
+    pack = LocalAIInputContextPack(
+        source_button="button1_find_fights",
+        input_ref={
+            "kind": "discovery_preview",
+            "ref_id": "b1_discovery_preview",
+            "payload": payload,
+        },
+    )
+    pack.validate()
+    return pack
 
 
 def build_button2_runtime_context(
