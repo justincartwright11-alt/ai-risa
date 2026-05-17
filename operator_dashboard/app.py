@@ -55,6 +55,9 @@ from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview impo
 from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
     build_button2_readonly_dossier_handoff_ingest_preview,
 )
+from operator_dashboard.button2_dossier_handoff_report_context_preview import (
+    build_button2_dossier_handoff_report_context_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -227,6 +230,42 @@ def button2_dossier_handoff_ingest_preview():
         handoff_payload = {}
 
     result = build_button2_readonly_dossier_handoff_ingest_preview(handoff_payload)
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
+
+
+@app.route("/api/button2/dossier-handoff/report-context-preview", methods=["POST"])
+def button2_dossier_handoff_report_context_preview():
+    """Return preview-only Button 2 report-context preview from ingest preview context."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "destination_marker": "",
+            "report_context_preview": None,
+            "preview_only": True,
+            "report_context_preview_ready": False,
+            "button2_generation_performed": False,
+            "pdf_generation_performed": False,
+            "file_write_performed": False,
+            "export_performed": False,
+            "delivery_performed": False,
+            "report_write_performed": False,
+            "gate2_approval_required": True,
+            "gate2_bypass_performed": False,
+            "profile_create_update_merge": False,
+            "database_ranking_writes": False,
+            "result_report_learning_calibration": False,
+        }), 400
+
+    ingest_payload = body.get("ingest_payload", body)
+    if not isinstance(ingest_payload, dict):
+        ingest_payload = {}
+
+    result = build_button2_dossier_handoff_report_context_preview(ingest_payload)
     status_code = 200 if result.get("ok") else 400
     return jsonify(result), status_code
 
