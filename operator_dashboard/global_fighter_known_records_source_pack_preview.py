@@ -72,6 +72,166 @@ def _safe_dict_copy(value: Any) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _safe_mapping(value: Any) -> Optional[Mapping[str, Any]]:
+    if isinstance(value, Mapping):
+        return value
+    return None
+
+
+def _pick_text(source: Mapping[str, Any], keys: Tuple[str, ...]) -> str:
+    for key in keys:
+        txt = _safe_text(source.get(key))
+        if txt:
+            return txt
+    return ""
+
+
+def _pick_optional_text(source: Mapping[str, Any], keys: Tuple[str, ...]) -> Optional[str]:
+    txt = _pick_text(source, keys)
+    return txt or None
+
+
+def _pick_aliases(source: Mapping[str, Any], keys: Tuple[str, ...]) -> List[str]:
+    for key in keys:
+        aliases = _safe_aliases(source.get(key))
+        if aliases:
+            return aliases
+    return []
+
+
+def _pick_record(source: Mapping[str, Any], keys: Tuple[str, ...]) -> Optional[Dict[str, Any]]:
+    for key in keys:
+        rec = _safe_record(source.get(key))
+        if rec is not None:
+            return rec
+    return None
+
+
+def _pick_active_years(source: Mapping[str, Any], keys: Tuple[str, ...]) -> Optional[Tuple[int, int]]:
+    for key in keys:
+        years = _safe_active_years(source.get(key))
+        if years is not None:
+            return years
+    return None
+
+
+def _pick_nested_mapping(source: Mapping[str, Any], keys: Tuple[str, ...]) -> Optional[Mapping[str, Any]]:
+    for key in keys:
+        nested = _safe_mapping(source.get(key))
+        if nested is not None:
+            return nested
+    return None
+
+
+def _normalize_advanced_projection_record(raw: Mapping[str, Any], src_type: str) -> Mapping[str, Any]:
+    nested_primary = _pick_nested_mapping(
+        raw,
+        (
+            "known_record",
+            "projection_known_record",
+            "fighter_projection",
+            "projection",
+            "payload",
+        ),
+    )
+
+    nested_secondary = None
+    if nested_primary is not None:
+        nested_secondary = _pick_nested_mapping(
+            nested_primary,
+            (
+                "known_record",
+                "fighter",
+                "record",
+                "projection",
+                "payload",
+            ),
+        )
+
+    lookup_chain: List[Mapping[str, Any]] = []
+    if nested_secondary is not None:
+        lookup_chain.append(nested_secondary)
+    if nested_primary is not None:
+        lookup_chain.append(nested_primary)
+    lookup_chain.append(raw)
+
+    def pick_text(keys: Tuple[str, ...]) -> str:
+        for src in lookup_chain:
+            txt = _pick_text(src, keys)
+            if txt:
+                return txt
+        return ""
+
+    def pick_optional_text(keys: Tuple[str, ...]) -> Optional[str]:
+        for src in lookup_chain:
+            txt = _pick_optional_text(src, keys)
+            if txt:
+                return txt
+        return None
+
+    def pick_aliases(keys: Tuple[str, ...]) -> List[str]:
+        for src in lookup_chain:
+            aliases = _pick_aliases(src, keys)
+            if aliases:
+                return aliases
+        return []
+
+    def pick_record(keys: Tuple[str, ...]) -> Optional[Dict[str, Any]]:
+        for src in lookup_chain:
+            rec = _pick_record(src, keys)
+            if rec is not None:
+                return rec
+        return None
+
+    def pick_active_years(keys: Tuple[str, ...]) -> Optional[Tuple[int, int]]:
+        for src in lookup_chain:
+            years = _pick_active_years(src, keys)
+            if years is not None:
+                return years
+        return None
+
+    def pick_dict(keys: Tuple[str, ...]) -> Optional[Dict[str, Any]]:
+        for src in lookup_chain:
+            for key in keys:
+                copied = _safe_dict_copy(src.get(key))
+                if copied is not None:
+                    return copied
+        return None
+
+    normalized: Dict[str, Any] = {
+        "fighter_global_id": pick_text(("fighter_global_id", "global_fighter_id", "fighter_id", "fighter_uuid")),
+        "full_name": pick_text(("full_name", "fighter_name", "display_name", "name")),
+        "known_aliases": pick_aliases(("known_aliases", "aliases", "nicknames")),
+        "nationality": pick_optional_text(("nationality", "country", "nation")),
+        "promotion": pick_optional_text(("promotion", "promotion_name", "organization", "org")),
+        "sport_ruleset": pick_optional_text(("sport_ruleset", "ruleset", "sport")),
+        "division": pick_optional_text(("division", "weight_class")),
+        "date_of_birth": pick_optional_text(("date_of_birth", "dob", "birth_date")),
+        "height": pick_optional_text(("height",)),
+        "reach": pick_optional_text(("reach",)),
+        "stance": pick_optional_text(("stance",)),
+        "record": pick_record(("record", "win_loss_record")),
+        "active_years": pick_active_years(("active_years", "career_years")),
+        "confidence_grade": pick_text(("confidence_grade", "identity_confidence_grade", "confidence")),
+        "loader_source_type": src_type,
+        "loader_source_name": pick_text(("loader_source_name", "source_name", "projection_name")) or src_type,
+    }
+
+    snapshot_ts = pick_text(("loader_snapshot_ts", "snapshot_ts", "projection_snapshot_ts"))
+    if snapshot_ts:
+        normalized["loader_snapshot_ts"] = snapshot_ts
+
+    origin_id = pick_text(("loader_record_origin_id", "record_origin_id", "projection_origin_id"))
+    if origin_id:
+        normalized["loader_record_origin_id"] = origin_id
+
+    completeness = pick_dict(("completeness_flags",))
+    if completeness is not None:
+        normalized["completeness_flags"] = completeness
+
+    return normalized
+
+
 def _norm_name(name: str) -> str:
     return " ".join(_safe_text(name).lower().split())
 
@@ -147,6 +307,12 @@ def _sanitize_single_known_record(raw: Mapping[str, Any], src_type: str) -> Opti
 
 def _collect_source_records(value: Any, label: str, errors: List[str]) -> List[Mapping[str, Any]]:
     if value is None:
+        return []
+    if isinstance(value, Mapping):
+        container_list = value.get("records")
+        if isinstance(container_list, list):
+            return container_list
+        errors.append(f"{label} must be a list")
         return []
     if not isinstance(value, list):
         errors.append(f"{label} must be a list")
@@ -272,6 +438,13 @@ def build_known_records_source_pack_preview(
         "global_read_projection",
     ]
 
+    advanced_projection_sources = {
+        "approved_historical",
+        "report_history",
+        "result_ledger",
+        "global_read_projection",
+    }
+
     received_count = sum(len(rows) for rows in source_rows.values())
     malformed_count = 0
 
@@ -282,7 +455,12 @@ def build_known_records_source_pack_preview(
                 malformed_count += 1
                 errors.append(f"{src}[{idx}] is not an object")
                 continue
-            sanitized = _sanitize_single_known_record(raw, src)
+
+            candidate = raw
+            if src in advanced_projection_sources:
+                candidate = _normalize_advanced_projection_record(raw, src)
+
+            sanitized = _sanitize_single_known_record(candidate, src)
             if sanitized is None:
                 malformed_count += 1
                 errors.append(f"{src}[{idx}] missing required fighter_global_id/full_name")

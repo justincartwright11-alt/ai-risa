@@ -268,3 +268,98 @@ def test_20_loader_source_lineage_present_on_cross_source_merge():
     rec = result.known_records[0]
     assert rec["loader_source_type"] == "manual_operator"
     assert rec.get("loader_source_lineage") == ["manual_operator", "global_read_projection"]
+
+
+def test_21_normalizes_report_history_projection_shape_preview_only():
+    result = build_known_records_source_pack_preview(
+        report_history_records=[
+            {
+                "projection_name": "report_history_projected_v1",
+                "projection": {
+                    "fighter_id": "rh-100",
+                    "fighter_name": "Alex Pereira",
+                    "aliases": ["Poatan", "poatan"],
+                    "country": "BR",
+                    "organization": "UFC",
+                    "ruleset": "MMA",
+                    "weight_class": "Light Heavyweight",
+                    "dob": "1987-07-07",
+                    "win_loss_record": {"wins": 12, "losses": 2, "draws": 0},
+                    "career_years": [2015, 2026],
+                    "confidence": "B",
+                },
+            }
+        ]
+    )
+    assert result.records_received_count == 1
+    assert result.records_accepted_count == 1
+    rec = result.known_records[0]
+    assert rec["fighter_global_id"] == "rh-100"
+    assert rec["full_name"] == "Alex Pereira"
+    assert rec["known_aliases"] == ["Poatan"]
+    assert rec["nationality"] == "BR"
+    assert rec["promotion"] == "UFC"
+    assert rec["sport_ruleset"] == "MMA"
+    assert rec["division"] == "Light Heavyweight"
+    assert rec["date_of_birth"] == "1987-07-07"
+    assert rec["record"] == {"wins": 12, "losses": 2, "draws": 0}
+    assert rec["active_years"] == (2015, 2026)
+    assert rec["confidence_grade"] == "B"
+    assert rec["loader_source_type"] == "report_history"
+    assert rec["loader_source_name"] == "report_history_projected_v1"
+
+
+def test_22_normalizes_global_projection_nested_known_record_shape():
+    result = build_known_records_source_pack_preview(
+        global_read_projection_records=[
+            {
+                "projection": {
+                    "known_record": {
+                        "global_fighter_id": "gdb-42",
+                        "display_name": "Tom Aspinall",
+                        "aliases": ["Honey Badger"],
+                        "country": "UK",
+                        "projection_origin_id": "gdb:row:42",
+                        "projection_snapshot_ts": "2026-05-17T00:00:00Z",
+                    }
+                },
+                "source_name": "global_db_projection_safe",
+                "database_pointer": "must_drop",
+                "write_authorized": True,
+            }
+        ]
+    )
+    assert result.records_received_count == 1
+    assert result.records_accepted_count == 1
+    rec = result.known_records[0]
+    assert rec["fighter_global_id"] == "gdb-42"
+    assert rec["full_name"] == "Tom Aspinall"
+    assert rec["loader_source_type"] == "global_read_projection"
+    assert rec["loader_source_name"] == "global_db_projection_safe"
+    assert rec["loader_record_origin_id"] == "gdb:row:42"
+    assert rec["loader_snapshot_ts"] == "2026-05-17T00:00:00Z"
+    assert "database_pointer" not in rec
+    assert "write_authorized" not in rec
+
+
+def test_23_accepts_records_container_shape_for_advanced_projection_source():
+    result = build_known_records_source_pack_preview(
+        approved_historical_records={
+            "records": [
+                {
+                    "known_record": {
+                        "fighter_id": "ah-1",
+                        "fighter_name": "Sean Strickland",
+                        "confidence": "A",
+                    }
+                }
+            ]
+        }
+    )
+    assert result.records_received_count == 1
+    assert result.records_accepted_count == 1
+    rec = result.known_records[0]
+    assert rec["fighter_global_id"] == "ah-1"
+    assert rec["full_name"] == "Sean Strickland"
+    assert rec["confidence_grade"] == "A"
+    assert rec["loader_source_type"] == "approved_historical"
