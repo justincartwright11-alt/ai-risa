@@ -618,10 +618,78 @@ function buildButton1IdentityResolverPayloadFromCandidateRows(candidateRows) {
     }
   }
 
+  function readKnownRecordsFromSafeWindowState() {
+    const candidateKeys = [
+      'button1KnownRecordsPreview',
+      'knownRecordsPreview',
+      'known_records_preview',
+      'button1_known_records',
+      'knownFighterRecords'
+    ];
+    for (const key of candidateKeys) {
+      const value = window[key];
+      if (Array.isArray(value)) {
+        return value;
+      }
+    }
+    return [];
+  }
+
+  function sanitizeKnownRecordPreview(rawRecord) {
+    if (!rawRecord || typeof rawRecord !== 'object') return null;
+    const fighterGlobalId = String(rawRecord.fighter_global_id || '').trim();
+    const fullName = String(rawRecord.full_name || '').trim();
+    if (!fighterGlobalId || !fullName) return null;
+
+    const aliasesRaw = Array.isArray(rawRecord.known_aliases) ? rawRecord.known_aliases : [];
+    const aliases = [];
+    const seenAliases = {};
+    for (const alias of aliasesRaw) {
+      const a = String(alias || '').trim();
+      if (!a) continue;
+      const k = a.toLowerCase();
+      if (seenAliases[k]) continue;
+      seenAliases[k] = true;
+      aliases.push(a);
+    }
+
+    const rec = rawRecord.record && typeof rawRecord.record === 'object' ? rawRecord.record : null;
+    const safeRecord = rec
+      ? {
+          wins: rec.wins,
+          losses: rec.losses,
+          draws: rec.draws
+        }
+      : null;
+
+    return {
+      fighter_global_id: fighterGlobalId,
+      full_name: fullName,
+      known_aliases: aliases,
+      nationality: rawRecord.nationality || null,
+      promotion: rawRecord.promotion || null,
+      sport_ruleset: rawRecord.sport_ruleset || null,
+      division: rawRecord.division || null,
+      date_of_birth: rawRecord.date_of_birth || null,
+      height: rawRecord.height || null,
+      reach: rawRecord.reach || null,
+      stance: rawRecord.stance || null,
+      record: safeRecord,
+      active_years: Array.isArray(rawRecord.active_years) && rawRecord.active_years.length === 2
+        ? [rawRecord.active_years[0], rawRecord.active_years[1]]
+        : null,
+      confidence_grade: rawRecord.confidence_grade || 'C'
+    };
+  }
+
+  const knownRecords = readKnownRecordsFromSafeWindowState()
+    .map(sanitizeKnownRecordPreview)
+    .filter(rec => rec && rec.fighter_global_id && rec.full_name);
+
   // Return bulk payload for all candidates
   return {
     candidates: candidates,
-    known_records: [],
+    known_records: knownRecords,
     source: 'button1_discovery',
     preview_only: true,
     profile_create_performed: false,
@@ -640,6 +708,7 @@ function postGlobalFighterIdentityResolverPreviewBulk(payload) {
     return Promise.resolve({
       ok: false,
       candidates_checked: 0,
+      known_records_compared_count: 0,
       manual_review_required_count: 0,
       conflict_count: 0,
       all_write_flags_false: true
@@ -678,6 +747,7 @@ function postGlobalFighterIdentityResolverPreviewBulk(payload) {
     return {
       ok: true,
       candidates_checked: candidates.length,
+      known_records_compared_count: knownRecords.length,
       results: results,
       manual_review_required_count: manualReviewCount,
       conflict_count: conflictCount,
@@ -968,6 +1038,7 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
   const candidatesChecked = bulkData.candidates_checked || 0;
   const manualReviewCount = bulkData.manual_review_required_count || 0;
   const conflictCount = bulkData.conflict_count || 0;
+  const knownRecordsCompared = bulkData.known_records_compared_count || 0;
   const allWriteFlagsFalse = bulkData.all_write_flags_false === true ? 'Yes' : 'No';
   const rowEvidence = (Array.isArray(bulkData.results) ? bulkData.results : [])
     .filter(r => r && !r.error)
@@ -978,6 +1049,7 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
     '<br><br><strong>Global Fighter Identity Resolver (Preview — Bulk):</strong>',
     'Checked: Yes',
     'Candidates checked: ' + candidatesChecked,
+    'Known records compared: ' + knownRecordsCompared,
     'Manual review required: ' + manualReviewCount,
     'Conflicts detected: ' + conflictCount,
     rowEvidenceHtml,

@@ -15,6 +15,9 @@ from operator_dashboard.global_fighter_identity_resolver_preview import (
     IncomingFighterCandidate,
     SourceRef,
 )
+from operator_dashboard.global_fighter_identity_known_records_context import (
+    build_known_records_context_preview,
+)
 
 
 @dataclass
@@ -207,11 +210,27 @@ def build_identity_resolver_payload_from_button1_context(
     - preview_only: true
     - all write flags: false
     """
+    return build_identity_resolver_payload_from_button1_context_with_known_records(
+        candidate_rows=candidate_rows,
+        in_memory_known_records=None,
+    )
+
+
+def build_identity_resolver_payload_from_button1_context_with_known_records(
+    candidate_rows: Optional[List[Dict[str, Any]]] = None,
+    in_memory_known_records: Any = None,
+) -> Dict[str, Any]:
+    """Build preview-safe resolver payload from Button 1 context + known records.
+
+    Known records are sanitized using the known-records preview context builder.
+    No writes are performed.
+    """
     extraction_result = extract_button1_candidate_context_for_identity_resolver(candidate_rows)
+    known_context = build_known_records_context_preview(in_memory_known_records)
 
     return {
         "candidates": [asdict(c) for c in extraction_result.candidates],
-        "known_records": [],
+        "known_records": list(known_context.known_records),
         "source": "button1_discovery",
         "preview_only": True,
         "profile_create_performed": False,
@@ -221,5 +240,6 @@ def build_identity_resolver_payload_from_button1_context(
         "ranking_write_performed": False,
         "learning_apply_performed": False,
         "calibration_write_performed": False,
+        "known_records_context": known_context.to_dict(),
         "extraction_result": extraction_result.to_dict(),
     }
