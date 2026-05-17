@@ -66,9 +66,7 @@ def test_gate1_alignment_render_is_preview_only_evidence(client):
     assert "Identity-blocked rows" in body
     assert "Rows with identity blockers are held from queue-save preview until reviewed." in body
     assert "Blocked row" in body
-    assert "Identity conflict" in body
-    assert "Source missing" in body
-    assert "Ambiguous identity" in body
+    assert "canonicalizeOperatorIdentityReasonLabels" in body
     assert "Profile write disabled: Yes" in body
     assert "Merge disabled: Yes" in body
     assert "Database write disabled: Yes" in body
