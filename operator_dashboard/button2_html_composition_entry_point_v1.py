@@ -78,6 +78,11 @@ _RISK_TYPES = {
 _RISK_SEVERITIES = {"watch", "elevated", "critical"}
 _ROUND_CONTROL_EXPECTATIONS = {"fighter_a", "fighter_b", "swing", "contested"}
 _DOMINANCE_SIGNALS = {"low", "medium", "high"}
+_SOURCE_TYPES = {"official", "research", "operator"}
+_SOURCE_CLASSES = {"tier_a", "tier_b", "tier_c"}
+_CONFIDENCE_LEVELS = {"high", "medium", "low", "uncertain"}
+_CITATION_COMPLETENESS = {"complete", "partial", "minimal"}
+_VERIFICATION_STATUS = {"verified", "unverified", "contradicted"}
 _STATUS_LABELS = {"DRAFT", "FINAL", "INTERNAL_REVIEW"}
 _CONFIDENTIALITY_LABELS = {"PUBLIC", "CONFIDENTIAL", "STRICTLY_CONFIDENTIAL"}
 _WATERMARK_TYPES = {"none", "draft", "confidential"}
@@ -163,6 +168,21 @@ def _default_header_footer_watermark_metadata():
             "watermark_opacity": 0.12,
             "watermark_angle": 45,
         },
+    }
+
+def _default_source_traceability_metadata():
+    return {
+        "schema_version": "button2.source_traceability.v1",
+        "validation_status": "missing",
+        "validation_issues": ["missing_source_traceability_metadata"],
+        "total_sources": 0,
+        "official_sources_count": 0,
+        "research_sources_count": 0,
+        "operator_sources_count": 0,
+        "average_confidence_level": "uncertain",
+        "corroboration_coverage": 0.0,
+        "sources": [],
+        "lineage_graph": {},
     }
 
 def _default_chart_and_scenario_metadata():
@@ -726,6 +746,81 @@ def _validate_header_footer_watermark_metadata(hfw_metadata):
     }
 
 
+def _validate_source_traceability_metadata(src_metadata):
+    """Validate source traceability metadata. Invalid metadata is not certified."""
+    if src_metadata is None:
+        return {
+            "valid": False,
+            "status": "missing",
+            "issues": ["missing_source_traceability_metadata"],
+        }
+    if not isinstance(src_metadata, dict):
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["source_traceability_metadata_not_dict"],
+        }
+
+    issues = []
+
+    # Validate sources array
+    sources = src_metadata.get("sources")
+    if not isinstance(sources, list):
+        issues.append("sources_not_list")
+    else:
+        for idx, src in enumerate(sources):
+            if not isinstance(src, dict):
+                issues.append(f"source_{idx}_not_dict")
+                continue
+
+            src_type = src.get("source_type")
+            if src_type not in _SOURCE_TYPES:
+                issues.append(f"source_{idx}_invalid_source_type")
+
+            src_class = src.get("source_class")
+            if src_class not in _SOURCE_CLASSES:
+                issues.append(f"source_{idx}_invalid_source_class")
+
+            confidence = src.get("confidence_level")
+            if confidence not in _CONFIDENCE_LEVELS:
+                issues.append(f"source_{idx}_invalid_confidence_level")
+
+            completeness = src.get("citation_completeness")
+            if completeness not in _CITATION_COMPLETENESS:
+                issues.append(f"source_{idx}_invalid_citation_completeness")
+
+            verification = src.get("verification_status")
+            if verification not in _VERIFICATION_STATUS:
+                issues.append(f"source_{idx}_invalid_verification_status")
+
+            if not src.get("source_url"):
+                issues.append(f"source_{idx}_missing_source_url")
+
+            if not src.get("source_date"):
+                issues.append(f"source_{idx}_missing_source_date")
+
+    # Validate lineage_graph
+    lineage_graph = src_metadata.get("lineage_graph")
+    if not isinstance(lineage_graph, dict):
+        issues.append("lineage_graph_not_dict")
+
+    # Validate total_sources is non-negative
+    total_sources = src_metadata.get("total_sources", 0)
+    if not isinstance(total_sources, int) or total_sources < 0:
+        issues.append("invalid_total_sources")
+
+    # Validate corroboration_coverage is between 0 and 1
+    corroboration = src_metadata.get("corroboration_coverage", 0.0)
+    if not isinstance(corroboration, (int, float)) or corroboration < 0.0 or corroboration > 1.0:
+        issues.append("invalid_corroboration_coverage")
+
+    return {
+        "valid": len(issues) == 0,
+        "status": "valid" if not issues else "invalid",
+        "issues": issues,
+    }
+
+
 def _header_footer_watermark_payload(report_context_preview):
     """Build and validate deterministic header/footer/watermark metadata payload."""
     hfw_metadata = report_context_preview.get("header_footer_watermark_metadata")
@@ -744,6 +839,29 @@ def _header_footer_watermark_payload(report_context_preview):
         "allowed_confidentiality_labels": sorted(_CONFIDENTIALITY_LABELS),
         "allowed_watermark_types": sorted(_WATERMARK_TYPES),
         "header_footer_watermark": hfw_metadata,
+    }
+
+
+def _source_traceability_payload(report_context_preview):
+    """Build and validate deterministic source traceability metadata payload."""
+    src_metadata = report_context_preview.get("source_traceability_metadata")
+    src_provided = "source_traceability_metadata" in report_context_preview
+
+    if not src_provided:
+        src_metadata = _default_source_traceability_metadata()
+
+    validation = _validate_source_traceability_metadata(src_metadata)
+
+    return {
+        "schema_version": "button2.source_traceability.v1",
+        "validation_status": validation["status"],
+        "validation_issues": validation["issues"],
+        "allowed_source_types": sorted(_SOURCE_TYPES),
+        "allowed_source_classes": sorted(_SOURCE_CLASSES),
+        "allowed_confidence_levels": sorted(_CONFIDENCE_LEVELS),
+        "allowed_citation_completeness": sorted(_CITATION_COMPLETENESS),
+        "allowed_verification_status": sorted(_VERIFICATION_STATUS),
+        "source_traceability": src_metadata,
     }
 
 
@@ -799,6 +917,7 @@ _HTML_TEMPLATE = """\
     .page-breaks-metadata {{ display: none; }}
     .chart-scenario-metadata {{ display: none; }}
     .header-footer-watermark-metadata {{ display: none; }}
+    .source-traceability-metadata {{ display: none; }}
   </style>
 </head>
 <body>
@@ -828,6 +947,7 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Page-break metadata validation: {page_breaks_metadata_validation_status}</div>
     <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
     <div class="qa-row">Header/footer/watermark metadata validation: {hfw_metadata_validation_status}</div>
+    <div class="qa-row">Source traceability metadata validation: {src_metadata_validation_status}</div>
   </div>
 
     <section
@@ -866,6 +986,15 @@ _HTML_TEMPLATE = """\
         data-header-footer-watermark-validation-status="{hfw_metadata_validation_status}"
     >
         <pre data-hierarchy-level="Meta">{hfw_metadata_json}</pre>
+    </section>
+
+    <section
+        id="button2-source-traceability-metadata"
+        class="source-traceability-metadata"
+        data-source-traceability-schema-version="{src_schema_version}"
+        data-source-traceability-validation-status="{src_metadata_validation_status}"
+    >
+        <pre data-hierarchy-level="Meta">{src_metadata_json}</pre>
     </section>
 </body>
 </html>"""
@@ -930,11 +1059,13 @@ def build_button2_report_html(report_context_preview):
     chart_valid = chart_payload["validation_status"] == "valid"
     hfw_payload = _header_footer_watermark_payload(report_context_preview)
     hfw_valid = hfw_payload["validation_status"] == "valid"
+    src_payload = _source_traceability_payload(report_context_preview)
+    src_valid = src_payload["validation_status"] == "valid"
     visual_certification_value = report_context_preview.get(
         "visual_certification_status", "not_certified"
     )
-    # Fail closed for hierarchy, page-break, chart, or hfw contract issues.
-    if not hierarchy_valid or not page_breaks_valid or not chart_valid or not hfw_valid:
+    # Fail closed for hierarchy, page-break, chart, hfw, or source traceability contract issues.
+    if not hierarchy_valid or not page_breaks_valid or not chart_valid or not hfw_valid or not src_valid:
         visual_certification_value = "not_certified"
     
     # Generate typography CSS stylesheet from locked tokens
@@ -1005,6 +1136,16 @@ def build_button2_report_html(report_context_preview):
         ),
         hfw_metadata_json=_esc(
             _json.dumps(hfw_payload, separators=(",", ":"), sort_keys=True),
+            "{}",
+        ),
+        src_metadata_validation_status=_esc(
+            src_payload["validation_status"], "invalid"
+        ),
+        src_schema_version=_esc(
+            src_payload["schema_version"], "button2.source_traceability.v1"
+        ),
+        src_metadata_json=_esc(
+            _json.dumps(src_payload, separators=(",", ":"), sort_keys=True),
             "{}",
         ),
     )
