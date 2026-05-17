@@ -64,9 +64,23 @@ def test_gate1_alignment_render_is_preview_only_evidence(client):
     html = _html(client)
     body = _function_body(html, "renderButton1Gate1DryRunIdentityAlignment")
     assert "Identity-blocked rows" in body
+    assert "Rows with identity blockers are held from queue-save preview until reviewed." in body
+    assert "Blocked row" in body
+    assert "Identity conflict" in body
+    assert "Source missing" in body
+    assert "Ambiguous identity" in body
     assert "Profile write disabled: Yes" in body
     assert "Merge disabled: Yes" in body
     assert "Database write disabled: Yes" in body
+
+
+def test_gate1_alignment_render_does_not_expose_raw_identity_internals(client):
+    html = _html(client)
+    body = _function_body(html, "renderButton1Gate1DryRunIdentityAlignment")
+    assert "candidate_matches" not in body
+    assert "incoming_candidate" not in body
+    assert "JSON.stringify" not in body
+    assert "rawReasons.join" not in body
 
 
 def test_dashboard_still_has_three_main_buttons_and_three_gates(client):

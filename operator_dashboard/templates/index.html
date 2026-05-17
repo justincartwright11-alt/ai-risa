@@ -850,12 +850,48 @@ function renderButton1Gate1DryRunIdentityAlignment(statusId, existingHtml, dryRu
     : 0;
   const blockedCount = Array.isArray(dryRunData.blocked) ? dryRunData.blocked.length : 0;
   const wouldSaveCount = Array.isArray(dryRunData.would_save) ? dryRunData.would_save.length : 0;
+  const byCandidate = dryRunData && dryRunData.identity_blocking_reasons_by_candidate
+    ? dryRunData.identity_blocking_reasons_by_candidate
+    : {};
+
+  function reasonLabel(reason) {
+    const r = String(reason || '').toLowerCase();
+    if (r.indexOf('identity_status_blocked:identity_conflict') >= 0) return 'Identity conflict';
+    if (r.indexOf('identity_status_blocked:identity_source_missing') >= 0) return 'Source missing';
+    if (r.indexOf('identity_status_blocked:identity_ambiguous') >= 0) return 'Ambiguous identity';
+    if (r.indexOf('identity_ready_for_queue_review=false') >= 0) return 'Manual review required';
+    if (r.indexOf('missing_source_provenance') >= 0) return 'Source missing';
+    if (r.indexOf('incomplete_evidence') >= 0) return 'Manual review required';
+    if (r.indexOf('new_fighter') >= 0) return 'No match - review required';
+    return 'Manual review required';
+  }
+
+  const blockedReasonLines = [];
+  const candidateIds = Object.keys(byCandidate);
+  for (const candidateId of candidateIds) {
+    const rawReasons = Array.isArray(byCandidate[candidateId]) ? byCandidate[candidateId] : [];
+    const labels = [];
+    for (const rawReason of rawReasons) {
+      const label = reasonLabel(rawReason);
+      if (labels.indexOf(label) < 0) labels.push(label);
+    }
+    if (!labels.length) {
+      labels.push('Manual review required');
+    }
+    blockedReasonLines.push('Blocked row ' + candidateId + ': ' + labels.join(', '));
+  }
+
+  const blockedReasonSummary = blockedReasonLines.length
+    ? blockedReasonLines.join('<br>')
+    : 'Blocked row reasons: None';
 
   const gate1Html = [
     '<br><br><strong>Gate 1 Dry-Run Identity Alignment (Preview):</strong>',
+    'Rows with identity blockers are held from queue-save preview until reviewed.',
     'Identity-blocked rows: ' + identityBlockedCount,
     'Blocked rows: ' + blockedCount,
     'Would-save rows: ' + wouldSaveCount,
+    blockedReasonSummary,
     'Profile write disabled: Yes',
     'Merge disabled: Yes',
     'Database write disabled: Yes'
