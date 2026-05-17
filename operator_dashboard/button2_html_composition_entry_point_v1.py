@@ -86,6 +86,11 @@ _VERIFICATION_STATUS = {"verified", "unverified", "contradicted"}
 _STATUS_LABELS = {"DRAFT", "FINAL", "INTERNAL_REVIEW"}
 _CONFIDENTIALITY_LABELS = {"PUBLIC", "CONFIDENTIAL", "STRICTLY_CONFIDENTIAL"}
 _WATERMARK_TYPES = {"none", "draft", "confidential"}
+_ROLLUP_STATUS = {"all_valid", "mixed", "all_invalid"}
+_VISUAL_CONFIDENCE_LEVELS = {"high", "medium", "low", "unknown"}
+_CERTIFICATION_READINESS = {"ready", "needs_review", "not_ready"}
+_LAYER_VALIDATION_STATUS = {"valid", "invalid", "missing"}
+_PROOF_STATUS = {"present", "missing", "invalid"}
 
 
 def _default_section_block_metadata():
@@ -865,6 +870,436 @@ def _source_traceability_payload(report_context_preview):
     }
 
 
+def _default_visual_qa_rollup_metadata():
+    """Return deterministic default visual QA rollup metadata when not provided."""
+    import datetime
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {
+        "schema_version": "button2.visual_qa_rollup.v1",
+        "rollup_generated_timestamp": timestamp,
+        "rollup_status": "all_invalid",  # All layers missing = all_invalid status
+        "layer_validation_summary": {
+            "layer_1_typography": {
+                "schema_version": "button2.page_typography_tokens.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "layer_2_hierarchy": {
+                "schema_version": "button2.page_hierarchy.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "layer_3_page_breaks": {
+                "schema_version": "button2.page_breaks_and_blocks.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "layer_4_charts": {
+                "schema_version": "button2.chart_and_scenario.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "layer_5_header_footer_watermark": {
+                "schema_version": "button2.header_footer_watermark.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "layer_6_source_traceability": {
+                "schema_version": "button2.source_traceability.v1",
+                "validation_status": "missing",
+                "validation_issues_count": 0,
+                "required_for_certification": True,
+            },
+            "proof_overlap": {
+                "proof_kind": "overlap_proof",
+                "proof_status": "missing",
+                "required_for_certification": True,
+            },
+            "proof_off_page_text": {
+                "proof_kind": "off_page_text_proof",
+                "proof_status": "missing",
+                "required_for_certification": True,
+            },
+        },
+        "visual_qa_indicators": {
+            "overall_visual_completeness": 0.0,
+            "overall_visual_confidence": "unknown",
+            "certification_readiness": "not_ready",
+            "valid_layers_count": 0,
+            "invalid_layers_count": 0,
+            "missing_layers_count": 8,
+            "layers_requiring_attention": [
+                "layer_1_typography",
+                "layer_2_hierarchy",
+                "layer_3_page_breaks",
+                "layer_4_charts",
+                "layer_5_header_footer_watermark",
+                "layer_6_source_traceability",
+                "proof_overlap",
+                "proof_off_page_text",
+            ],
+        },
+        "recommended_review_focus": [
+            {
+                "priority": 1,
+                "category": "all_layers",
+                "issue": "missing_visual_qa_rollup_metadata",
+                "recommendation": "Provide visual QA rollup metadata",
+            }
+        ],
+    }
+
+
+def _validate_visual_qa_rollup_metadata(rollup_metadata):
+    """Validate visual QA rollup metadata. Invalid metadata is not certified."""
+    if rollup_metadata is None:
+        return {
+            "valid": False,
+            "status": "missing",
+            "issues": ["missing_visual_qa_rollup_metadata"],
+        }
+    if not isinstance(rollup_metadata, dict):
+        return {
+            "valid": False,
+            "status": "invalid",
+            "issues": ["visual_qa_rollup_metadata_not_dict"],
+        }
+
+    issues = []
+
+    # Validate rollup_status
+    rollup_status = rollup_metadata.get("rollup_status")
+    if rollup_status not in _ROLLUP_STATUS:
+        issues.append("invalid_rollup_status")
+
+    # Validate layer_validation_summary
+    layer_summary = rollup_metadata.get("layer_validation_summary")
+    if not isinstance(layer_summary, dict):
+        issues.append("layer_validation_summary_not_dict")
+    else:
+        expected_layers = {
+            "layer_1_typography",
+            "layer_2_hierarchy",
+            "layer_3_page_breaks",
+            "layer_4_charts",
+            "layer_5_header_footer_watermark",
+            "layer_6_source_traceability",
+            "proof_overlap",
+            "proof_off_page_text",
+        }
+        provided_layers = set(layer_summary.keys())
+        if provided_layers != expected_layers:
+            issues.append("layer_validation_summary_missing_or_extra_layers")
+
+        for layer_name, layer_info in layer_summary.items():
+            if not isinstance(layer_info, dict):
+                issues.append(f"{layer_name}_not_dict")
+                continue
+
+            if "proof" in layer_name:
+                # Proof structure
+                proof_status = layer_info.get("proof_status")
+                if proof_status not in _PROOF_STATUS:
+                    issues.append(f"{layer_name}_invalid_proof_status")
+            else:
+                # Layer structure
+                validation_status = layer_info.get("validation_status")
+                if validation_status not in _LAYER_VALIDATION_STATUS:
+                    issues.append(f"{layer_name}_invalid_validation_status")
+                issues_count = layer_info.get("validation_issues_count")
+                if not isinstance(issues_count, int) or issues_count < 0:
+                    issues.append(f"{layer_name}_invalid_validation_issues_count")
+
+    # Validate visual_qa_indicators
+    indicators = rollup_metadata.get("visual_qa_indicators")
+    if not isinstance(indicators, dict):
+        issues.append("visual_qa_indicators_not_dict")
+    else:
+        completeness = indicators.get("overall_visual_completeness")
+        if not isinstance(completeness, (int, float)) or completeness < 0.0 or completeness > 1.0:
+            issues.append("invalid_overall_visual_completeness")
+
+        confidence = indicators.get("overall_visual_confidence")
+        if confidence not in _VISUAL_CONFIDENCE_LEVELS:
+            issues.append("invalid_overall_visual_confidence")
+
+        readiness = indicators.get("certification_readiness")
+        if readiness not in _CERTIFICATION_READINESS:
+            issues.append("invalid_certification_readiness")
+
+        valid_count = indicators.get("valid_layers_count")
+        if not isinstance(valid_count, int) or valid_count < 0 or valid_count > 8:
+            issues.append("invalid_valid_layers_count")
+
+        invalid_count = indicators.get("invalid_layers_count")
+        if not isinstance(invalid_count, int) or invalid_count < 0 or invalid_count > 8:
+            issues.append("invalid_invalid_layers_count")
+
+        missing_count = indicators.get("missing_layers_count")
+        if not isinstance(missing_count, int) or missing_count < 0 or missing_count > 8:
+            issues.append("invalid_missing_layers_count")
+
+        layers_attention = indicators.get("layers_requiring_attention")
+        if not isinstance(layers_attention, list):
+            issues.append("layers_requiring_attention_not_list")
+
+    # Validate recommended_review_focus
+    focus = rollup_metadata.get("recommended_review_focus")
+    if not isinstance(focus, list):
+        issues.append("recommended_review_focus_not_list")
+    else:
+        for idx, item in enumerate(focus):
+            if not isinstance(item, dict):
+                issues.append(f"review_focus_{idx}_not_dict")
+                continue
+            if not isinstance(item.get("priority"), int) or item.get("priority") < 1:
+                issues.append(f"review_focus_{idx}_invalid_priority")
+            if not item.get("category"):
+                issues.append(f"review_focus_{idx}_missing_category")
+            if not item.get("issue"):
+                issues.append(f"review_focus_{idx}_missing_issue")
+            if not item.get("recommendation"):
+                issues.append(f"review_focus_{idx}_missing_recommendation")
+
+    return {
+        "valid": len(issues) == 0,
+        "status": "valid" if not issues else "invalid",
+        "issues": issues,
+    }
+
+
+def _visual_qa_rollup_payload(report_context_preview, layer_payloads):
+    """Build and validate visual QA rollup payload from all layer validations and proofs.
+    
+    Args:
+        report_context_preview (dict): The report context
+        layer_payloads (dict): Dict containing all layer payloads with keys:
+            - hierarchy_payload
+            - page_breaks_payload
+            - chart_payload
+            - hfw_payload
+            - src_payload
+    
+    Returns:
+        dict: Rollup payload with schema, validation status, and metadata
+    """
+    import datetime
+    
+    # Extract layer validation statuses
+    layer_1_status = layer_payloads.get("hierarchy_payload", {}).get("hierarchy_validation_status", "missing")
+    layer_2_status = layer_payloads.get("page_breaks_payload", {}).get("validation_status", "missing")
+    layer_3_status = layer_payloads.get("chart_payload", {}).get("validation_status", "missing")
+    layer_4_status = layer_payloads.get("hfw_payload", {}).get("validation_status", "missing")
+    layer_5_status = layer_payloads.get("src_payload", {}).get("validation_status", "missing")
+    
+    # Extract proof statuses from report context
+    overlap_proof = report_context_preview.get("overlap_proof", {})
+    off_page_text_proof = report_context_preview.get("off_page_text_proof", {})
+    
+    overlap_proof_status = "present" if isinstance(overlap_proof, dict) and overlap_proof.get("status") == "present" else (
+        "invalid" if isinstance(overlap_proof, dict) and overlap_proof.get("status") == "invalid" else "missing"
+    )
+    off_page_proof_status = "present" if isinstance(off_page_text_proof, dict) and off_page_text_proof.get("status") == "present" else (
+        "invalid" if isinstance(off_page_text_proof, dict) and off_page_text_proof.get("status") == "invalid" else "missing"
+    )
+    
+    # Count valid/invalid/missing
+    all_statuses = [layer_1_status, layer_2_status, layer_3_status, layer_4_status, layer_5_status, overlap_proof_status, off_page_proof_status]
+    # Note: Layer 6 (source traceability) - we need to get its status
+    src_payload = layer_payloads.get("src_payload", {})
+    layer_6_status = src_payload.get("validation_status", "missing")
+    all_statuses.append(layer_6_status)
+    
+    valid_count = sum(1 for s in all_statuses if s == "valid" or s == "present")
+    invalid_count = sum(1 for s in all_statuses if s == "invalid")
+    missing_count = sum(1 for s in all_statuses if s == "missing")
+    
+    # Calculate completeness (0.0-1.0)
+    completeness = valid_count / 8.0
+    
+    # Determine confidence level based on completeness
+    if completeness == 1.0:
+        confidence = "high"
+    elif completeness >= 0.75:
+        confidence = "medium"
+    elif completeness >= 0.50:
+        confidence = "low"
+    else:
+        confidence = "unknown"
+    
+    # Determine certification readiness
+    if invalid_count == 0 and missing_count == 0:
+        readiness = "ready"
+    elif invalid_count > 0 and invalid_count < 3:
+        readiness = "needs_review"
+    else:
+        readiness = "not_ready"
+    
+    # Determine overall rollup status
+    if valid_count == 8:
+        rollup_status = "all_valid"
+    elif valid_count == 0:
+        rollup_status = "all_invalid"
+    else:
+        rollup_status = "mixed"
+    
+    # Build layers requiring attention
+    layers_attention = []
+    layer_map = [
+        ("layer_1_typography", layer_1_status),
+        ("layer_2_hierarchy", layer_2_status),
+        ("layer_3_page_breaks", layer_3_status),
+        ("layer_4_charts", layer_4_status),
+        ("layer_5_header_footer_watermark", layer_4_status),
+        ("layer_6_source_traceability", layer_6_status),
+        ("proof_overlap", overlap_proof_status),
+        ("proof_off_page_text", off_page_proof_status),
+    ]
+    
+    for layer_name, status in layer_map:
+        if status != "valid" and status != "present":
+            layers_attention.append(layer_name)
+    
+    # Build recommended review focus
+    recommended_focus = []
+    priority = 1
+    
+    # Priority 1: Missing critical proofs
+    if overlap_proof_status == "missing":
+        recommended_focus.append({
+            "priority": priority,
+            "category": "proof_overlap",
+            "issue": "missing_overlap_proof",
+            "recommendation": "Provide overlap proof for certification",
+        })
+        priority += 1
+    
+    if off_page_proof_status == "missing":
+        recommended_focus.append({
+            "priority": priority,
+            "category": "proof_off_page_text",
+            "issue": "missing_off_page_text_proof",
+            "recommendation": "Provide off-page text proof for certification",
+        })
+        priority += 1
+    
+    # Priority 2: Missing layer metadata
+    for layer_name, status in layer_map:
+        if status == "missing" and "proof" not in layer_name:
+            recommended_focus.append({
+                "priority": priority,
+                "category": layer_name,
+                "issue": f"missing_{layer_name}_metadata",
+                "recommendation": f"Provide {layer_name} metadata before certification",
+            })
+            priority += 1
+    
+    # Priority 3: Invalid layer metadata
+    for layer_name, status in layer_map:
+        if status == "invalid":
+            recommended_focus.append({
+                "priority": priority,
+                "category": layer_name,
+                "issue": f"invalid_{layer_name}_metadata",
+                "recommendation": f"Review and fix {layer_name} metadata issues",
+            })
+            priority += 1
+    
+    # If no issues, add ready message
+    if not recommended_focus:
+        recommended_focus.append({
+            "priority": 1,
+            "category": "all_layers",
+            "issue": "all_valid",
+            "recommendation": "All visual QA metadata is valid and complete",
+        })
+    
+    # Build layer validation summary
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    layer_validation_summary = {
+        "layer_1_typography": {
+            "schema_version": "button2.page_typography_tokens.v1",
+            "validation_status": layer_1_status,
+            "validation_issues_count": 0,
+            "required_for_certification": True,
+        },
+        "layer_2_hierarchy": {
+            "schema_version": "button2.page_hierarchy.v1",
+            "validation_status": layer_2_status,
+            "validation_issues_count": len(layer_payloads.get("page_breaks_payload", {}).get("validation_issues", [])),
+            "required_for_certification": True,
+        },
+        "layer_3_page_breaks": {
+            "schema_version": "button2.page_breaks_and_blocks.v1",
+            "validation_status": layer_3_status,
+            "validation_issues_count": len(layer_payloads.get("page_breaks_payload", {}).get("validation_issues", [])),
+            "required_for_certification": True,
+        },
+        "layer_4_charts": {
+            "schema_version": "button2.chart_and_scenario.v1",
+            "validation_status": layer_3_status,
+            "validation_issues_count": len(layer_payloads.get("chart_payload", {}).get("validation_issues", [])),
+            "required_for_certification": True,
+        },
+        "layer_5_header_footer_watermark": {
+            "schema_version": "button2.header_footer_watermark.v1",
+            "validation_status": layer_4_status,
+            "validation_issues_count": len(layer_payloads.get("hfw_payload", {}).get("validation_issues", [])),
+            "required_for_certification": True,
+        },
+        "layer_6_source_traceability": {
+            "schema_version": "button2.source_traceability.v1",
+            "validation_status": layer_6_status,
+            "validation_issues_count": len(layer_payloads.get("src_payload", {}).get("validation_issues", [])),
+            "required_for_certification": True,
+        },
+        "proof_overlap": {
+            "proof_kind": "overlap_proof",
+            "proof_status": overlap_proof_status,
+            "required_for_certification": True,
+        },
+        "proof_off_page_text": {
+            "proof_kind": "off_page_text_proof",
+            "proof_status": off_page_proof_status,
+            "required_for_certification": True,
+        },
+    }
+    
+    rollup_metadata = {
+        "schema_version": "button2.visual_qa_rollup.v1",
+        "rollup_generated_timestamp": timestamp,
+        "rollup_status": rollup_status,
+        "layer_validation_summary": layer_validation_summary,
+        "visual_qa_indicators": {
+            "overall_visual_completeness": completeness,
+            "overall_visual_confidence": confidence,
+            "certification_readiness": readiness,
+            "valid_layers_count": valid_count,
+            "invalid_layers_count": invalid_count,
+            "missing_layers_count": missing_count,
+            "layers_requiring_attention": layers_attention,
+        },
+        "recommended_review_focus": recommended_focus,
+    }
+    
+    validation = _validate_visual_qa_rollup_metadata(rollup_metadata)
+    
+    return {
+        "schema_version": "button2.visual_qa_rollup.v1",
+        "validation_status": validation["status"],
+        "validation_issues": validation["issues"],
+        "allowed_rollup_statuses": sorted(_ROLLUP_STATUS),
+        "allowed_confidence_levels": sorted(_VISUAL_CONFIDENCE_LEVELS),
+        "allowed_readiness_levels": sorted(_CERTIFICATION_READINESS),
+        "visual_qa_rollup": rollup_metadata,
+    }
+
+
 def _proof_label(proof_value):
     """Render a proof field value as a safe escaped label string."""
     if isinstance(proof_value, dict):
@@ -918,6 +1353,7 @@ _HTML_TEMPLATE = """\
     .chart-scenario-metadata {{ display: none; }}
     .header-footer-watermark-metadata {{ display: none; }}
     .source-traceability-metadata {{ display: none; }}
+    .visual-qa-rollup-metadata {{ display: none; }}
   </style>
 </head>
 <body>
@@ -948,6 +1384,9 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
     <div class="qa-row">Header/footer/watermark metadata validation: {hfw_metadata_validation_status}</div>
     <div class="qa-row">Source traceability metadata validation: {src_metadata_validation_status}</div>
+    <div class="qa-row">Visual QA rollup status: {rollup_status} | Certification readiness: {certification_readiness} | Completeness: {visual_completeness}</div>
+    <div class="qa-row">Valid layers: {valid_layers_count}/8 | Invalid: {invalid_layers_count} | Missing: {missing_layers_count}</div>
+    <div class="qa-row">Overall visual confidence: {overall_visual_confidence}</div>
   </div>
 
     <section
@@ -995,6 +1434,18 @@ _HTML_TEMPLATE = """\
         data-source-traceability-validation-status="{src_metadata_validation_status}"
     >
         <pre data-hierarchy-level="Meta">{src_metadata_json}</pre>
+    </section>
+
+    <section
+        id="button2-visual-qa-rollup-metadata"
+        class="visual-qa-rollup-metadata"
+        data-visual-qa-rollup-schema-version="{rollup_schema_version}"
+        data-visual-qa-rollup-status="{rollup_status}"
+        data-certification-readiness="{certification_readiness}"
+        data-visual-completeness="{visual_completeness}"
+        data-visual-confidence="{overall_visual_confidence}"
+    >
+        <pre data-hierarchy-level="Meta">{rollup_metadata_json}</pre>
     </section>
 </body>
 </html>"""
@@ -1061,11 +1512,25 @@ def build_button2_report_html(report_context_preview):
     hfw_valid = hfw_payload["validation_status"] == "valid"
     src_payload = _source_traceability_payload(report_context_preview)
     src_valid = src_payload["validation_status"] == "valid"
+    
+    # Generate visual QA rollup payload
+    rollup_payload = _visual_qa_rollup_payload(
+        report_context_preview,
+        {
+            "hierarchy_payload": hierarchy_payload,
+            "page_breaks_payload": page_breaks_payload,
+            "chart_payload": chart_payload,
+            "hfw_payload": hfw_payload,
+            "src_payload": src_payload,
+        }
+    )
+    rollup_valid = rollup_payload["validation_status"] == "valid"
+    
     visual_certification_value = report_context_preview.get(
         "visual_certification_status", "not_certified"
     )
-    # Fail closed for hierarchy, page-break, chart, hfw, or source traceability contract issues.
-    if not hierarchy_valid or not page_breaks_valid or not chart_valid or not hfw_valid or not src_valid:
+    # Fail closed for hierarchy, page-break, chart, hfw, source traceability, or rollup contract issues.
+    if not hierarchy_valid or not page_breaks_valid or not chart_valid or not hfw_valid or not src_valid or not rollup_valid:
         visual_certification_value = "not_certified"
     
     # Generate typography CSS stylesheet from locked tokens
@@ -1146,6 +1611,41 @@ def build_button2_report_html(report_context_preview):
         ),
         src_metadata_json=_esc(
             _json.dumps(src_payload, separators=(",", ":"), sort_keys=True),
+            "{}",
+        ),
+        rollup_schema_version=_esc(
+            rollup_payload["schema_version"], "button2.visual_qa_rollup.v1"
+        ),
+        rollup_status=_esc(
+            rollup_payload.get("visual_qa_rollup", {}).get("rollup_status", "unknown"),
+            "unknown"
+        ),
+        certification_readiness=_esc(
+            rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("certification_readiness", "unknown"),
+            "unknown"
+        ),
+        visual_completeness=_esc(
+            f"{rollup_payload.get('visual_qa_rollup', {}).get('visual_qa_indicators', {}).get('overall_visual_completeness', 0.0) * 100:.0f}%",
+            "0%"
+        ),
+        valid_layers_count=_esc(
+            str(rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("valid_layers_count", 0)),
+            "0"
+        ),
+        invalid_layers_count=_esc(
+            str(rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("invalid_layers_count", 0)),
+            "0"
+        ),
+        missing_layers_count=_esc(
+            str(rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("missing_layers_count", 0)),
+            "0"
+        ),
+        overall_visual_confidence=_esc(
+            rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("overall_visual_confidence", "unknown"),
+            "unknown"
+        ),
+        rollup_metadata_json=_esc(
+            _json.dumps(rollup_payload, separators=(",", ":"), sort_keys=True),
             "{}",
         ),
     )
