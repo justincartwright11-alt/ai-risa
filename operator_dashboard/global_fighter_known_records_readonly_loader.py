@@ -6,8 +6,14 @@ for identity resolver preview matching. No writes, no mutations.
 
 from __future__ import annotations
 
+
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Mapping, Optional
+
+# Import the preview-only source-pack builder
+from operator_dashboard.global_fighter_known_records_source_pack_preview import (
+    build_known_records_source_pack_preview,
+)
 
 
 def _safe_text(value: Any) -> str:
@@ -147,16 +153,61 @@ def _sanitize_single_known_record(raw: Mapping[str, Any]) -> Optional[Dict[str, 
     return sanitized
 
 
+
 def load_known_records_readonly_preview(
     in_memory_records: Any = None,
     local_seed_records: Any = None,
+    manual_operator_records: Any = None,
+    approved_historical_records: Any = None,
+    report_history_records: Any = None,
+    result_ledger_records: Any = None,
+    global_read_projection_records: Any = None,
 ) -> KnownRecordsReadonlyLoaderResult:
     """Load known fighter records from safe sources for identity resolver preview.
 
-    Priority: in_memory_records > local_seed_records > empty
+    Priority: If any source-pack input is present, use source-pack builder.
+    Else: in_memory_records > local_seed_records > empty.
 
     No writes are performed. All output is preview-only.
     """
+    # If any source-pack input is present, use the source-pack builder
+    if any(
+        x is not None
+        for x in [
+            manual_operator_records,
+            approved_historical_records,
+            report_history_records,
+            result_ledger_records,
+            global_read_projection_records,
+        ]
+    ):
+        sp_result = build_known_records_source_pack_preview(
+            manual_operator_records=manual_operator_records,
+            local_seed_records=local_seed_records,
+            approved_historical_records=approved_historical_records,
+            report_history_records=report_history_records,
+            result_ledger_records=result_ledger_records,
+            global_read_projection_records=global_read_projection_records,
+        )
+        # Adapt SourcePackPreviewResult to KnownRecordsReadonlyLoaderResult
+        return KnownRecordsReadonlyLoaderResult(
+            known_records=sp_result.known_records,
+            records_received_count=sp_result.records_received_count,
+            records_accepted_count=sp_result.records_accepted_count,
+            malformed_records_count=sp_result.malformed_records_count,
+            source_type=sp_result.source_type,
+            preview_only=sp_result.preview_only,
+            profile_create_performed=sp_result.profile_create_performed,
+            profile_update_performed=sp_result.profile_update_performed,
+            merge_performed=sp_result.merge_performed,
+            database_write_performed=sp_result.database_write_performed,
+            ranking_write_performed=sp_result.ranking_write_performed,
+            learning_apply_performed=sp_result.learning_apply_performed,
+            calibration_write_performed=sp_result.calibration_write_performed,
+            errors=sp_result.errors,
+        )
+
+    # Legacy path: in_memory > local_seed > empty
     errors: List[str] = []
     source_type = "empty"
     records_to_process: List[Mapping[str, Any]] = []
