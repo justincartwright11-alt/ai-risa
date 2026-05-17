@@ -384,6 +384,15 @@ function safeArrayFromWindowState(stateKey) {
   return Array.isArray(value) ? value : [];
 }
 
+function readFirstArrayFromWindowState(candidateKeys) {
+  if (!Array.isArray(candidateKeys)) return [];
+  for (const key of candidateKeys) {
+    const value = window[key];
+    if (Array.isArray(value)) return value;
+  }
+  return [];
+}
+
 function buildButton1ContextPack() {
   return {
     manual_text: readOptionalTextFromVisibleInput([
@@ -705,6 +714,139 @@ function buildButton1IdentityResolverPayloadFromCandidateRows(candidateRows, kno
     ranking_write_performed: false,
     learning_apply_performed: false,
     calibration_write_performed: false
+  };
+}
+
+function sanitizeSourcePackPreviewRecord(rawRecord) {
+  if (!rawRecord || typeof rawRecord !== 'object') return null;
+
+  // Allow safe projection wrappers and known-record keys only.
+  const safe = {};
+  const allowedKeys = [
+    'fighter_global_id', 'global_fighter_id', 'fighter_id', 'fighter_uuid',
+    'full_name', 'fighter_name', 'display_name', 'name',
+    'known_aliases', 'aliases', 'nicknames',
+    'nationality', 'country', 'nation',
+    'promotion', 'promotion_name', 'organization', 'org',
+    'sport_ruleset', 'ruleset', 'sport',
+    'division', 'weight_class',
+    'date_of_birth', 'dob', 'birth_date',
+    'height', 'reach', 'stance',
+    'record', 'win_loss_record',
+    'active_years', 'career_years',
+    'confidence_grade', 'identity_confidence_grade', 'confidence',
+    'loader_source_type', 'loader_source_name',
+    'loader_snapshot_ts', 'snapshot_ts', 'projection_snapshot_ts',
+    'loader_record_origin_id', 'record_origin_id', 'projection_origin_id',
+    'completeness_flags',
+    'projection', 'known_record', 'payload', 'fighter_projection', 'projection_known_record',
+    'source_name', 'projection_name'
+  ];
+
+  for (const key of allowedKeys) {
+    if (Object.prototype.hasOwnProperty.call(rawRecord, key)) {
+      safe[key] = rawRecord[key];
+    }
+  }
+
+  return Object.keys(safe).length ? safe : null;
+}
+
+function sanitizeSourcePackPreviewRecords(records) {
+  if (!Array.isArray(records)) return [];
+  const out = [];
+  for (const row of records) {
+    const safe = sanitizeSourcePackPreviewRecord(row);
+    if (safe) out.push(safe);
+  }
+  return out;
+}
+
+function extractAdvancedSourcePackFieldsFromWorkflow(workflowData) {
+  const workflow = workflowData && workflowData.workflow ? workflowData.workflow : null;
+  const jobs = workflow && Array.isArray(workflow.jobs) ? workflow.jobs : [];
+
+  const out = {
+    approved_historical_records: [],
+    report_history_records: [],
+    result_ledger_records: [],
+    global_read_projection_records: []
+  };
+
+  for (const job of jobs) {
+    const inputRef = job && job.input_ref ? job.input_ref : null;
+    const metadata = inputRef && inputRef.metadata ? inputRef.metadata : null;
+    const payload = metadata && metadata.payload ? metadata.payload : null;
+    if (!payload || typeof payload !== 'object') continue;
+
+    if (!out.approved_historical_records.length && Array.isArray(payload.approved_historical_records)) {
+      out.approved_historical_records = sanitizeSourcePackPreviewRecords(payload.approved_historical_records);
+    }
+    if (!out.report_history_records.length && Array.isArray(payload.report_history_records)) {
+      out.report_history_records = sanitizeSourcePackPreviewRecords(payload.report_history_records);
+    }
+    if (!out.result_ledger_records.length && Array.isArray(payload.result_ledger_records)) {
+      out.result_ledger_records = sanitizeSourcePackPreviewRecords(payload.result_ledger_records);
+    }
+    if (!out.global_read_projection_records.length && Array.isArray(payload.global_read_projection_records)) {
+      out.global_read_projection_records = sanitizeSourcePackPreviewRecords(payload.global_read_projection_records);
+    }
+  }
+
+  return out;
+}
+
+function buildButton1AdvancedSourcePackFields(workflowData) {
+  const fromWorkflow = extractAdvancedSourcePackFieldsFromWorkflow(workflowData);
+
+  const approvedHistorical = fromWorkflow.approved_historical_records.length
+    ? fromWorkflow.approved_historical_records
+    : sanitizeSourcePackPreviewRecords(readFirstArrayFromWindowState([
+      'button1ApprovedHistoricalRecordsPreview',
+      'approvedHistoricalRecordsPreview',
+      'approved_historical_records_preview'
+    ]));
+
+  const reportHistory = fromWorkflow.report_history_records.length
+    ? fromWorkflow.report_history_records
+    : sanitizeSourcePackPreviewRecords(readFirstArrayFromWindowState([
+      'button1ReportHistoryRecordsPreview',
+      'reportHistoryRecordsPreview',
+      'report_history_records_preview'
+    ]));
+
+  const resultLedger = fromWorkflow.result_ledger_records.length
+    ? fromWorkflow.result_ledger_records
+    : sanitizeSourcePackPreviewRecords(readFirstArrayFromWindowState([
+      'button1ResultLedgerRecordsPreview',
+      'resultLedgerRecordsPreview',
+      'result_ledger_records_preview'
+    ]));
+
+  const globalReadProjection = fromWorkflow.global_read_projection_records.length
+    ? fromWorkflow.global_read_projection_records
+    : sanitizeSourcePackPreviewRecords(readFirstArrayFromWindowState([
+      'button1GlobalReadProjectionRecordsPreview',
+      'globalReadProjectionRecordsPreview',
+      'global_read_projection_records_preview'
+    ]));
+
+  const hasAnyAdvanced = (
+    approvedHistorical.length ||
+    reportHistory.length ||
+    resultLedger.length ||
+    globalReadProjection.length
+  );
+
+  if (!hasAnyAdvanced) {
+    return null;
+  }
+
+  return {
+    approved_historical_records: approvedHistorical,
+    report_history_records: reportHistory,
+    result_ledger_records: resultLedger,
+    global_read_projection_records: globalReadProjection
   };
 }
 
@@ -1135,12 +1277,10 @@ function handleButton1Click() {
     .then(result => {
       // Render writer preview first
       renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData);
-      
-      // Optionally build source-pack preview fields (summary-only, no new UI)
-      let sourcePackFields = null;
-      // Example: if workflowData or candidateRows provide richer context, build fields here
-      // For now, keep summary-only: do not expose raw internals or new UI
-      // sourcePackFields = { manual_operator_records: ..., ... } // (future: fill from context)
+
+      // Build advanced source-pack preview fields from available runtime context.
+      // No new UI controls; summary-only and preview-only behavior is preserved.
+      const sourcePackFields = buildButton1AdvancedSourcePackFields(result.workflowData);
       return postGlobalFighterKnownRecordsLoaderPreview(sourcePackFields).then(loaderData => ({
         result: result,
         loaderData: loaderData
