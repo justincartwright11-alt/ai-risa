@@ -19,6 +19,9 @@ from operator_dashboard.local_ai_orchestrator_input_context_pack import (
     build_button2_generate_pdfs_context,
     build_button3_find_results_context,
 )
+from operator_dashboard.button1_auto_discovery_readiness_ranking_v1 import (
+    build_button1_auto_discovery_readiness_ranking,
+)
 
 
 def _default_workspace_root() -> str:
@@ -589,6 +592,8 @@ def build_button1_runtime_context(
     event_provenance_lookup = _build_event_provenance_lookup(event_rows)
     candidate_rows = _propagate_event_provenance(raw_candidate_rows, event_provenance_lookup)
 
+    ranked_candidate_rows = build_button1_auto_discovery_readiness_ranking(candidate_rows)
+
     payload = {
         "manual_text": state.get("manual_intake_text", ""),
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
@@ -596,7 +601,7 @@ def build_button1_runtime_context(
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),
-        "candidate_rows": candidate_rows,
+        "candidate_rows": ranked_candidate_rows,
         # Advanced read-only known-record projection context for Button 1 preview.
         "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
         "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),

@@ -2338,6 +2338,12 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
         source_url: sourceUrl,
         source_type: sourceType,
         card_completeness_status: '',
+        discovery_rank: Number.MAX_SAFE_INTEGER,
+        readiness_score: 0,
+        readiness_band: 'low',
+        recommended_operator_action: 'wait_for_more_card_data',
+        ranking_reasons: [],
+        blocking_reasons: [],
         source_backed_count: 0,
         matchup_count: 0,
         matchups: [],
@@ -2354,6 +2360,21 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
     const cardCompletenessStatus = String(row.card_completeness_status || '').trim();
     if (!eventEntry.card_completeness_status && cardCompletenessStatus) {
       eventEntry.card_completeness_status = cardCompletenessStatus;
+    }
+
+    const rowRank = Number.isFinite(Number(row.discovery_rank)) ? Number(row.discovery_rank) : Number.MAX_SAFE_INTEGER;
+    const rowReadinessScore = Number.isFinite(Number(row.readiness_score)) ? Number(row.readiness_score) : 0;
+    const rowReadinessBand = String(row.readiness_band || '').trim() || 'low';
+    const rowAction = String(row.recommended_operator_action || '').trim() || 'wait_for_more_card_data';
+    const rowRankingReasons = Array.isArray(row.ranking_reasons) ? row.ranking_reasons : [];
+    const rowBlockingReasons = Array.isArray(row.blocking_reasons) ? row.blocking_reasons : [];
+    if (rowRank < eventEntry.discovery_rank || (rowRank === eventEntry.discovery_rank && rowReadinessScore > eventEntry.readiness_score)) {
+      eventEntry.discovery_rank = rowRank;
+      eventEntry.readiness_score = rowReadinessScore;
+      eventEntry.readiness_band = rowReadinessBand;
+      eventEntry.recommended_operator_action = rowAction;
+      eventEntry.ranking_reasons = rowRankingReasons;
+      eventEntry.blocking_reasons = rowBlockingReasons;
     }
 
     // Expand nested matchups array from event card rows (full-card feed ingestion)
@@ -2387,7 +2408,13 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
         source_backed: muSourceBacked,
         source_url: muSourceUrl,
         source_type: sourceType,
-        report_ready_status: muReadiness
+        report_ready_status: muReadiness,
+        discovery_rank: Number.isFinite(Number(mu.discovery_rank)) ? Number(mu.discovery_rank) : rowRank,
+        readiness_score: Number.isFinite(Number(mu.readiness_score)) ? Number(mu.readiness_score) : rowReadinessScore,
+        readiness_band: String(mu.readiness_band || rowReadinessBand || 'low').trim(),
+        recommended_operator_action: String(mu.recommended_operator_action || rowAction || 'wait_for_more_card_data').trim(),
+        ranking_reasons: Array.isArray(mu.ranking_reasons) ? mu.ranking_reasons : rowRankingReasons,
+        blocking_reasons: Array.isArray(mu.blocking_reasons) ? mu.blocking_reasons : rowBlockingReasons
       });
     }
 
@@ -2414,7 +2441,13 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
       source_backed: sourceBacked,
       source_url: sourceUrl,
       source_type: sourceType,
-      report_ready_status: sourceBacked ? 'ready_for_button2_preview' : 'review_only'
+      report_ready_status: sourceBacked ? 'ready_for_button2_preview' : 'review_only',
+      discovery_rank: rowRank,
+      readiness_score: rowReadinessScore,
+      readiness_band: rowReadinessBand,
+      recommended_operator_action: rowAction,
+      ranking_reasons: rowRankingReasons,
+      blocking_reasons: rowBlockingReasons
     });
   }
 
@@ -2430,9 +2463,25 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
       source_type: eventEntry.source_type || 'unknown',
       card_completeness_status: eventEntry.card_completeness_status || 'unknown',
       provenance_status: sourceBacked ? 'source_backed_ready' : 'review_only',
+      discovery_rank: Number.isFinite(eventEntry.discovery_rank) ? eventEntry.discovery_rank : 999,
+      readiness_score: eventEntry.readiness_score || 0,
+      readiness_band: eventEntry.readiness_band || 'low',
+      recommended_operator_action: eventEntry.recommended_operator_action || 'wait_for_more_card_data',
+      ranking_reasons: eventEntry.ranking_reasons || [],
+      blocking_reasons: eventEntry.blocking_reasons || [],
       matchup_count: eventEntry.matchup_count,
       matchups: eventEntry.matchups
     };
+  });
+
+  events.sort((a, b) => {
+    const ar = Number.isFinite(Number(a.discovery_rank)) ? Number(a.discovery_rank) : Number.MAX_SAFE_INTEGER;
+    const br = Number.isFinite(Number(b.discovery_rank)) ? Number(b.discovery_rank) : Number.MAX_SAFE_INTEGER;
+    if (ar !== br) return ar - br;
+    const as = Number.isFinite(Number(a.readiness_score)) ? Number(a.readiness_score) : 0;
+    const bs = Number.isFinite(Number(b.readiness_score)) ? Number(b.readiness_score) : 0;
+    if (as !== bs) return bs - as;
+    return String(a.event_name || '').localeCompare(String(b.event_name || ''));
   });
 
   return events;
@@ -2476,6 +2525,8 @@ function renderButton1EventCardSelector(candidateRows) {
 
   const htmlParts = [];
   for (const eventCard of eventCards) {
+    const keyReasons = (Array.isArray(eventCard.ranking_reasons) ? eventCard.ranking_reasons : []).slice(0, 3).join('; ');
+    const blockingReasons = (Array.isArray(eventCard.blocking_reasons) ? eventCard.blocking_reasons : []).join('; ');
     const eventHeader =
       '<div class="b1-event-header">' +
       '<strong>Event Name:</strong> ' + escapeHtml(eventCard.event_name) + '<br>' +
@@ -2485,7 +2536,13 @@ function renderButton1EventCardSelector(candidateRows) {
       '<strong>Source Type:</strong> ' + escapeHtml(eventCard.source_type) + '<br>' +
       '<strong>Provenance Status:</strong> ' + escapeHtml(eventCard.provenance_status) + '<br>' +
       '<strong>Card Completeness:</strong> ' + escapeHtml(eventCard.card_completeness_status || 'unknown') + '<br>' +
-      '<strong>Matchup Count:</strong> ' + escapeHtml(String(eventCard.matchup_count)) +
+      '<strong>Matchup Count:</strong> ' + escapeHtml(String(eventCard.matchup_count)) + '<br>' +
+      '<strong>Rank:</strong> ' + escapeHtml(String(eventCard.discovery_rank || 'n/a')) + ' | ' +
+      '<strong>Readiness Band:</strong> ' + escapeHtml(String(eventCard.readiness_band || 'low')) + ' | ' +
+      '<strong>Readiness Score:</strong> ' + escapeHtml(String(eventCard.readiness_score || 0)) + '<br>' +
+      '<strong>Recommended Operator Action:</strong> ' + escapeHtml(String(eventCard.recommended_operator_action || 'wait_for_more_card_data')) + '<br>' +
+      '<strong>Key Reasons:</strong> ' + escapeHtml(keyReasons || 'none') + '<br>' +
+      '<strong>Blocking Reasons:</strong> ' + escapeHtml(blockingReasons || 'none') +
       '</div>';
 
     let matchupHtml = '';
@@ -2502,6 +2559,11 @@ function renderButton1EventCardSelector(candidateRows) {
           'Bout Order: ' + escapeHtml(matchup.bout_order || 'Unknown') + '<br>' +
           'Source-backed status: ' + (matchup.source_backed ? 'yes' : 'no') + ' | ' +
           'Button2 readiness status: ' + escapeHtml(statusText) + '<br>' +
+          'Rank: ' + escapeHtml(String(matchup.discovery_rank || 'n/a')) + ' | ' +
+          'Readiness band: ' + escapeHtml(String(matchup.readiness_band || 'low')) + ' | ' +
+          'Readiness score: ' + escapeHtml(String(matchup.readiness_score || 0)) + '<br>' +
+          'Recommended action: ' + escapeHtml(String(matchup.recommended_operator_action || 'wait_for_more_card_data')) + '<br>' +
+          'Key reasons: ' + escapeHtml((Array.isArray(matchup.ranking_reasons) ? matchup.ranking_reasons.slice(0, 2).join('; ') : 'none') || 'none') + '<br>' +
           '<button class="b1-select-btn"' + disabled +
           ' data-event-id="' + escapeHtml(matchup.event_id) + '"' +
           ' data-matchup-id="' + escapeHtml(matchup.matchup_id) + '"' +

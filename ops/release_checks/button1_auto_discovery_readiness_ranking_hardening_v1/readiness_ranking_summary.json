@@ -1,0 +1,46 @@
+{
+  "slice": "button1-auto-discovery-readiness-ranking-hardening-v1",
+  "status": "validated",
+  "ranking_fields_added": [
+    "discovery_rank",
+    "readiness_score",
+    "readiness_band",
+    "ranking_reasons",
+    "blocking_reasons",
+    "recommended_operator_action",
+    "source_quality_score",
+    "completeness_score",
+    "button2_report_readiness_score"
+  ],
+  "ranking_signals_used": [
+    "source_tier",
+    "provenance_status",
+    "card_completeness_status",
+    "matchup_count",
+    "button2_readiness_status",
+    "queue_save_eligible",
+    "event_date proximity",
+    "promotion priority",
+    "sport/modality",
+    "source_url present",
+    "fighter names present",
+    "duplicate/conflict status",
+    "needs_review / secondary_confirmation"
+  ],
+  "governance": {
+    "auto_save_enabled": false,
+    "queue_write_without_gate_enabled": false,
+    "pdf_generation_enabled": false,
+    "delivery_enabled": false,
+    "button2_behavior_changed": false,
+    "button3_mutation_enabled": false,
+    "learning_or_calibration_enabled": false
+  },
+  "dashboard": {
+    "rank_display": true,
+    "readiness_band_display": true,
+    "readiness_score_display": true,
+    "recommended_action_display": true,
+    "key_reasons_display": true
+  }
+}
