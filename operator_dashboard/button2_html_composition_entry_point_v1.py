@@ -1465,6 +1465,45 @@ _HTML_TEMPLATE = """\
         .watermark-layer[data-watermark-type="draft"] .watermark-text {{ color: #8b6f3b; }}
         .watermark-layer[data-watermark-type="confidential"] .watermark-text {{ color: #7a3f3f; }}
         .watermark-layer[data-watermark-type="none"] .watermark-text {{ color: transparent; }}
+        /* Phase 4 source-traceability rendering polish (CSS only, metadata-locked) */
+        .source-traceability-render-surface {{
+            margin-top: 0.9em;
+            padding-top: 0.35em;
+            border-top: 1px solid #e6e6e6;
+        }}
+        .source-citation-row {{
+            display: grid;
+            grid-template-columns: minmax(7.2em, 10.5em) 1fr;
+            gap: 0.45em;
+            align-items: baseline;
+        }}
+        .source-label,
+        .source-type-label {{
+            font-size: 0.84em;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }}
+        .source-class-official {{ color: #2a6f52; }}
+        .source-class-research {{ color: #2f5f8a; }}
+        .source-class-operator {{ color: #7a5a2f; }}
+        .source-class-ai-risa {{ color: #5e4a86; }}
+        .source-traceability-footer {{
+            margin-top: 0.6em;
+            padding-top: 0.2em;
+            border-top: 1px dashed #d7d7d7;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.7em;
+        }}
+        .traceability-qa-row {{
+            margin: 0.14em 0;
+            font-size: 0.92em;
+            line-height: 1.45;
+        }}
+        .traceability-qa-row[data-traceability-status="clear"] {{ color: #2a6f52; }}
+        .traceability-qa-row[data-traceability-status="watch"] {{ color: #8a6a2f; }}
+        .traceability-qa-row[data-traceability-status="escalated"] {{ color: #7a2f2f; }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
