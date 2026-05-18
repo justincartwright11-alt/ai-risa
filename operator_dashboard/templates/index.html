@@ -706,6 +706,9 @@
   <div class="result-panel" id="b2-result-panel">
     <h3>Report Generation</h3>
     <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
+    <div class="status-msg" id="b2-pdf-library-link-row">
+      <a id="b2-pdf-library-link" href="/api/button2/generated-report/library" target="_blank" rel="noopener noreferrer">PDF Reports Folder</a>
+    </div>
     {% if button2_runtime_warning %}
     <div id="b2-runtime-warning" class="status-msg error">{{ button2_runtime_warning }}</div>
     {% endif %}
@@ -2653,11 +2656,13 @@ function renderButton2GuardedGenerateResult(response) {
     const openLink = openUrl
       ? ('<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open Generated PDF</a><br>')
       : '';
+    const libraryLink = '<a href="/api/button2/generated-report/library" target="_blank" rel="noopener noreferrer">Open PDF Reports Library</a><br>';
     const html =
       message + '<br>' +
       safeOutput +
       safeFilename +
       openLink +
+      libraryLink +
       'Operator action required: Yes<br>' +
       'Delivery performed: ' + (data.delivery_performed === true ? 'Yes' : 'No') + '<br>' +
       'External API delivery performed: ' + (data.external_api_delivery_performed === true ? 'Yes' : 'No') + '<br>' +

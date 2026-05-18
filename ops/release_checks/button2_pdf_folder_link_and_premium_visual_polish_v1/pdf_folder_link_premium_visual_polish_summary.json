@@ -1,0 +1,36 @@
+{
+  "slice": "button2-pdf-folder-link-and-premium-visual-polish-v1",
+  "status": "implemented",
+  "safe_library_route": {
+    "path": "/api/button2/generated-report/library",
+    "method": "GET",
+    "read_only": true,
+    "lists_only_pdf": true,
+    "sort": "modified_desc",
+    "query_override_blocked": true,
+    "open_link_policy": "safe_open_route_only"
+  },
+  "dashboard_links": [
+    "PDF Reports Folder",
+    "Open PDF Reports Library"
+  ],
+  "premium_visual_polish": {
+    "cover_upgrade": true,
+    "executive_dashboard_cards": true,
+    "tactical_risk_energy_mental_signals": true,
+    "scenario_pathway_cards": true,
+    "source_traceability_grid": true,
+    "operator_traceability_appendix": true
+  },
+  "governance": {
+    "delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "tests": {
+    "focused_suite": "operator_dashboard/test_button2_pdf_folder_link_and_premium_visual_polish_v1.py",
+    "page_floor_assertion": ">=12"
+  }
+}

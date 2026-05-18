@@ -17,6 +17,7 @@ GOVERNANCE:
 import sys
 import os
 import re
+from datetime import datetime
 from urllib.parse import quote
 
 # Allow imports from workspace root
@@ -273,6 +274,33 @@ def _is_safe_generated_pdf_filename(filename):
     if not value.lower().endswith(".pdf"):
         return False
     return bool(re.match(r"^[A-Za-z0-9._-]+$", value))
+
+
+def _list_generated_pdf_library_rows(output_root):
+    rows = []
+    if not isinstance(output_root, str) or not output_root.strip():
+        return rows
+
+    try:
+        for entry in os.listdir(output_root):
+            if not _is_safe_generated_pdf_filename(entry):
+                continue
+            full_path = os.path.join(output_root, entry)
+            if not os.path.isfile(full_path):
+                continue
+            stat = os.stat(full_path)
+            rows.append({
+                "filename": entry,
+                "modified_ts": float(stat.st_mtime),
+                "modified_iso": datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds"),
+                "size_bytes": int(stat.st_size),
+                "open_url": "/api/button2/generated-report/open?filename=" + quote(entry, safe=""),
+            })
+    except Exception:
+        return []
+
+    rows.sort(key=lambda item: item.get("modified_ts", 0.0), reverse=True)
+    return rows
 
 
 def _path_is_in_process_path(target_path):
@@ -862,6 +890,42 @@ def button2_generated_report_open_v1():
         }), 404
 
     return send_from_directory(output_root, filename, mimetype="application/pdf")
+
+
+@app.route("/api/button2/generated-report/library", methods=["GET"])
+def button2_generated_report_library_v1():
+    """Render a safe read-only library of generated PDFs from configured output root."""
+    if request.args.get("path") or request.args.get("dir") or request.args.get("folder"):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_query",
+            "message": "Directory override is not allowed.",
+        }), 400
+
+    try:
+        output_root = get_pdf_output_root()
+    except (OutputRootNotConfiguredError, OutputRootInvalidError) as e:
+        return jsonify({
+            "ok": False,
+            "error": "output_root_unavailable",
+            "message": str(e),
+        }), 400
+
+    rows = _list_generated_pdf_library_rows(output_root)
+    return render_template(
+        "button2_pdf_library.html",
+        pdf_rows=rows,
+        output_root=output_root,
+        preview_only=True,
+        upload_enabled=False,
+        delete_enabled=False,
+        rename_enabled=False,
+        delivery_performed=False,
+        queue_write_performed=False,
+        learning_apply_performed=False,
+        calibration_write_performed=False,
+        button3_mutation_performed=False,
+    )
 
 
 @app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])

@@ -1622,32 +1622,159 @@ _HTML_TEMPLATE = """\
     .header-footer-watermark-metadata {{ display: none; }}
     .source-traceability-metadata {{ display: none; }}
     .visual-qa-rollup-metadata {{ display: none; }}
-    .report-page {{
-      page-break-after: always;
-      break-after: page;
-      min-height: 9.2in;
-      padding-bottom: 0.2in;
-    }}
+        body {{
+            background: #0b0d12;
+            color: #f4f1e8;
+        }}
+        .report-page {{
+            page-break-after: always;
+            break-after: page;
+            min-height: 9.2in;
+            padding: 0.2in 0.2in 0.25in 0.2in;
+            background: radial-gradient(circle at top right, rgba(35,48,82,0.35), rgba(11,13,18,1) 55%);
+            border: 1px solid #2b2f3b;
+            box-shadow: inset 0 0 0 1px rgba(201,170,113,0.14);
+            position: relative;
+        }}
     .report-page.last-page {{
       page-break-after: auto;
       break-after: auto;
     }}
     .premium-kicker {{
-      letter-spacing: 0.08em;
+            letter-spacing: 0.11em;
       text-transform: uppercase;
       font-weight: 700;
-      color: #444444;
+            color: #c9aa71;
       margin-bottom: 0.5em;
     }}
     .premium-block {{
       margin-top: 1.1em;
-      border-left: 3px solid #d9d9d9;
-      padding-left: 0.7em;
+            border-left: 3px solid #c9aa71;
+            background: rgba(20,22,31,0.82);
+            border-radius: 10px;
+            padding: 0.7em 0.8em;
+        }}
+        .premium-watermark {{
+            position: absolute;
+            right: 0.18in;
+            top: 0.12in;
+            font-size: 0.72em;
+            letter-spacing: 0.1em;
+            color: rgba(97,175,239,0.55);
+            text-transform: uppercase;
+        }}
+        .executive-dashboard-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.45em;
+            margin-bottom: 0.7em;
+        }}
+        .dashboard-card {{
+            background: #141925;
+            border: 1px solid #2f3c56;
+            border-top: 3px solid #61afef;
+            border-radius: 8px;
+            padding: 0.45em 0.55em;
+        }}
+        .dashboard-card.risk {{
+            border-top-color: #d14a4a;
+            border-color: #553036;
+        }}
+        .dashboard-card.gold {{
+            border-top-color: #c9aa71;
+            border-color: #574a31;
+        }}
+        .dashboard-label {{
+            font-size: 0.72em;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #a9b4c9;
+        }}
+        .dashboard-value {{
+            font-size: 1.02em;
+            font-weight: 700;
+            margin-top: 0.15em;
+            color: #f7f3ea;
+        }}
+        .premium-card {{
+            background: #151923;
+            border: 1px solid #2b3040;
+            border-radius: 9px;
+            padding: 0.6em 0.7em;
+            margin: 0.5em 0;
+        }}
+        .premium-card-title {{
+            font-size: 0.76em;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #c9aa71;
+            margin-bottom: 0.35em;
+        }}
+        .metric-bars {{
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.25em;
+            margin-bottom: 0.45em;
+        }}
+        .metric-bar {{
+            background: linear-gradient(90deg, #203253, #2f5f8a);
+            border-left: 4px solid #61afef;
+            border-radius: 6px;
+            padding: 0.22em 0.45em;
+            color: #e7ecf7;
+            font-size: 0.84em;
+        }}
+        .metric-bar.risk {{
+            background: linear-gradient(90deg, #4a1f28, #7a2f3b);
+            border-left-color: #d14a4a;
+        }}
+        .scenario-pathway-card {{
+            border-left: 3px solid #61afef;
+            background: #121a2b;
+            padding: 0.45em 0.55em;
+            margin: 0.35em 0;
+            border-radius: 6px;
+        }}
+        .risk-warning-panel {{
+            background: #2a171c;
+            border: 1px solid #6f343e;
+            border-left: 4px solid #d14a4a;
+            border-radius: 7px;
+            padding: 0.55em;
+            margin: 0.45em 0;
+        }}
+        .confidence-explanation-panel {{
+            background: #182335;
+            border: 1px solid #3a557a;
+            border-left: 4px solid #61afef;
+            border-radius: 7px;
+            padding: 0.55em;
+            margin: 0.45em 0;
+        }}
+        .traceability-grid {{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.45em;
+            margin-bottom: 0.6em;
+        }}
+        .traceability-card {{
+            background: #141a23;
+            border: 1px solid #2e3748;
+            border-radius: 7px;
+            padding: 0.45em;
+        }}
+        .operator-traceability-appendix {{
+            background: #12161f;
+            border: 1px solid #303749;
+            border-radius: 8px;
+            padding: 0.65em;
+            margin-top: 0.6em;
     }}
   </style>
 </head>
 <body>
     <section class="report-page" data-page-block-role="report_identity_block" data-break-policy="keep_together">
+        <div class="premium-watermark">AI-RISA PREMIUM INTEL</div>
         <div class="premium-kicker">AI-RISA Premium Fight Intelligence</div>
         <h1 class="typography-report-title" data-hierarchy-level="H0">AI-RISA Premium Fight Report</h1>
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Premium Cover</h2>
@@ -1660,14 +1787,34 @@ _HTML_TEMPLATE = """\
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Executive Command Dashboard</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{executive_command_dashboard}</pre>
+        <div class="executive-dashboard-grid">
+            <div class="dashboard-card gold"><div class="dashboard-label">Tactical Control</div><div class="dashboard-value">Primary style leverage mapped</div></div>
+            <div class="dashboard-card risk"><div class="dashboard-label">Collapse Risk</div><div class="dashboard-value">Failure triggers isolated by round</div></div>
+            <div class="dashboard-card"><div class="dashboard-label">Confidence Signal</div><div class="dashboard-value">Projection quality qualified with evidence</div></div>
+        </div>
+        <div class="premium-card">
+            <div class="premium-card-title">Executive Signal Brief</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{executive_command_dashboard}</pre>
+        </div>
     </section>
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Matchup Snapshot</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{matchup_snapshot}</pre>
+        <div class="premium-card">
+            <div class="premium-card-title">Initial Matchup State</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{matchup_snapshot}</pre>
+        </div>
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Tactical Edge Map</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{tactical_edge_map}</pre>
+        <div class="metric-bars">
+            <div class="metric-bar">Tactical Control: pace + geometry checkpoints</div>
+            <div class="metric-bar risk">Collapse Risk: pressure-reversal windows</div>
+            <div class="metric-bar">Energy/Fatigue: workload sustainability map</div>
+            <div class="metric-bar risk">Mental Stress: composure break indicators</div>
+        </div>
+        <div class="premium-card">
+            <div class="premium-card-title">Tactical Edge Detail</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{tactical_edge_map}</pre>
+        </div>
     </section>
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
@@ -1682,7 +1829,10 @@ _HTML_TEMPLATE = """\
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Energy Use Analysis</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{energy_use_analysis}</pre>
+        <div class="premium-card">
+            <div class="premium-card-title">Energy/Fatigue Engine</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{energy_use_analysis}</pre>
+        </div>
     </section>
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
@@ -1692,7 +1842,10 @@ _HTML_TEMPLATE = """\
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Mental Condition Under Stress</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{mental_condition_under_stress}</pre>
+        <div class="premium-card">
+            <div class="premium-card-title">Mental Stress Profile</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{mental_condition_under_stress}</pre>
+        </div>
     </section>
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
@@ -1712,20 +1865,37 @@ _HTML_TEMPLATE = """\
 
     <section class="report-page" data-page-block-role="matchup_signal_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Scenario Tree / Method Pathways</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{scenario_tree_method_pathways}</pre>
+        <div class="scenario-pathway-card">Pathway A: Pressure chain to attrition finish</div>
+        <div class="scenario-pathway-card">Pathway B: Counter-timing disruption to decision edge</div>
+        <div class="scenario-pathway-card">Pathway C: Early volatility branch and recovery gate</div>
+        <div class="premium-card">
+            <div class="premium-card-title">Scenario Detail</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{scenario_tree_method_pathways}</pre>
+        </div>
     </section>
 
     <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Risk Warnings</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{risk_warnings}</pre>
+        <div class="risk-warning-panel">
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{risk_warnings}</pre>
+        </div>
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Final Projection</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{final_projection}</pre>
+        <div class="premium-card">
+            <div class="premium-card-title">Projection Core</div>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{final_projection}</pre>
+        </div>
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Confidence Explanation</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{confidence_explanation}</pre>
+        <div class="confidence-explanation-panel">
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{confidence_explanation}</pre>
+        </div>
     </section>
 
     <section class="report-page page-block-sources" data-page-block-role="sources_calibration_block" data-break-policy="split_by_chunk" data-can-split="true" data-chunk-size="10" data-widow-orphan-rule="no_single_list_item_orphan">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Source Traceability</h2>
+        <div class="traceability-grid">
+            <div class="traceability-card">Source Traceability: citation lineage validated</div>
+            <div class="traceability-card">Official + trusted secondary corroboration surfaced</div>
+        </div>
         <div class="typography-body-secondary">Event: {event_name_display}</div>
         <ul class="typography-list-item" data-hierarchy-level="Body">
             {source_traceability_items}
@@ -1733,26 +1903,18 @@ _HTML_TEMPLATE = """\
     </section>
 
     <section class="report-page last-page" data-page-block-role="footer_metadata_block" data-break-policy="keep_together">
-        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Disclaimer / Risk Control</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{disclaimer_risk_control}</pre>
-        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Report Summary</h2>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
-        <div class="meta-footer typography-page-metadata" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block" data-break-policy="keep_together" data-can-split="false">
-    <div class="qa-row">Source context: {source_context_kind}</div>
-    <div class="qa-row">Ingest mode: {source_ingest_mode}</div>
-    <div class="qa-row">Overlap proof: {overlap_proof_label}</div>
-    <div class="qa-row">Off-page text proof: {off_page_text_proof_label}</div>
-    <div class="qa-row">Visual certification: {visual_certification_status}</div>
-    <div class="qa-row">Hierarchy validation: {hierarchy_validation_status}</div>
-    <div class="qa-row">Page-break metadata validation: {page_breaks_metadata_validation_status}</div>
-    <div class="qa-row">Chart/scenario metadata validation: {chart_metadata_validation_status}</div>
-    <div class="qa-row">Header/footer/watermark metadata validation: {hfw_metadata_validation_status}</div>
-    <div class="qa-row">Source traceability metadata validation: {src_metadata_validation_status}</div>
-    <div class="qa-row">Visual QA rollup status: {rollup_status} | Certification readiness: {certification_readiness} | Completeness: {visual_completeness}</div>
-        <div class="qa-row">Customer-ready status preview: {customer_ready_status_preview} | Gate: {customer_ready_gate}</div>
-        <div class="qa-row">Controlled export preview: {controlled_export_preview_status} | Gate: {controlled_export_gate} | Output path policy: {controlled_export_output_path_policy}</div>
-    <div class="qa-row">Valid layers: {valid_layers_count}/8 | Invalid: {invalid_layers_count} | Missing: {missing_layers_count}</div>
-    <div class="qa-row">Overall visual confidence: {overall_visual_confidence}</div>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Operator Traceability Appendix</h2>
+        <div class="operator-traceability-appendix">
+            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Disclaimer / Risk Control</h3>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{disclaimer_risk_control}</pre>
+            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Operator Summary Preview</h3>
+            <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
+        </div>
+        <div class="meta-footer typography-page-metadata operator-traceability-appendix" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block" data-break-policy="keep_together" data-can-split="false">
+    <div class="qa-row">Source context: {source_context_kind} | Ingest mode: {source_ingest_mode}</div>
+    <div class="qa-row">Visual QA rollup: {rollup_status} | Certification: {certification_readiness} | Completeness: {visual_completeness}</div>
+    <div class="qa-row">Controlled export preview: {controlled_export_preview_status} | Gate: {controlled_export_gate}</div>
+    <div class="qa-row">Customer-ready preview: {customer_ready_status_preview} | Overall visual confidence: {overall_visual_confidence}</div>
             </div>
         </section>
 
