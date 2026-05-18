@@ -117,6 +117,16 @@ def test_no_input_path_does_not_create_fake_reports():
     assert out.summary["pdf_preview_available_count"] == 0
 
 
+def test_selected_fight_refs_infer_selected_and_report_ready_counts():
+    registry = LocalAIOrchestratorEngineAdapterRegistry()
+    payload = {
+        "selected_fight_refs": ["A vs B", "C vs D"],
+    }
+    out = registry.run_preview(_button2_job("report_generation_job", payload=payload))
+    assert out.summary["selected_fight_count"] == 2
+    assert out.summary["report_ready_count"] == 2
+
+
 def test_adapter_output_is_json_serializable():
     registry = LocalAIOrchestratorEngineAdapterRegistry()
     out = registry.run_preview(_button2_job("report_quality_job"))

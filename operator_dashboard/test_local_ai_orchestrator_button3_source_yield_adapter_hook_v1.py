@@ -94,6 +94,28 @@ def test_adapter_returns_safe_no_input_preview_when_no_waiting_rows_supplied():
     assert out.metrics["used_executor_preview"] is False
 
 
+def test_zero_state_reason_marks_missing_accuracy_ledger_when_flagged():
+    job = LocalAIJob(
+        job_type="result_search_job",
+        source_button="button3_find_results",
+        input_ref=LocalAIJobInputRef(
+            ref_type="result_review",
+            ref_key="b3_rows",
+            snapshot_hash="snap_v1",
+            metadata={
+                "payload": {
+                    "waiting_rows": [],
+                    "source_status": {"accuracy_ledger_missing": True},
+                }
+            },
+        ),
+    )
+    registry = LocalAIOrchestratorEngineAdapterRegistry()
+    out = registry.run_preview(job)
+    assert out.summary["total_rows"] == 0
+    assert out.metrics["zero_state_reason"] == "accuracy_ledger_missing"
+
+
 def test_adapter_does_not_create_fake_results_when_no_input():
     registry = LocalAIOrchestratorEngineAdapterRegistry()
     out = registry.run_preview(_job_with_waiting_rows([]))

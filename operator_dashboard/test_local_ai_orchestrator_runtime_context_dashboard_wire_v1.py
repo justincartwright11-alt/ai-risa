@@ -318,6 +318,22 @@ def test_template_sends_use_runtime_context_true():
         "Template should send use_runtime_context=true"
 
 
+def test_template_has_auto_hydration_on_load_and_interval():
+    with open('operator_dashboard/templates/index.html', 'r') as f:
+        html = f.read()
+    assert 'hydrateDashboardCardsOnLoad()' in html
+    assert 'setInterval(hydrateDashboardCardsOnLoad, 30000);' in html
+
+
+def test_template_contains_waiting_refresh_card_surface_labels():
+    with open('operator_dashboard/templates/index.html', 'r') as f:
+        html = f.read()
+    assert 'Waiting for refresh' in html
+    assert 'Ready to save' in html
+    assert 'Customer Ready' in html
+    assert 'Rows scanned' in html
+
+
 def test_template_preserves_fallback_logic():
     """Template preserves fallback to input_ref on runtime context failure."""
     with open('operator_dashboard/templates/index.html', 'r') as f:

@@ -170,6 +170,7 @@ def build_button3_find_results_context(raw_input: Dict[str, Any] | None = None) 
         "result_source_refs": _sanitize_list(raw.get("result_source_refs", [])),
         "report_refs": _sanitize_list(raw.get("report_refs", [])),
         "comparison_refs": _sanitize_list(raw.get("comparison_refs", [])),
+        "source_status": _sanitize_dict(raw.get("source_status", {})),
     }
 
     pack = LocalAIInputContextPack(

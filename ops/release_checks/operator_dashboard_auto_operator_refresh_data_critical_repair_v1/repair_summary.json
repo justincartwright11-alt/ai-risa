@@ -1,0 +1,36 @@
+{
+  "slice": "operator-dashboard-auto-operator-refresh-data-critical-repair-v1",
+  "status": "implemented_tested",
+  "scope": [
+    "dashboard_hydration_on_load_and_interval",
+    "button1_candidate_rows_summary_fallback",
+    "button2_csv_schema_selected_fight_derivation_fix",
+    "button3_missing_accuracy_ledger_safe_zero_state",
+    "targeted_contract_tests"
+  ],
+  "files_updated": [
+    "operator_dashboard/templates/index.html",
+    "operator_dashboard/local_ai_orchestrator_readonly_runtime_context_loader.py",
+    "operator_dashboard/local_ai_orchestrator_engine_adapter_registry.py",
+    "operator_dashboard/local_ai_orchestrator_input_context_pack.py",
+    "operator_dashboard/test_local_ai_orchestrator_button1_discovery_readiness_adapter_hook_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_button2_report_readiness_adapter_hook_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_button3_source_yield_adapter_hook_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_runtime_context_dashboard_wire_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_context_pack_end_to_end_smoke_v1.py"
+  ],
+  "targeted_test_command": "python -m pytest -q operator_dashboard/test_local_ai_orchestrator_button1_discovery_readiness_adapter_hook_v1.py operator_dashboard/test_local_ai_orchestrator_button2_report_readiness_adapter_hook_v1.py operator_dashboard/test_local_ai_orchestrator_button3_source_yield_adapter_hook_v1.py operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py operator_dashboard/test_local_ai_orchestrator_runtime_context_dashboard_wire_v1.py operator_dashboard/test_local_ai_orchestrator_context_pack_end_to_end_smoke_v1.py",
+  "targeted_test_result": {
+    "passed": 99,
+    "failed": 0
+  },
+  "governance_flags": {
+    "save_without_approval": false,
+    "delivery_without_approval": false,
+    "learning_without_approval": false,
+    "calibration_without_approval": false,
+    "preview_only": true
+  },
+  "repair_verdict": "critical_hydration_data_contract_repair_complete"
+}

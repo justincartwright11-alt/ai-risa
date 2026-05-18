@@ -64,6 +64,26 @@
       margin-bottom: 6px;
     }
     .btn-desc { font-size: 0.8rem; color: #8a94b8; line-height: 1.4; }
+    .card-health {
+      margin-top: 10px;
+      padding: 10px;
+      background: #141824;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      color: #8a94b8;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .card-health .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-health .line strong {
+      color: #c9aa71;
+      font-weight: 600;
+    }
     /* operator gate badge — styled via inline style on each span */
     .btn-main {
       display: block;
@@ -481,6 +501,12 @@
       <div class="btn-icon">&#128269;</div>
       <div class="btn-label">Find &amp; Build Fight Queue</div>
       <div class="btn-desc">Search upcoming events, extract matchups, rank report readiness.</div>
+      <div class="card-health" id="b1-card-health">
+        <div class="line"><span>Ready to save</span><strong id="b1-health-ready">0</strong></div>
+        <div class="line"><span>Needs review</span><strong id="b1-health-review">0</strong></div>
+        <div class="line"><span>Blocked</span><strong id="b1-health-blocked">0</strong></div>
+        <div class="line"><span>Waiting for refresh</span><strong id="b1-health-waiting">1</strong></div>
+      </div>
       <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
       <button class="btn-main" id="b1-btn" onclick="handleButton1Click()">Find Fights</button>
     </div>
@@ -490,6 +516,11 @@
       <div class="btn-icon">&#128196;</div>
       <div class="btn-label">Generate Premium PDF Reports</div>
       <div class="btn-desc">Select a fight from the queue and generate a customer-ready PDF report.</div>
+      <div class="card-health" id="b2-card-health">
+        <div class="line"><span>Customer Ready</span><strong id="b2-health-ready">0</strong></div>
+        <div class="line"><span>Not Ready</span><strong id="b2-health-not-ready">0</strong></div>
+        <div class="line"><span>Waiting for refresh</span><strong id="b2-health-waiting">1</strong></div>
+      </div>
       <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
       <button class="btn-main" id="b2-btn" onclick="handleButton2Click()">Generate Report</button>
     </div>
@@ -499,6 +530,14 @@
       <div class="btn-icon">&#127919;</div>
       <div class="btn-label">Find Results &amp; Improve Accuracy</div>
       <div class="btn-desc">Auto-search real-life results, compare vs AI-RISA analysis, review accuracy.</div>
+      <div class="card-health" id="b3-card-health">
+        <div class="line"><span>Rows scanned</span><strong id="b3-health-total">0</strong></div>
+        <div class="line"><span>Results found</span><strong id="b3-health-found">0</strong></div>
+        <div class="line"><span>Needs source</span><strong id="b3-health-needs-source">0</strong></div>
+        <div class="line"><span>Conflicts</span><strong id="b3-health-conflicts">0</strong></div>
+        <div class="line"><span>Ready to compare</span><strong id="b3-health-ready-compare">0</strong></div>
+        <div class="line"><span>Waiting for refresh</span><strong id="b3-health-waiting">1</strong></div>
+      </div>
       <span class="btn-gate" style="display:inline-block;font-size:0.68rem;background:rgba(201,170,113,0.1);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:4px;padding:2px 8px;margin-top:10px;">&#128274; Operator Gate</span>
       <button class="btn-main" id="b3-btn" onclick="handleButton3Click()">Find Results</button>
     </div>
@@ -1063,6 +1102,113 @@ function renderSimpleWorkflowSummary(statusId, responseData) {
   ].join('<br>');
 
   setStatus(statusId, summaryHtml, 'ok');
+}
+
+function readFirstWorkflowSummary(responseData) {
+  const workflow = responseData && responseData.workflow ? responseData.workflow : {};
+  const jobs = Array.isArray(workflow.jobs) ? workflow.jobs : [];
+  if (!jobs.length) {
+    return {};
+  }
+  const first = jobs[0] || {};
+  const outputPreview = first.output_preview || {};
+  const summary = outputPreview.summary || {};
+  return (summary && typeof summary === 'object') ? summary : {};
+}
+
+function readFirstWorkflowPayload(responseData) {
+  const workflow = responseData && responseData.workflow ? responseData.workflow : {};
+  const jobs = Array.isArray(workflow.jobs) ? workflow.jobs : [];
+  if (!jobs.length) {
+    return {};
+  }
+  const first = jobs[0] || {};
+  const inputRef = first.input_ref || {};
+  const metadata = inputRef.metadata || {};
+  const payload = metadata.payload || {};
+  return (payload && typeof payload === 'object') ? payload : {};
+}
+
+function asCount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) {
+    return 0;
+  }
+  return Math.floor(n);
+}
+
+function setCardCount(id, value) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.textContent = String(asCount(value));
+  }
+}
+
+function renderButton1CardHealth(summary) {
+  const discovered = asCount(summary.discovered_count);
+  const ready = asCount(summary.ready_for_report_count);
+  const blocked = asCount(summary.blocked_on_missing_fighter_count) + asCount(summary.duplicate_or_conflict_count);
+  const needsReview = asCount(summary.needs_fixture_data_count) + asCount(summary.draft_only_count);
+  const waiting = Math.max(discovered - ready - blocked - needsReview, 0);
+
+  setCardCount('b1-health-ready', ready);
+  setCardCount('b1-health-review', needsReview);
+  setCardCount('b1-health-blocked', blocked);
+  setCardCount('b1-health-waiting', waiting);
+}
+
+function renderButton2CardHealth(summary) {
+  const selected = asCount(summary.selected_fight_count);
+  const customerReady = asCount(summary.report_ready_count);
+  const notReady = asCount(summary.draft_only_count) + asCount(summary.missing_analysis_count) + asCount(summary.qa_blocked_count);
+  const waiting = Math.max(selected - customerReady - notReady, 0);
+
+  setCardCount('b2-health-ready', customerReady);
+  setCardCount('b2-health-not-ready', notReady);
+  setCardCount('b2-health-waiting', waiting);
+}
+
+function renderButton3CardHealth(summary) {
+  const totalRows = asCount(summary.total_rows);
+  const resultsFound = asCount(summary['Results Found']);
+  const needsSource = asCount(summary['Needs Source']);
+  const conflicts = asCount(summary['Conflict']);
+  const readyToCompare = asCount(summary['Ready to Compare']);
+  const noResultYet = asCount(summary['No Result Yet']);
+  const waiting = noResultYet || Math.max(totalRows - resultsFound - needsSource - conflicts - readyToCompare, 0);
+
+  setCardCount('b3-health-total', totalRows);
+  setCardCount('b3-health-found', resultsFound);
+  setCardCount('b3-health-needs-source', needsSource);
+  setCardCount('b3-health-conflicts', conflicts);
+  setCardCount('b3-health-ready-compare', readyToCompare);
+  setCardCount('b3-health-waiting', waiting);
+}
+
+function hydrateDashboardCardForSource(sourceButton) {
+  return requestLocalAiWorkflowPreviewWithRuntimeContext(sourceButton).then(data => {
+    const summary = readFirstWorkflowSummary(data);
+    if (sourceButton === SOURCE_BUTTON_FIND_FIGHTS) {
+      renderButton1CardHealth(summary);
+    } else if (sourceButton === SOURCE_BUTTON_GENERATE_PDFS) {
+      renderButton2CardHealth(summary);
+    } else if (sourceButton === SOURCE_BUTTON_FIND_RESULTS) {
+      renderButton3CardHealth(summary);
+
+      const payload = readFirstWorkflowPayload(data);
+      const sourceStatus = payload && payload.source_status ? payload.source_status : {};
+      if (sourceStatus && sourceStatus.accuracy_ledger_missing === true && asCount(summary.total_rows) === 0) {
+        setCardCount('b3-health-waiting', 1);
+      }
+    }
+    return data;
+  });
+}
+
+function hydrateDashboardCardsOnLoad() {
+  hydrateDashboardCardForSource(SOURCE_BUTTON_FIND_FIGHTS).catch(() => null);
+  hydrateDashboardCardForSource(SOURCE_BUTTON_GENERATE_PDFS).catch(() => null);
+  hydrateDashboardCardForSource(SOURCE_BUTTON_FIND_RESULTS).catch(() => null);
 }
 
 function getDefaultButton1DossierPreviewText() {
@@ -2591,6 +2737,8 @@ testControlledDeliveryPreview = function() {
 };
 
 // Read-only render of proof-stack display; no endpoints and no write actions.
+hydrateDashboardCardsOnLoad();
+setInterval(hydrateDashboardCardsOnLoad, 30000);
 renderPhase3ProofDisplay(window.phase3ProofStackResult);
 </script>
 </body>

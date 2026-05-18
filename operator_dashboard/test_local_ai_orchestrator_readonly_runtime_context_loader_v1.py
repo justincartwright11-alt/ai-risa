@@ -78,6 +78,25 @@ def test_empty_runtime_state_does_not_create_fake_results(tmp_path):
     assert payload["waiting_rows"] == []
 
 
+def test_button2_loader_derives_selected_fight_refs_from_red_blue_schema(tmp_path):
+    bout_path = tmp_path / "one_samurai_1_bouts.csv"
+    bout_path.write_text(
+        "bout_order,red_fighter,blue_fighter\n1,Fighter A,Fighter B\n",
+        encoding="utf-8",
+    )
+
+    pack = build_button2_runtime_context(workspace_root=str(tmp_path))
+    payload = pack.to_dict()["input_ref"]["payload"]
+    assert payload["selected_fights"] == [{"fight_ref": "Fighter A vs Fighter B"}]
+
+
+def test_button3_loader_marks_missing_accuracy_ledger_in_source_status(tmp_path):
+    pack = build_button3_runtime_context(workspace_root=str(tmp_path))
+    payload = pack.to_dict()["input_ref"]["payload"]
+    assert payload["waiting_rows"] == []
+    assert payload["source_status"]["accuracy_ledger_missing"] is True
+
+
 def test_in_memory_button1_state_maps_into_candidate_rows_safely(tmp_path):
     pack = build_button1_runtime_context(
         runtime_state_override={

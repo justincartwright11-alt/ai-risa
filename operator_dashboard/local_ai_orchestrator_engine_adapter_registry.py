@@ -62,6 +62,28 @@ def _coerce_count(value: Any) -> int:
         return 0
 
 
+def _safe_list(value: Any) -> list:
+    if isinstance(value, list):
+        return list(value)
+    return []
+
+
+def _count_truthy_row_flags(rows: list, keys: list[str]) -> int:
+    count = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for key in keys:
+            value = row.get(key)
+            if value in (True, 1, "1"):
+                count += 1
+                break
+            if isinstance(value, str) and value.strip().lower() in {"true", "yes", "ready", "pass", "passed"}:
+                count += 1
+                break
+    return count
+
+
 def _button1_payload(job: LocalAIJob) -> Dict[str, Any]:
     metadata = job.input_ref.metadata if isinstance(job.input_ref.metadata, dict) else {}
     payload = metadata.get("payload", {})
@@ -71,24 +93,32 @@ def _button1_payload(job: LocalAIJob) -> Dict[str, Any]:
 def _button1_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
     payload = _button1_payload(job)
 
-    discovered_rows = payload.get("discovered_rows", [])
-    extracted_rows = payload.get("extracted_rows", [])
-    duplicate_rows = payload.get("duplicate_rows", [])
+    discovered_rows = _safe_list(payload.get("discovered_rows", []))
+    extracted_rows = _safe_list(payload.get("extracted_rows", []))
+    duplicate_rows = _safe_list(payload.get("duplicate_rows", []))
+    candidate_rows = _safe_list(payload.get("candidate_rows", []))
 
-    if not isinstance(discovered_rows, list):
-        discovered_rows = []
-    if not isinstance(extracted_rows, list):
-        extracted_rows = []
-    if not isinstance(duplicate_rows, list):
-        duplicate_rows = []
+    baseline_rows = discovered_rows or extracted_rows or candidate_rows
+    ready_from_rows = _count_truthy_row_flags(
+        baseline_rows,
+        ["ready_for_report", "is_ready_for_report", "report_ready", "analysis_ready", "qa_pass"],
+    )
+    blocked_from_rows = _count_truthy_row_flags(
+        baseline_rows,
+        ["blocked", "blocked_on_missing_fighter", "missing_fighter", "needs_manual_review"],
+    )
+    needs_fixture_from_rows = _count_truthy_row_flags(
+        baseline_rows,
+        ["needs_fixture_data", "missing_fixture_data"],
+    )
 
     summary = {
-        "discovered_count": _coerce_count(payload.get("discovered_count", len(discovered_rows))),
-        "extracted_count": _coerce_count(payload.get("extracted_count", len(extracted_rows))),
-        "ready_for_report_count": _coerce_count(payload.get("ready_for_report_count", 0)),
-        "needs_fixture_data_count": _coerce_count(payload.get("needs_fixture_data_count", 0)),
-        "draft_only_count": _coerce_count(payload.get("draft_only_count", 0)),
-        "blocked_on_missing_fighter_count": _coerce_count(payload.get("blocked_on_missing_fighter_count", 0)),
+        "discovered_count": _coerce_count(payload.get("discovered_count", len(baseline_rows))),
+        "extracted_count": _coerce_count(payload.get("extracted_count", len(extracted_rows) if extracted_rows else len(baseline_rows))),
+        "ready_for_report_count": _coerce_count(payload.get("ready_for_report_count", ready_from_rows)),
+        "needs_fixture_data_count": _coerce_count(payload.get("needs_fixture_data_count", needs_fixture_from_rows)),
+        "draft_only_count": _coerce_count(payload.get("draft_only_count", max(len(baseline_rows) - ready_from_rows, 0))),
+        "blocked_on_missing_fighter_count": _coerce_count(payload.get("blocked_on_missing_fighter_count", blocked_from_rows)),
         "duplicate_or_conflict_count": _coerce_count(payload.get("duplicate_or_conflict_count", len(duplicate_rows))),
         "approval_required": True,
         "gate_name": "Approve Save Fights",
@@ -105,26 +135,32 @@ def _button2_payload(job: LocalAIJob) -> Dict[str, Any]:
 def _button2_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
     payload = _button2_payload(job)
 
-    selected_fights = payload.get("selected_fights", [])
-    qa_pass_rows = payload.get("qa_pass_rows", [])
-    qa_blocked_rows = payload.get("qa_blocked_rows", [])
+    selected_fights = _safe_list(payload.get("selected_fights", []))
+    selected_fight_refs = _safe_list(payload.get("selected_fight_refs", []))
+    if not selected_fights and selected_fight_refs:
+        selected_fights = [{"fight_ref": str(ref)} for ref in selected_fight_refs if str(ref).strip()]
 
-    if not isinstance(selected_fights, list):
-        selected_fights = []
-    if not isinstance(qa_pass_rows, list):
-        qa_pass_rows = []
-    if not isinstance(qa_blocked_rows, list):
-        qa_blocked_rows = []
+    qa_pass_rows = _safe_list(payload.get("qa_pass_rows", []))
+    qa_blocked_rows = _safe_list(payload.get("qa_blocked_rows", []))
+    report_status_refs = _safe_list(payload.get("report_status_refs", []))
+    analysis_ready_refs = _safe_list(payload.get("analysis_ready_refs", []))
+    customer_ready_refs = _safe_list(payload.get("customer_ready_refs", []))
+
+    selected_count = len(selected_fights)
+    inferred_report_ready = len(report_status_refs) or len(analysis_ready_refs) or selected_count
+    inferred_qa_pass = len(qa_pass_rows) or len(customer_ready_refs) or min(inferred_report_ready, selected_count)
+    inferred_qa_blocked = len(qa_blocked_rows) or max(selected_count - inferred_qa_pass, 0)
+    inferred_delivery_candidates = len(customer_ready_refs) or inferred_qa_pass
 
     summary = {
-        "selected_fight_count": _coerce_count(payload.get("selected_fight_count", len(selected_fights))),
-        "report_ready_count": _coerce_count(payload.get("report_ready_count", 0)),
-        "draft_only_count": _coerce_count(payload.get("draft_only_count", 0)),
-        "missing_analysis_count": _coerce_count(payload.get("missing_analysis_count", 0)),
-        "qa_pass_count": _coerce_count(payload.get("qa_pass_count", len(qa_pass_rows))),
-        "qa_blocked_count": _coerce_count(payload.get("qa_blocked_count", len(qa_blocked_rows))),
-        "pdf_preview_available_count": _coerce_count(payload.get("pdf_preview_available_count", 0)),
-        "delivery_candidate_count": _coerce_count(payload.get("delivery_candidate_count", 0)),
+        "selected_fight_count": _coerce_count(payload.get("selected_fight_count", selected_count)),
+        "report_ready_count": _coerce_count(payload.get("report_ready_count", inferred_report_ready)),
+        "draft_only_count": _coerce_count(payload.get("draft_only_count", max(selected_count - inferred_report_ready, 0))),
+        "missing_analysis_count": _coerce_count(payload.get("missing_analysis_count", max(selected_count - len(analysis_ready_refs), 0))),
+        "qa_pass_count": _coerce_count(payload.get("qa_pass_count", inferred_qa_pass)),
+        "qa_blocked_count": _coerce_count(payload.get("qa_blocked_count", inferred_qa_blocked)),
+        "pdf_preview_available_count": _coerce_count(payload.get("pdf_preview_available_count", inferred_qa_pass)),
+        "delivery_candidate_count": _coerce_count(payload.get("delivery_candidate_count", inferred_delivery_candidates)),
         "approval_required": True,
         "gate_name": "Approve Customer PDF Delivery",
     }
@@ -199,6 +235,9 @@ def _delivery_candidate_adapter(job: LocalAIJob) -> AdapterPreviewResult:
 def _result_search_adapter(job: LocalAIJob) -> AdapterPreviewResult:
     payload = job.input_ref.metadata.get("payload", {}) if isinstance(job.input_ref.metadata, dict) else {}
     waiting_rows = payload.get("waiting_rows", []) if isinstance(payload, dict) else []
+    source_status = payload.get("source_status", {}) if isinstance(payload, dict) else {}
+    source_status = source_status if isinstance(source_status, dict) else {}
+    accuracy_ledger_missing = bool(source_status.get("accuracy_ledger_missing", False))
     if not isinstance(waiting_rows, list):
         waiting_rows = []
 
@@ -219,6 +258,7 @@ def _result_search_adapter(job: LocalAIJob) -> AdapterPreviewResult:
             metrics={
                 "source_yield_preview_hooked": bool(_button3_build_readonly_executor_preview_response),
                 "used_executor_preview": False,
+                "zero_state_reason": "accuracy_ledger_missing" if accuracy_ledger_missing else "no_waiting_rows",
             },
         )
 

@@ -48,6 +48,10 @@ def _safe_text(value: Any) -> str:
     return ""
 
 
+def _safe_bool(value: Any) -> bool:
+    return bool(value)
+
+
 def _read_text_file(path: str) -> str:
     try:
         if not os.path.exists(path):
@@ -86,6 +90,22 @@ def _read_csv_rows(path: str, max_rows: int = 250) -> List[Dict[str, Any]]:
         return []
 
 
+def _build_fight_ref_from_row(row: Dict[str, Any]) -> str:
+    if not isinstance(row, dict):
+        return ""
+
+    direct_ref = _safe_text(row.get("fight_key") or row.get("fight_name") or row.get("matchup_key") or row.get("id"))
+    if direct_ref:
+        return direct_ref
+
+    red = _safe_text(row.get("red_fighter") or row.get("fighter_a") or row.get("fighter1") or row.get("fighter_a_name"))
+    blue = _safe_text(row.get("blue_fighter") or row.get("fighter_b") or row.get("fighter2") or row.get("fighter_b_name"))
+    if red and blue:
+        return f"{red} vs {blue}"
+
+    return ""
+
+
 def _normalize_runtime_state(runtime_state: Dict[str, Any]) -> Dict[str, Any]:
     state = _safe_dict(runtime_state)
     return {
@@ -112,6 +132,7 @@ def _normalize_runtime_state(runtime_state: Dict[str, Any]) -> Dict[str, Any]:
         "report_refs": _safe_list(state.get("report_refs", [])),
         "comparison_refs": _safe_list(state.get("comparison_refs", [])),
         "source_yield_preview_rows": _safe_list_of_dict(state.get("source_yield_preview_rows", [])),
+        "accuracy_ledger_missing": _safe_bool(state.get("accuracy_ledger_missing", False)),
     }
 
 
@@ -132,6 +153,7 @@ def load_readonly_runtime_state(
     queue_rows = _read_csv_rows(os.path.join(root, "fighter_intake_unresolved_queue.csv"))
     bout_rows = _read_csv_rows(os.path.join(root, "one_samurai_1_bouts.csv"))
     ledger = _read_json_file(os.path.join(root, "ops", "accuracy", "accuracy_ledger.json"))
+    ledger_path = os.path.join(root, "ops", "accuracy", "accuracy_ledger.json")
 
     state = {
         "manual_intake_text": status_text,
@@ -150,17 +172,14 @@ def load_readonly_runtime_state(
         "report_status_refs": [],
         "analysis_ready_refs": [],
         "customer_ready_refs": [],
-        "selected_fight_refs": [
-            row.get("fight_key") or row.get("fight_name")
-            for row in bout_rows
-            if isinstance(row, dict) and (row.get("fight_key") or row.get("fight_name"))
-        ],
+        "selected_fight_refs": [ref for ref in (_build_fight_ref_from_row(row) for row in bout_rows) if ref],
         "waiting_result_rows": _safe_list_of_dict(ledger.get("waiting_for_results", [])),
         "selected_result_keys": [],
         "result_source_refs": [],
         "report_refs": [],
         "comparison_refs": [],
         "source_yield_preview_rows": _safe_list_of_dict(ledger.get("waiting_for_results", [])),
+        "accuracy_ledger_missing": not os.path.exists(ledger_path),
     }
 
     state.update(override)
@@ -239,6 +258,9 @@ def build_button3_runtime_context(
         "result_source_refs": _safe_list(state.get("result_source_refs", [])),
         "report_refs": _safe_list(state.get("report_refs", [])),
         "comparison_refs": _safe_list(state.get("comparison_refs", [])),
+        "source_status": {
+            "accuracy_ledger_missing": bool(state.get("accuracy_ledger_missing", False)),
+        },
     }
     return build_button3_find_results_context(raw_input)
 

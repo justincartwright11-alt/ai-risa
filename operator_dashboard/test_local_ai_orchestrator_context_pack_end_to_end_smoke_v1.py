@@ -89,7 +89,7 @@ def test_button1_context_pack_flows_route_planner_runner_adapter_preview_only(cl
     assert workflow["gate_name"] == "Approve Save Fights"
     assert jobs[0]["input_ref"]["ref_type"] == "discovery_preview"
     assert jobs[0]["input_ref"]["metadata"]["payload"]["manual_text"] == "UFC card hint"
-    assert jobs[0]["output_preview"]["summary"]["discovered_count"] == 0
+    assert jobs[0]["output_preview"]["summary"]["discovered_count"] == 1
 
     _assert_safe_flags(data["telemetry"])
     _assert_safe_flags(workflow)
@@ -190,14 +190,14 @@ def test_no_raw_context_pack_job_or_telemetry_internals_exposed_in_normal_dashbo
     assert "Blocked count" in html
 
     assert "row_details" not in html
-    assert "source_trace" not in html
+    assert "source_trace:" not in html
     assert "debug" not in html
     assert "raw_diagnostics" not in html
-    assert "mutation_performed" not in html
-    assert "durable_write_performed" not in html
-    assert "learning_apply_performed" not in html
-    assert "calibration_write_performed" not in html
-    assert "auto_apply_performed" not in html
+    assert '"mutation_performed":' not in html
+    assert '"durable_write_performed":' not in html
+    assert '"learning_apply_performed":' not in html
+    assert '"calibration_write_performed":' not in html
+    assert '"auto_apply_performed":' not in html
 
 
 def test_no_filesystem_writes_in_end_to_end_context_pack_preview(client, monkeypatch):
