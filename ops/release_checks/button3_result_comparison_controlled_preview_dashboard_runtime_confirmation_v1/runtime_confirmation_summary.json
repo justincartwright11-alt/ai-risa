@@ -1,0 +1,35 @@
+{
+  "slice": "button3-result-comparison-controlled-preview-dashboard-runtime-confirmation-v1",
+  "status": "validated",
+  "startup": {
+    "command": "./scripts/start_ai_risa_dashboard_windows.ps1",
+    "dashboard_url": "http://127.0.0.1:5050",
+    "dashboard_started": true
+  },
+  "live_checks": {
+    "dashboard_root_status": 200,
+    "result_comparison_preview_route_status": 200,
+    "preview_only": true,
+    "comparison_status": "ready_to_compare",
+    "accuracy_preview": {
+      "winner": "hit",
+      "overall": "hit"
+    }
+  },
+  "governance_flags": {
+    "mutation_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "queue_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "dashboard_surface": {
+    "preview_only_language_present": true,
+    "text_marker": "Preview-only comparison path"
+  },
+  "safety": {
+    "apply_endpoint_opened_for_result_comparison": false,
+    "learning_or_calibration_apply_path_opened": false,
+    "durable_mutation_path_opened": false
+  }
+}
