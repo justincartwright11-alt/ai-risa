@@ -606,6 +606,39 @@
         </div>
       </div>
 
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
+        <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Controlled Delivery Audit / Proof Evidence</strong></div>
+        <div style="font-size:0.75rem;color:#8a94b8;line-height:1.8;">
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">audit_record:</strong> <span id="b2-cd-evidence-audit-record">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">proof_of_delivery_record:</strong> <span id="b2-cd-evidence-proof-record">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">delivery_receipt_record:</strong> <span id="b2-cd-evidence-receipt-record">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">rollback_void_pointer:</strong> <span id="b2-cd-evidence-rollback-record">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">operation_id:</strong> <span id="b2-cd-evidence-operation-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">audit_id:</strong> <span id="b2-cd-evidence-audit-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">proof_id:</strong> <span id="b2-cd-evidence-proof-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">receipt_id:</strong> <span id="b2-cd-evidence-receipt-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">rollback_id:</strong> <span id="b2-cd-evidence-rollback-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">report_id:</strong> <span id="b2-cd-evidence-report-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">report_status:</strong> <span id="b2-cd-evidence-report-status">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">customer_identity_present:</strong> <span id="b2-cd-evidence-customer-identity">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">delivery_target_present:</strong> <span id="b2-cd-evidence-delivery-target">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">delivery_channel:</strong> <span id="b2-cd-evidence-delivery-channel">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">delivery_mode:</strong> <span id="b2-cd-evidence-delivery-mode">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">operator_approval:</strong> <span id="b2-cd-evidence-operator-approval">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">generated_at or timestamp:</strong> <span id="b2-cd-evidence-generated-at">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">safety_flags snapshot:</strong> <span id="b2-cd-evidence-safety-flags-snapshot">—</span></div>
+        </div>
+      </div>
+
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
+        <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Controlled Delivery Mode Labels</strong></div>
+        <div style="font-size:0.75rem;color:#8a94b8;line-height:1.6;">
+          <div>email_scaffold: scaffold only, no email sent</div>
+          <div>api_scaffold: scaffold only, no external API called</div>
+          <div>manual_export: operator-approved controlled manual export</div>
+        </div>
+      </div>
+
       <div id="b2-cd-action-denial-result" style="display:none;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
         <div style="font-size:0.8rem;color:#e5c07b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Denial Reasons (Action Not Executed):</strong></div>
         <div id="b2-cd-action-denial-list" style="font-size:0.75rem;color:#e5c07b;line-height:1.6;">—</div>
@@ -2393,6 +2426,38 @@ function renderControlledDeliveryAction(response) {
     }
   };
 
+  const renderEvidenceObject = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!value || typeof value !== 'object') {
+      el.textContent = 'not_present';
+      return;
+    }
+    const visibleKeys = Object.keys(value).slice(0, 8);
+    el.textContent = visibleKeys.join(', ');
+  };
+
+  const clearEvidenceDisplay = () => {
+    renderEvidenceObject('b2-cd-evidence-audit-record', null);
+    renderEvidenceObject('b2-cd-evidence-proof-record', null);
+    renderEvidenceObject('b2-cd-evidence-receipt-record', null);
+    renderEvidenceObject('b2-cd-evidence-rollback-record', null);
+    setField('b2-cd-evidence-operation-id', response.operation_id || '—');
+    setField('b2-cd-evidence-audit-id', '—');
+    setField('b2-cd-evidence-proof-id', '—');
+    setField('b2-cd-evidence-receipt-id', '—');
+    setField('b2-cd-evidence-rollback-id', '—');
+    setField('b2-cd-evidence-report-id', response.report_id || '—');
+    setField('b2-cd-evidence-report-status', response.report_status || '—');
+    setField('b2-cd-evidence-customer-identity', response.customer_identity_present ? 'true' : 'false');
+    setField('b2-cd-evidence-delivery-target', response.delivery_target_present ? 'true' : 'false');
+    setField('b2-cd-evidence-delivery-channel', response.delivery_channel || '—');
+    setField('b2-cd-evidence-delivery-mode', response.delivery_mode || '—');
+    setField('b2-cd-evidence-operator-approval', 'false');
+    setField('b2-cd-evidence-generated-at', '—');
+    setField('b2-cd-evidence-safety-flags-snapshot', JSON.stringify(response.safety_flags || {}));
+  };
+
   // Display action result fields
   const resultFieldsDiv = document.getElementById('b2-cd-action-result-fields');
   if (!resultFieldsDiv) return;
@@ -2419,6 +2484,7 @@ function renderControlledDeliveryAction(response) {
     setSafetyFlag('b2-cd-action-calibration-write', false);
     setSafetyFlag('b2-cd-action-button1-mutation', false);
     setSafetyFlag('b2-cd-action-button3-mutation', false);
+    clearEvidenceDisplay();
 
     // Show denial reasons
     const denialDiv = document.getElementById('b2-cd-action-denial-result');
@@ -2455,6 +2521,45 @@ function renderControlledDeliveryAction(response) {
   setSafetyFlag('b2-cd-action-calibration-write', flags.calibration_write_performed);
   setSafetyFlag('b2-cd-action-button1-mutation', flags.button1_mutation_performed);
   setSafetyFlag('b2-cd-action-button3-mutation', flags.button3_mutation_performed);
+
+  const auditRecord = response.audit_record;
+  const proofRecord = response.proof_of_delivery_record;
+  const receiptRecord = response.delivery_receipt_record;
+  const rollbackRecord = response.rollback_void_pointer;
+
+  renderEvidenceObject('b2-cd-evidence-audit-record', auditRecord);
+  renderEvidenceObject('b2-cd-evidence-proof-record', proofRecord);
+  renderEvidenceObject('b2-cd-evidence-receipt-record', receiptRecord);
+  renderEvidenceObject('b2-cd-evidence-rollback-record', rollbackRecord);
+
+  setField('b2-cd-evidence-operation-id', response.operation_id || (auditRecord && auditRecord.operation_id) || '—');
+  setField('b2-cd-evidence-audit-id', response.audit_id || (auditRecord && auditRecord.audit_id) || '—');
+  setField('b2-cd-evidence-proof-id', (proofRecord && proofRecord.proof_id) || '—');
+  setField('b2-cd-evidence-receipt-id', response.delivery_receipt_id || (receiptRecord && receiptRecord.receipt_id) || '—');
+  setField('b2-cd-evidence-rollback-id', response.rollback_id || (rollbackRecord && rollbackRecord.rollback_id) || '—');
+  setField('b2-cd-evidence-report-id', response.report_id || (proofRecord && proofRecord.report_id) || '—');
+  setField('b2-cd-evidence-report-status', response.report_status || '—');
+  setField('b2-cd-evidence-customer-identity', response.customer_identity_present ? 'true' : 'false');
+  setField('b2-cd-evidence-delivery-target', response.delivery_target_present ? 'true' : 'false');
+  setField('b2-cd-evidence-delivery-channel', response.delivery_channel || (proofRecord && proofRecord.delivery_channel) || '—');
+  setField('b2-cd-evidence-delivery-mode', response.delivery_mode || response.delivery_channel || '—');
+  setField('b2-cd-evidence-operator-approval', 'true');
+
+  const generatedAt =
+    (proofRecord && proofRecord.generated_at) ||
+    (receiptRecord && receiptRecord.generated_at) ||
+    (rollbackRecord && rollbackRecord.generated_at) ||
+    (auditRecord && auditRecord.audit_timestamp) ||
+    '—';
+  setField('b2-cd-evidence-generated-at', generatedAt);
+
+  const evidenceFlags =
+    (proofRecord && proofRecord.safety_flags) ||
+    (receiptRecord && receiptRecord.safety_flags) ||
+    (rollbackRecord && rollbackRecord.safety_flags) ||
+    response.safety_flags ||
+    {};
+  setField('b2-cd-evidence-safety-flags-snapshot', JSON.stringify(evidenceFlags));
 
   // Hide denial reasons on success
   const denialDiv = document.getElementById('b2-cd-action-denial-result');
