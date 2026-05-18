@@ -1,0 +1,78 @@
+{
+  "slice": "button1-button2-button3-commercial-readiness-final-rollup-after-ranking-v1",
+  "status": "locked_docs_evidence_only",
+  "program_state": {
+    "button1": {
+      "status": "READY",
+      "latest_lock": {
+        "slice": "button1-auto-discovery-readiness-ranking-hardening-v1",
+        "commit": "9122cb0",
+        "tag": "button1-auto-discovery-readiness-ranking-hardening-v1"
+      },
+      "capabilities": [
+        "full-card source-backed event cards",
+        "governed readiness ranking",
+        "rank/readiness/action dashboard surface"
+      ]
+    },
+    "button2": {
+      "status": "READY",
+      "locks": [
+        {
+          "slice": "button2-selected-matchup-full-premium-multipage-report-v1",
+          "commit": "31042ee"
+        },
+        {
+          "slice": "button2-generated-pdf-dashboard-link-live-ui-repair-v1",
+          "commit": "261dae3"
+        },
+        {
+          "slice": "operator-dashboard-windows-launch-script-and-runtime-env-guard-v1",
+          "commit": "2173b99"
+        },
+        {
+          "slice": "operator-dashboard-runtime-preflight-status-panel-v1",
+          "commit": "431aaea"
+        }
+      ],
+      "capabilities": [
+        "guarded premium PDF generation",
+        "multi-page premium reports",
+        "dashboard open-link",
+        "safe open route",
+        "runtime startup safeguards"
+      ]
+    },
+    "button3": {
+      "status": "GOVERNED_PREVIEW_READY",
+      "locks": [
+        {
+          "slice": "button3-result-comparison-controlled-preview-path-v1",
+          "commit": "9069050"
+        },
+        {
+          "slice": "button3-result-comparison-controlled-preview-dashboard-runtime-confirmation-v1",
+          "commit": "775f94d"
+        }
+      ],
+      "capabilities": [
+        "controlled result-comparison preview",
+        "runtime-confirmed preview behavior",
+        "no apply/mutation path opened"
+      ]
+    }
+  },
+  "runtime_safeguards": {
+    "windows_launcher_locked": true,
+    "preflight_panel_locked": true
+  },
+  "governance_boundary": {
+    "auto_save_enabled": false,
+    "queue_write_outside_gate_enabled": false,
+    "ungated_generation_enabled": false,
+    "learning_or_calibration_apply_enabled": false,
+    "button3_mutation_enabled": false
+  },
+  "remaining_boundary": "business_decision_signoff_only",
+  "next_valid_launch_slice": "paid-pilot-phase1-management-decision-record-v1"
+}
