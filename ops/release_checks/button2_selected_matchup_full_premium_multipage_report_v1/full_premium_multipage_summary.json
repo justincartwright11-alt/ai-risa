@@ -1,0 +1,57 @@
+{
+  "slice": "button2-selected-matchup-full-premium-multipage-report-v1",
+  "status": "validated",
+  "goal": "upgrade selected-matchup output from single-page premium-path proof to full premium multi-page report depth",
+  "runtime_proof": {
+    "status_code": 200,
+    "ok": true,
+    "selected_matchup": "Anthony Joshua vs Daniel Dubois",
+    "event_name": "Joshua vs Dubois",
+    "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "pdf_open_url": "/api/button2/generated-report/open?filename=anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "pages": 15,
+    "premium_sections_present": true,
+    "old_fallback_phrase_present": false
+  },
+  "premium_structure": {
+    "minimum_target_pages": "8-15",
+    "achieved_pages": 15,
+    "sections": [
+      "Premium cover",
+      "Executive command dashboard",
+      "Matchup snapshot",
+      "Tactical edge map",
+      "Fighter architecture/radar section",
+      "Decision structure",
+      "Energy use analysis",
+      "Fatigue failure points",
+      "Mental condition under stress",
+      "Collapse triggers",
+      "Range/geography control",
+      "Round-by-round projection",
+      "Scenario tree/method pathways",
+      "Risk warnings",
+      "Final projection",
+      "Confidence explanation",
+      "Source traceability",
+      "Disclaimer/risk control"
+    ]
+  },
+  "template_path": {
+    "default": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+    "override_env": "BUTTON2_TEMPLATE_PACK_ROOT"
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false,
+    "operator_approval_required": true
+  },
+  "tests": {
+    "focused_plus_button2_regressions": "42 passed",
+    "button1_selector_preservation": "13 passed"
+  }
+}

@@ -1317,9 +1317,119 @@ def _source_traceability_html(items):
             continue
         src_id = _esc(item.get("id", ""))
         src_type = _esc(item.get("type", ""))
+        src_url = _esc(item.get("url", ""), "n/a")
         src_date = _esc(item.get("date", ""))
-        parts.append(f"<li>{src_id} &mdash; {src_type} &mdash; {src_date}</li>")
+        parts.append(f"<li>{src_id} &mdash; {src_type} &mdash; {src_date} &mdash; {src_url}</li>")
     return "\n    ".join(parts) if parts else "<li>No source traceability data.</li>"
+
+
+def _selected_matchup_report_content(report_context_preview):
+    selected = report_context_preview.get("selected_matchup")
+    if not isinstance(selected, dict):
+        selected = {}
+
+    fighter_a = str(selected.get("fighter_a") or "Fighter A")
+    fighter_b = str(selected.get("fighter_b") or "Fighter B")
+    event_name = str(selected.get("event_name") or "Unknown Event")
+    event_date = str(selected.get("event_date") or "TBD")
+    source_url = str(selected.get("source_url") or "n/a")
+
+    matchup = f"{fighter_a} vs {fighter_b}"
+    pace_axis = (
+        f"{fighter_a} is projected to push pressure spikes and force tempo volatility, "
+        f"while {fighter_b} is projected to stabilize tempo through range discipline and "
+        "repeatable scoring windows."
+    )
+
+    return {
+        "cover_title": matchup,
+        "cover_subtitle": f"{event_name} | {event_date}",
+        "executive_command_dashboard": (
+            f"Executive command baseline: {matchup} at {event_name}. "
+            "This report is composed for operator-reviewed premium briefing. "
+            "Decision quality depends on controlling volatility transitions, confirming source corroboration, "
+            "and preserving tactical discipline from opening exchange to late-fight adaptation."
+        ),
+        "matchup_snapshot": (
+            f"Matchup snapshot: {pace_axis} "
+            "The projected edge is scenario-dependent rather than absolute; the outcome path tightens when "
+            "one side consistently enforces preferred geography and denies reset opportunities."
+        ),
+        "tactical_edge_map": (
+            "Tactical edge map: 1) Initiative control in first two rounds. "
+            "2) Distance and clinch-transition integrity. 3) Counter-entry timing under pressure. "
+            "4) Recovery speed after momentum disruption. 5) Composure in round-close scoring exchanges."
+        ),
+        "fighter_architecture": (
+            f"Fighter architecture: {fighter_a} profile emphasizes forward pressure windows, disruption cadence, "
+            "and damage accumulation sequences. "
+            f"{fighter_b} profile emphasizes spacing economy, selective counters, and round-level score management. "
+            "Radar interpretation favors the athlete that keeps style identity intact under stress transitions."
+        ),
+        "decision_structure": (
+            "Decision structure: Winner projection must satisfy three conditions: sustained tactical initiative, "
+            "damage or scoring conversion in key windows, and late-fight error containment. "
+            "Failure in any one condition increases upset exposure and narrows confidence range."
+        ),
+        "energy_use_analysis": (
+            "Energy use analysis: Early burst spend should convert into either scoring lead or structural control. "
+            "Inefficient burst patterns without conversion increase fatigue tax. "
+            "Efficient pacing retains optionality for round-four and round-five decision points."
+        ),
+        "fatigue_failure_points": (
+            "Fatigue failure points: watch for defensive hand discipline decay, delayed exits from exchange lanes, "
+            "and reduced shot selection quality after prolonged pressure loops. "
+            "These are leading indicators of collapse probability acceleration."
+        ),
+        "mental_condition_under_stress": (
+            "Mental condition under stress: confidence stability is modeled by response quality after adverse moments. "
+            "Athlete resilience is measured through tactical reset speed, not emotive reaction. "
+            "Composure asymmetry is a decisive variable in close projected outcomes."
+        ),
+        "collapse_triggers": (
+            "Collapse triggers: repeated forced-defense cycles, geography loss near boundaries, and decision paralysis "
+            "during momentum reversals. Trigger thresholds are highest when source-backed scouting indicates "
+            "historical degradation under sustained tempo conflict."
+        ),
+        "range_geography_control": (
+            "Range and geography control: prime objective is to keep preferred exchange distance while denying "
+            "opponent setup rhythm. Corner guidance should prioritize lateral reset discipline, cage/rope awareness, "
+            "and proactive angle reclamation after every contested sequence."
+        ),
+        "round_projection": (
+            "R1-R2: establish initiative and deny clean reads.\n"
+            "R3-R4: manage adaptation branch and protect scoring integrity.\n"
+            "R5: close with risk-aware control, avoid volatility spikes unless behind on score projection."
+        ),
+        "scenario_tree_method_pathways": (
+            "Scenario tree / method pathways:\n"
+            "Path A (control decision): sustained range governance and cumulative score separation.\n"
+            "Path B (attritional break): pressure cascade creates defensive failure points.\n"
+            "Path C (late swing): opponent adaptation reclaims tempo and forces narrow decision finish."
+        ),
+        "risk_warnings": (
+            "Risk warnings: avoid certainty framing. Projection quality is conditional on source completeness, "
+            "injury/news volatility, and execution fidelity under stress. "
+            "Operator should treat model output as structured probability, not deterministic certainty."
+        ),
+        "final_projection": (
+            f"Final projection for {matchup}: controlled edge to the side that sustains style integrity while "
+            "managing fatigue and geography transitions. Confidence is moderate-to-high only when corroboration "
+            "and tactical execution remain aligned through championship rounds."
+        ),
+        "confidence_explanation": (
+            "Confidence explanation: confidence band reflects model agreement across pace, range control, "
+            "and collapse-risk indicators. Confidence is reduced when either fighter has a credible disruption "
+            "route that can invert expected tactical hierarchy."
+        ),
+        "disclaimer_risk_control": (
+            "Disclaimer / risk control: this report is informational and decision-support only. "
+            "No betting certainty implied. Use disciplined bankroll and operational risk controls. "
+            "Operator approval is required before any downstream commercial usage."
+        ),
+        "source_url_display": source_url,
+        "event_name_display": event_name,
+    }
 
 
 _HTML_TEMPLATE = """\
@@ -1512,26 +1622,122 @@ _HTML_TEMPLATE = """\
     .header-footer-watermark-metadata {{ display: none; }}
     .source-traceability-metadata {{ display: none; }}
     .visual-qa-rollup-metadata {{ display: none; }}
+    .report-page {{
+      page-break-after: always;
+      break-after: page;
+      min-height: 9.2in;
+      padding-bottom: 0.2in;
+    }}
+    .report-page.last-page {{
+      page-break-after: auto;
+      break-after: auto;
+    }}
+    .premium-kicker {{
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #444444;
+      margin-bottom: 0.5em;
+    }}
+    .premium-block {{
+      margin-top: 1.1em;
+      border-left: 3px solid #d9d9d9;
+      padding-left: 0.7em;
+    }}
   </style>
 </head>
 <body>
-    <h1 class="typography-report-title" data-hierarchy-level="H0" data-page-block-role="report_identity_block" data-break-policy="keep_together">AI-RISA Premium Fight Report</h1>
-
-    <section class="page-block-summary" data-page-block-role="analysis_block" data-break-policy="allow_internal_break" data-can-split="true" data-widow-orphan-rule="header_requires_two_following_lines">
-        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Report Summary</h2>
-        <div class="hierarchy-marker" data-hierarchy-level="H2" data-hierarchy-title="Executive Summary"></div>
-        <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
+    <section class="report-page" data-page-block-role="report_identity_block" data-break-policy="keep_together">
+        <div class="premium-kicker">AI-RISA Premium Fight Intelligence</div>
+        <h1 class="typography-report-title" data-hierarchy-level="H0">AI-RISA Premium Fight Report</h1>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Premium Cover</h2>
+        <div class="premium-block">
+            <div class="typography-body-secondary">{cover_title}</div>
+            <div class="typography-body-secondary">{cover_subtitle}</div>
+            <div class="typography-body-secondary">Source URL: {source_url_display}</div>
+        </div>
     </section>
 
-    <section class="page-block-sources" data-page-block-role="sources_calibration_block" data-break-policy="split_by_chunk" data-can-split="true" data-chunk-size="10" data-widow-orphan-rule="no_single_list_item_orphan">
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Executive Command Dashboard</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{executive_command_dashboard}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Matchup Snapshot</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{matchup_snapshot}</pre>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Tactical Edge Map</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{tactical_edge_map}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Fighter Architecture / Radar Section</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{fighter_architecture}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Decision Structure</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{decision_structure}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Energy Use Analysis</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{energy_use_analysis}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Fatigue Failure Points</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{fatigue_failure_points}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Mental Condition Under Stress</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{mental_condition_under_stress}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Collapse Triggers</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{collapse_triggers}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Range / Geography Control</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{range_geography_control}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Round-by-Round Projection</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{round_projection}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="matchup_signal_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Scenario Tree / Method Pathways</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{scenario_tree_method_pathways}</pre>
+    </section>
+
+    <section class="report-page" data-page-block-role="analysis_block" data-break-policy="allow_internal_break">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Risk Warnings</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{risk_warnings}</pre>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Final Projection</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{final_projection}</pre>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Confidence Explanation</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{confidence_explanation}</pre>
+    </section>
+
+    <section class="report-page page-block-sources" data-page-block-role="sources_calibration_block" data-break-policy="split_by_chunk" data-can-split="true" data-chunk-size="10" data-widow-orphan-rule="no_single_list_item_orphan">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Source Traceability</h2>
-        <div class="hierarchy-marker" data-hierarchy-level="H2" data-hierarchy-title="Source Citations"></div>
+        <div class="typography-body-secondary">Event: {event_name_display}</div>
         <ul class="typography-list-item" data-hierarchy-level="Body">
             {source_traceability_items}
         </ul>
     </section>
 
-    <div class="meta-footer typography-page-metadata" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block" data-break-policy="keep_together" data-can-split="false">
+    <section class="report-page last-page" data-page-block-role="footer_metadata_block" data-break-policy="keep_together">
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Disclaimer / Risk Control</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{disclaimer_risk_control}</pre>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Report Summary</h2>
+        <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
+        <div class="meta-footer typography-page-metadata" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block" data-break-policy="keep_together" data-can-split="false">
     <div class="qa-row">Source context: {source_context_kind}</div>
     <div class="qa-row">Ingest mode: {source_ingest_mode}</div>
     <div class="qa-row">Overlap proof: {overlap_proof_label}</div>
@@ -1547,7 +1753,8 @@ _HTML_TEMPLATE = """\
         <div class="qa-row">Controlled export preview: {controlled_export_preview_status} | Gate: {controlled_export_gate} | Output path policy: {controlled_export_output_path_policy}</div>
     <div class="qa-row">Valid layers: {valid_layers_count}/8 | Invalid: {invalid_layers_count} | Missing: {missing_layers_count}</div>
     <div class="qa-row">Overall visual confidence: {overall_visual_confidence}</div>
-  </div>
+            </div>
+        </section>
 
     <section
         id="button2-hierarchy-metadata"
@@ -1713,9 +1920,34 @@ def build_button2_report_html(report_context_preview):
         controlled_export_preview_status = "controlled_export_not_eligible"
     controlled_export_gate = "operator_approval_required"
     controlled_export_output_path_policy = "server_derived_output_path_required"
+
+    selected_matchup_content = _selected_matchup_report_content(report_context_preview)
     
     html_content = _HTML_TEMPLATE.format(
         typography_css_stylesheet=typography_css,
+        cover_title=_esc(selected_matchup_content.get("cover_title"), "Selected Matchup"),
+        cover_subtitle=_esc(selected_matchup_content.get("cover_subtitle"), "Unknown Event"),
+        executive_command_dashboard=_esc(
+            selected_matchup_content.get("executive_command_dashboard"),
+            "Executive command summary unavailable.",
+        ),
+        matchup_snapshot=_esc(selected_matchup_content.get("matchup_snapshot"), ""),
+        tactical_edge_map=_esc(selected_matchup_content.get("tactical_edge_map"), ""),
+        fighter_architecture=_esc(selected_matchup_content.get("fighter_architecture"), ""),
+        decision_structure=_esc(selected_matchup_content.get("decision_structure"), ""),
+        energy_use_analysis=_esc(selected_matchup_content.get("energy_use_analysis"), ""),
+        fatigue_failure_points=_esc(selected_matchup_content.get("fatigue_failure_points"), ""),
+        mental_condition_under_stress=_esc(selected_matchup_content.get("mental_condition_under_stress"), ""),
+        collapse_triggers=_esc(selected_matchup_content.get("collapse_triggers"), ""),
+        range_geography_control=_esc(selected_matchup_content.get("range_geography_control"), ""),
+        round_projection=_esc(selected_matchup_content.get("round_projection"), ""),
+        scenario_tree_method_pathways=_esc(selected_matchup_content.get("scenario_tree_method_pathways"), ""),
+        risk_warnings=_esc(selected_matchup_content.get("risk_warnings"), ""),
+        final_projection=_esc(selected_matchup_content.get("final_projection"), ""),
+        confidence_explanation=_esc(selected_matchup_content.get("confidence_explanation"), ""),
+        disclaimer_risk_control=_esc(selected_matchup_content.get("disclaimer_risk_control"), ""),
+        source_url_display=_esc(selected_matchup_content.get("source_url_display"), "n/a"),
+        event_name_display=_esc(selected_matchup_content.get("event_name_display"), "Unknown Event"),
         handoff_summary_preview=summary_raw,
         source_traceability_items=_source_traceability_html(
             report_context_preview.get("source_traceability", [])
