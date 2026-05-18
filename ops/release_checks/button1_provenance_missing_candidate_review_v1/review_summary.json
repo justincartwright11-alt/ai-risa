@@ -1,0 +1,59 @@
+{
+  "slice": "button1-provenance-missing-candidate-review-v1",
+  "status": "diagnostic_locked",
+  "candidate_rows": {
+    "total": 31,
+    "from_event_coverage_queue_csv": 1,
+    "from_fighter_intake_unresolved_queue_csv": 30
+  },
+  "button1_runtime_summary": {
+    "discovered_count": 31,
+    "extracted_count": 31,
+    "ready_for_report_count": 0,
+    "draft_only_count": 31,
+    "blocked_on_missing_fighter_count": 0,
+    "duplicate_or_conflict_count": 0
+  },
+  "field_presence": {
+    "source_url_missing": 31,
+    "source_name_missing": 31,
+    "promotion_missing": 31,
+    "event_name_missing": 0,
+    "event_date_missing": 30,
+    "red_fighter_missing": 31,
+    "blue_fighter_missing": 31,
+    "http_values_found": 0
+  },
+  "gate1_dryrun": {
+    "scoped_candidate_count": 31,
+    "would_save_count": 0,
+    "blocked_count": 31,
+    "provenance_missing_count": 31,
+    "identity_blocked_count": 0,
+    "duplicate_or_conflict_count": 0
+  },
+  "gate1_writer_preview": {
+    "ok": false,
+    "would_write": false,
+    "blocking_reasons": [
+      "provenance_missing"
+    ]
+  },
+  "discovery_feed_status": {
+    "live_search_executed": false,
+    "runtime_loader_mode": "local_csv_runtime_context"
+  },
+  "root_cause": "candidate payload lacks accepted URL-based provenance fields required by Gate1 provenance validator",
+  "type": "data_contract_mismatch",
+  "severity": "high",
+  "launch_impact": "button1_queue_save_blocked_all_rows",
+  "any_rows_safe_to_save": false,
+  "recommended_next_repair_slice": "button1-provenance-missing-candidate-contract-repair-v1",
+  "repair_scope": [
+    "preserve existing provenance gate strictness",
+    "map valid source evidence into accepted source_url/provenance_url fields",
+    "keep identity and duplicate/conflict gates unchanged",
+    "separate non-fight event-level rows from save candidates when needed",
+    "add positive and negative provenance contract tests"
+  ]
+}
