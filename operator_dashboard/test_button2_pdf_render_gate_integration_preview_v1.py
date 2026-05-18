@@ -22,6 +22,7 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from operator_dashboard.button2_pdf_render_gate_v1 import (
+    _bootstrap_windows_weasyprint_runtime,
     _visual_qa_enabled,
     render_button2_pdf,
 )
@@ -56,6 +57,35 @@ class TestVisualQaGuard:
         """Guard strips whitespace before comparing."""
         with patch.dict(os.environ, {"BUTTON2_VISUAL_QA": " 1 "}):
             assert _visual_qa_enabled() is True
+
+
+class TestWindowsRuntimeBootstrap:
+    def test_registers_ucrt64_bin_from_path_when_available(self):
+        add_calls = []
+
+        with patch("operator_dashboard.button2_pdf_render_gate_v1.os.name", "nt"):
+            with patch(
+                "operator_dashboard.button2_pdf_render_gate_v1.os.add_dll_directory",
+                side_effect=lambda path: add_calls.append(path),
+                create=True,
+            ):
+                with patch(
+                    "operator_dashboard.button2_pdf_render_gate_v1.os.path.isdir",
+                    side_effect=lambda path: path == r"C:\msys64\ucrt64\bin",
+                ):
+                    with patch.dict(os.environ, {"PATH": r"C:\msys64\ucrt64\bin;C:\Windows\System32"}):
+                        _bootstrap_windows_weasyprint_runtime()
+
+        assert add_calls == [r"C:\msys64\ucrt64\bin"]
+
+    def test_noops_outside_windows(self):
+        with patch("operator_dashboard.button2_pdf_render_gate_v1.os.name", "posix"):
+            with patch(
+                "operator_dashboard.button2_pdf_render_gate_v1.os.add_dll_directory",
+                side_effect=AssertionError("should not be called"),
+                create=True,
+            ):
+                _bootstrap_windows_weasyprint_runtime()
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────

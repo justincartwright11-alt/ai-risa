@@ -15,6 +15,33 @@ from operator_dashboard.button2_visual_intelligence_weasyprint_geometry_extracto
 )
 
 
+def _bootstrap_windows_weasyprint_runtime():
+    """Register common MSYS2 GTK runtime directories for Windows DLL loading."""
+    add_dll_directory = getattr(os, "add_dll_directory", None)
+    if os.name != "nt" or add_dll_directory is None:
+        return
+
+    candidate_dirs = []
+    env_path = os.environ.get("PATH", "")
+    for path_entry in env_path.split(os.pathsep):
+        normalized = path_entry.strip().rstrip("\\/")
+        lower = normalized.lower()
+        if lower.endswith("\\ucrt64\\bin") or lower.endswith("/ucrt64/bin"):
+            candidate_dirs.append(normalized)
+
+    default_dir = r"C:\msys64\ucrt64\bin"
+    if default_dir not in candidate_dirs:
+        candidate_dirs.append(default_dir)
+
+    for candidate_dir in candidate_dirs:
+        if not os.path.isdir(candidate_dir):
+            continue
+        try:
+            add_dll_directory(candidate_dir)
+        except OSError:
+            continue
+
+
 def _visual_qa_enabled():
     """Return True only when BUTTON2_VISUAL_QA env var equals '1'.
 
@@ -46,6 +73,7 @@ def render_button2_pdf(html_content):
             pdf_bytes     (bytes)      — rendered PDF output
             geometry_data (dict|None)  — extracted block geometry, or None
     """
+    _bootstrap_windows_weasyprint_runtime()
     import weasyprint as _wp
 
     # ── Render (layout-neutral — side-channel is read-only) ──────────────────

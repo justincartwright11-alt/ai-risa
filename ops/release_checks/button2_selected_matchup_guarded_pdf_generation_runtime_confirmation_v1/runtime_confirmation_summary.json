@@ -1,0 +1,38 @@
+{
+  "slice": "button2-selected-matchup-guarded-pdf-generation-runtime-confirmation-v1",
+  "status": "implemented_and_validated",
+  "source_dependency_checkpoint": "button2-selected-matchup-pdf-render-runtime-dependency-confirmation-v1",
+  "dashboard_url_tested": "http://127.0.0.1:5050/",
+  "selected": {
+    "event_name": "ONE SAMURAI 1",
+    "matchup": "Nadaka vs Songchainoi Kiatsongrit"
+  },
+  "guarded_route": "/api/button2/selected-matchup/generate-guarded-v1",
+  "pdf_generation": {
+    "ok": true,
+    "message": "PDF generated and saved successfully.",
+    "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\nadaka_vs_songchainoi_kiatsongrit_one_samurai_1_premium.pdf",
+    "pdf_exists": true
+  },
+  "governance": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "runtime_environment": {
+    "gtk_runtime_path": "C:\\msys64\\ucrt64\\bin",
+    "button2_pdf_output_root": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports",
+    "app_process_bootstrap_required": true
+  },
+  "ai_risa_code_changed": true,
+  "tests": {
+    "focused_suite_result": "78/78 passed"
+  },
+  "artifacts": [
+    "docs/button2_selected_matchup_guarded_pdf_generation_runtime_confirmation_v1.md",
+    "ops/release_checks/button2_selected_matchup_guarded_pdf_generation_runtime_confirmation_v1/runtime_confirmation_summary.json"
+  ]
+}
