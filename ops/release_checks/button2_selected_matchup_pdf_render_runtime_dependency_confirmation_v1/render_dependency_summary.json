@@ -1,0 +1,23 @@
+{
+  "slice": "button2-selected-matchup-pdf-render-runtime-dependency-confirmation-v1",
+  "status": "implemented_and_validated",
+  "source_locked_checkpoint": "button2-explicit-operator-generate-from-selected-matchup-guarded-v1",
+  "original_blocker": "missing libgobject-2.0-0",
+  "updated_blocker_state": "dll_present_and_resolved_via_python_add_dll_directory",
+  "runtime": {
+    "msys2_installed": true,
+    "gtk_gobject_dll_path": "C:\\msys64\\ucrt64\\bin",
+    "libgobject_dll_exists": true,
+    "os_add_dll_directory_used": true,
+    "weasyprint_render_command_succeeded": true,
+    "pdf_render_ok": true,
+    "test_pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\weasyprint_runtime_test.pdf",
+    "test_pdf_exists": true
+  },
+  "ai_risa_code_changed": false,
+  "artifacts": [
+    "docs/button2_selected_matchup_pdf_render_runtime_dependency_confirmation_v1.md",
+    "ops/release_checks/button2_selected_matchup_pdf_render_runtime_dependency_confirmation_v1/render_dependency_summary.json"
+  ],
+  "next_safe_recommendation": "Restart VS Code completely, then rerun the guarded selected-matchup dashboard render path."
+}
