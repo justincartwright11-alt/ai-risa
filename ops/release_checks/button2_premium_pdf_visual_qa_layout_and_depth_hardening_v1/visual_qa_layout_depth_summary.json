@@ -1,0 +1,99 @@
+{
+  "slice": "button2-premium-pdf-visual-qa-layout-and-depth-hardening-v1",
+  "timestamp_utc": "2026-05-18T23:36:52.611603+00:00",
+  "results": [
+    {
+      "name": "Rico Verhoeven vs Tariq Osaro",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\pdfs\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_02_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_03_matchup.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_13_source_map.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_14_disclaimer.png"
+      ],
+      "text_scan": {
+        "cover_no_premium_cover_label": true,
+        "no_known_line_collision_text": true,
+        "source_page_clean_heading": true,
+        "final_page_no_divider_text_collision": true,
+        "page_count_ok": true,
+        "forbidden_generic_placeholders_absent": true,
+        "page2_summary_present": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    },
+    {
+      "name": "Anthony Joshua vs Daniel Dubois",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\pdfs\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_02_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_03_matchup.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_13_source_map.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_14_disclaimer.png"
+      ],
+      "text_scan": {
+        "cover_no_premium_cover_label": true,
+        "no_known_line_collision_text": true,
+        "source_page_clean_heading": true,
+        "final_page_no_divider_text_collision": true,
+        "page_count_ok": true,
+        "forbidden_generic_placeholders_absent": true,
+        "page2_summary_present": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    },
+    {
+      "name": "Jiri Prochazka vs Carlos Ulberg",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\pdfs\\jiri_prochazka_vs_carlos_ulberg_ufc_320_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\jiri_prochazka_vs_carlos_ulberg_ufc_320_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\jiri_prochazka_vs_carlos_ulberg_ufc_320_02_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\jiri_prochazka_vs_carlos_ulberg_ufc_320_03_matchup.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\jiri_prochazka_vs_carlos_ulberg_ufc_320_13_source_map.png",
+        "ops\\release_checks\\button2_premium_pdf_visual_qa_layout_and_depth_hardening_v1\\visual_proof\\jiri_prochazka_vs_carlos_ulberg_ufc_320_14_disclaimer.png"
+      ],
+      "text_scan": {
+        "cover_no_premium_cover_label": true,
+        "no_known_line_collision_text": true,
+        "source_page_clean_heading": true,
+        "final_page_no_divider_text_collision": true,
+        "page_count_ok": true,
+        "forbidden_generic_placeholders_absent": true,
+        "page2_summary_present": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    }
+  ],
+  "cover_no_premium_cover_label": true,
+  "no_known_line_collision_text": true,
+  "source_page_clean_heading": true,
+  "final_page_no_divider_text_collision": true,
+  "page_count_ge_14": true,
+  "forbidden_generic_placeholders_absent": true
+}

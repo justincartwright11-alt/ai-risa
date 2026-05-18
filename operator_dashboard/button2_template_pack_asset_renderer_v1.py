@@ -47,6 +47,41 @@ def _clean_text(value, fallback=""):
     return text or fallback
 
 
+def _customer_command_footer(module, c, x, y, w):
+    """Customer-facing command footer that replaces generic placeholder lanes."""
+    gap = 16
+    cw = (w - 2 * gap) / 3
+    cards = [
+        (
+            "Control Lane",
+            "pressure rhythm, reset denial, and scoring geography",
+            "Keep exits layered and preserve scoring integrity.",
+            module.BLUE,
+        ),
+        (
+            "Danger Lane",
+            "geography loss, rushed entries, and output without conversion",
+            "Do not let defensive hand decay become a late-round tax.",
+            module.RED,
+        ),
+        (
+            "Command Read",
+            "force reset discipline and avoid low-value pressure chases",
+            "Corner instruction: make every entry pay or reset the lane.",
+            module.GOLD2,
+        ),
+    ]
+    for i, (title, body, cue, col) in enumerate(cards):
+        xx = x + i * (cw + gap)
+        module.panel(c, xx, y, cw, 58, None, col, module.SOFT, r=6, lw=0.95, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.7, col)
+        c.drawString(xx + 12, y + 40, title.upper())
+        module.set_font(c, "Helvetica", 7.6, module.WHITE)
+        c.drawString(xx + 12, y + 28, body)
+        module.set_font(c, "Helvetica", 7.0, module.MUTED)
+        module.para(c, cue, xx + 12, y + 8, cw - 24, 14, size=7.0, col=module.MUTED, min_size=6.8)
+
+
 def resolve_template_pack_assets():
     override = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
     root = override.strip() if isinstance(override, str) and override.strip() else DEFAULT_TEMPLATE_PACK_ROOT
@@ -165,6 +200,12 @@ def _build_blocks(report_context_preview):
         filtered_lines.append(line)
     
     handoff_summary = "\n".join(filtered_lines).strip() or "Premium summary prepared from selected matchup and source traceability context."
+    dashboard_summary = (
+        f"{fighter_a} owns the pressure lane when resets stay denied and geometry remains crowded. "
+        f"{fighter_b} can flip the fight only if the lane stays clean, the counters stay layered, and the exit discipline holds. "
+        f"Command read: keep scoreable moments, avoid low-value pressure, and preserve the fight's scoring geography. "
+        f"Round-control projection: R1 establishes the read, R2 tests adaptation, and the late rounds reward the fighter who still owns the reset after contact."
+    )
 
     # Enhanced fight-specific content
     return {
@@ -173,84 +214,88 @@ def _build_blocks(report_context_preview):
         "event_name": event_name,
         "event_date": event_date,
         "source_url": source_url,
-        "summary": handoff_summary,
+        "summary": dashboard_summary,
+        "source_summary": handoff_summary,
         # Cover tagline
         "cover_tagline": "THE INTELLIGENCE BENEATH THE VIOLENCE",
         "cover_title": "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT",
         # Headline with more specific projection
         "headline": (
-            f"{fighter_a} holds the pressure lane advantage against {fighter_b} in this high-stakes matchup. "
-            f"Victory hinges on sustained geometry control, reset timing, and composure under late-round attrition."
+            f"{fighter_a} enters with the clearest control lane if the fight stays at a pressure-to-reset cadence. "
+            f"The tactical thesis is simple: deny {fighter_b} clean geography, win the first re-entry after every break, and make late-round reads expensive. "
+            f"If {fighter_b} turns the fight into clean, countable exchanges, the edge compresses quickly."
         ),
         # Matchup snapshot with tactical depth
         "matchup_snapshot": (
-            f"{fighter_a} vs {fighter_b}: Contrasting tactical identities converge on pace and rhythm control. "
-            f"{fighter_a}'s pressure-based approach meets {fighter_b}'s counter-structured defense. "
-            f"Watch for reset battles and survival moments in R2-R3 transitions."
+            f"{fighter_a} vs {fighter_b} is a contest between pressure rhythm and counter structure. "
+            f"Control lane: {fighter_a} should force layered entries, crowd the reset window, and score before the exit is free. "
+            f"Danger lane: {fighter_b} can flip the fight if the entries get rushed, the hands decay defensively, or the output is not converted into position. "
+            f"Command read: keep exits layered, do not chase low-value pressure, and make every exchange pay for itself."
         ),
         # Decision structure with specific watch cues
         "decision_structure": (
-            f"Decision structure centered on three control zones: (1) pressure entry and reset timing, "
-            f"(2) mid-range geometry and angle closure, (3) clinch/cage dynamics. {fighter_a} will target volume accumulation. "
-            f"{fighter_b} will seek clean counter opportunities. Late rounds favor whoever maintains structural integrity."
+            f"Decision structure: the judge-friendly route belongs to the fighter who owns scoring geography without overcommitting. "
+            f"{fighter_a} needs pressure rhythm, reset denial, and angle closure that prevents clean counters. "
+            f"{fighter_b} needs disciplined counter-entry timing, ring awareness, and enough repeatable output to keep the scorecard narrow. "
+            f"Watch cue: if {fighter_b} is forced to defend twice in the same sequence, {fighter_a} is likely dictating the round. Failure consequence: a high-volume but low-conversion round becomes a point loss instead of a control round."
         ),
         # Energy/fatigue with work rates
         "energy": (
-            f"Energy profile: {fighter_a} operates high-output pressure with variable intensity windows. "
-            f"{fighter_b} conserves early, escalates counter-striking in R2-R3. Fatigue threshold likely R3-R4 for {fighter_a}. "
-            f"Watch for forced defensive work forcing early cardio tax."
+            f"Energy profile: {fighter_a} spends energy in pressure bursts and must convert those bursts into position, not just activity. "
+            f"{fighter_b} spends more economically when the fight stays readable, but the cost rises quickly if the resets disappear. "
+            f"Watch cue: repeated forced exits or defensive hand decay will tax the slower processor first. Failure consequence: style starts to degrade before cardio visibly fails."
         ),
         # Mental condition specific to matchup
         "mental": (
-            f"Mental stress: {fighter_a} responds to adversity with increased pressure; vulnerability surfaces when rhythm breaks. "
-            f"{fighter_b} thrives in reactive posture; struggles if unable to find counter windows. "
-            f"Composure under momentum swings becomes scoring determinant in close rounds."
+            f"Mental layer: {fighter_a} is strongest when the fight feels unstable, because disruption amplifies his confidence. "
+            f"{fighter_b} is strongest when the fight stays orderly, because clean decision-making is part of his value. "
+            f"Command instruction: if the rhythm breaks, reset immediately instead of forcing the next exchange. Watch cue: the first visible hesitation after a momentum swing usually predicts the next scored sequence."
         ),
         # Collapse triggers with specific pattern recognition
         "collapse": (
-            f"Collapse triggers for {fighter_a}: repeated angle closure failures + cardio debt accumulation. "
-            f"Collapse triggers for {fighter_b}: early cage control loss + loss of counter-timing rhythm. "
-            f"Threshold: two consecutive rounds of tactical pattern failure = scorecard vulnerability."
+            f"Collapse trigger map: {fighter_a} risks a downturn when pressure stops moving {fighter_b} and becomes empty volume. "
+            f"{fighter_b} risks a downturn when early defensive costs accumulate and the counter window becomes late or predictable. "
+            f"Failure consequence: after two consecutive rounds of lost geography or broken timing, the scorecard can move faster than the physical fatigue is obvious."
         ),
         # Round projection with specific expectations
         "round_projection": (
-            f"R1: Information battle + pace establishment. {fighter_a} tests pressure lanes; {fighter_b} seeks counter timing. "
-            f"R2: Pressure intensifies; adaptation or reset failures begin. "
-            f"R3+: Attrition and control conversion. Late-round authority depends on sustainable geometry and cleaner high-leverage moments."
+            f"R1 is an information and spacing test. R2 is the first real pressure read: can {fighter_a} keep the geometry pinned, or can {fighter_b} force a clean lane? "
+            f"R3 through the late rounds should reward the fighter who is still making the other man reset under threat. "
+            f"Command/corner instruction: do not chase damage if the lane is not there; preserve scoring integrity and make the opponent work for every turn."
         ),
         # Scenario pathways with probabilities
         "scenario": (
-            f"Pathway A (58%): {fighter_a} pressure conversion—sustained volume + geometry control lead to decision edge. "
-            f"Pathway B (33%): {fighter_b} counter-scoring lane—clean shots + reset avoidance secure decision. "
-            f"Pathway C (9%): Swing-variance finish—mid-fight rhythm break changes scorecard direction."
+            f"Pathway A (model-derived 58%): {fighter_a} pressure conversion wins by controlling geography and making the scorecard look inevitable. "
+            f"Pathway B (model-derived 33%): {fighter_b} counter-scoring keeps the fight close by staying disciplined and punishing rushed entries. "
+            f"Pathway C (model-derived 9%): a swing-variance turn appears if one fighter loses discipline and gives the other a full round of momentum."
         ),
         # Final projection with confidence band
         "final_projection": (
-            f"{fighter_a} projects as slight favorite (52-60% confidence band) over {fighter_b}. "
-            f"Victory path requires sustained pressure + reset timing mastery. "
-            f"{fighter_b} upset path requires early counter-timing + late-round cardio preservation. "
-            f"Recommendation: edge + volatility, not certainty. Live-round adjustments by corner determine outcome."
+            f"{fighter_a} is the slight projection-based favorite because the control lane is more repeatable than the upset path. "
+            f"The model-derived edge sits in the 52-60% band, which is meaningful but not wide. "
+            f"If {fighter_b} keeps the fight clean, the gap narrows; if {fighter_a} keeps the fight disruptive, the advantage compounds. "
+            f"Recommendation: treat the read as edge plus volatility, not certainty."
         ),
         # Confidence explanation with transparency
         "confidence": (
-            "Confidence is bounded intelligence confidence, not guarantee. Source-traceable evidence constrains all claims. "
-            "Risk controls and uncertainty factors retained throughout. Operator-safe communication framework maintained."
+            "Confidence is model-derived and source-traceable, not guaranteed. The report should be read as bounded intelligence with explicit uncertainty controls. "
+            "Control ownership, flip conditions, and corner adjustments are all treated as tactical projections, not promises."
         ),
         # Additional metrics for dashboard
-        "projected_edge": f"{fighter_a}",
-        "edge_percent": "54%",
-        "volatility": "High",
-        "control_zone": "Pressure Entry",
-        "danger_zone": "Mid-Round Fade",
-        "collapse_trigger": "Geometry Loss",
-        "method_probability": "Decision",
-        "confidence_band": "52-60%",
+        "projected_edge": f"{fighter_a} (model-derived edge)",
+        "edge_percent": "54% (model-derived)",
+        "volatility": "High (model-derived)",
+        "control_zone": "Pressure rhythm / reset denial",
+        "danger_zone": "Geography loss / rushed entry",
+        "collapse_trigger": "Defensive hand decay",
+        "method_probability": "Decision (model-derived)",
+        "confidence_band": "52-60% (model-derived)",
     }
 
 
 def _draw_cover(module, c, blocks):
     """Premium cover design matching Ares reference standard."""
-    module.page_base(c, 1, "Premium Cover")
+    module.page_base(c, 1, "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT")
     x = module.SAFE_X + 10
     w = module.PAGE_W - 2 * x
 
@@ -262,21 +307,25 @@ def _draw_cover(module, c, blocks):
     c.drawCentredString(module.PAGE_W / 2, 420, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
 
     # Fighter A block
-    module.panel(c, x, 280, (w // 3) - 8, 80, "FIGHTER A", module.BLUE, module.PANEL)
+    module.panel(c, x, 280, (w // 3) - 8, 80, None, module.BLUE, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
+    c.drawString(x + 12, 348, "FIGHTER A")
     module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
-    c.drawCentredString(x + (w // 6), 325, blocks["fighter_a"])
+    c.drawCentredString(x + (w // 6), 326, blocks["fighter_a"])
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + (w // 6), 305, "Projected Edge")
+    c.drawCentredString(x + (w // 6), 305, blocks.get("projected_edge", "Model-derived edge"))
 
     # VS block
-    module.panel(c, x + (w // 3), 280, (w // 3) - 16, 80, "VS", module.GOLD, module.PANEL)
+    module.panel(c, x + (w // 3), 280, (w // 3) - 16, 80, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 14.0, module.WHITE)
     c.drawCentredString(module.PAGE_W / 2, 325, "VS")
     module.set_font(c, "Helvetica", 8.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 305, blocks.get("edge_percent", "54%"))
+    c.drawCentredString(module.PAGE_W / 2, 305, blocks.get("edge_percent", "54% (model-derived)"))
 
     # Fighter B block
-    module.panel(c, x + (2 * w // 3) + 8, 280, (w // 3) - 8, 80, "FIGHTER B", module.RED, module.PANEL)
+    module.panel(c, x + (2 * w // 3) + 8, 280, (w // 3) - 8, 80, None, module.RED, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
+    c.drawRightString(x + w - 12, 348, "FIGHTER B")
     module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
     c.drawCentredString(x + w - (w // 6), 325, blocks["fighter_b"])
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
@@ -289,23 +338,25 @@ def _draw_cover(module, c, blocks):
     c.drawCentredString(module.PAGE_W / 2, 243, f"Event Date: {blocks['event_date']}")
 
     # Control/Danger/Command lens
-    module.panel(c, x, 140, w, 85, "INTELLIGENCE FRAMEWORK", module.GOLD, module.PANEL)
+    module.panel(c, x, 140, w, 85, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + 20, 210, "CONTROL LENS")
+    c.drawString(x + 20, 208, "CONTROL LENS")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + 20, 197, f"Where {blocks['fighter_a']} controls geometry and pace")
+    c.drawString(x + 20, 195, f"Pressure rhythm, reset denial, and scoring geography")
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (w // 3), 210, "DANGER ZONE")
+    c.drawString(x + (w // 3), 208, "DANGER ZONE")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (w // 3), 197, f"Where {blocks['fighter_b']} can shift momentum")
+    c.drawString(x + (w // 3), 195, f"Geography loss, rushed entries, and output without conversion")
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (2 * w // 3), 210, "CONFIDENCE")
+    c.drawString(x + (2 * w // 3), 208, "CONFIDENCE")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (2 * w // 3), 197, blocks.get("confidence_band", "52-60%"))
+    c.drawString(x + (2 * w // 3), 195, blocks.get("confidence_band", "52-60% (model-derived)"))
 
     # Headline projection
-    module.panel(c, x, 28, w, 100, "HEADLINE PROJECTION", module.BLUE, module.PANEL_BLUE)
-    module.para(c, blocks["headline"], x + 20, 105, w - 40, 65, size=10.0, col=module.WHITE, min_size=8.8)
+    module.panel(c, x, 20, w, 108, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 18, 114, "HEADLINE PROJECTION")
+    module.para(c, blocks["headline"], x + 18, 30, w - 36, 64, size=9.7, col=module.WHITE, min_size=8.6)
 
     # Footer with source/operator approval
     module.set_font(c, "Helvetica", 7.0, module.MUTED)
@@ -334,35 +385,42 @@ def _draw_executive(module, c, blocks):
 
     # Second row - control/danger/collapse zones
     zone_width = (w - 20) // 3
-    module.panel(c, x + 10, 278, zone_width - 4, 80, "Control Zone", module.BLUE, module.PANEL)
+    module.panel(c, x + 10, 278, zone_width - 4, 80, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawCentredString(x + 10 + (zone_width - 4) // 2, 330, blocks.get("control_zone", "Pressure Entry"))
+    c.drawString(x + 22, 345, "CONTROL ZONE")
+    c.drawCentredString(x + 10 + (zone_width - 4) // 2, 326, blocks.get("control_zone", "Pressure rhythm / reset denial"))
     module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    c.drawCentredString(x + 10 + (zone_width - 4) // 2, 295, "Where advantage establishes")
+    module.para(c, f"{blocks['fighter_a']} keeps scoring geography under threat and denies clean exits.", x + 20, 293, zone_width - 24, 30, size=7.2, col=module.WHITE, min_size=6.8, align='center')
 
-    module.panel(c, x + zone_width + 16, 278, zone_width - 4, 80, "Danger Zone", module.RED, module.PANEL)
+    module.panel(c, x + zone_width + 16, 278, zone_width - 4, 80, None, module.RED, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawCentredString(x + zone_width + 16 + (zone_width - 4) // 2, 330, blocks.get("danger_zone", "Mid-Round Fade"))
+    c.drawString(x + zone_width + 28, 345, "DANGER ZONE")
+    c.drawCentredString(x + zone_width + 16 + (zone_width - 4) // 2, 326, blocks.get("danger_zone", "Geography loss / rushed entry"))
     module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    c.drawCentredString(x + zone_width + 16 + (zone_width - 4) // 2, 295, "Where upset path opens")
+    module.para(c, f"{blocks['fighter_b']} can flip the fight if the counters stay layered and the exit discipline holds.", x + zone_width + 28, 293, zone_width - 24, 30, size=7.2, col=module.WHITE, min_size=6.8, align='center')
 
-    module.panel(c, x + 2*zone_width + 22, 278, zone_width - 4, 80, "Collapse Trigger", module.GOLD, module.PANEL)
+    module.panel(c, x + 2*zone_width + 22, 278, zone_width - 4, 80, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawCentredString(x + 2*zone_width + 22 + (zone_width - 4) // 2, 330, blocks.get("collapse_trigger", "Geometry Loss"))
+    c.drawString(x + 2*zone_width + 34, 345, "COLLAPSE TRIGGER")
+    c.drawCentredString(x + 2*zone_width + 22 + (zone_width - 4) // 2, 326, blocks.get("collapse_trigger", "Defensive hand decay"))
     module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    c.drawCentredString(x + 2*zone_width + 22 + (zone_width - 4) // 2, 295, "Pattern break threshold")
+    module.para(c, "Two consecutive rounds of lost geography or broken timing can move the scorecard faster than fatigue looks visible.", x + 2*zone_width + 34, 293, zone_width - 24, 30, size=7.0, col=module.WHITE, min_size=6.6, align='center')
 
     # Method pathway visualization
-    module.panel(c, x, 100, w, 160, "Method Pathway Snapshot", module.GOLD, module.PANEL)
+    module.panel(c, x, 102, w, 154, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+    c.drawString(x + 16, 239, "METHOD PATHWAY SNAPSHOT")
     module.method_bars(c, [
         (f"{blocks['fighter_a']} pressure conversion", 58, module.BLUE),
         (f"{blocks['fighter_b']} counter-scoring", 33, module.RED),
         (f"Swing-variance finish", 9, module.GOLD2),
-    ], x + 22, 160, w - 44, 75)
+    ], x + 22, 152, w - 44, 75)
 
     # Executive summary
-    module.panel(c, x, 8, w, 80, "INTELLIGENCE BRIEF", module.BLUE, module.PANEL_BLUE)
-    module.para(c, blocks["summary"], x + 12, 65, w - 24, 60, size=9.2, col=module.WHITE, min_size=8.4)
+    module.panel(c, x, 8, w, 86, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 12, 78, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
+    module.para(c, blocks["summary"], x + 12, 18, w - 24, 46, size=8.8, col=module.WHITE, min_size=7.8)
     c.showPage()
 
 
@@ -385,48 +443,55 @@ def _draw_radar_grid(module, c, blocks):
 
 
 def _draw_source_traceability(module, c, blocks, report_context_preview):
-    module.page_base(c, 13, "Source Traceability")
+    module.page_base(c, 13, "Traceability / Source Map")
     x = module.SAFE_X + 24
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 112, w, 348, "Source Traceability", module.GOLD, module.PANEL)
+    module.panel(c, x, 112, w, 348, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 20, 440, "Source Traceability")
+    c.drawString(x + 20, 440, "Traceability / Source Map")
 
     rows = report_context_preview.get("source_traceability", []) if isinstance(report_context_preview, dict) else []
     if not isinstance(rows, list):
         rows = []
     if not rows:
-        rows = [{"id": "SRC-001", "type": "official", "url": blocks["source_url"], "date": blocks["event_date"]}]
+        rows = [{"id": "SRC-001", "type": "official", "tier": "official", "url": blocks["source_url"], "date": blocks["event_date"], "discipline": "source traceable"}]
 
-    y = 410
-    for row in rows[:6]:
-        src_id = _clean_text(row.get("id"), "SRC")
-        src_type = _clean_text(row.get("type"), "official")
-        src_url = _clean_text(row.get("url"), "n/a")
-        src_date = _clean_text(row.get("date"), "n/a")
-        module.set_font(c, "Helvetica-Bold", 9.8, module.GOLD2)
-        c.drawString(x + 20, y, f"{src_id} | {src_type.upper()} | {src_date}")
-        module.set_font(c, "Helvetica", 9.0, module.WHITE)
-        c.drawString(x + 20, y - 16, src_url)
-        c.setStrokeColor(module.GREY)
-        c.setLineWidth(0.5)
-        c.line(x + 20, y - 23, x + w - 20, y - 23)
-        y -= 44
+    y = 404
+    source_rows = [
+        ("Event", blocks["event_name"]),
+        ("Source URL", blocks["source_url"]),
+        ("Source Type / Tier", "official / tier-traceable"),
+        ("Source Discipline Statement", "Claims remain model-derived unless directly supported by the source map and operator review."),
+        ("Operator Approval Requirement", "Required before any customer-facing delivery or database mutation."),
+    ]
+    for label, value in source_rows:
+        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+        c.drawString(x + 20, y, label)
+        module.para(c, value, x + 188, y - 9, w - 210, 28, size=8.8, col=module.WHITE, min_size=7.8)
+        y -= 58
 
-    module.panel(c, x + 18, 136, w - 36, 96, "Source Integrity Note", module.BLUE, module.PANEL_BLUE)
-    module.para(c, "All report claims are constrained by cited source rows above. Missing corroboration downgrades confidence and must be operator-reviewed before delivery.", x + 36, 156, w - 72, 58, size=10.0, col=module.WHITE, min_size=9.0)
+    module.panel(c, x + 18, 130, w - 36, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 34, 216, "SOURCE INTEGRITY NOTE")
+    module.para(c, "Source Traceability remains intact when the map is complete, the data path is approved, and operator review confirms the claim. If a source is unresolved, the report should downgrade confidence instead of inventing certainty.", x + 34, 150, w - 68, 50, size=9.0, col=module.WHITE, min_size=8.2)
     c.showPage()
 
 
 def _draw_customer_appendix(module, c):
-    module.page_base(c, 14, "Customer Appendix / Disclaimer")
+    module.page_base(c, 14, "Disclaimer / Risk Control")
     x = module.SAFE_X + 30
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 280, w, 180, "Risk Control and Usage", module.GOLD, module.PANEL)
-    module.para(c, "This report is customer-facing competitive intelligence. It is probabilistic, not guaranteed. Use as one decision input among broader operational context.", x + 24, 320, w - 48, 110, size=11.4, col=module.WHITE, min_size=10.0)
+    module.panel(c, x, 262, w, 194, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+    c.drawString(x + 24, 432, "Disclaimer / Risk Control")
+    module.para(c, "This report is customer-facing competitive intelligence, not certainty. It is probabilistic, source-traceable, and intended to support disciplined review rather than automatic action.", x + 24, 350, w - 48, 64, size=10.7, col=module.WHITE, min_size=9.6)
+    module.para(c, "Use this report alongside operator judgment, source verification, and context from the broader fight card. If a cue is unresolved, the correct move is to downgrade confidence, not to invent clarity.", x + 24, 288, w - 48, 56, size=10.3, col=module.WHITE, min_size=9.2)
 
-    module.panel(c, x, 106, w, 150, "What This Report Includes", module.BLUE, module.PANEL_BLUE)
-    module.para(c, "Premium cover, executive dashboard panels, radar/stat grid, scenario pathway sections, round control projection, risk/confidence framing, and source traceability.", x + 24, 138, w - 48, 96, size=10.8, col=module.WHITE, min_size=9.6)
+    module.panel(c, x, 98, w, 146, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
+    c.drawString(x + 24, 224, "WHAT THIS REPORT INCLUDES")
+    module.para(c, "Premium cover, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and Source Traceability / source map pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
+    module.para(c, "No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.", x + 24, 116, w - 48, 26, size=9.4, col=module.MUTED, min_size=8.5)
     c.showPage()
 
 
@@ -441,6 +506,8 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         module.WATER = image_reader(assets["watermark_path"])
     except Exception as e:
         raise TemplatePackRenderError(f"Failed to load template pack image assets: {str(e)}") from e
+
+    module.command_footer = lambda c, x, y, w: _customer_command_footer(module, c, x, y, w)
 
     blocks = _build_blocks(report_context_preview)
 
