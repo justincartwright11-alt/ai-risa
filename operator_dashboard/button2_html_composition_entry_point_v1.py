@@ -1544,6 +1544,7 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Source traceability metadata validation: {src_metadata_validation_status}</div>
     <div class="qa-row">Visual QA rollup status: {rollup_status} | Certification readiness: {certification_readiness} | Completeness: {visual_completeness}</div>
         <div class="qa-row">Customer-ready status preview: {customer_ready_status_preview} | Gate: {customer_ready_gate}</div>
+        <div class="qa-row">Controlled export preview: {controlled_export_preview_status} | Gate: {controlled_export_gate} | Output path policy: {controlled_export_output_path_policy}</div>
     <div class="qa-row">Valid layers: {valid_layers_count}/8 | Invalid: {invalid_layers_count} | Missing: {missing_layers_count}</div>
     <div class="qa-row">Overall visual confidence: {overall_visual_confidence}</div>
   </div>
@@ -1704,6 +1705,14 @@ def build_button2_report_html(report_context_preview):
     else:
         customer_ready_status_preview = "customer_ready_not_ready"
     customer_ready_gate = "operator_approval_required"
+
+    # Phase 6 preview-only controlled export marker (no export/write/delivery implementation).
+    if customer_ready_status_preview == "customer_ready_recommended":
+        controlled_export_preview_status = "controlled_export_eligible_pending_operator_approval"
+    else:
+        controlled_export_preview_status = "controlled_export_not_eligible"
+    controlled_export_gate = "operator_approval_required"
+    controlled_export_output_path_policy = "server_derived_output_path_required"
     
     html_content = _HTML_TEMPLATE.format(
         typography_css_stylesheet=typography_css,
@@ -1795,6 +1804,9 @@ def build_button2_report_html(report_context_preview):
         ),
         customer_ready_status_preview=_esc(customer_ready_status_preview, "customer_ready_not_ready"),
         customer_ready_gate=_esc(customer_ready_gate, "operator_approval_required"),
+        controlled_export_preview_status=_esc(controlled_export_preview_status, "controlled_export_not_eligible"),
+        controlled_export_gate=_esc(controlled_export_gate, "operator_approval_required"),
+        controlled_export_output_path_policy=_esc(controlled_export_output_path_policy, "server_derived_output_path_required"),
         visual_completeness=_esc(
             f"{rollup_payload.get('visual_qa_rollup', {}).get('visual_qa_indicators', {}).get('overall_visual_completeness', 0.0) * 100:.0f}%",
             "0%"
