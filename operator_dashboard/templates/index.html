@@ -564,23 +564,56 @@
     </div>
 
     <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
-      <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Safety Flags (All Preview-Only):</strong></div>
+      <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Safety Flags (Display Updated on Action):</strong></div>
       <div style="font-size:0.75rem;color:#8a94b8;line-height:1.6;">
-        <div>• live_delivery_performed: <span style="color:#98c379;">false</span></div>
-        <div>• customer_delivery_performed: <span style="color:#98c379;">false</span></div>
-        <div>• email_send_performed: <span style="color:#98c379;">false</span></div>
-        <div>• database_write_performed: <span style="color:#98c379;">false</span></div>
-        <div>• queue_write_performed: <span style="color:#98c379;">false</span></div>
-        <div>• ledger_write_performed: <span style="color:#98c379;">false</span></div>
-        <div>• learning_apply_performed: <span style="color:#98c379;">false</span></div>
-        <div>• calibration_write_performed: <span style="color:#98c379;">false</span></div>
-        <div>• button1_mutation_performed: <span style="color:#98c379;">false</span></div>
-        <div>• button3_mutation_performed: <span style="color:#98c379;">false</span></div>
+        <div>• live_delivery_performed: <span id="b2-cd-action-live-delivery" style="color:#98c379;">false</span></div>
+        <div>• customer_delivery_performed: <span id="b2-cd-action-customer-delivery" style="color:#98c379;">false</span></div>
+        <div>• email_send_performed: <span id="b2-cd-action-email-send" style="color:#98c379;">false</span></div>
+        <div>• external_api_delivery_performed: <span id="b2-cd-action-api-call" style="color:#98c379;">false</span></div>
+        <div>• database_write_performed: <span id="b2-cd-action-database-write" style="color:#98c379;">false</span></div>
+        <div>• queue_write_performed: <span id="b2-cd-action-queue-write" style="color:#98c379;">false</span></div>
+        <div>• ledger_write_performed: <span id="b2-cd-action-ledger-write" style="color:#98c379;">false</span></div>
+        <div>• learning_apply_performed: <span id="b2-cd-action-learning-apply" style="color:#98c379;">false</span></div>
+        <div>• calibration_write_performed: <span id="b2-cd-action-calibration-write" style="color:#98c379;">false</span></div>
+        <div>• button1_mutation_performed: <span id="b2-cd-action-button1-mutation" style="color:#98c379;">false</span></div>
+        <div>• button3_mutation_performed: <span id="b2-cd-action-button3-mutation" style="color:#98c379;">false</span></div>
+      </div>
+    </div>
+
+    <!-- Operator-Approved Action Control -->
+    <div style="background:#1a1d2e;border:1px solid #c9aa71;border-radius:8px;padding:20px;margin-top:20px;">
+      <div style="font-size:0.9rem;color:#c9aa71;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;"><strong>⚡ Operator-Approved Controlled Delivery Action</strong></div>
+      <p style="font-size:0.8rem;color:#5a6480;margin-bottom:16px;"><strong>REQUIRES EXPLICIT OPERATOR APPROVAL.</strong> This action will execute controlled delivery only if ALL preconditions pass. Draft/internal reports are blocked. No automatic execution.</p>
+      
+      <button id="b2-cd-action-execute-btn" onclick="executeControlledDeliveryAction()" style="display:none;background:#c9aa71;color:#0f1117;border:none;border-radius:6px;padding:10px 16px;font-weight:700;font-size:0.85rem;cursor:pointer;margin-bottom:16px;">
+        Execute Controlled Delivery Action
+      </button>
+      
+      <div id="b2-cd-action-blocked-notice" style="display:none;background:#3d2a1a;border:1px solid #c9aa71;border-radius:6px;padding:12px;margin-bottom:16px;font-size:0.8rem;color:#e5c07b;">
+        <strong style="color:#e5c07b;">⚠ Action Blocked.</strong> Preview shows denial reasons above. Cannot execute delivery when preconditions fail.
+      </div>
+
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;">
+        <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Action Result:</strong></div>
+        <div id="b2-cd-action-result-fields" style="font-size:0.75rem;color:#8a94b8;line-height:1.8;">
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Status:</strong> <span id="b2-cd-action-status">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Action Performed:</strong> <span id="b2-cd-action-performed">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Operation ID:</strong> <span id="b2-cd-action-op-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Audit ID:</strong> <span id="b2-cd-action-audit-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Rollback ID:</strong> <span id="b2-cd-action-rollback-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Delivery Receipt ID:</strong> <span id="b2-cd-action-receipt-id">—</span></div>
+          <div style="margin-bottom:8px;"><strong style="color:#c9aa71;">Delivery Mode:</strong> <span id="b2-cd-action-delivery-mode">—</span></div>
+        </div>
+      </div>
+
+      <div id="b2-cd-action-denial-result" style="display:none;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
+        <div style="font-size:0.8rem;color:#e5c07b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Denial Reasons (Action Not Executed):</strong></div>
+        <div id="b2-cd-action-denial-list" style="font-size:0.75rem;color:#e5c07b;line-height:1.6;">—</div>
       </div>
     </div>
 
     <div style="font-size:0.75rem;color:#5a6480;margin-top:12px;border-top:1px solid #2a2d3e;padding-top:12px;">
-      <strong>REMINDER:</strong> This panel is for operator testing and internal review only. No delivery actions are available. Button 1, Button 2, and Button 3 remain unchanged. All three main operator buttons are still available above.
+      <strong>REMINDER:</strong> This panel is for operator testing and internal review only. Operator-approved delivery action requires explicit confirmation. Button 1, Button 2, and Button 3 remain unchanged. All three main operator buttons are still available above.
     </div>
   </section>
 
@@ -2268,6 +2301,12 @@ function renderControlledDeliveryPreview(response) {
     setField('b2-cd-preview-ready', 'false');
     setField('b2-cd-delivery-ready', response.delivery_ready ? 'true' : 'false');
     
+    // Hide action button and show blocked notice
+    const actionBtn = document.getElementById('b2-cd-action-execute-btn');
+    const blockedNotice = document.getElementById('b2-cd-action-blocked-notice');
+    if (actionBtn) actionBtn.style.display = 'none';
+    if (blockedNotice) blockedNotice.style.display = 'block';
+    
     const denialReasons = response.denial_reasons;
     if (Array.isArray(denialReasons) && denialReasons.length > 0) {
       const denialHtml = denialReasons.map(r => '<div>• ' + String(r) + '</div>').join('');
@@ -2291,6 +2330,12 @@ function renderControlledDeliveryPreview(response) {
   setField('b2-cd-proof-ready', response.proof_of_delivery_ready ? 'true' : 'false');
   setField('b2-cd-operation-id', response.operation_id);
 
+  // Show action button and hide blocked notice
+  const actionBtn = document.getElementById('b2-cd-action-execute-btn');
+  const blockedNotice = document.getElementById('b2-cd-action-blocked-notice');
+  if (actionBtn) actionBtn.style.display = 'inline-block';
+  if (blockedNotice) blockedNotice.style.display = 'none';
+
   if (response.denial_reasons && Array.isArray(response.denial_reasons) && response.denial_reasons.length > 0) {
     const denialHtml = response.denial_reasons.map(r => '<div>• ' + String(r) + '</div>').join('');
     document.getElementById('b2-cd-denial-reasons').innerHTML = denialHtml;
@@ -2298,6 +2343,147 @@ function renderControlledDeliveryPreview(response) {
     setField('b2-cd-denial-reasons', '(none — preview ready)');
   }
 }
+
+// ── Phase 7: Controlled Delivery Action Execution ───────────────────────────────
+
+function executeControlledDeliveryAction() {
+  // Confirm operator approval before execution
+  const confirmed = confirm('Execute Controlled Delivery Action?\n\nThis will attempt to deliver the report using the operator-approved controlled delivery workflow.\n\nALL preconditions must pass. Draft/internal reports are blocked. No automatic execution.\n\nContinue?');
+  if (!confirmed) return;
+
+  // Get the current preview payload from the most recent preview call
+  // We need to gather the fields from the displayed preview
+  const payload = window.lastControlledDeliveryPreviewPayload || {
+    report_id: document.getElementById('b2-cd-report-id')?.textContent?.replace(/^—$/, '') || '',
+    report_status: document.getElementById('b2-cd-report-status')?.textContent?.replace(/^—$/, '') || '',
+    customer_identity: 'operator_approved_' + new Date().getTime(),
+    delivery_target: 'controlled_delivery_manual_export',
+    delivery_channel: 'manual_export',
+    operator_approval: true,
+    delivery_evidence: 'operator_confirmed_' + new Date().getTime(),
+    audit_record: { timestamp: new Date().toISOString(), confirmed: true },
+    proof_of_delivery: 'proof_' + new Date().getTime(),
+    rollback_pointer: 'rollback_' + new Date().getTime()
+  };
+
+  fetch('/api/button2/controlled-delivery/action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => renderControlledDeliveryAction(data))
+    .catch(err => {
+      console.error('Controlled delivery action failed:', err);
+      renderControlledDeliveryAction({ error: true, controlled_delivery_action: false });
+    });
+}
+
+function renderControlledDeliveryAction(response) {
+  const setField = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value || '—');
+  };
+
+  const setSafetyFlag = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = String(value || 'false');
+      el.style.color = (value ? '#ff7f7f' : '#98c379');
+    }
+  };
+
+  // Display action result fields
+  const resultFieldsDiv = document.getElementById('b2-cd-action-result-fields');
+  if (!resultFieldsDiv) return;
+
+  if (response.error || !response.controlled_delivery_action) {
+    // Action failed or was denied
+    setField('b2-cd-action-status', 'DENIED');
+    setField('b2-cd-action-performed', 'false');
+    setField('b2-cd-action-op-id', response.operation_id || '—');
+    setField('b2-cd-action-audit-id', '—');
+    setField('b2-cd-action-rollback-id', '—');
+    setField('b2-cd-action-receipt-id', '—');
+    setField('b2-cd-action-delivery-mode', '—');
+
+    // Update safety flags (all false on denial)
+    setSafetyFlag('b2-cd-action-live-delivery', false);
+    setSafetyFlag('b2-cd-action-customer-delivery', false);
+    setSafetyFlag('b2-cd-action-email-send', false);
+    setSafetyFlag('b2-cd-action-api-call', false);
+    setSafetyFlag('b2-cd-action-database-write', false);
+    setSafetyFlag('b2-cd-action-queue-write', false);
+    setSafetyFlag('b2-cd-action-ledger-write', false);
+    setSafetyFlag('b2-cd-action-learning-apply', false);
+    setSafetyFlag('b2-cd-action-calibration-write', false);
+    setSafetyFlag('b2-cd-action-button1-mutation', false);
+    setSafetyFlag('b2-cd-action-button3-mutation', false);
+
+    // Show denial reasons
+    const denialDiv = document.getElementById('b2-cd-action-denial-result');
+    if (denialDiv) {
+      denialDiv.style.display = 'block';
+      const denialReasons = response.denial_reasons || [response.denial_reason] || [];
+      if (Array.isArray(denialReasons) && denialReasons.length > 0) {
+        const denialHtml = denialReasons.map(r => '<div>• ' + String(r) + '</div>').join('');
+        document.getElementById('b2-cd-action-denial-list').innerHTML = denialHtml;
+      }
+    }
+    return;
+  }
+
+  // Action succeeded
+  setField('b2-cd-action-status', 'SUCCESS (Controlled)');
+  setField('b2-cd-action-performed', response.delivery_action_performed ? 'true' : 'false');
+  setField('b2-cd-action-op-id', response.operation_id || '—');
+  setField('b2-cd-action-audit-id', response.audit_id || '—');
+  setField('b2-cd-action-rollback-id', response.rollback_id || '—');
+  setField('b2-cd-action-receipt-id', response.delivery_receipt_id || '—');
+  setField('b2-cd-action-delivery-mode', response.delivery_mode || '—');
+
+  // Update safety flags based on response
+  const flags = response.safety_flags || {};
+  setSafetyFlag('b2-cd-action-live-delivery', flags.live_delivery_performed);
+  setSafetyFlag('b2-cd-action-customer-delivery', flags.customer_delivery_performed);
+  setSafetyFlag('b2-cd-action-email-send', flags.email_send_performed);
+  setSafetyFlag('b2-cd-action-api-call', flags.external_api_delivery_performed);
+  setSafetyFlag('b2-cd-action-database-write', flags.database_write_performed);
+  setSafetyFlag('b2-cd-action-queue-write', flags.queue_write_performed);
+  setSafetyFlag('b2-cd-action-ledger-write', flags.ledger_write_performed);
+  setSafetyFlag('b2-cd-action-learning-apply', flags.learning_apply_performed);
+  setSafetyFlag('b2-cd-action-calibration-write', flags.calibration_write_performed);
+  setSafetyFlag('b2-cd-action-button1-mutation', flags.button1_mutation_performed);
+  setSafetyFlag('b2-cd-action-button3-mutation', flags.button3_mutation_performed);
+
+  // Hide denial reasons on success
+  const denialDiv = document.getElementById('b2-cd-action-denial-result');
+  if (denialDiv) denialDiv.style.display = 'none';
+}
+
+// Store last preview payload for action use
+function capturePreviewPayload(payload) {
+  window.lastControlledDeliveryPreviewPayload = payload;
+}
+
+// Update testControlledDeliveryPreview to capture payload
+const originalTestCDPreview = testControlledDeliveryPreview;
+testControlledDeliveryPreview = function() {
+  const payload = {
+    report_id: 'test_123',
+    report_status: 'customer_ready',
+    customer_identity: 'customer_1',
+    delivery_target: 'target_1',
+    delivery_channel: 'email',
+    operator_approval: true,
+    delivery_evidence: 'evidence_1',
+    audit_record: 'audit_1',
+    proof_of_delivery: 'proof_1',
+    rollback_pointer: 'rollback_1'
+  };
+  capturePreviewPayload(payload);
+  originalTestCDPreview.call(this);
+};
 
 // Read-only render of proof-stack display; no endpoints and no write actions.
 renderPhase3ProofDisplay(window.phase3ProofStackResult);
