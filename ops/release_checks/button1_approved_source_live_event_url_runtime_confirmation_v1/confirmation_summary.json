@@ -1,0 +1,63 @@
+{
+  "slice": "button1-approved-source-live-event-url-runtime-confirmation-v1",
+  "based_on": {
+    "ingestion_commit": "773c3df",
+    "ingestion_tag": "button1-approved-source-live-event-url-ingestion-v1"
+  },
+  "runtime": {
+    "url": "http://127.0.0.1:5050/",
+    "python": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "routes": [
+      "/api/local-ai/orchestrator/workflow-preview",
+      "/api/local-ai/gate1/save-fights/dry-run-apply-preview"
+    ]
+  },
+  "governed_feed_artifact": {
+    "path": "ops/approved_sources/button1_live_event_source_rows.json",
+    "rows": [
+      {
+        "event_name": "ONE SAMURAI 1",
+        "event_url": "https://www.onefc.com/events/",
+        "source_name": "one_championship_official",
+        "source_type": "official"
+      }
+    ]
+  },
+  "dashboard_runtime_snapshot": {
+    "button1_card": {
+      "ready_to_save": 32,
+      "needs_review": 0,
+      "blocked": 0,
+      "waiting_for_refresh": 0
+    }
+  },
+  "runtime_route_probe": {
+    "candidate_rows": 32,
+    "live_source_status": {
+      "approved_source_event_rows_count": 1,
+      "diagnostics": []
+    },
+    "dry_run_baseline": {
+      "would_save_count": 32,
+      "blocked_count": 0
+    },
+    "dry_run_mixed_with_non_url_control": {
+      "would_save_count": 32,
+      "blocked_count": 1,
+      "non_url_control_blocked": true,
+      "non_url_control_in_would_save": false
+    }
+  },
+  "governance": {
+    "gate1_strictness_preserved": true,
+    "fake_url_used": false,
+    "synthetic_official_provenance": false,
+    "automatic_queue_save": false,
+    "operator_approval_required": true,
+    "unauthorized_write_performed": false
+  },
+  "verdict": "passed",
+  "management": {
+    "paid_pilot_go_no_go": "paused_until_confirmation_lock"
+  }
+}
