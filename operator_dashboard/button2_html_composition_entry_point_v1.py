@@ -1543,6 +1543,7 @@ _HTML_TEMPLATE = """\
     <div class="qa-row">Header/footer/watermark metadata validation: {hfw_metadata_validation_status}</div>
     <div class="qa-row">Source traceability metadata validation: {src_metadata_validation_status}</div>
     <div class="qa-row">Visual QA rollup status: {rollup_status} | Certification readiness: {certification_readiness} | Completeness: {visual_completeness}</div>
+        <div class="qa-row">Customer-ready status preview: {customer_ready_status_preview} | Gate: {customer_ready_gate}</div>
     <div class="qa-row">Valid layers: {valid_layers_count}/8 | Invalid: {invalid_layers_count} | Missing: {missing_layers_count}</div>
     <div class="qa-row">Overall visual confidence: {overall_visual_confidence}</div>
   </div>
@@ -1693,6 +1694,16 @@ def build_button2_report_html(report_context_preview):
     
     # Generate typography CSS stylesheet from locked tokens
     typography_css = generate_typography_css_stylesheet()
+
+    # Phase 5 preview-only customer-ready status marker (no approval/delivery/write behavior changes).
+    rollup_readiness = rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get(
+        "certification_readiness", "not_ready"
+    )
+    if rollup_readiness == "ready" and visual_certification_value == "certified":
+        customer_ready_status_preview = "customer_ready_recommended"
+    else:
+        customer_ready_status_preview = "customer_ready_not_ready"
+    customer_ready_gate = "operator_approval_required"
     
     html_content = _HTML_TEMPLATE.format(
         typography_css_stylesheet=typography_css,
@@ -1782,6 +1793,8 @@ def build_button2_report_html(report_context_preview):
             rollup_payload.get("visual_qa_rollup", {}).get("visual_qa_indicators", {}).get("certification_readiness", "unknown"),
             "unknown"
         ),
+        customer_ready_status_preview=_esc(customer_ready_status_preview, "customer_ready_not_ready"),
+        customer_ready_gate=_esc(customer_ready_gate, "operator_approval_required"),
         visual_completeness=_esc(
             f"{rollup_payload.get('visual_qa_rollup', {}).get('visual_qa_indicators', {}).get('overall_visual_completeness', 0.0) * 100:.0f}%",
             "0%"
