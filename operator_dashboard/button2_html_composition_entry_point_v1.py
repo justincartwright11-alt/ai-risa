@@ -1336,16 +1336,20 @@ _HTML_TEMPLATE = """\
       margin: 0.75in;
       color: #111111;
       line-height: 1.5;
+            max-width: 7.2in;
     }}
 
     /* Typography tokens stylesheet */
     {typography_css_stylesheet}
 
     /* Structural and semantic styling (layout only, no typography changes) */
-    h1   {{ margin-bottom: 0.5em; }}
-    h2   {{ margin-top: 1.5em; border-bottom: 1px solid #cccccc; }}
+    h1   {{ margin-bottom: 0.65em; letter-spacing: 0.01em; }}
+    h2   {{ margin-top: 1.35em; margin-bottom: 0.45em; border-bottom: 1px solid #cccccc; padding-bottom: 0.15em; }}
     ul   {{ margin: 0.5em 0; padding-left: 1.5em; }}
-    pre  {{ white-space: pre-wrap; word-break: break-word; }}
+    pre  {{ white-space: pre-wrap; word-break: break-word; margin-top: 0.4em; }}
+    .page-block-summary, .page-block-sources {{ margin-top: 0.9em; }}
+    .typography-body-secondary {{ line-height: 1.62; }}
+    .typography-list-item li {{ margin-bottom: 0.32em; }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
