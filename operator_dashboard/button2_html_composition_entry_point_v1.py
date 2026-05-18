@@ -1411,6 +1411,60 @@ _HTML_TEMPLATE = """\
             border-bottom: 1px dashed #cf6f6f;
             font-weight: 600;
         }}
+        /* Phase 4 header/footer/watermark rendering polish (CSS only, metadata-locked) */
+        .running-header,
+        .running-footer {{
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.6em;
+            width: 100%;
+        }}
+        .running-header {{
+            margin-bottom: 0.55em;
+            padding-bottom: 0.2em;
+            border-bottom: 1px solid #e2e2e2;
+        }}
+        .running-footer {{
+            margin-top: 0.65em;
+            padding-top: 0.25em;
+            border-top: 1px solid #e2e2e2;
+        }}
+        .running-footer .page-number,
+        .page-number-label {{
+            letter-spacing: 0.02em;
+            font-variant-numeric: tabular-nums;
+        }}
+        .status-label,
+        .confidentiality-label {{
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.82em;
+            font-weight: 600;
+        }}
+        .status-label[data-status="DRAFT"] {{ color: #7d5f2a; }}
+        .status-label[data-status="FINAL"] {{ color: #295f36; }}
+        .status-label[data-status="INTERNAL_REVIEW"] {{ color: #5a4f7f; }}
+        .confidentiality-label[data-confidentiality="PUBLIC"] {{ color: #2f6a7a; }}
+        .confidentiality-label[data-confidentiality="CONFIDENTIAL"] {{ color: #7a5a2f; }}
+        .confidentiality-label[data-confidentiality="STRICTLY_CONFIDENTIAL"] {{ color: #7a2f2f; }}
+        .watermark-layer {{
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .watermark-layer[data-watermark-enabled="true"] .watermark-text {{
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+            opacity: 0.14;
+        }}
+        .watermark-layer[data-watermark-type="draft"] .watermark-text {{ color: #8b6f3b; }}
+        .watermark-layer[data-watermark-type="confidential"] .watermark-text {{ color: #7a3f3f; }}
+        .watermark-layer[data-watermark-type="none"] .watermark-text {{ color: transparent; }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
