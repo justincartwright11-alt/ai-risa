@@ -1,0 +1,48 @@
+{
+  "slice": "operator-dashboard-button-functionality-blocker-diagnostic-v1",
+  "checkpoint": {
+    "commit": "fbbd0a8",
+    "tag": "paid-pilot-phase1-management-response-tracker-v1"
+  },
+  "reported_blocker": "No buttons work on dashboard",
+  "diagnostic_result": "not_reproduced",
+  "severity_reported": "critical",
+  "severity_diagnostic": "critical_report_unconfirmed",
+  "routes": {
+    "GET_/": 200,
+    "GET_/advanced-dashboard": 200,
+    "POST_/api/local-ai/orchestrator/workflow-preview": {
+      "direct_empty_payload_probe": 400,
+      "button_flow_runtime": 200
+    },
+    "POST_/api/local-ai/gate1/save-fights/approved-save-writer-preview": 200,
+    "POST_/api/local-ai/gate1/save-fights/dry-run-apply-preview": 200,
+    "POST_/api/global-fighters/known-records/loader-preview": 200,
+    "POST_/api/global-fighters/identity-resolver/preview": 200,
+    "POST_/api/operator/button2/generate-report_empty": 403,
+    "POST_/api/operator/button3/apply-result_empty": 403
+  },
+  "buttons": {
+    "button1": "click_handler_executed_panel_updated",
+    "button2": "click_handler_executed_panel_updated",
+    "button3": "click_handler_executed_panel_updated"
+  },
+  "javascript_checks": {
+    "onclick_handlers_missing": [],
+    "duplicate_function_declarations": [],
+    "missing_dom_ids_referenced": []
+  },
+  "browser_errors": {
+    "page_errors": [],
+    "console_errors": []
+  },
+  "tests": {
+    "command": "python -m pytest -q operator_dashboard/test_button2_phase7_controlled_delivery_dashboard_preview_panel_v1.py operator_dashboard/test_button2_phase7_controlled_delivery_operator_approved_action_dashboard_wire_v1.py operator_dashboard/test_button2_phase7_controlled_delivery_audit_proof_dashboard_display_v1.py",
+    "result": "51 passed in 0.37s"
+  },
+  "phase7_implication": "not_indicated_by_current_evidence",
+  "launch_impact": "paid_pilot_decision_blocked_until_operator_runtime_reconfirmation",
+  "recommended_next_slice_if_reproduced": "operator-dashboard-button-functionality-critical-repair-v1",
+  "recommended_next_slice_now": "operator-dashboard-button-functionality-reproduction-confirmation-v1",
+  "final_verdict": "Blocker not confirmed in current build. Do not repair until reproduced. Keep implementation frozen."
+}
