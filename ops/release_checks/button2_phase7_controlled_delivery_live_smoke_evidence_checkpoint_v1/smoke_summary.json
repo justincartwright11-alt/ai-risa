@@ -1,0 +1,108 @@
+{
+  "slice": "button2-phase7-controlled-delivery-live-smoke-evidence-checkpoint-v1",
+  "smoke_checks": {
+    "dashboard_route_loads": true,
+    "preview_endpoint_responds": true,
+    "action_endpoint_responds": true,
+    "denied_request_returns_denial_reasons": true,
+    "valid_manual_export_returns_hardened_evidence": true,
+    "email_scaffold_no_email_sent": true,
+    "api_scaffold_no_external_api_called": true,
+    "safety_flags_remain_correct": true,
+    "dashboard_contains_audit_proof_evidence_anchors": true,
+    "phase7_tests_remain_green": true
+  },
+  "endpoint_results": {
+    "dashboard_route": {
+      "status_code": 200
+    },
+    "preview_endpoint": {
+      "status_code": 200,
+      "controlled_delivery_preview": true,
+      "delivery_ready": true
+    },
+    "action_denied": {
+      "status_code": 400,
+      "denial_reasons": [
+        "operator_approval_required"
+      ]
+    },
+    "action_manual_export": {
+      "status_code": 200,
+      "delivery_action_performed": true,
+      "operation_id": "4166b875-ea39-4c21-b0f4-f82ba9701a34",
+      "audit_id": "68f46593-ad1a-482c-b6c1-87ef19970cdf",
+      "proof_id": "ff6eab59-93e4-4f17-b831-edab90b835b3",
+      "receipt_id": "0c491917-477e-40ed-ba5f-024820d2c609",
+      "rollback_id": "6daefbf1-c5dc-489b-8365-67fe579547a0"
+    },
+    "action_email_scaffold": {
+      "status_code": 200,
+      "delivery_action_performed": false,
+      "email_send_performed": false
+    },
+    "action_api_scaffold": {
+      "status_code": 200,
+      "delivery_action_performed": false,
+      "external_api_delivery_performed": false
+    }
+  },
+  "dashboard_evidence_anchors": {
+    "Controlled Delivery Audit / Proof Evidence": true,
+    "audit_record": true,
+    "proof_of_delivery_record": true,
+    "delivery_receipt_record": true,
+    "rollback_void_pointer": true,
+    "operation_id": true,
+    "audit_id": true,
+    "proof_id": true,
+    "receipt_id": true,
+    "rollback_id": true,
+    "safety_flags snapshot": true,
+    "email_scaffold: scaffold only, no email sent": true,
+    "api_scaffold: scaffold only, no external API called": true,
+    "manual_export: operator-approved controlled manual export": true
+  },
+  "safety_flags": {
+    "manual_export": {
+      "button1_mutation_performed": false,
+      "button3_mutation_performed": false,
+      "calibration_write_performed": false,
+      "customer_delivery_performed": true,
+      "database_write_performed": false,
+      "email_send_performed": false,
+      "external_api_delivery_performed": false,
+      "learning_apply_performed": false,
+      "ledger_write_performed": false,
+      "live_delivery_performed": true,
+      "queue_write_performed": false
+    },
+    "email_scaffold": {
+      "button1_mutation_performed": false,
+      "button3_mutation_performed": false,
+      "calibration_write_performed": false,
+      "customer_delivery_performed": false,
+      "database_write_performed": false,
+      "email_send_performed": false,
+      "external_api_delivery_performed": false,
+      "learning_apply_performed": false,
+      "ledger_write_performed": false,
+      "live_delivery_performed": false,
+      "queue_write_performed": false
+    },
+    "api_scaffold": {
+      "button1_mutation_performed": false,
+      "button3_mutation_performed": false,
+      "calibration_write_performed": false,
+      "customer_delivery_performed": false,
+      "database_write_performed": false,
+      "email_send_performed": false,
+      "external_api_delivery_performed": false,
+      "learning_apply_performed": false,
+      "ledger_write_performed": false,
+      "live_delivery_performed": false,
+      "queue_write_performed": false
+    }
+  },
+  "overall_pass": true
+}
