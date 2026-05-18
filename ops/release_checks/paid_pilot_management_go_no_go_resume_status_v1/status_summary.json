@@ -1,0 +1,39 @@
+{
+  "slice": "paid-pilot-management-go-no-go-resume-status-v1",
+  "based_on": {
+    "commit": "9b643be",
+    "tag": "button1-source-backed-candidate-runtime-confirmation-v1"
+  },
+  "product_status": {
+    "button1": {
+      "status": "operational_for_source_backed_candidates",
+      "baseline_current_workspace_cohort": {
+        "candidate_rows": 31,
+        "would_save": 0,
+        "blocked": 31,
+        "blocking_reason": "no_url_backed_rows_in_current_local_cohort"
+      },
+      "confirmed_selective_behavior": {
+        "url_backed_candidates_can_be_save_eligible": true,
+        "non_url_candidates_remain_blocked": true
+      }
+    },
+    "button2": {
+      "status": "operational"
+    },
+    "button3": {
+      "status": "safe_zero_state_and_result_readiness_operational",
+      "full_learning_calibration": "not_in_scope_for_current_decision"
+    }
+  },
+  "governance": {
+    "gate1_strictness_preserved": true,
+    "no_fake_provenance": true,
+    "no_unsafe_queue_save": true,
+    "unauthorized_durable_writes_performed": false
+  },
+  "management_flow": {
+    "paid_pilot_go_no_go": "resume_allowed",
+    "decision_note": "Button 1 commercial throughput requires real URL-backed event source ingestion."
+  }
+}
