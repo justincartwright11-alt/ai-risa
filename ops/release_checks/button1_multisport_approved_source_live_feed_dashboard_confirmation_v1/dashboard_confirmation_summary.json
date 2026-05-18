@@ -1,0 +1,79 @@
+{
+  "slice": "button1-multisport-approved-source-live-feed-dashboard-confirmation-v1",
+  "status": "implemented_and_validated",
+  "scope": "dashboard/runtime confirmation only",
+  "dashboard_url_tested": "http://127.0.0.1:5050/",
+  "required_proof": {
+    "dashboard_loaded": true,
+    "button1_source_backed_event_cards_panel_visible": true,
+    "boxing_card_visible": true,
+    "mma_card_visible": true,
+    "kickboxing_card_visible": true,
+    "muay_thai_card_visible": true,
+    "source_url_provenance_matchup_count_visible_per_card": true,
+    "operator_selection_controls_visible": true,
+    "no_auto_queue_save": true,
+    "no_pdf_generation": true,
+    "no_delivery": true,
+    "no_learning_calibration": true
+  },
+  "cards": [
+    {
+      "sport": "boxing",
+      "event_name": "Joshua vs Dubois",
+      "source_url": "https://www.matchroomboxing.com/events/joshua-vs-dubois",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1
+    },
+    {
+      "sport": "mma",
+      "event_name": "UFC 300",
+      "source_url": "https://www.ufc.com/event/ufc-300",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1
+    },
+    {
+      "sport": "kickboxing",
+      "event_name": "GLORY 100",
+      "source_url": "https://www.glorykickboxing.com/events/glory-100",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1
+    },
+    {
+      "sport": "muay_thai",
+      "event_name": "ONE SAMURAI 1",
+      "source_url": "https://www.muaythairecords.com/events/one-samurai-1",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 15
+    }
+  ],
+  "runtime_panel": {
+    "approved_source_backed_event_rows": 4,
+    "feed_used": "ops/approved_sources/button1_live_event_source_rows.json",
+    "fail_closed_diagnostics": "none",
+    "no_auto_save": true,
+    "operator_approval_required": true
+  },
+  "governance": {
+    "gate1_weakened": false,
+    "auto_save": false,
+    "pdf_generation": false,
+    "delivery": false,
+    "learning_calibration": false,
+    "button3_mutation": false
+  },
+  "tests_runtime_checks": [
+    {
+      "name": "real_dashboard_browser_confirmation",
+      "result": "passed"
+    },
+    {
+      "name": "operator_dashboard/test_button1_multisport_approved_source_event_card_dashboard_runtime_confirmation_v1.py",
+      "result": "passed"
+    }
+  ],
+  "artifacts": [
+    "docs/button1_multisport_approved_source_live_feed_dashboard_confirmation_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_live_feed_dashboard_confirmation_v1/dashboard_confirmation_summary.json"
+  ]
+}
