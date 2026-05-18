@@ -1,0 +1,44 @@
+{
+  "slice": "button1-multisport-approved-source-event-card-fixtures-v1",
+  "status": "implemented_validation_pending",
+  "purpose": "add one governed URL-backed fixture per target sport and prove safe Button 1 preparation",
+  "fixtures": [
+    {
+      "sport": "boxing",
+      "fixture_id": "boxing_matchroom_fixture_v1",
+      "expected_tier": "A",
+      "source_url": "https://www.matchroomboxing.com/events/joshua-vs-dubois"
+    },
+    {
+      "sport": "mma",
+      "fixture_id": "mma_ufc_fixture_v1",
+      "expected_tier": "A",
+      "source_url": "https://www.ufc.com/event/ufc-300"
+    },
+    {
+      "sport": "kickboxing",
+      "fixture_id": "kickboxing_glory_fixture_v1",
+      "expected_tier": "A",
+      "source_url": "https://www.glorykickboxing.com/events/glory-100"
+    },
+    {
+      "sport": "muay_thai",
+      "fixture_id": "muay_thai_records_fixture_v1",
+      "expected_tier": "B",
+      "source_url": "https://www.muaythairecords.com/events/one-samurai-1",
+      "requires_secondary_confirmation": true,
+      "unsafe_queue_save_blocked": true
+    }
+  ],
+  "governance_assertions": [
+    "prepared rows are preview_only and approval_required",
+    "no gate1 write/mutation side effects in dry-run preview",
+    "muay_thai fixture remains needs_review pending secondary confirmation"
+  ],
+  "files": [
+    "operator_dashboard/button1_multisport_approved_source_event_card_fixtures_v1.py",
+    "operator_dashboard/test_button1_multisport_approved_source_event_card_fixtures_v1.py",
+    "docs/button1_multisport_approved_source_event_card_fixtures_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_event_card_fixtures_v1/source_event_card_fixtures_summary.json"
+  ]
+}
