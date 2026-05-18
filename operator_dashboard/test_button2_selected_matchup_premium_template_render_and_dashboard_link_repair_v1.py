@@ -124,12 +124,12 @@ def test_guarded_generation_returns_open_link_and_governance_flags(monkeypatch):
     assert data["button3_mutation_performed"] is False
 
 
-def test_dashboard_js_only_renders_open_link_when_filename_and_url_exist():
+def test_dashboard_js_renders_open_link_when_url_exists_filename_optional():
     app.config["TESTING"] = True
     with app.test_client() as client:
         html = client.get("/").data.decode("utf-8")
 
     assert "const openUrl = String(data.pdf_open_url || '').trim();" in html
     assert "const outputFilename = String(data.output_filename || '').trim();" in html
-    assert "const openLink = (openUrl && outputFilename)" in html
+    assert "const openLink = openUrl" in html
     assert "Open Generated PDF" in html

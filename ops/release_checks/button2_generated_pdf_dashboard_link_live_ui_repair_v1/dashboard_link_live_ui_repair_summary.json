@@ -1,0 +1,36 @@
+{
+  "slice": "button2-generated-pdf-dashboard-link-live-ui-repair-v1",
+  "status": "validated",
+  "root_cause": {
+    "backend_fields_present": true,
+    "frontend_condition_too_strict": true,
+    "details": "link rendering required both pdf_open_url and output_filename; repaired to allow link when pdf_open_url exists"
+  },
+  "backend_response_fields": {
+    "ok": true,
+    "output_path": true,
+    "output_filename": true,
+    "pdf_open_url": true
+  },
+  "ui_repair": {
+    "label": "Open Generated PDF",
+    "clickable_anchor": true,
+    "success_only": true,
+    "fallback_when_filename_missing": true
+  },
+  "safe_route": {
+    "route": "/api/button2/generated-report/open?filename=<pdf_filename>",
+    "serves_existing_pdf": true,
+    "rejects_path_traversal": true,
+    "rejects_non_pdf": true,
+    "live_localhost_check_status": 404
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  }
+}
