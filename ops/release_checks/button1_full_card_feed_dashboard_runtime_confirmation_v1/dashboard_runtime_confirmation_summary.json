@@ -1,0 +1,57 @@
+{
+  "slice": "button1-full-card-feed-dashboard-runtime-confirmation-v1",
+  "status": "implemented_and_validated",
+  "scope": "button1 dashboard runtime confirmation only",
+  "required_proof": {
+    "dashboard_loaded": true,
+    "button1_source_backed_event_cards_panel_visible": true,
+    "full_card_confirmed_for_all_four_events": true,
+    "full_matchup_lists_visible_contract": true,
+    "tier_a_queue_save_eligible_preserved": true,
+    "muay_thai_secondary_confirmation_preserved": true,
+    "no_auto_save": true,
+    "no_pdf_generation": true,
+    "no_delivery": true,
+    "no_learning_calibration": true
+  },
+  "cards": [
+    {
+      "sport": "boxing",
+      "event_name": "Joshua vs Dubois",
+      "card_completeness_status": "full_card_confirmed",
+      "matchup_count": 5
+    },
+    {
+      "sport": "mma",
+      "event_name": "UFC 300",
+      "card_completeness_status": "full_card_confirmed",
+      "matchup_count": 5
+    },
+    {
+      "sport": "kickboxing",
+      "event_name": "GLORY 100",
+      "card_completeness_status": "full_card_confirmed",
+      "matchup_count": 5
+    },
+    {
+      "sport": "muay_thai",
+      "event_name": "ONE SAMURAI 1",
+      "card_completeness_status": "full_card_confirmed",
+      "matchup_count": 15
+    }
+  ],
+  "tests_runtime_checks": [
+    {
+      "name": "real_dashboard_browser_confirmation",
+      "result": "passed"
+    },
+    {
+      "name": "operator_dashboard/test_button1_full_card_feed_dashboard_runtime_confirmation_v1.py",
+      "result": "passed"
+    }
+  ],
+  "artifacts": [
+    "docs/button1_full_card_feed_dashboard_runtime_confirmation_v1.md",
+    "ops/release_checks/button1_full_card_feed_dashboard_runtime_confirmation_v1/dashboard_runtime_confirmation_summary.json"
+  ]
+}
