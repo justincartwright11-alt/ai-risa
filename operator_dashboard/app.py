@@ -273,6 +273,7 @@ def button1_button2_event_card_matchup_select_preview():
     event_id = body.get("event_id") if isinstance(body.get("event_id"), str) else ""
     matchup_id = body.get("matchup_id") if isinstance(body.get("matchup_id"), str) else ""
     candidate_id = body.get("candidate_id") if isinstance(body.get("candidate_id"), str) else ""
+    selected_index = body.get("selected_index") if isinstance(body.get("selected_index"), int) else None
     operator_selected = bool(body.get("operator_selected", False))
     candidate_rows = body.get("candidate_rows", [])
     if not isinstance(candidate_rows, list):
@@ -325,6 +326,12 @@ def button1_button2_event_card_matchup_select_preview():
         if candidate_id and row_id == candidate_id:
             matched = row
             break
+
+    if matched is None and selected_index is not None:
+        if 0 <= selected_index < len(candidate_rows):
+            candidate_row = candidate_rows[selected_index]
+            if isinstance(candidate_row, dict):
+                matched = candidate_row
 
     if matched is None:
         return jsonify({

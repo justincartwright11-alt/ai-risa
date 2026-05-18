@@ -91,6 +91,47 @@ def test_selector_preview_success_for_source_backed_matchup():
     _assert_all_safety_flags_false(data)
 
 
+def test_selector_preview_success_with_selected_index_when_row_ids_are_missing():
+    app.config["TESTING"] = True
+    row_without_id = {
+        "event_name": "ONE SAMURAI 1",
+        "event_date": "2026-04-29",
+        "promotion": "ONE",
+        "source_url": "https://www.onefc.com/events/",
+        "source_type": "official",
+        "fighter_a_name": "Rodtang Jitmuangnon",
+        "fighter_b_name": "Takeru Segawa",
+        "weight_class": "Flyweight",
+        "bout_order": "1",
+    }
+    payload = {
+        "event_id": "one samurai 1",
+        "matchup_id": "row_0",
+        "candidate_id": "row_0",
+        "selected_index": 0,
+        "operator_selected": True,
+        "candidate_rows": [row_without_id],
+    }
+
+    with app.test_client() as client:
+        response = client.post(
+            SELECT_ENDPOINT,
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data["selection_preview"] is True
+    assert data["selected_for_button2"] is True
+    assert data["event_name"] == "ONE SAMURAI 1"
+    assert data["fighter_a"] == "Rodtang Jitmuangnon"
+    assert data["fighter_b"] == "Takeru Segawa"
+    assert data["denial_reasons"] == []
+    _assert_all_safety_flags_false(data)
+
+
 def test_selector_preview_denies_when_operator_selection_is_missing():
     app.config["TESTING"] = True
     payload = {

@@ -1,0 +1,48 @@
+{
+  "slice": "button1-button2-event-card-matchup-selector-runtime-confirmation-v1",
+  "status": "runtime-confirmed",
+  "runtime_target": "http://127.0.0.1:5050/",
+  "checks": {
+    "source_backed_event_cards_appear": true,
+    "event_cards_show_matchups": true,
+    "selecting_matchup_populates_button2_preview": true,
+    "no_auto_pdf_generation": true,
+    "no_queue_delivery_learning_calibration_mutation": true
+  },
+  "observed_runtime_counts": {
+    "event_card_count": 1,
+    "matchup_count": 15,
+    "main_dashboard_button_count": 3
+  },
+  "selected_preview": {
+    "selected_for_button2": true,
+    "selection_preview": true,
+    "report_ready_status": "ready_for_button2_preview",
+    "source_url": "https://www.onefc.com/events/"
+  },
+  "safety_flags": {
+    "pdf_generation_performed": false,
+    "queue_write_performed": false,
+    "delivery_performed": false,
+    "email_send_performed": false,
+    "external_api_delivery_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "observed_calls": [
+    "POST /api/local-ai/orchestrator/workflow-preview",
+    "POST /api/local-ai/gate1/save-fights/approved-save-writer-preview",
+    "POST /api/global-fighters/known-records/loader-preview",
+    "POST /api/local-ai/gate1/save-fights/dry-run-apply-preview",
+    "POST /api/button1-button2/event-card-matchup/select-preview"
+  ],
+  "auto_generate_or_delivery_calls_observed": false,
+  "runtime_fix": {
+    "applied": true,
+    "summary": "selected_index fallback for selector preview when candidate row IDs are absent"
+  },
+  "artifacts": {
+    "doc": "docs/button1_button2_event_card_matchup_selector_runtime_confirmation_v1.md"
+  }
+}

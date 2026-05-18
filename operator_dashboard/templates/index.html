@@ -2226,6 +2226,7 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
       event_id: eventId,
       matchup_id: candidateId,
       candidate_id: candidateId,
+      selected_index: i,
       fighter_a: fighterA,
       fighter_b: fighterB,
       weight_class: weightClass,
@@ -2323,6 +2324,7 @@ function renderButton1EventCardSelector(candidateRows) {
           ' data-event-id="' + escapeHtml(matchup.event_id) + '"' +
           ' data-matchup-id="' + escapeHtml(matchup.matchup_id) + '"' +
           ' data-candidate-id="' + escapeHtml(matchup.candidate_id) + '"' +
+          ' data-selected-index="' + escapeHtml(String(matchup.selected_index)) + '"' +
           ' onclick="selectEventCardMatchupForPdfFromButton(this)">Select for PDF</button>' +
           '</div>'
         );
@@ -2335,11 +2337,16 @@ function renderButton1EventCardSelector(candidateRows) {
   listEl.innerHTML = htmlParts.join('');
 }
 
-function selectEventCardMatchupForPdf(eventId, matchupId, candidateId) {
+function selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedIndex) {
+  const numericSelectedIndex = Number.isFinite(Number(selectedIndex))
+    ? Number(selectedIndex)
+    : null;
+
   const payload = {
     event_id: String(eventId || ''),
     matchup_id: String(matchupId || ''),
     candidate_id: String(candidateId || ''),
+    selected_index: numericSelectedIndex,
     operator_selected: true,
     candidate_rows: Array.isArray(window.button1CandidateRowsForSelector)
       ? window.button1CandidateRowsForSelector
@@ -2379,7 +2386,8 @@ function selectEventCardMatchupForPdfFromButton(buttonEl) {
   const eventId = buttonEl && buttonEl.dataset ? buttonEl.dataset.eventId : '';
   const matchupId = buttonEl && buttonEl.dataset ? buttonEl.dataset.matchupId : '';
   const candidateId = buttonEl && buttonEl.dataset ? buttonEl.dataset.candidateId : '';
-  selectEventCardMatchupForPdf(eventId, matchupId, candidateId);
+  const selectedIndex = buttonEl && buttonEl.dataset ? buttonEl.dataset.selectedIndex : '';
+  selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedIndex);
 }
 
 function getConfidenceBadgeColor(grade) {
