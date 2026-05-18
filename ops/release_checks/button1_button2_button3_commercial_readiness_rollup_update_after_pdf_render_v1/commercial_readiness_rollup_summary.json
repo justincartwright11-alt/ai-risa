@@ -1,0 +1,55 @@
+{
+  "slice": "button1-button2-button3-commercial-readiness-rollup-update-after-pdf-render-v1",
+  "status": "implemented_docs_evidence_only_locked",
+  "scope": "docs/evidence-only commercial/demo readiness rollup update after live Button 2 PDF runtime confirmation",
+  "evidence": {
+    "prior_rollup": {
+      "slice": "button1-button2-button3-commercial-readiness-rollup-v1",
+      "commit": "d4023f9"
+    },
+    "button1_full_card_dashboard_confirmation": {
+      "slice": "button1-full-card-feed-dashboard-runtime-confirmation-v1",
+      "commit": "326fef6"
+    },
+    "button2_guarded_pdf_runtime_confirmation": {
+      "slice": "button2-selected-matchup-guarded-pdf-generation-runtime-confirmation-v1",
+      "commit": "2b2e598"
+    }
+  },
+  "readiness": {
+    "button1": {
+      "status": "READY",
+      "basis": "full-card source-backed event cards across boxing, mma, kickboxing, and muay_thai confirmed"
+    },
+    "button2": {
+      "status": "READY",
+      "basis": "selected-matchup guarded PDF generation confirmed in live dashboard runtime",
+      "runtime_proof": {
+        "selected_matchup": "Nadaka vs Songchainoi Kiatsongrit",
+        "event_name": "ONE SAMURAI 1",
+        "guarded_route": "/api/button2/selected-matchup/generate-guarded-v1",
+        "pdf_generated": true,
+        "focused_suite_result": "78/78 passed"
+      }
+    },
+    "button3": {
+      "status": "GOVERNED_PREVIEW_READY",
+      "basis": "result-review preview remains controlled; learning and calibration remain out of paid-pilot scope"
+    }
+  },
+  "remaining_blocker": "No technical blocker for governed demo/commercial review. Paid-pilot launch still requires management decision and sign-offs.",
+  "governance": {
+    "operator_approval_preserved": true,
+    "no_auto_queue_save": true,
+    "no_auto_delivery": true,
+    "no_email_send": true,
+    "no_external_api_delivery": true,
+    "no_learning_calibration_expansion": true,
+    "no_button3_mutation": true
+  },
+  "next_valid_business_slice": "paid-pilot-phase1-management-decision-record-v1",
+  "artifacts": [
+    "docs/button1_button2_button3_commercial_readiness_rollup_update_after_pdf_render_v1.md",
+    "ops/release_checks/button1_button2_button3_commercial_readiness_rollup_update_after_pdf_render_v1/commercial_readiness_rollup_summary.json"
+  ]
+}
