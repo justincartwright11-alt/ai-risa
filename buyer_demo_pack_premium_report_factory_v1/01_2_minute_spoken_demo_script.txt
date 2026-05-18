@@ -1,0 +1,16 @@
+AI-RISA Premium Report Factory - 2-Minute Spoken Demo Script
+
+Opening (15 sec)
+AI-RISA Premium Report Factory turns fight intelligence into an operator-approved workflow: build the fight queue, generate premium reports, then compare real results and improve accuracy with audit and rollback control.
+
+Button 1 - Build Fight Queue (30 sec)
+First, we build the fight queue from event and matchup intake. The operator reviews parsed rows, confirms readiness, and saves selected fights. This creates a clean, operator-approved queue for report generation.
+
+Button 2 - Generate Premium Reports (35 sec)
+Next, we select saved fights and generate premium PDFs. Reports are now richer in tactical depth across decision structure, energy use, fatigue failure points, mental condition, collapse triggers, and deception and unpredictability. Export proof includes file path, size, and body completeness diagnostics.
+
+Button 3 - Compare and Improve Accuracy (30 sec)
+Then we compare predictions with real outcomes and run an operator-approved apply path. The workflow returns explicit mutation, reason codes, and rollback/audit proof so improvements are controlled and reversible.
+
+Close (10 sec)
+This is not just model output. It is a governed operating system for premium fight intelligence delivery and safe accuracy improvement.

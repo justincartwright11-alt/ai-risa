@@ -1,0 +1,40 @@
+AI-RISA Premium Report Factory - Demo Checklist
+
+Pre-demo setup
+[ ] Confirm baseline app is running.
+[ ] Confirm one known matchup exists in saved queue.
+[ ] Confirm reports folder path is accessible.
+[ ] Confirm browser tab is on main dashboard.
+
+Button 1 checkpoint
+[ ] Show Build Fight Queue section.
+[ ] Explain parse/preview and operator save approval.
+[ ] Confirm queue rows are visible.
+
+Button 2 checkpoint
+[ ] Open Generate Premium PDF Reports section.
+[ ] Select one matchup (recommended: Ares FC 39 sample).
+[ ] Check approval box.
+[ ] Click Generate and Export.
+[ ] Read out result fields:
+    - report_status
+    - generated_pdf_path
+    - generated_pdf_size_bytes
+    - body_completeness_status
+    - thin_sections_count / missing_headers_count
+
+Button 3 checkpoint
+[ ] Open Find Results and Improve Accuracy section.
+[ ] Load waiting results.
+[ ] Run official preview.
+[ ] Check approval and apply selected candidate.
+[ ] Read out apply proof fields:
+    - HTTP 200
+    - ok true
+    - reason code
+    - mutation_performed true
+
+Close
+[ ] Summarize 3-button governed workflow.
+[ ] Position pilot offer and next step.
+[ ] Capture buyer questions and decision criteria.

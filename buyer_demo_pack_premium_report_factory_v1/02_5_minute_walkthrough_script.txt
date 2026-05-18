@@ -1,0 +1,48 @@
+AI-RISA Premium Report Factory - 5-Minute Walkthrough Script
+
+0:00-0:30 | Framing
+- AI-RISA provides an operator-controlled 3-button workflow.
+- Business value: faster analyst throughput, premium report quality, and governed improvement loop.
+
+0:30-1:45 | Button 1: Build Fight Queue
+- Show intake and queue panel.
+- Explain operator checkpoints:
+  1. Parse and preview rows.
+  2. Review readiness and notes.
+  3. Approve and save selected fights.
+- Buyer message: queue quality is controlled before report generation.
+
+1:45-3:15 | Button 2: Generate Premium PDF Reports
+- Select one known matchup from saved queue.
+- Confirm approval and click Generate and Export.
+- Read out proof fields in result row:
+  - report_status
+  - generated_pdf_path
+  - generated_pdf_size_bytes
+  - body_completeness_status
+  - body_completeness_diagnostics
+- Buyer message: this is a premium-ready artifact with measurable content depth, not a shell export.
+
+3:15-4:30 | Button 3: Compare Results and Improve Accuracy
+- Load waiting predictions.
+- Run official preview and show candidate selection.
+- Confirm operator approval and apply selected candidate.
+- Read out safety proof:
+  - ok true
+  - controlled apply reason code
+  - mutation_performed true
+  - audit and rollback evidence
+- Buyer message: learning updates are governed, explicit, and reversible.
+
+4:30-5:00 | Close and Offer
+- Summarize: build queue, generate premium report, compare outcomes, improve accuracy safely.
+- Offer pilot package:
+  - onboarding
+  - operator training
+  - weekly calibration review
+  - quarterly quality benchmark report
+
+Optional Q&A prompts
+- How do you control release quality?
+- What makes this safer than auto-learning?
+- How quickly can we onboard our analysts?

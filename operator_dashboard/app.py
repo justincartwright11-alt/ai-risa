@@ -951,6 +951,5 @@ def global_fighters_known_records_loader_preview():
 
 app.register_blueprint(controlled_delivery)
 
-
 if __name__ == "__main__":
     app.run(debug=True, port=5050)

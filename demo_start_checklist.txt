@@ -1,0 +1,22 @@
+AI-RISA Demo Start Checklist
+
+Held baseline
+- Confirm the repo is on commit c42f150 before demo actions.
+
+Start protocol
+1. Confirm HEAD is c42f150.
+2. Clear old Flask listener.
+3. Restart server from repo root.
+4. Delete stale PDF artifact before generating.
+5. Generate Button 2 PDF.
+6. Confirm:
+   - PDF size is about 5.4 KB or higher
+   - body_completeness_status is complete
+   - thin_sections_count is 0
+7. Run Button 3 only if needed.
+8. Do not present stale files.
+
+Discipline notes
+- Browser refresh alone is not enough when runtime is stale.
+- Always verify the newly generated PDF path and metrics before presenting.
+- Keep Button 3 untouched unless explicitly part of the demo scope.

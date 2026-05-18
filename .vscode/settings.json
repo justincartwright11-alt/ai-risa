@@ -1,0 +1,64 @@
+{
+  // Keep semantic/AI search manual, not automatic.
+  "search.searchView.semanticSearchBehavior": "manual",
+  "search.searchView.keywordSuggestions": false,
+  "workbench.settings.showAISearchToggle": false,
+
+  // Keep Copilot inline suggestions available; they are useful for small edits.
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+
+  // Reduce automatic Copilot actions that can create extra work.
+  "github.copilot.renameSuggestions.triggerAutomatically": false,
+  "github.copilot.editor.enableCodeActions": false,
+  "github.copilot.chat.scopeSelection": false,
+  "github.copilot.chat.useProjectTemplates": false,
+  "github.copilot.chat.codesearch.enabled": false,
+
+  // Agent control: lower request fan-out.
+  "chat.agent.maxRequests": 8,
+  "github.copilot.chat.agent.autoFix": false,
+
+  // Never let tools or terminal commands auto-run broadly.
+  "chat.permissions.default": "default",
+  "chat.tools.global.autoApprove": false,
+  "chat.tools.terminal.enableAutoApprove": false,
+  "chat.tools.terminal.autoReplyToPrompts": false,
+  "chat.tools.terminal.blockDetectedFileWrites": "outsideWorkspace",
+
+  // Keep terminal output visible in chat when needed, but do not let commands run uncontrolled.
+  "chat.tools.terminal.outputLocation": "chat",
+
+  // Keep browser tools available only because AI-RISA dashboard smoke tests need them.
+  "workbench.browser.enableChatTools": true,
+
+  // Keep agent memory/context tools from growing uncontrolled unless needed.
+  "github.copilot.chat.tools.memory.enabled": false,
+  "github.copilot.chat.copilotMemory.enabled": false,
+
+  // Keep debug/log capture off.
+  "github.copilot.chat.agentDebugLog.enabled": false,
+  "github.copilot.chat.agentDebugLog.fileLogging.enabled": false,
+  "github.copilot.chat.otel.enabled": false
+}
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/out/**": true,
+    "**/.cache/**": true
+  },
+  "search.exclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/out/**": true,
+    "**/.cache/**": true
+  }
+}

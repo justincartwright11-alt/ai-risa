@@ -1,0 +1,66 @@
+Button 3 Demo Script (Buyer/Operator)
+
+Audience:
+- Buyer stakeholder
+- Operator or analyst who will run the workflow
+
+Goal:
+- Demonstrate that AI-RISA can safely improve prediction accuracy through a governed result-learning loop.
+
+1) What Button 3 Does (30-45 seconds)
+"Button 3 is AI-RISA's governed result-learning path. It takes waiting predictions that now have official outcomes available, previews the candidate update, and applies a controlled calibration write only after explicit operator approval."
+
+"In plain terms: it closes the loop from prediction to verified outcome to improved future performance."
+
+2) What Operator Approval Means (30-45 seconds)
+"Operator approval is the safety gate. Nothing is applied automatically."
+
+"The operator reviews the candidate, confirms approval, and then triggers apply. The system returns proof fields so we know exactly what changed, why it changed, and how to roll it back if needed."
+
+"That gives us governance, accountability, and operational control."
+
+3) How to Run the Flow (60-90 seconds)
+Use this sequence live on the dashboard:
+- Step 1: Load waiting predictions.
+- Step 2: Select one waiting key.
+- Step 3: Run official result preview.
+- Step 4: Confirm operator approval.
+- Step 5: Apply selected candidate.
+
+Narration while clicking:
+"We start with waiting predictions, pull the official result preview, and only after operator approval do we execute a durable apply."
+
+4) What Success Looks Like (30-45 seconds)
+Expected success evidence:
+- Official preview call observed.
+- Durable apply call observed.
+- Guarded preview-only endpoint not used for final apply.
+- HTTP 200 response.
+- ok: true
+- reason_code: controlled_calibration_write_applied
+- mutation_performed: true
+- UI message confirms controlled local calibration write applied.
+
+Narration:
+"Success means we see a governed write complete with explicit success codes and mutation proof, not a blind or implicit update."
+
+5) Why This Proves Safe Accuracy Improvement (45-60 seconds)
+"This demo proves AI-RISA can improve safely because the learning loop is governed at every critical step:"
+- Waiting prediction selection is explicit.
+- Official result is previewed before write.
+- Human approval is mandatory.
+- Durable apply is intentional and auditable.
+- Rollback and audit metadata are produced with the operation.
+
+"So this is not just model tuning. It is an operator-controlled, auditable improvement workflow suitable for production environments."
+
+Premium Report Factory Positioning (20-30 seconds)
+"For Premium Report Factory buyers, Button 3 is the bridge from static prediction outputs to continuously improving report quality under governance."
+
+"It demonstrates commercial readiness: better accuracy potential, controlled risk, and clear operational accountability."
+
+Optional Closing Line
+"AI-RISA now has a working governed result-learning loop: find waiting predictions, preview official result, operator approves, durable apply executes, and audit/rollback proof is returned."
+
+Next Build Slice (when build mode resumes)
+button3-demo-packaging-and-commercial-pitch-v1

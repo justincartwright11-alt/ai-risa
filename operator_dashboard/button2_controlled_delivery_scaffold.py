@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 controlled_delivery = Blueprint('controlled_delivery', __name__)
 
@@ -321,7 +321,7 @@ def controlled_delivery_action():
     # Create audit trail
     audit_record = {
         'audit_id': audit_id,
-        'audit_timestamp': datetime.utcnow().isoformat(),
+        'audit_timestamp': datetime.now(timezone.utc).isoformat(),
         'operation_id': operation_id,
         'report_id': data.get('report_id'),
         'customer_identity': data.get('customer_identity'),
@@ -332,7 +332,70 @@ def controlled_delivery_action():
         'all_preconditions_passed': True
     }
 
-    # Return successful action response
+    # Hardened evidence objects
+    proof_of_delivery_record = {
+        'proof_id': str(uuid.uuid4()),
+        'operation_id': operation_id,
+        'report_id': data.get('report_id'),
+        'delivery_channel': delivery_channel,
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'safety_flags': {
+            'live_delivery_performed': live_delivery_performed,
+            'customer_delivery_performed': customer_delivery_performed,
+            'email_send_performed': email_send_performed,
+            'external_api_delivery_performed': external_api_delivery_performed,
+            'database_write_performed': False,
+            'queue_write_performed': False,
+            'ledger_write_performed': False,
+            'learning_apply_performed': False,
+            'calibration_write_performed': False,
+            'button1_mutation_performed': False,
+            'button3_mutation_performed': False
+        }
+    }
+
+    delivery_receipt_record = {
+        'receipt_id': delivery_receipt_id,
+        'operation_id': operation_id,
+        'report_id': data.get('report_id'),
+        'delivery_channel': delivery_channel,
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'safety_flags': {
+            'live_delivery_performed': live_delivery_performed,
+            'customer_delivery_performed': customer_delivery_performed,
+            'email_send_performed': email_send_performed,
+            'external_api_delivery_performed': external_api_delivery_performed,
+            'database_write_performed': False,
+            'queue_write_performed': False,
+            'ledger_write_performed': False,
+            'learning_apply_performed': False,
+            'calibration_write_performed': False,
+            'button1_mutation_performed': False,
+            'button3_mutation_performed': False
+        }
+    }
+
+    rollback_void_pointer = {
+        'rollback_id': rollback_id,
+        'operation_id': operation_id,
+        'report_id': data.get('report_id'),
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'safety_flags': {
+            'live_delivery_performed': False,
+            'customer_delivery_performed': False,
+            'email_send_performed': False,
+            'external_api_delivery_performed': False,
+            'database_write_performed': False,
+            'queue_write_performed': False,
+            'ledger_write_performed': False,
+            'learning_apply_performed': False,
+            'calibration_write_performed': False,
+            'button1_mutation_performed': False,
+            'button3_mutation_performed': False
+        }
+    }
+
+    # Include hardened evidence objects in the response
     return jsonify({
         'controlled_delivery_action': True,
         'delivery_action_ready': True,
@@ -353,6 +416,9 @@ def controlled_delivery_action():
         'delivery_receipt_id': delivery_receipt_id,
         'delivery_mode': delivery_channel,
         'audit_record': audit_record,
+        'proof_of_delivery_record': proof_of_delivery_record,
+        'delivery_receipt_record': delivery_receipt_record,
+        'rollback_void_pointer': rollback_void_pointer,
         'safety_flags': {
             'live_delivery_performed': live_delivery_performed,
             'customer_delivery_performed': customer_delivery_performed,

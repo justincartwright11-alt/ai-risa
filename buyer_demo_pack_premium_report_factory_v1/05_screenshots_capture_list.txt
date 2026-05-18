@@ -1,0 +1,45 @@
+AI-RISA Premium Report Factory - Screenshot Capture List
+
+Capture guidance
+- Capture at 1366x768 or higher.
+- Keep browser zoom at 100%.
+- Use consistent timestamped filenames.
+
+Required screenshots
+1. Main dashboard with all 3 sections visible
+   Filename: 01_main_dashboard_overview.png
+
+2. Button 1 queue preview state
+   Filename: 02_button1_queue_preview.png
+
+3. Button 1 post-save queue snapshot
+   Filename: 03_button1_queue_saved.png
+
+4. Button 2 selection and approval before generate
+   Filename: 04_button2_pre_generate.png
+
+5. Button 2 export result row with proof fields
+   Filename: 05_button2_export_result_proof.png
+
+6. Button 2 generated PDF open in viewer (first page)
+   Filename: 06_button2_pdf_page1.png
+
+7. Button 2 generated PDF body page showing tactical sections
+   Filename: 07_button2_pdf_body_sections.png
+
+8. Button 3 waiting list loaded
+   Filename: 08_button3_waiting_loaded.png
+
+9. Button 3 candidate review before apply
+   Filename: 09_button3_candidate_review.png
+
+10. Button 3 post-apply success with reason/mutation proof
+    Filename: 10_button3_apply_success.png
+
+Optional screenshots
+- Export folder with generated PDF file metadata.
+- Accuracy summary panel after apply.
+- Any audit/rollback evidence panel for operator review.
+
+Recommended naming convention
+YYYYMMDD_demo_clientname_stepname.png
