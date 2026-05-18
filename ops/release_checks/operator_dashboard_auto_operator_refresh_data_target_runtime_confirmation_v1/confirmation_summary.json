@@ -1,0 +1,50 @@
+{
+  "slice": "operator-dashboard-auto-operator-refresh-data-target-runtime-confirmation-v1",
+  "based_on": {
+    "repair_commit": "a2bd75e",
+    "repair_tag": "operator-dashboard-auto-operator-refresh-data-critical-repair-v1"
+  },
+  "runtime": {
+    "python": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "url": "http://127.0.0.1:5050/",
+    "port": 5050
+  },
+  "load_hydration_probe": {
+    "workflow_preview_post_count": 3,
+    "statuses": [200, 200, 200],
+    "page_errors": []
+  },
+  "hydrated_card_counters": {
+    "button1": {
+      "ready_to_save": 0,
+      "needs_review": 31,
+      "blocked": 0,
+      "waiting_for_refresh": 0
+    },
+    "button2": {
+      "customer_ready": 15,
+      "not_ready": 15,
+      "waiting_for_refresh": 0
+    },
+    "button3": {
+      "rows_scanned": 0,
+      "results_found": 0,
+      "needs_source": 0,
+      "conflicts": 0,
+      "ready_to_compare": 0,
+      "waiting_for_refresh": 1
+    }
+  },
+  "click_path_probe": {
+    "workflow_preview_post_count": 3,
+    "statuses": [200, 200, 200],
+    "page_errors": []
+  },
+  "governance": {
+    "confirmation_only": true,
+    "queue_write_performed": false,
+    "delivery_performed": false,
+    "learning_calibration_write_performed": false
+  },
+  "verdict": "target_runtime_hydration_confirmation_passed"
+}
