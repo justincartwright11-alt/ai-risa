@@ -1,0 +1,19 @@
+USER=jusin
+POWERSHELL=5.1.26100.8457
+REPO_EXISTS=True
+TEMP_WRITE=True
+TEMP_FILE_EXISTS=True
+DESKTOP_WRITE=True
+DESKTOP_FILE_EXISTS=True
+REPO_WRITE=True
+REPO_FILE_EXISTS=True
+REPO_FILE_CONTENT={"probe":"repo_ok"}
+
+Repo Attributes=
+
+
+FullName   : C:\Users\jusin\OneDrive\Documents\Custom Office Templates
+Attributes : ReadOnly, Directory, Archive, ReparsePoint
+
+
+

@@ -1,0 +1,36 @@
+{
+  "slice": "button2-cover-visual-defect-and-content-depth-repair-v1",
+  "timestamp": "2026-05-18T22:57:53.029460",
+  "test_results": [
+    {
+      "name": "Rico Verhoeven vs Tariq Osaro",
+      "status": "success",
+      "page_count": 14,
+      "has_premium_branding": true,
+      "has_fighters": true,
+      "has_confidence": true,
+      "no_forbidden_strings": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_cover_visual_defect_and_content_depth_repair_v1\\pdfs\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf"
+    },
+    {
+      "name": "Anthony Joshua vs Daniel Dubois",
+      "status": "success",
+      "page_count": 14,
+      "has_premium_branding": true,
+      "has_fighters": true,
+      "has_confidence": true,
+      "no_forbidden_strings": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_cover_visual_defect_and_content_depth_repair_v1\\pdfs\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
+    },
+    {
+      "name": "Jiri Prochazka vs Carlos Ulberg",
+      "status": "success",
+      "page_count": 14,
+      "has_premium_branding": true,
+      "has_fighters": true,
+      "has_confidence": true,
+      "no_forbidden_strings": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_cover_visual_defect_and_content_depth_repair_v1\\pdfs\\jiri_prochazka_vs_carlos_ulberg_ufc_320_premium.pdf"
+    }
+  ]
+}
