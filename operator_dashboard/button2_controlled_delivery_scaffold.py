@@ -5,15 +5,17 @@ controlled_delivery = Blueprint('controlled_delivery', __name__)
 @controlled_delivery.route('/api/button2/controlled-delivery/preview', methods=['POST'])
 def controlled_delivery_preview():
     data = request.get_json()
+    if data is None:
+        data = {}
 
-    # Validate required fields
-    required_fields = [
+    # Validate that required fields exist (but allow None/False values for some)
+    required_field_names = [
         'report_id', 'report_status', 'customer_identity', 'delivery_target',
         'delivery_channel', 'operator_approval', 'delivery_evidence',
         'audit_record', 'proof_of_delivery', 'rollback_pointer'
     ]
 
-    missing_fields = [field for field in required_fields if field not in data]
+    missing_fields = [field for field in required_field_names if field not in data]
     if missing_fields:
         return jsonify({
             'controlled_delivery_preview': False,

@@ -1,5 +1,11 @@
 import pytest
-from operator_dashboard import app
+import sys
+import os
+
+# Allow imports from workspace root
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from operator_dashboard.app import app
 
 @pytest.fixture
 def client():
@@ -23,6 +29,7 @@ def test_operator_approval_required(client):
         'customer_identity': 'customer_1',
         'delivery_target': 'target_1',
         'delivery_channel': 'email',
+        'operator_approval': False,
         'delivery_evidence': 'evidence_1',
         'audit_record': 'audit_1',
         'proof_of_delivery': 'proof_1',

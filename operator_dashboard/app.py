@@ -61,6 +61,7 @@ from operator_dashboard.button2_dossier_handoff_report_context_preview import (
 from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
     generate_button2_report_render_gate_integration,
 )
+from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
 
 app = Flask(__name__, template_folder="templates")
 
@@ -944,6 +945,11 @@ def global_fighters_known_records_loader_preview():
             "learning_apply_performed": False,
             "calibration_write_performed": False,
         }), 500
+
+
+# ─── Phase 7 Controlled Delivery ──────────────────────────────────────────────
+
+app.register_blueprint(controlled_delivery)
 
 
 if __name__ == "__main__":
