@@ -1,0 +1,39 @@
+{
+  "slice": "button1-button2-selected-matchup-runtime-persistence-preview-v1",
+  "status": "runtime-persistence-confirmed",
+  "runtime_target": "http://127.0.0.1:5050/",
+  "persistence_key": "ai_risa_button2_selected_matchup_preview_v1",
+  "checks": {
+    "selection_persists_after_button1_selection": true,
+    "selection_restores_after_browser_reload": true,
+    "selection_visible_on_button2_after_reload": true,
+    "no_auto_pdf_generation": true,
+    "no_queue_write": true,
+    "no_delivery": true,
+    "no_learning_or_calibration_write": true,
+    "no_button3_mutation": true,
+    "main_dashboard_buttons_remain_3": true
+  },
+  "safety_flags": {
+    "pdf_generation_performed": false,
+    "queue_write_performed": false,
+    "delivery_performed": false,
+    "email_send_performed": false,
+    "external_api_delivery_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "network_observations": {
+    "selector_preview_called": true,
+    "auto_button2_generate_or_delivery_call_observed": false
+  },
+  "validation": {
+    "selector_suite": "13 passed",
+    "focused_governed_bundle": "100 passed"
+  },
+  "artifacts": {
+    "doc": "docs/button1_button2_selected_matchup_runtime_persistence_preview_v1.md",
+    "tests": "operator_dashboard/test_button1_button2_event_card_matchup_selector_v1.py"
+  }
+}

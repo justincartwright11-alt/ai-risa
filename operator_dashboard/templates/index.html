@@ -1045,9 +1045,95 @@ const BUTTON1_BUTTON2_EVENT_CARD_MATCHUP_SELECT_PREVIEW_ENDPOINT =
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
 const SOURCE_BUTTON_FIND_RESULTS = 'button3_find_results';
+const BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY = 'ai_risa_button2_selected_matchup_preview_v1';
 
 window.button1CandidateRowsForSelector = [];
 window.button2SelectedMatchupPreview = null;
+
+function getPreviewOnlySelectionPersistenceFlags() {
+  return {
+    preview_only: true,
+    pdf_generation_performed: false,
+    queue_write_performed: false,
+    delivery_performed: false,
+    email_send_performed: false,
+    external_api_delivery_performed: false,
+    learning_apply_performed: false,
+    calibration_write_performed: false,
+    button3_mutation_performed: false
+  };
+}
+
+function sanitizeSelectedMatchupPreviewForPersistence(data) {
+  if (!data || typeof data !== 'object' || data.selected_for_button2 !== true) {
+    return null;
+  }
+
+  const toSafeString = (value) => (typeof value === 'string' ? value : '');
+  return {
+    selected_for_button2: true,
+    selection_preview: true,
+    event_name: toSafeString(data.event_name),
+    event_date: toSafeString(data.event_date),
+    promotion: toSafeString(data.promotion),
+    source_url: toSafeString(data.source_url),
+    source_type: toSafeString(data.source_type),
+    fighter_a: toSafeString(data.fighter_a),
+    fighter_b: toSafeString(data.fighter_b),
+    matchup_id: toSafeString(data.matchup_id),
+    candidate_id: toSafeString(data.candidate_id),
+    report_ready_status: toSafeString(data.report_ready_status),
+    denial_reasons: [],
+    safety_flags: {
+      pdf_generation_performed: false,
+      queue_write_performed: false,
+      delivery_performed: false,
+      email_send_performed: false,
+      external_api_delivery_performed: false,
+      learning_apply_performed: false,
+      calibration_write_performed: false,
+      button3_mutation_performed: false
+    },
+    persistence_flags: getPreviewOnlySelectionPersistenceFlags()
+  };
+}
+
+function persistButton2SelectedMatchupPreview(data) {
+  if (!window.localStorage) return;
+  try {
+    const sanitized = sanitizeSelectedMatchupPreviewForPersistence(data);
+    if (!sanitized) {
+      window.localStorage.removeItem(BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(
+      BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY,
+      JSON.stringify(sanitized)
+    );
+  } catch (_err) {
+    // Fail closed: persistence is optional and must not impact operator flow.
+  }
+}
+
+function loadButton2SelectedMatchupPreviewFromPersistence() {
+  if (!window.localStorage) return null;
+  try {
+    const raw = window.localStorage.getItem(BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const sanitized = sanitizeSelectedMatchupPreviewForPersistence(parsed);
+    return sanitized;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function restoreButton2SelectedMatchupPreviewFromPersistence() {
+  const restored = loadButton2SelectedMatchupPreviewFromPersistence();
+  if (!restored) return;
+  window.button2SelectedMatchupPreview = restored;
+  renderButton2SelectedMatchupPreview(restored);
+}
 
 function postLocalAiWorkflowPreview(payload) {
   return fetch(LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT, {
@@ -2367,11 +2453,14 @@ function selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedI
         setStatus('b2-status', 'Selection denied: ' + reasons.join(', ') + '. No generation performed.', 'error');
         window.button2SelectedMatchupPreview = null;
         renderButton2SelectedMatchupPreview(null);
+        persistButton2SelectedMatchupPreview(null);
         return;
       }
 
-      window.button2SelectedMatchupPreview = data;
-      renderButton2SelectedMatchupPreview(data);
+      const safePreview = sanitizeSelectedMatchupPreviewForPersistence(data) || data;
+      window.button2SelectedMatchupPreview = safePreview;
+      renderButton2SelectedMatchupPreview(safePreview);
+      persistButton2SelectedMatchupPreview(safePreview);
       setStatus('b2-status', 'Selection accepted for Button 2 preview. Operator action still required to generate report.', 'ok');
       showPanel('b2-result-panel');
     })
@@ -2379,6 +2468,7 @@ function selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedI
       setStatus('b2-status', 'Selection preview failed. No generation performed.', 'error');
       window.button2SelectedMatchupPreview = null;
       renderButton2SelectedMatchupPreview(null);
+      persistButton2SelectedMatchupPreview(null);
     });
 }
 
@@ -2784,12 +2874,17 @@ function handleButton1Click() {
 
 function handleButton2Click() {
   showPanel('b2-result-panel');
+  restoreButton2SelectedMatchupPreviewFromPersistence();
   renderButton2SelectedMatchupPreview(window.button2SelectedMatchupPreview || null);
   setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
     .then(data => renderSimpleWorkflowSummary('b2-status', data))
     .catch(() => setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  restoreButton2SelectedMatchupPreviewFromPersistence();
+});
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────
 

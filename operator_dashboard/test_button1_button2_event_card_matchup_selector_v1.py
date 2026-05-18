@@ -276,3 +276,37 @@ def test_button2_and_button3_primary_surfaces_remain_present():
     assert "Find Results &amp; Improve Accuracy" in html
     assert re.search(r"function\s+handleButton2Click\s*\(", html)
     assert re.search(r"function\s+handleButton3Click\s*\(", html)
+
+
+def test_selected_matchup_preview_persistence_preview_only_wires_exist():
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get("/").data.decode("utf-8")
+
+    assert "BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY" in html
+    assert "persistButton2SelectedMatchupPreview" in html
+    assert "restoreButton2SelectedMatchupPreviewFromPersistence" in html
+    assert "document.addEventListener('DOMContentLoaded'" in html
+
+
+def test_selected_matchup_preview_persistence_safety_flags_are_hard_false():
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        html = client.get("/").data.decode("utf-8")
+
+    required_false_flags = [
+        "pdf_generation_performed: false",
+        "queue_write_performed: false",
+        "delivery_performed: false",
+        "email_send_performed: false",
+        "external_api_delivery_performed: false",
+        "learning_apply_performed: false",
+        "calibration_write_performed: false",
+        "button3_mutation_performed: false",
+    ]
+
+    for marker in required_false_flags:
+        assert marker in html
+
+    assert "window.localStorage.setItem" in html
+    assert "window.localStorage.removeItem" in html
