@@ -1,0 +1,64 @@
+{
+  "slice": "button1-button2-button3-commercial-readiness-rollup-v1",
+  "status": "implemented_docs_evidence_only_validation_not_required",
+  "scope": "docs/evidence-only commercial/demo readiness rollup across Button 1/2/3",
+  "no_new_implementation": true,
+  "readiness": {
+    "button1": {
+      "verdict": "ready_for_commercial_demo_review",
+      "anchor_tag": "button1-multisport-approved-source-event-card-commercial-readiness-handoff-v1",
+      "anchor_commit": "ccc611b",
+      "sports_confirmed": ["boxing", "mma", "kickboxing", "muay_thai"],
+      "evidence_chain": [
+        "source_registry",
+        "event_card_coverage_audit",
+        "multisport_fixtures",
+        "runtime_confirmation",
+        "dashboard_runtime_confirmation"
+      ]
+    },
+    "button2": {
+      "verdict": "ready_for_commercial_demo_and_controlled_paid_pilot_scope",
+      "anchor_tag": "button2-phase7-controlled-delivery-release-signoff-bundle-v1",
+      "anchor_commit": "7f230d1",
+      "smoke_tag": "button2-phase7-controlled-delivery-live-smoke-evidence-checkpoint-v1",
+      "smoke_commit": "fdc76ac"
+    },
+    "button3": {
+      "verdict": "evidence_only_preview_state_not_full_launch_ready",
+      "anchor_tag": "button3-auto-result-source-yield-template-js-explicit-endpoint-wire-v1",
+      "evidence_doc": "docs/button3_auto_result_source_discovery_and_match_preview_live_smoke_v1.md"
+    }
+  },
+  "governance": {
+    "preview_only_preserved": true,
+    "approval_required_preserved": true,
+    "no_write": true,
+    "no_mutation": true,
+    "no_auto_queue_save": true,
+    "no_pdf_generation_expansion": true,
+    "no_delivery_expansion": true,
+    "no_learning_calibration_expansion": true
+  },
+  "remaining_launch_blockers": [
+    {
+      "name": "weasyprint_native_pdf_render_dependency",
+      "severity": "critical",
+      "evidence": "docs/button2_explicit_operator_generate_from_selected_matchup_guarded_v1.md",
+      "observed_runtime_note": "No module named 'weasyprint'"
+    },
+    {
+      "name": "button3_full_governed_launch_chain_not_locked",
+      "severity": "high"
+    },
+    {
+      "name": "unified_three_button_release_signoff_bundle_not_locked",
+      "severity": "high"
+    }
+  ],
+  "rollup_verdict": "commercial_demo_ready_in_governed_scope_with_button1_button2_locked_evidence_but_full_three_button_launch_blocked_by_weasyprint_closeout_and_button3_launch_chain_completion",
+  "artifacts": [
+    "docs/button1_button2_button3_commercial_readiness_rollup_v1.md",
+    "ops/release_checks/button1_button2_button3_commercial_readiness_rollup_v1/commercial_readiness_rollup_summary.json"
+  ]
+}
