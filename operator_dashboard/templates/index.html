@@ -337,6 +337,130 @@
       padding: 8px;
       line-height: 1.35;
     }
+
+    /* ── Phase 3 Proof Stack Display (Read-Only) ─────────────────────── */
+    .proof-display-panel {
+      margin-top: 18px;
+      background: #1a1d2e;
+      border: 1px solid #2a2d3e;
+      border-left: 3px solid #c9aa71;
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .proof-display-panel h3 {
+      font-size: 0.86rem;
+      color: #c9aa71;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .proof-display-readonly-note {
+      font-size: 0.78rem;
+      color: #8a94b8;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .proof-stack-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .proof-summary-cell {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.78rem;
+      color: #e8eaed;
+    }
+    .proof-signal-label {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #2a2d3e;
+      font-size: 0.72rem;
+      margin-left: 6px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .proof-signal-label.clear {
+      border-color: rgba(152,195,121,0.45);
+      color: #98c379;
+      background: rgba(152,195,121,0.1);
+    }
+    .proof-signal-label.detected {
+      border-color: rgba(229,192,123,0.45);
+      color: #e5c07b;
+      background: rgba(229,192,123,0.1);
+    }
+    .proof-signal-label.unavailable {
+      border-color: rgba(224,108,117,0.45);
+      color: #e06c75;
+      background: rgba(224,108,117,0.1);
+    }
+    .proof-channel-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .proof-channel-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      background: #0f1117;
+      border-bottom: 1px solid #2a2d3e;
+    }
+    .proof-channel-row:last-child { border-bottom: none; }
+    .proof-channel-name { color: #e8eaed; }
+    .proof-label-legend {
+      margin-top: 10px;
+      font-size: 0.74rem;
+      color: #8a94b8;
+    }
+    .proof-failure-reasons {
+      margin-top: 10px;
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      background: #0f1117;
+      padding: 10px;
+    }
+    .proof-failure-reasons-title {
+      font-size: 0.76rem;
+      color: #c9aa71;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .proof-failure-reasons ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 0.76rem;
+      color: #e5c07b;
+      line-height: 1.45;
+    }
+    .proof-gate-notice {
+      margin-top: 10px;
+      font-size: 0.76rem;
+      color: #8a94b8;
+      border: 1px solid rgba(138,148,184,0.3);
+      background: rgba(138,148,184,0.08);
+      border-radius: 8px;
+      padding: 8px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 780px) {
+      .proof-stack-summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -413,6 +537,73 @@
     <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
   </div>
 
+  <!-- ── Phase 3 Proof Stack Display (Read-Only) ───────────────────── -->
+  <section class="proof-display-panel" id="phase3-proof-display-panel">
+    <h3>Phase 3 Rendered-Output Proof Stack</h3>
+    <p class="proof-display-readonly-note">
+      Display-only review surface. No proof execution trigger, no generation, no delivery,
+      no certification automation, no approval-gate change.
+    </p>
+
+    <div class="proof-stack-summary-grid">
+      <div class="proof-summary-cell">
+        Stack Signal:
+        <span class="proof-signal-label unavailable" id="phase3-stack-signal">UNAVAILABLE</span>
+      </div>
+      <div class="proof-summary-cell">
+        Proof Status:
+        <span class="proof-signal-label unavailable" id="phase3-proof-status">FAILED_CLOSED</span>
+      </div>
+    </div>
+
+    <ul class="proof-channel-list" id="phase3-proof-channel-list">
+      <li class="proof-channel-row" data-channel="text_extraction">
+        <span class="proof-channel-name">text extraction</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-text-extraction">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="geometry">
+        <span class="proof-channel-name">geometry</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-geometry">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="page_section">
+        <span class="proof-channel-name">page-section</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-page-section">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="typography_style">
+        <span class="proof-channel-name">typography-style</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-typography-style">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="header_footer_watermark">
+        <span class="proof-channel-name">header-footer-watermark</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-header-footer-watermark">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="source_traceability">
+        <span class="proof-channel-name">source-traceability</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-source-traceability">UNAVAILABLE</span>
+      </li>
+      <li class="proof-channel-row" data-channel="visual_qa_rollup">
+        <span class="proof-channel-name">visual-QA rollup</span>
+        <span class="proof-signal-label unavailable" id="phase3-channel-visual-qa-rollup">UNAVAILABLE</span>
+      </li>
+    </ul>
+
+    <div class="proof-label-legend" id="phase3-proof-label-legend">
+      Labels: CLEAR | DETECTED | UNAVAILABLE
+    </div>
+
+    <div class="proof-failure-reasons" id="phase3-failure-reasons">
+      <div class="proof-failure-reasons-title">Failure Reasons (Read-Only)</div>
+      <ul id="phase3-failure-reasons-list">
+        <li>proof_result_missing_or_malformed</li>
+      </ul>
+    </div>
+
+    <div class="proof-gate-notice">
+      Existing operator gates remain unchanged. This panel does not add approval bypass,
+      mutation routes, file writes, delivery controls, or certification controls.
+    </div>
+  </section>
+
   <!-- ── Button 3 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b3-result-panel">
     <h3>Find Results &amp; Compare — Preview</h3>
@@ -472,6 +663,128 @@ function setStatus(id, html, cls) {
   if (!el) return;
   el.innerHTML = html;
   el.className = 'status-msg' + (cls ? ' ' + cls : '');
+}
+
+function toSignalClass(signalValue) {
+  const value = String(signalValue || '').toLowerCase();
+  if (value === 'clear') return 'clear';
+  if (value === 'detected') return 'detected';
+  return 'unavailable';
+}
+
+function normalizePhase3ProofDisplayInput(rawResult) {
+  const fallback = {
+    stack_signal: 'unavailable',
+    proof_status: 'failed_closed',
+    channel_signals: {
+      text_extraction: 'unavailable',
+      geometry: 'unavailable',
+      page_section: 'unavailable',
+      typography_style: 'unavailable',
+      header_footer_watermark: 'unavailable',
+      source_traceability: 'unavailable',
+      visual_qa_rollup: 'unavailable'
+    },
+    failure_reasons: ['proof_result_missing_or_malformed']
+  };
+
+  if (!rawResult || typeof rawResult !== 'object') {
+    return fallback;
+  }
+
+  const channelSignals = rawResult.channel_signals;
+  if (!channelSignals || typeof channelSignals !== 'object') {
+    return fallback;
+  }
+
+  const requiredChannels = [
+    'text_extraction',
+    'geometry',
+    'page_section',
+    'typography_style',
+    'header_footer_watermark',
+    'source_traceability',
+    'visual_qa_rollup'
+  ];
+
+  const normalizedChannels = {};
+  for (const channelName of requiredChannels) {
+    const signal = channelSignals[channelName];
+    if (signal !== 'clear' && signal !== 'detected' && signal !== 'unavailable') {
+      return fallback;
+    }
+    normalizedChannels[channelName] = signal;
+  }
+
+  const stackSignal = rawResult.stack_signal;
+  const proofStatus = rawResult.proof_status;
+  if (
+    (stackSignal !== 'clear' && stackSignal !== 'detected' && stackSignal !== 'unavailable') ||
+    (proofStatus !== 'passed' && proofStatus !== 'failed_closed')
+  ) {
+    return fallback;
+  }
+
+  const failureReasons = Array.isArray(rawResult.failure_reasons)
+    ? rawResult.failure_reasons.map(item => String(item))
+    : ['proof_result_missing_or_malformed'];
+
+  return {
+    stack_signal: stackSignal,
+    proof_status: proofStatus,
+    channel_signals: normalizedChannels,
+    failure_reasons: failureReasons.length ? failureReasons : ['none']
+  };
+}
+
+function renderPhase3ProofDisplay(rawResult) {
+  const normalized = normalizePhase3ProofDisplayInput(rawResult);
+
+  const stackSignalEl = document.getElementById('phase3-stack-signal');
+  const proofStatusEl = document.getElementById('phase3-proof-status');
+  const failureListEl = document.getElementById('phase3-failure-reasons-list');
+
+  if (stackSignalEl) {
+    stackSignalEl.textContent = String(normalized.stack_signal || '').toUpperCase();
+    stackSignalEl.className = 'proof-signal-label ' + toSignalClass(normalized.stack_signal);
+  }
+
+  if (proofStatusEl) {
+    const statusValue = String(normalized.proof_status || '').toUpperCase();
+    proofStatusEl.textContent = statusValue;
+    proofStatusEl.className = 'proof-signal-label ' + toSignalClass(normalized.stack_signal);
+  }
+
+  const channelElementMap = {
+    text_extraction: 'phase3-channel-text-extraction',
+    geometry: 'phase3-channel-geometry',
+    page_section: 'phase3-channel-page-section',
+    typography_style: 'phase3-channel-typography-style',
+    header_footer_watermark: 'phase3-channel-header-footer-watermark',
+    source_traceability: 'phase3-channel-source-traceability',
+    visual_qa_rollup: 'phase3-channel-visual-qa-rollup'
+  };
+
+  Object.keys(channelElementMap).forEach(channelName => {
+    const elementId = channelElementMap[channelName];
+    const signalValue = normalized.channel_signals[channelName] || 'unavailable';
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.textContent = String(signalValue).toUpperCase();
+    el.className = 'proof-signal-label ' + toSignalClass(signalValue);
+  });
+
+  if (failureListEl) {
+    failureListEl.innerHTML = '';
+    const reasons = Array.isArray(normalized.failure_reasons)
+      ? normalized.failure_reasons
+      : ['proof_result_missing_or_malformed'];
+    for (const reason of reasons) {
+      const li = document.createElement('li');
+      li.textContent = String(reason || 'unknown_reason');
+      failureListEl.appendChild(li);
+    }
+  }
 }
 
 const LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT =
@@ -1865,6 +2178,9 @@ function handleButton3Click() {
     .then(data => renderSimpleWorkflowSummary('b3-status', data))
     .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
 }
+
+// Read-only render of proof-stack display; no endpoints and no write actions.
+renderPhase3ProofDisplay(window.phase3ProofStackResult);
 </script>
 </body>
 </html>
