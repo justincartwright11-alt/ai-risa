@@ -1,0 +1,51 @@
+{
+  "slice": "button1-button2-button3-commercial-readiness-rollup-update-after-full-premium-report-v1",
+  "status": "implemented_docs_evidence_only_locked",
+  "scope": "docs/evidence-only commercial/demo readiness rollup update after Button 2 full premium multipage selected-matchup report lock",
+  "evidence": {
+    "prior_rollup_update": {
+      "slice": "button1-button2-button3-commercial-readiness-rollup-update-after-pdf-dashboard-link-v1",
+      "commit": "84c75dd"
+    },
+    "button2_full_premium_multipage_lock": {
+      "slice": "button2-selected-matchup-full-premium-multipage-report-v1",
+      "commit": "31042ee",
+      "tag": "button2-selected-matchup-full-premium-multipage-report-v1"
+    }
+  },
+  "readiness": {
+    "button1": {
+      "status": "READY",
+      "basis": "full-card source-backed event cards across boxing, mma, kickboxing, and muay_thai confirmed"
+    },
+    "button2": {
+      "status": "READY",
+      "basis": "governed selected-matchup generation, dashboard open-link, and full premium multipage depth confirmed",
+      "runtime_proof": {
+        "pages": 15,
+        "safe_open_route": "/api/button2/generated-report/open?filename=<pdf_filename>",
+        "dashboard_label": "Open Generated PDF",
+        "premium_sections_present": true
+      }
+    },
+    "button3": {
+      "status": "GOVERNED_PREVIEW_READY",
+      "basis": "result-review preview remains controlled; learning and calibration remain out of paid-pilot scope"
+    }
+  },
+  "governance": {
+    "operator_approval_preserved": true,
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "remaining_blocker": "No technical blocker for governed demo/commercial review. Paid-pilot launch still requires management decision and sign-offs.",
+  "next_valid_business_slice": "paid-pilot-phase1-management-decision-record-v1",
+  "artifacts": [
+    "docs/button1_button2_button3_commercial_readiness_rollup_update_after_full_premium_report_v1.md",
+    "ops/release_checks/button1_button2_button3_commercial_readiness_rollup_update_after_full_premium_report_v1/commercial_readiness_rollup_summary.json"
+  ]
+}
