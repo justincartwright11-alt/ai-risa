@@ -262,3 +262,46 @@ def test_current_runtime_cohort_without_urls_remains_fully_blocked(client):
     assert len(rows) == 31
     assert len(data["would_save"]) == 0
     assert len(data["blocked"]) == 31
+
+
+def test_mixed_source_backed_and_non_url_rows_yield_selective_would_save(client):
+    wf = client.post(
+        "/api/local-ai/orchestrator/workflow-preview",
+        json={
+            "source_button": "button1_find_fights",
+            "context_pack": {
+                "manual_text": "UFC 300",
+                "approved_source_refs": ["ufc_official"],
+                "event_hint": "UFC 300",
+                "promotion_hint": "UFC",
+                "date_window": {},
+                "candidate_rows": [
+                    {
+                        "candidate_id": "url_backed_001",
+                        "fight_name": "Alpha vs Beta",
+                        "event_name": "UFC 300",
+                        "source_url": "https://www.ufc.com/event/ufc-300",
+                    },
+                    {
+                        "candidate_id": "no_url_001",
+                        "fight_name": "Gamma vs Delta",
+                        "event_name": "No URL Event",
+                        "source_tag": "fighter_intake_unresolved_queue",
+                        "source_notes": "local metadata only",
+                    },
+                ],
+            },
+            "execute_preview": True,
+        },
+    ).get_json()
+
+    payload = wf["workflow"]["jobs"][0]["input_ref"]["metadata"]["payload"]
+    rows = payload.get("candidate_rows", [])
+    token = wf["workflow"].get("gate_approval_token_preview")
+    scope = ["url_backed_001", "no_url_001"]
+
+    resp = client.post(ROUTE, json=_payload(token=token, candidate_scope=scope, candidate_rows=rows))
+    data = resp.get_json()
+
+    assert "url_backed_001" in data["would_save"]
+    assert "no_url_001" in data["blocked"]

@@ -97,6 +97,30 @@ def test_button1_context_pack_flows_route_planner_runner_adapter_preview_only(cl
         _assert_safe_flags(job["safety_telemetry"])
 
 
+def test_button1_context_pack_source_backed_rows_surface_ready_count_for_dashboard(client):
+    data = _preview(
+        client,
+        "button1_find_fights",
+        {
+            "manual_text": "UFC source-backed hint",
+            "approved_source_refs": ["ufc_official"],
+            "event_hint": "UFC 300",
+            "promotion_hint": "UFC",
+            "date_window": {},
+            "candidate_rows": [
+                {"fight_name": "A vs B", "source_url": "https://www.ufc.com/event/ufc-300"},
+                {"fight_name": "C vs D"},
+            ],
+        },
+        execute_preview=True,
+    )
+
+    summary = data["workflow"]["jobs"][0]["output_preview"]["summary"]
+    assert summary["discovered_count"] == 2
+    assert summary["ready_for_report_count"] == 1
+    assert summary["draft_only_count"] == 1
+
+
 def test_button2_context_pack_flows_route_planner_runner_adapter_preview_only(client):
     data = _preview(
         client,

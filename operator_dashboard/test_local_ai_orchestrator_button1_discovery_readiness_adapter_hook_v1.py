@@ -137,6 +137,20 @@ def test_candidate_rows_drive_discovered_and_extracted_fallback_counts():
     assert out.summary["extracted_count"] == 2
 
 
+def test_source_backed_candidate_rows_drive_ready_count_fallback():
+    registry = LocalAIOrchestratorEngineAdapterRegistry()
+    payload = {
+        "candidate_rows": [
+            {"fight_name": "A vs B", "source_url": "https://www.ufc.com/event/ufc-300"},
+            {"fight_name": "C vs D"},
+        ]
+    }
+    out = registry.run_preview(_button1_job("discovery_job", payload=payload))
+    assert out.summary["discovered_count"] == 2
+    assert out.summary["ready_for_report_count"] == 1
+    assert out.summary["draft_only_count"] == 1
+
+
 def test_adapter_output_is_json_serializable():
     registry = LocalAIOrchestratorEngineAdapterRegistry()
     out = registry.run_preview(_button1_job("extraction_job"))

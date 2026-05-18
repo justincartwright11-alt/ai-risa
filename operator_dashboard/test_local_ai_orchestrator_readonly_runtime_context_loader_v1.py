@@ -203,6 +203,109 @@ def test_button1_loader_does_not_propagate_event_level_provenance_without_url(tm
     assert "provenance" not in local_row
 
 
+def test_button1_loader_ingests_approved_source_live_event_rows_from_feed(tmp_path):
+    feed_dir = tmp_path / "ops" / "approved_sources"
+    feed_dir.mkdir(parents=True)
+    (feed_dir / "button1_live_event_source_rows.json").write_text(
+        json.dumps(
+            {
+                "events": [
+                    {
+                        "event_name": "UFC 300",
+                        "event_url": "https://www.ufc.com/event/ufc-300",
+                        "source_name": "ufc_official",
+                        "source_type": "official",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "local_candidate_rows": [{"fight_name": "A vs B", "event_name": "UFC 300"}],
+        },
+        workspace_root=str(tmp_path),
+    )
+    payload = pack.to_dict()["input_ref"]["payload"]
+    rows = payload["candidate_rows"]
+    propagated = next(row for row in rows if row.get("fight_name") == "A vs B")
+
+    assert propagated["source_url"] == "https://www.ufc.com/event/ufc-300"
+    assert propagated["event_url"] == "https://www.ufc.com/event/ufc-300"
+    assert propagated["canonical_source_url"] == "https://www.ufc.com/event/ufc-300"
+    assert propagated["source_name"] == "ufc_official"
+    assert propagated["source_type"] == "official"
+    assert propagated["provenance"]["source_url"] == "https://www.ufc.com/event/ufc-300"
+    assert propagated["provenance"]["source_name"] == "ufc_official"
+    assert propagated["provenance"]["source_type"] == "official"
+
+    live_status = payload["live_source_status"]
+    assert live_status["approved_source_event_rows_count"] == 1
+    assert live_status["diagnostics"] == []
+
+
+def test_button1_loader_live_source_missing_feed_fails_closed_with_reason(tmp_path):
+    pack = build_button1_runtime_context(workspace_root=str(tmp_path))
+    payload = pack.to_dict()["input_ref"]["payload"]
+    status = payload["live_source_status"]
+
+    assert "live_source_unavailable" in status["diagnostics"]
+    assert status["approved_source_event_rows_count"] == 0
+
+
+def test_button1_loader_live_source_not_configured_fails_closed(tmp_path):
+    cfg_dir = tmp_path / "ops" / "approved_sources"
+    cfg_dir.mkdir(parents=True)
+    (cfg_dir / "button1_live_event_ingestion_config.json").write_text(
+        json.dumps({"enabled": False}),
+        encoding="utf-8",
+    )
+
+    pack = build_button1_runtime_context(workspace_root=str(tmp_path))
+    payload = pack.to_dict()["input_ref"]["payload"]
+    status = payload["live_source_status"]
+
+    assert "approved_source_not_configured" in status["diagnostics"]
+    assert status["approved_source_event_rows_count"] == 0
+
+
+def test_button1_loader_rejects_non_approved_source_urls(tmp_path):
+    feed_dir = tmp_path / "ops" / "approved_sources"
+    feed_dir.mkdir(parents=True)
+    (feed_dir / "button1_live_event_source_rows.json").write_text(
+        json.dumps(
+            {
+                "events": [
+                    {
+                        "event_name": "UFC 300",
+                        "event_url": "https://evil.example.com/ufc-300",
+                        "source_name": "unknown",
+                        "source_type": "official",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "discovered_candidate_rows": [],
+            "local_candidate_rows": [{"fight_name": "A vs B", "event_name": "UFC 300"}],
+        },
+        workspace_root=str(tmp_path),
+    )
+    payload = pack.to_dict()["input_ref"]["payload"]
+    rows = payload["candidate_rows"]
+    local_row = next(row for row in rows if row.get("fight_name") == "A vs B")
+
+    assert "source_url" not in local_row
+    assert "provenance" not in local_row
+    assert "no_source_backed_events_found" in payload["live_source_status"]["diagnostics"]
+
+
 def test_button1_runtime_context_includes_advanced_projection_records(tmp_path):
     pack = build_button1_runtime_context(
         runtime_state_override={

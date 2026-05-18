@@ -84,6 +84,25 @@ def _count_truthy_row_flags(rows: list, keys: list[str]) -> int:
     return count
 
 
+def _count_source_backed_rows(rows: list) -> int:
+    count = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for key in ("source_url", "canonical_source_url", "event_url", "provenance_url", "official_url", "url"):
+            value = row.get(key)
+            if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
+                count += 1
+                break
+        else:
+            provenance = row.get("provenance")
+            if isinstance(provenance, dict):
+                p = provenance.get("source_url")
+                if isinstance(p, str) and p.strip().lower().startswith(("http://", "https://")):
+                    count += 1
+    return count
+
+
 def _button1_payload(job: LocalAIJob) -> Dict[str, Any]:
     metadata = job.input_ref.metadata if isinstance(job.input_ref.metadata, dict) else {}
     payload = metadata.get("payload", {})
@@ -111,13 +130,15 @@ def _button1_safe_summary(job: LocalAIJob) -> Dict[str, Any]:
         baseline_rows,
         ["needs_fixture_data", "missing_fixture_data"],
     )
+    source_backed_from_rows = _count_source_backed_rows(baseline_rows)
+    ready_fallback = max(ready_from_rows, source_backed_from_rows)
 
     summary = {
         "discovered_count": _coerce_count(payload.get("discovered_count", len(baseline_rows))),
         "extracted_count": _coerce_count(payload.get("extracted_count", len(extracted_rows) if extracted_rows else len(baseline_rows))),
-        "ready_for_report_count": _coerce_count(payload.get("ready_for_report_count", ready_from_rows)),
+        "ready_for_report_count": _coerce_count(payload.get("ready_for_report_count", ready_fallback)),
         "needs_fixture_data_count": _coerce_count(payload.get("needs_fixture_data_count", needs_fixture_from_rows)),
-        "draft_only_count": _coerce_count(payload.get("draft_only_count", max(len(baseline_rows) - ready_from_rows, 0))),
+        "draft_only_count": _coerce_count(payload.get("draft_only_count", max(len(baseline_rows) - ready_fallback, 0))),
         "blocked_on_missing_fighter_count": _coerce_count(payload.get("blocked_on_missing_fighter_count", blocked_from_rows)),
         "duplicate_or_conflict_count": _coerce_count(payload.get("duplicate_or_conflict_count", len(duplicate_rows))),
         "approval_required": True,

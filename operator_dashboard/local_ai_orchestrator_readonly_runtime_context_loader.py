@@ -115,6 +115,197 @@ def _coerce_source_urls(value: Any) -> List[str]:
     return []
 
 
+_DEFAULT_APPROVED_SOURCE_URL_PATTERNS = [
+    r"https?://(?:www\.)?ufc\.com/event/",
+    r"https?://(?:www\.)?ufcstats\.com/event-details/",
+    r"https?://(?:www\.)?onefc\.com/events/",
+    r"https?://(?:www\.)?onefc\.com/.*/fight-results",
+    r"https?://(?:www\.)?glorykickboxing\.com/events/",
+    r"https?://(?:www\.)?matchroom\.com/events/",
+    r"https?://(?:www\.)?queensberrypromotions\.com/events/",
+    r"https?://(?:www\.)?toprank\.com/(?:events|fights)/",
+    r"https?://(?:www\.)?nolimitboxing\.com\.au/",
+]
+
+
+def _load_approved_source_ingestion_config(root: str) -> Dict[str, Any]:
+    config_path = os.path.join(root, "ops", "approved_sources", "button1_live_event_ingestion_config.json")
+    config = _read_json_file(config_path)
+    enabled = True if "enabled" not in config else bool(config.get("enabled"))
+    patterns = _coerce_source_urls(config.get("approved_source_url_patterns"))
+    if not patterns:
+        raw_patterns = config.get("approved_source_url_patterns")
+        if isinstance(raw_patterns, list):
+            patterns = [_safe_text(v) for v in raw_patterns if _safe_text(v)]
+    if not patterns:
+        patterns = list(_DEFAULT_APPROVED_SOURCE_URL_PATTERNS)
+
+    feed_paths = config.get("feed_paths")
+    if isinstance(feed_paths, list):
+        feed_files = [_safe_text(p) for p in feed_paths if _safe_text(p)]
+    else:
+        feed_files = [
+            "ops/approved_sources/button1_live_event_source_rows.json",
+            "ops/approved_sources/button1_live_event_source_rows.jsonl",
+            "ops/approved_sources/live_event_source_rows.json",
+        ]
+
+    return {
+        "enabled": enabled,
+        "approved_source_url_patterns": patterns,
+        "feed_paths": feed_files,
+    }
+
+
+def _url_matches_approved_patterns(url: str, patterns: List[str]) -> bool:
+    if not url:
+        return False
+    for pattern in patterns:
+        try:
+            if re.search(pattern, url, re.IGNORECASE):
+                return True
+        except re.error:
+            continue
+    return False
+
+
+def _guess_source_name_from_url(url: str) -> str:
+    txt = _safe_text(url).lower()
+    if "ufc.com" in txt or "ufcstats.com" in txt:
+        return "ufc_official"
+    if "onefc.com" in txt:
+        return "one_championship_official"
+    if "glorykickboxing.com" in txt:
+        return "glory_official"
+    if "matchroom.com" in txt:
+        return "matchroom_official"
+    if "queensberrypromotions.com" in txt:
+        return "queensberry_official"
+    if "toprank.com" in txt:
+        return "top_rank_official"
+    if "nolimitboxing.com.au" in txt:
+        return "no_limit_boxing_official"
+    return "approved_official_source"
+
+
+def _parse_approved_source_feed_rows(path: str) -> List[Dict[str, Any]]:
+    ext = os.path.splitext(path)[1].lower()
+    try:
+        if ext == ".jsonl":
+            rows: List[Dict[str, Any]] = []
+            if not os.path.exists(path):
+                return []
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    parsed = json.loads(line)
+                    if isinstance(parsed, dict):
+                        rows.append(dict(parsed))
+            return rows
+
+        doc = _read_json_file(path)
+        if isinstance(doc.get("rows"), list):
+            return _safe_list_of_dict(doc.get("rows"))
+        if isinstance(doc.get("events"), list):
+            return _safe_list_of_dict(doc.get("events"))
+        return []
+    except Exception:
+        return []
+
+
+def _normalize_approved_source_event_row(raw: Dict[str, Any], patterns: List[str]) -> Dict[str, Any]:
+    if not isinstance(raw, dict):
+        return {}
+
+    event_name = _safe_text(raw.get("event_name") or raw.get("event") or raw.get("event_title"))
+    source_url = _safe_text(
+        raw.get("source_url")
+        or raw.get("event_url")
+        or raw.get("canonical_source_url")
+        or raw.get("url")
+    )
+    canonical_source_url = _safe_text(raw.get("canonical_source_url") or source_url)
+    event_url = _safe_text(raw.get("event_url") or source_url)
+    source_name = _safe_text(raw.get("source_name") or _guess_source_name_from_url(source_url))
+    source_type = _safe_text(raw.get("source_type") or "official")
+
+    if not event_name or not source_url:
+        return {}
+    if not _url_matches_approved_patterns(source_url, patterns):
+        return {}
+
+    out = dict(raw)
+    out["event_name"] = event_name
+    out["source_url"] = source_url
+    out["event_url"] = event_url
+    out["canonical_source_url"] = canonical_source_url
+    out["source_name"] = source_name
+    out["source_type"] = source_type
+    out["source_urls"] = [source_url]
+    out["provenance"] = {
+        "source_url": source_url,
+        "source_urls": [source_url],
+        "source_name": source_name,
+        "source_type": source_type,
+    }
+    out["provenance_origin"] = "approved_source_live_event_ingestion"
+    return out
+
+
+def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
+    config = _load_approved_source_ingestion_config(root)
+    diagnostics: List[str] = []
+
+    enabled = bool(config.get("enabled", True))
+    patterns = [p for p in config.get("approved_source_url_patterns", []) if _safe_text(p)]
+    feed_paths = [p for p in config.get("feed_paths", []) if _safe_text(p)]
+
+    if not enabled or not patterns:
+        diagnostics.append("approved_source_not_configured")
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": False,
+            "feed_used": "",
+        }
+
+    existing_feed_path = ""
+    for rel_path in feed_paths:
+        candidate = os.path.join(root, rel_path)
+        if os.path.exists(candidate):
+            existing_feed_path = candidate
+            break
+
+    if not existing_feed_path:
+        diagnostics.append("live_source_unavailable")
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": True,
+            "feed_used": "",
+        }
+
+    raw_rows = _parse_approved_source_feed_rows(existing_feed_path)
+    normalized_rows = [
+        _normalize_approved_source_event_row(row, patterns)
+        for row in raw_rows
+        if isinstance(row, dict)
+    ]
+    approved_rows = [row for row in normalized_rows if row]
+
+    if not approved_rows:
+        diagnostics.append("no_source_backed_events_found")
+
+    return {
+        "rows": approved_rows,
+        "diagnostics": diagnostics,
+        "configured": True,
+        "feed_used": existing_feed_path,
+    }
+
+
 def _normalize_candidate_row_provenance(row: Dict[str, Any]) -> Dict[str, Any]:
     out = dict(row) if isinstance(row, dict) else {}
 
@@ -204,8 +395,8 @@ def _extract_row_provenance_urls(row: Dict[str, Any]) -> List[str]:
     return deduped
 
 
-def _build_event_provenance_lookup(event_rows: List[Dict[str, Any]]) -> Dict[str, List[str]]:
-    lookup: Dict[str, List[str]] = {}
+def _build_event_provenance_lookup(event_rows: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    lookup: Dict[str, Dict[str, Any]] = {}
     for row in event_rows:
         if not isinstance(row, dict):
             continue
@@ -215,13 +406,19 @@ def _build_event_provenance_lookup(event_rows: List[Dict[str, Any]]) -> Dict[str
         urls = _extract_row_provenance_urls(row)
         if not urls:
             continue
-        lookup[event_name.lower()] = urls
+        lookup[event_name.lower()] = {
+            "urls": urls,
+            "source_name": _safe_text(row.get("source_name") or _guess_source_name_from_url(urls[0])),
+            "source_type": _safe_text(row.get("source_type") or "official"),
+            "event_url": _safe_text(row.get("event_url") or urls[0]),
+            "canonical_source_url": _safe_text(row.get("canonical_source_url") or urls[0]),
+        }
     return lookup
 
 
 def _propagate_event_provenance(
     candidate_rows: List[Dict[str, Any]],
-    event_provenance_lookup: Dict[str, List[str]],
+    event_provenance_lookup: Dict[str, Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
     out_rows: List[Dict[str, Any]] = []
     for row in candidate_rows:
@@ -232,7 +429,8 @@ def _propagate_event_provenance(
 
         event_name = _safe_text(normalized.get("event_name") or normalized.get("event") or normalized.get("event_title"))
         key = event_name.lower() if event_name else ""
-        event_urls = event_provenance_lookup.get(key, []) if key else []
+        event_meta = event_provenance_lookup.get(key, {}) if key else {}
+        event_urls = event_meta.get("urls", []) if isinstance(event_meta, dict) else []
         if not event_urls:
             out_rows.append(normalized)
             continue
@@ -240,10 +438,22 @@ def _propagate_event_provenance(
         enriched = dict(normalized)
         enriched["source_url"] = event_urls[0]
         enriched["source_urls"] = list(event_urls)
+        if not _safe_text(enriched.get("source_name")):
+            enriched["source_name"] = _safe_text(event_meta.get("source_name")) or _guess_source_name_from_url(event_urls[0])
+        if not _safe_text(enriched.get("source_type")):
+            enriched["source_type"] = _safe_text(event_meta.get("source_type") or "official")
+        if not _safe_text(enriched.get("event_url")):
+            enriched["event_url"] = _safe_text(event_meta.get("event_url") or event_urls[0])
+        if not _safe_text(enriched.get("canonical_source_url")):
+            enriched["canonical_source_url"] = _safe_text(event_meta.get("canonical_source_url") or event_urls[0])
         provenance = enriched.get("provenance") if isinstance(enriched.get("provenance"), dict) else {}
         provenance = dict(provenance)
         provenance["source_url"] = event_urls[0]
         provenance["source_urls"] = list(event_urls)
+        if not _safe_text(provenance.get("source_name")):
+            provenance["source_name"] = _safe_text(enriched.get("source_name"))
+        if not _safe_text(provenance.get("source_type")):
+            provenance["source_type"] = _safe_text(enriched.get("source_type") or "official")
         enriched["provenance"] = provenance
         enriched["provenance_origin"] = "event_level_source"
         out_rows.append(enriched)
@@ -272,6 +482,7 @@ def _normalize_runtime_state(runtime_state: Dict[str, Any]) -> Dict[str, Any]:
         "manual_intake_text": _safe_text(state.get("manual_intake_text", "")),
         "discovered_candidate_rows": _safe_list_of_dict(state.get("discovered_candidate_rows", [])),
         "approved_source_preview_rows": _safe_list(state.get("approved_source_preview_rows", [])),
+        "live_source_status": _safe_dict(state.get("live_source_status", {})),
         "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
         "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),
         "result_ledger_records": _safe_list_of_dict(state.get("result_ledger_records", [])),
@@ -315,10 +526,30 @@ def load_readonly_runtime_state(
     ledger = _read_json_file(os.path.join(root, "ops", "accuracy", "accuracy_ledger.json"))
     ledger_path = os.path.join(root, "ops", "accuracy", "accuracy_ledger.json")
 
+    approved_source_live = _load_approved_source_live_event_rows(root)
+    approved_source_rows = _safe_list_of_dict(approved_source_live.get("rows", []))
+    merged_event_rows = approved_source_rows + event_rows
+
+    approved_source_refs: List[str] = []
+    seen_refs = set()
+    for row in approved_source_rows:
+        src = _safe_text(row.get("source_name") or row.get("source_url"))
+        if src and src not in seen_refs:
+            approved_source_refs.append(src)
+            seen_refs.add(src)
+
+    live_source_status = {
+        "enabled": bool(approved_source_live.get("configured", False)),
+        "approved_source_event_rows_count": len(approved_source_rows),
+        "diagnostics": _safe_list(approved_source_live.get("diagnostics", [])),
+        "feed_used": _safe_text(approved_source_live.get("feed_used", "")),
+    }
+
     state = {
         "manual_intake_text": status_text,
-        "discovered_candidate_rows": event_rows,
-        "approved_source_preview_rows": [],
+        "discovered_candidate_rows": merged_event_rows,
+        "approved_source_preview_rows": approved_source_refs,
+        "live_source_status": live_source_status,
         "approved_historical_records": [],
         "report_history_records": [],
         "result_ledger_records": [],
@@ -361,6 +592,7 @@ def build_button1_runtime_context(
     payload = {
         "manual_text": state.get("manual_intake_text", ""),
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
+        "live_source_status": _safe_dict(state.get("live_source_status", {})),
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),

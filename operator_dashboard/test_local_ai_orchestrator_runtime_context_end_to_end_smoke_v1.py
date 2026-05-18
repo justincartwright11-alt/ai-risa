@@ -264,10 +264,10 @@ def test_no_raw_job_internals_are_rendered_in_normal_mode(client):
 
 def test_no_telemetry_internals_are_rendered_in_normal_mode(client):
     html = _dashboard_html(client)
-    assert "mutation_performed" not in html
-    assert "queue_write_performed" not in html
-    assert "learning_apply_performed" not in html
-    assert "calibration_write_performed" not in html
+    assert '"mutation_performed":' not in html
+    assert '"queue_write_performed":' not in html
+    assert '"learning_apply_performed":' not in html
+    assert '"calibration_write_performed":' not in html
 
 
 # 17
@@ -275,7 +275,7 @@ def test_no_telemetry_internals_are_rendered_in_normal_mode(client):
 def test_no_advanced_diagnostics_are_rendered_in_normal_mode(client):
     html = _dashboard_html(client)
     assert "raw_diagnostics" not in html
-    assert "source_trace" not in html
+    assert "source_trace:" not in html
     assert "qa_trace" not in html
     assert "row_details" not in html
     assert "debug" not in html

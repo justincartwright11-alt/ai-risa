@@ -1310,6 +1310,27 @@ function renderButton1Gate1ApprovedSavePreview(statusId, workflowData, writerPre
   setStatus(statusId, summaryHtml, writer.ok ? 'ok' : 'error');
 }
 
+function renderButton1LiveSourceStatus(existingHtml, workflowData) {
+  const payload = readFirstWorkflowPayload(workflowData);
+  const status = payload && payload.live_source_status ? payload.live_source_status : {};
+  const diagnostics = Array.isArray(status.diagnostics) ? status.diagnostics : [];
+  const diagnosticsText = diagnostics.length ? diagnostics.join(', ') : 'none';
+  const eventRows = Number.isFinite(status.approved_source_event_rows_count)
+    ? status.approved_source_event_rows_count
+    : 0;
+  const feedUsed = status.feed_used ? status.feed_used : 'not_found';
+
+  const lines = [
+    '<br><br><strong>Approved Source Live Ingestion (Preview):</strong>',
+    'Approved source-backed event rows: ' + eventRows,
+    'Feed used: ' + feedUsed,
+    'Fail-closed diagnostics: ' + diagnosticsText,
+    'No auto-save: Yes',
+    'Operator approval required: Yes'
+  ];
+  return existingHtml + lines.join('<br>');
+}
+
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
 
 function postGlobalFighterIdentityResolverPreview(payload) {
@@ -2315,6 +2336,11 @@ function handleButton1Click() {
     .then(result => {
       // Render writer preview first
       renderButton1Gate1ApprovedSavePreview('b1-status', result.workflowData, result.writerPreviewData);
+
+      const currentStatus = document.getElementById('b1-status');
+      if (currentStatus) {
+        currentStatus.innerHTML = renderButton1LiveSourceStatus(currentStatus.innerHTML, result.workflowData);
+      }
 
       // Build advanced source-pack preview fields from available runtime context.
       // No new UI controls; summary-only and preview-only behavior is preserved.

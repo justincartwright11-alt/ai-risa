@@ -1,0 +1,84 @@
+{
+  "slice": "button1-approved-source-live-event-url-ingestion-v1",
+  "status": "pass",
+  "implementation": {
+    "runtime_loader_updated": true,
+    "approved_source_feed_ingestion_added": true,
+    "approved_url_pattern_governance_added": true,
+    "live_source_fail_closed_diagnostics_added": true,
+    "button1_dashboard_status_surface_updated": true,
+    "button1_summary_source_backed_ready_fallback_added": true
+  },
+  "approved_source_ingestion": {
+    "feed_paths": [
+      "ops/approved_sources/button1_live_event_source_rows.json",
+      "ops/approved_sources/button1_live_event_source_rows.jsonl",
+      "ops/approved_sources/live_event_source_rows.json"
+    ],
+    "accepted_default_patterns": [
+      "ufc.com/event",
+      "ufcstats.com/event-details",
+      "onefc.com/events",
+      "glorykickboxing.com/events",
+      "matchroom.com/events",
+      "queensberrypromotions.com/events",
+      "toprank.com/events_or_fights",
+      "nolimitboxing.com.au"
+    ],
+    "required_provenance_fields": [
+      "source_url",
+      "source_name",
+      "source_type",
+      "event_url",
+      "canonical_source_url",
+      "provenance.source_url"
+    ]
+  },
+  "fail_closed_reasons": [
+    "live_source_unavailable",
+    "approved_source_not_configured",
+    "no_source_backed_events_found",
+    "provenance_missing"
+  ],
+  "proof_points": {
+    "source_backed_row_enters_runtime_context": true,
+    "source_backed_row_can_pass_gate1_dry_run": true,
+    "non_url_row_remains_blocked": true,
+    "no_fake_provenance_created": true,
+    "queue_write_remains_approval_gated": true,
+    "button2_unchanged_behavior": true,
+    "button3_unchanged_behavior": true,
+    "sample_mixed_dry_run": {
+      "would_save_count": 1,
+      "would_save_rows": [
+        "url_backed_001"
+      ],
+      "blocked_rows": [
+        "no_url_001"
+      ]
+    }
+  },
+  "verification": {
+    "pytest_result": "175 passed",
+    "failed": 0,
+    "suites": [
+      "operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_button1_discovery_readiness_adapter_hook_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_gate1_dry_run_apply_preview_api_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_gate1_approved_save_writer_api_preview_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_runtime_context_dashboard_wire_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_runtime_context_end_to_end_smoke_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_context_pack_end_to_end_smoke_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_button2_report_readiness_adapter_hook_v1.py",
+      "operator_dashboard/test_local_ai_orchestrator_button3_source_yield_adapter_hook_v1.py"
+    ]
+  },
+  "governance": {
+    "gate1_relaxed": false,
+    "auto_save_added": false,
+    "unauthorized_write_performed": false,
+    "button2_modified": false,
+    "button3_learning_calibration_modified": false,
+    "phase7_modified": false
+  }
+}
