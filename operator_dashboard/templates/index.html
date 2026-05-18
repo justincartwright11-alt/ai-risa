@@ -2536,7 +2536,7 @@ function renderButton2GuardedGenerateResult(response) {
     const message = String(data.message || 'Guarded generation completed.').trim();
     const safeOutput = outputPath ? ('Output path: ' + escapeHtml(outputPath) + '<br>') : '';
     const safeFilename = outputFilename ? ('Output filename: ' + escapeHtml(outputFilename) + '<br>') : '';
-    const openLink = openUrl
+    const openLink = (openUrl && outputFilename)
       ? ('<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open Generated PDF</a><br>')
       : '';
     const html =

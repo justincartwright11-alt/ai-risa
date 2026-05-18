@@ -1,0 +1,55 @@
+{
+  "slice": "button2-selected-matchup-premium-template-render-and-dashboard-link-repair-v1",
+  "status": "validated",
+  "root_cause": {
+    "plain_output": "selected-matchup ingest payload was summary-minimal and used legacy fallback-style label, producing sparse output",
+    "missing_link": "open-link display required stronger response-field normalization and strict UI condition"
+  },
+  "template_path": {
+    "default_template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+    "env_override": "BUTTON2_TEMPLATE_PACK_ROOT"
+  },
+  "route": {
+    "guarded_generation": "/api/button2/selected-matchup/generate-guarded-v1",
+    "safe_open": "/api/button2/generated-report/open?filename=<pdf_filename>"
+  },
+  "runtime_proof": {
+    "selected_matchup": "Anthony Joshua vs Daniel Dubois",
+    "event_name": "Joshua vs Dubois",
+    "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "output_filename": "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "pdf_open_url": "/api/button2/generated-report/open?filename=anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "premium_template_render_used": true,
+    "renderer_profile": "premium_template_pack_v29",
+    "pdf_exists": true,
+    "pages": 1,
+    "contains_premium_identity": true,
+    "contains_matchup": true,
+    "contains_event": true,
+    "contains_source_traceability": true,
+    "contains_old_fallback_phrase": false,
+    "contains_template_profile_marker": true
+  },
+  "dashboard_behavior": {
+    "link_label": "Open Generated PDF",
+    "show_only_when": [
+      "response.ok == true",
+      "output_filename exists",
+      "pdf_open_url exists"
+    ],
+    "hide_on_failure": true
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false,
+    "operator_approval_required": true
+  },
+  "tests": {
+    "focused_and_existing_button2": "39 passed",
+    "button1_button2_dashboard_selector": "13 passed"
+  }
+}

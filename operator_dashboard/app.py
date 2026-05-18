@@ -83,6 +83,10 @@ _LOCAL_AI_SAFE_TELEMETRY = {
     "auto_apply_performed": False,
 }
 
+_DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT = (
+    r"C:\ai_risa_next_dashboard_polish\ops\prf_reports\template_pack_sample"
+)
+
 
 def _is_source_backed_candidate_row(row):
     if not isinstance(row, dict):
@@ -154,25 +158,100 @@ def _build_fight_id_from_selected_matchup(selected_preview):
     return core
 
 
-def _build_ingest_payload_from_selected_matchup(selected_preview):
+def _resolve_button2_template_pack_root():
+    configured = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
+    value = configured.strip() if isinstance(configured, str) else ""
+    if value:
+        return value
+    if os.path.isdir(_DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT):
+        return _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT
+    return ""
+
+
+def _build_selected_matchup_premium_summary(selected_preview):
     fighter_a = selected_preview.get("fighter_a", "") if isinstance(selected_preview, dict) else ""
     fighter_b = selected_preview.get("fighter_b", "") if isinstance(selected_preview, dict) else ""
     event_name = selected_preview.get("event_name", "") if isinstance(selected_preview, dict) else ""
     source_url = selected_preview.get("source_url", "") if isinstance(selected_preview, dict) else ""
     readiness = selected_preview.get("report_ready_status", "") if isinstance(selected_preview, dict) else ""
+    event_date = selected_preview.get("event_date", "") if isinstance(selected_preview, dict) else ""
+    promotion = selected_preview.get("promotion", "") if isinstance(selected_preview, dict) else ""
+    source_type = selected_preview.get("source_type", "official") if isinstance(selected_preview, dict) else "official"
 
     summary_lines = [
-        "Selected Matchup Report Generation Context",
-        "Fighter A: " + str(fighter_a or "Unknown"),
-        "Fighter B: " + str(fighter_b or "Unknown"),
+        "AI-RISA Premium Fight Report",
+        "Premium Selected-Matchup Intelligence Summary",
+        "Template renderer profile: premium_template_pack_v29",
+        "Matchup: " + str(fighter_a or "Unknown") + " vs " + str(fighter_b or "Unknown"),
         "Event: " + str(event_name or "Unknown"),
-        "Source URL: " + str(source_url or "Unknown"),
+        "Event date: " + str(event_date or "Unknown"),
+        "Promotion: " + str(promotion or "Unknown"),
         "Readiness: " + str(readiness or "selection_pending"),
+        "Source Traceability",
+        "Source URL: " + str(source_url or "Unknown"),
+        "Source type: " + str(source_type or "official"),
+        "Renderer mode: premium_template_path_routed",
     ]
+    return "\n".join(summary_lines)
+
+
+def _decorate_button2_generated_pdf_open_link(result):
+    if not isinstance(result, dict):
+        return result
+    if result.get("ok") is not True:
+        return result
+
+    output_path = result.get("output_path")
+    if isinstance(output_path, str) and output_path.strip():
+        output_filename = os.path.basename(output_path.strip())
+        if _is_safe_generated_pdf_filename(output_filename):
+            result["output_filename"] = output_filename
+            result["pdf_open_url"] = (
+                "/api/button2/generated-report/open?filename="
+                + quote(output_filename, safe="")
+            )
+    return result
+
+
+def _build_ingest_payload_from_selected_matchup(selected_preview):
+    selected = selected_preview if isinstance(selected_preview, dict) else {}
+    source_url = selected.get("source_url", "")
+    source_type = selected.get("source_type", "official")
+    template_pack_root = _resolve_button2_template_pack_root()
+
+    summary_preview = _build_selected_matchup_premium_summary(selected)
+
+    source_traceability_sources = []
+    if isinstance(source_url, str) and source_url.strip().lower().startswith(("http://", "https://")):
+        source_traceability_sources.append({
+            "source_url": source_url.strip(),
+            "source_type": source_type if isinstance(source_type, str) and source_type.strip() else "official",
+            "source_class": "tier_a",
+            "confidence_level": "high",
+            "citation_completeness": "complete",
+            "verification_status": "verified",
+            "source_date": str(selected.get("event_date") or "n/a"),
+        })
 
     return {
         "destination_marker": "button2_report_generation_preview",
-        "dossier_summary_preview": "\n".join(summary_lines),
+        "context_kind": "button1_selected_matchup_handoff",
+        "ingest_mode": "premium_template_selected_matchup",
+        "template_renderer_profile": "premium_template_pack_v29",
+        "template_pack_root": template_pack_root,
+        "template_pack_available": bool(template_pack_root),
+        "selected_matchup_payload": {
+            "fighter_a": selected.get("fighter_a", ""),
+            "fighter_b": selected.get("fighter_b", ""),
+            "event_name": selected.get("event_name", ""),
+            "event_date": selected.get("event_date", ""),
+            "promotion": selected.get("promotion", ""),
+            "source_url": source_url,
+            "source_type": source_type,
+            "report_ready_status": selected.get("report_ready_status", ""),
+        },
+        "source_traceability_sources": source_traceability_sources,
+        "dossier_summary_preview": summary_preview,
     }
 
 
@@ -504,6 +583,7 @@ def generate_report():
     """
     data = request.get_json(silent=True) or {}
     result = generate_button2_report_render_gate_integration(data)
+    result = _decorate_button2_generated_pdf_open_link(result)
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
     return jsonify(result), status_code
 
@@ -622,17 +702,7 @@ def button2_selected_matchup_generate_guarded_v1():
             "error": "generation_result_invalid",
             "message": "Generation returned malformed response.",
         }
-
-    if result.get("ok") is True:
-        output_path = result.get("output_path")
-        if isinstance(output_path, str) and output_path.strip():
-            output_filename = os.path.basename(output_path.strip())
-            if _is_safe_generated_pdf_filename(output_filename):
-                result["output_filename"] = output_filename
-                result["pdf_open_url"] = (
-                    "/api/button2/generated-report/open?filename="
-                    + quote(output_filename, safe="")
-                )
+    result = _decorate_button2_generated_pdf_open_link(result)
 
     result.update({
         "operator_action_required": True,

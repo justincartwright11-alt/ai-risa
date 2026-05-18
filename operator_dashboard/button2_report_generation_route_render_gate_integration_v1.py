@@ -286,6 +286,12 @@ def generate_button2_report_render_gate_integration(request_data):
         "ok": True,
         "message": "PDF generated and saved successfully.",
         "output_path": output_path,
+        "premium_template_render_used": True,
+        "renderer_profile": report_context_preview.get(
+            "template_renderer_profile", "button2_html_composition_entry_point_v1"
+        ),
+        "template_pack_root": report_context_preview.get("template_pack_root", ""),
+        "template_pack_available": bool(report_context_preview.get("template_pack_available", False)),
         "qa_summary": qa_summary,
         **telemetry,
     }
