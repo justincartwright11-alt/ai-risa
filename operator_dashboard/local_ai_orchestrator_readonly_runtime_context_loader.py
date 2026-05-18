@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 from typing import Any, Dict, List
 
 from operator_dashboard.local_ai_orchestrator_input_context_pack import (
@@ -88,6 +89,91 @@ def _read_csv_rows(path: str, max_rows: int = 250) -> List[Dict[str, Any]]:
         return rows
     except Exception:
         return []
+
+
+def _urls_from_text(value: Any) -> List[str]:
+    text = _safe_text(value)
+    if not text:
+        return []
+    return [u.strip() for u in re.findall(r"https?://[^\s,;]+", text) if u.strip()]
+
+
+def _coerce_source_urls(value: Any) -> List[str]:
+    if isinstance(value, list):
+        return [u for u in (_safe_text(v) for v in value) if u]
+    if isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return []
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return [u for u in (_safe_text(v) for v in parsed) if u]
+        except Exception:
+            pass
+        return _urls_from_text(raw)
+    return []
+
+
+def _normalize_candidate_row_provenance(row: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(row) if isinstance(row, dict) else {}
+
+    urls: List[str] = []
+
+    provenance = out.get("provenance")
+    if isinstance(provenance, dict):
+        src = _safe_text(provenance.get("source_url"))
+        if src:
+            urls.append(src)
+        urls.extend(_coerce_source_urls(provenance.get("source_urls")))
+
+    candidate_url_fields = [
+        "source_url",
+        "canonical_source_url",
+        "provenance_url",
+        "url",
+        "event_url",
+        "official_url",
+        "source_link",
+    ]
+    for key in candidate_url_fields:
+        src = _safe_text(out.get(key))
+        if src:
+            urls.append(src)
+
+    urls.extend(_coerce_source_urls(out.get("source_urls")))
+    urls.extend(_urls_from_text(out.get("source_notes")))
+
+    deduped_urls: List[str] = []
+    seen = set()
+    for url in urls:
+        if url not in seen:
+            deduped_urls.append(url)
+            seen.add(url)
+
+    if not deduped_urls:
+        return out
+
+    if not _safe_text(out.get("source_url")):
+        out["source_url"] = deduped_urls[0]
+
+    existing_source_urls = _coerce_source_urls(out.get("source_urls"))
+    merged_urls = []
+    merged_seen = set()
+    for url in existing_source_urls + deduped_urls:
+        if url not in merged_seen:
+            merged_urls.append(url)
+            merged_seen.add(url)
+    out["source_urls"] = merged_urls
+
+    provenance_dict = out.get("provenance") if isinstance(out.get("provenance"), dict) else {}
+    provenance_dict = dict(provenance_dict)
+    if not _safe_text(provenance_dict.get("source_url")):
+        provenance_dict["source_url"] = merged_urls[0]
+    provenance_dict["source_urls"] = merged_urls
+    out["provenance"] = provenance_dict
+
+    return out
 
 
 def _build_fight_ref_from_row(row: Dict[str, Any]) -> str:
@@ -191,9 +277,10 @@ def build_button1_runtime_context(
     workspace_root: str | None = None,
 ) -> LocalAIInputContextPack:
     state = load_readonly_runtime_state(runtime_state_override, workspace_root=workspace_root)
-    candidate_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", [])) + _safe_list_of_dict(
+    raw_candidate_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", [])) + _safe_list_of_dict(
         state.get("local_candidate_rows", [])
     )
+    candidate_rows = [_normalize_candidate_row_provenance(row) for row in raw_candidate_rows]
 
     payload = {
         "manual_text": state.get("manual_intake_text", ""),

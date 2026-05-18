@@ -142,6 +142,17 @@ def test_missing_provenance_fails_closed(client):
     assert "provenance_missing" in data["blocking_reasons"]
 
 
+def test_source_backed_row_is_not_blocked_by_provenance(client):
+    resp = client.post(
+        ROUTE,
+        json=_payload(candidate_rows=[{"candidate_id": "good_src", "fight_name": "Fight good_src", "source_url": "https://example.com/good_src"}], candidate_scope=["good_src"]),
+    )
+    data = resp.get_json()
+    assert data["ok"] is True
+    assert data["would_write"] is True
+    assert "provenance_missing" not in data["blocking_reasons"]
+
+
 def test_duplicate_candidate_fails_closed(client):
     resp = client.post(
         ROUTE,
@@ -217,3 +228,41 @@ def test_response_serializes_to_json(client):
     resp = client.post(ROUTE, json=_payload())
     payload = resp.get_json()
     _ = json.dumps(payload)
+
+
+def test_current_runtime_cohort_without_urls_remains_provenance_blocked(client):
+    wf = client.post(
+        "/api/local-ai/orchestrator/workflow-preview",
+        json={
+            "source_button": "button1_find_fights",
+            "use_runtime_context": True,
+            "execute_preview": True,
+        },
+    ).get_json()
+    payload = wf["workflow"]["jobs"][0]["input_ref"]["metadata"]["payload"]
+    rows = payload.get("candidate_rows", [])
+    token = wf["workflow"].get("gate_approval_token_preview")
+
+    scope = []
+    for row in rows:
+        cid = row.get("candidate_id") or row.get("fight_id") or row.get("fight_key") or row.get("matchup_key") or row.get("id") or row.get("fight_name")
+        if isinstance(cid, str) and cid.strip():
+            scope.append(cid)
+
+    resp = client.post(
+        ROUTE,
+        json=_payload(
+            token=token,
+            candidate_scope=scope,
+            candidate_rows=rows,
+            operator_approved=True,
+            idempotency_key="cohort-check",
+            write_target="queue_preview",
+            dry_run_required=True,
+            live_write_enabled=False,
+        ),
+    )
+    data = resp.get_json()
+    assert len(rows) == 31
+    assert data["ok"] is False
+    assert "provenance_missing" in data["blocking_reasons"]

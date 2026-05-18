@@ -1,0 +1,54 @@
+{
+  "slice": "button1-provenance-missing-candidate-contract-repair-v1",
+  "status": "implemented_and_validated",
+  "files_changed": [
+    "operator_dashboard/local_ai_orchestrator_readonly_runtime_context_loader.py",
+    "operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_gate1_dry_run_apply_preview_api_v1.py",
+    "operator_dashboard/test_local_ai_orchestrator_gate1_approved_save_writer_api_preview_v1.py"
+  ],
+  "contract_repair": {
+    "candidate_provenance_normalization_added": true,
+    "gate1_provenance_validator_weakened": false,
+    "gate1_writer_weakened": false,
+    "fake_provenance_created": false
+  },
+  "accepted_url_sources_for_mapping": [
+    "provenance.source_url",
+    "provenance.source_urls[]",
+    "source_url",
+    "canonical_source_url",
+    "provenance_url",
+    "url",
+    "event_url",
+    "official_url",
+    "source_link",
+    "source_urls[]",
+    "url_tokens_in_source_notes"
+  ],
+  "runtime_current_cohort_after_repair": {
+    "candidate_rows": 31,
+    "would_save": 0,
+    "blocked": 31,
+    "blocking_reason": "provenance_missing",
+    "identity_blocked": 0
+  },
+  "tests": {
+    "suite_result": "114 passed",
+    "failed": 0,
+    "includes_button2_button3_adjacent_smokes": true
+  },
+  "governance": {
+    "operator_approval_required": true,
+    "preview_only_paths_preserved": true,
+    "unauthorized_live_write": false,
+    "button2_changed": false,
+    "button3_changed": false,
+    "phase7_changed": false
+  },
+  "rows_now_safe_to_save_if_any": {
+    "current_cohort": 0,
+    "rule": "only candidates with real explicit URL-based provenance evidence"
+  },
+  "next_safe_recommendation": "button1-source-backed-candidate-ingestion-and-provenance-population-v1"
+}

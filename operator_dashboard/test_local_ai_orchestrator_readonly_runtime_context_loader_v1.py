@@ -111,6 +111,44 @@ def test_in_memory_button1_state_maps_into_candidate_rows_safely(tmp_path):
     assert len(payload["candidate_rows"]) == 2
 
 
+def test_button1_loader_keeps_source_tag_notes_only_rows_without_fake_provenance(tmp_path):
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "discovered_candidate_rows": [
+                {
+                    "fight_name": "A vs B",
+                    "source_tag": "bout_card_csv",
+                    "source_notes": "event_coverage_queue.csv + one_samurai_1_bouts.csv",
+                }
+            ],
+            "local_candidate_rows": [],
+        },
+        workspace_root=str(tmp_path),
+    )
+    row = pack.to_dict()["input_ref"]["payload"]["candidate_rows"][0]
+    assert "source_url" not in row
+    assert "provenance" not in row
+
+
+def test_button1_loader_maps_explicit_event_url_into_accepted_provenance_fields(tmp_path):
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "discovered_candidate_rows": [
+                {
+                    "fight_name": "A vs B",
+                    "event_url": "https://example.test/events/one-samurai-1",
+                }
+            ],
+            "local_candidate_rows": [],
+        },
+        workspace_root=str(tmp_path),
+    )
+    row = pack.to_dict()["input_ref"]["payload"]["candidate_rows"][0]
+    assert row["source_url"] == "https://example.test/events/one-samurai-1"
+    assert row["provenance"]["source_url"] == "https://example.test/events/one-samurai-1"
+    assert "https://example.test/events/one-samurai-1" in row["source_urls"]
+
+
 def test_button1_runtime_context_includes_advanced_projection_records(tmp_path):
     pack = build_button1_runtime_context(
         runtime_state_override={

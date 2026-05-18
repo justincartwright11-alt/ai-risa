@@ -145,6 +145,19 @@ def test_missing_provenance_candidate_is_blocked(client):
     assert "no_src" in data["blocked"]
 
 
+def test_source_tag_and_source_notes_only_candidate_remains_blocked(client):
+    row = {
+        "candidate_id": "tag_only",
+        "fight_name": "Fight tag_only",
+        "source_tag": "bout_card_csv",
+        "source_notes": "event_coverage_queue.csv + one_samurai_1_bouts.csv",
+    }
+    resp = client.post(ROUTE, json=_payload(token=_valid_token(), candidate_rows=[row]))
+    data = resp.get_json()
+    assert "tag_only" in data["blocked"]
+    assert "tag_only" not in data["would_save"]
+
+
 def test_valid_candidate_appears_in_would_save(client):
     resp = client.post(
         ROUTE,
@@ -223,3 +236,29 @@ def test_identity_source_missing_and_ambiguous_rows_are_blocked(client):
     assert "id_src_missing" in data["blocked"]
     assert "id_ambiguous" in data["blocked"]
     assert "id_good" in data["would_save"]
+
+
+def test_current_runtime_cohort_without_urls_remains_fully_blocked(client):
+    wf = client.post(
+        "/api/local-ai/orchestrator/workflow-preview",
+        json={
+            "source_button": "button1_find_fights",
+            "use_runtime_context": True,
+            "execute_preview": True,
+        },
+    ).get_json()
+    payload = wf["workflow"]["jobs"][0]["input_ref"]["metadata"]["payload"]
+    rows = payload.get("candidate_rows", [])
+    token = wf["workflow"].get("gate_approval_token_preview")
+
+    scope = []
+    for row in rows:
+        cid = row.get("candidate_id") or row.get("fight_id") or row.get("fight_key") or row.get("matchup_key") or row.get("id") or row.get("fight_name")
+        if isinstance(cid, str) and cid.strip():
+            scope.append(cid)
+
+    resp = client.post(ROUTE, json=_payload(token=token, candidate_scope=scope, candidate_rows=rows))
+    data = resp.get_json()
+    assert len(rows) == 31
+    assert len(data["would_save"]) == 0
+    assert len(data["blocked"]) == 31
