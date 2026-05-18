@@ -74,11 +74,10 @@ All generated-report governance flags remained false:
 - `34 passed, 42 warnings`
 
 ## Commit Hash
-- `0d8a04f` — initial cover/depth repair slice
-- latest hardening changes are pending commit at the time of this document build
+- `1e49c8a` — button2-premium-pdf-visual-qa-layout-and-depth-hardening-v1
 
 ## Tag Name
 - `button2-premium-pdf-visual-qa-layout-and-depth-hardening-v1`
 
 ## Final Git Status
-To be captured after the hardening commit is written. The current working tree includes the renderer hardening, new QA test file, proof script, proof artifacts, and this document.
+Clean after the hardening commit. The slice is locked with the renderer hardening, new QA test file, proof artifacts, and this document committed.
