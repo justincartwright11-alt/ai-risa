@@ -1,0 +1,38 @@
+{
+  "slice": "button1-multisport-approved-source-registry-v1",
+  "status": "locked_on_validation_pending",
+  "scope": "governed source registry for multisport Button 1 discovery",
+  "tiers": ["A", "B", "C", "D"],
+  "modalities": ["boxing", "mma", "kickboxing", "muay_thai", "multi_sport_alert"],
+  "governance": {
+    "tier_a_direct_provenance": true,
+    "tier_b_structured_support": true,
+    "tier_c_secondary_confirmation_required": true,
+    "tier_d_alert_only": true,
+    "missing_url_rejected": true,
+    "social_only_sources_allowed": false,
+    "queue_write": false,
+    "auto_delivery": false,
+    "learning": false,
+    "calibration": false
+  },
+  "test_intent": [
+    "UFC official event URL classifies as Tier A MMA",
+    "ONE Championship official URL classifies as Tier A multi-sport alert",
+    "GLORY URL classifies as Tier A kickboxing",
+    "Matchroom/Top Rank/Queensberry/No Limit URLs classify as Tier A boxing",
+    "BoxRec classifies as Tier B boxing structured record source",
+    "Fight Matrix classifies as Tier B MMA ranking source",
+    "Tapology/Sherdog classify as Tier C MMA discovery sources requiring confirmation",
+    "Combat Press classifies as Tier C kickboxing discovery source",
+    "Muay Thai Records classifies as Tier B Muay Thai source requiring secondary confirmation",
+    "Flashscore classifies as Tier D alert-only and not queue-save sufficient",
+    "Unknown and missing URLs are rejected"
+  ],
+  "files": [
+    "operator_dashboard/approved_combat_sport_source_registry.py",
+    "operator_dashboard/test_button1_multisport_approved_source_registry_v1.py",
+    "docs/button1_multisport_approved_source_registry_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_registry_v1/source_registry_summary.json"
+  ]
+}
