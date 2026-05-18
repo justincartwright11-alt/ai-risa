@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "approved_source_url_patterns": [
+    "https?://(?:www\\.)?ufc\\.com/event/",
+    "https?://(?:www\\.)?ufcstats\\.com/event-details/",
+    "https?://(?:www\\.)?onefc\\.com/events/",
+    "https?://(?:www\\.)?onefc\\.com/.*/fight-results",
+    "https?://(?:www\\.)?glorykickboxing\\.com/events/",
+    "https?://(?:www\\.)?matchroom\\.com/events/",
+    "https?://(?:www\\.)?matchroomboxing\\.com/events/",
+    "https?://(?:www\\.)?queensberrypromotions\\.com/events/",
+    "https?://(?:www\\.)?toprank\\.com/(?:events|fights)/",
+    "https?://(?:www\\.)?nolimitboxing\\.com\\.au/",
+    "https?://(?:www\\.)?muaythairecords\\.com/events/"
+  ],
+  "feed_paths": [
+    "ops/approved_sources/button1_live_event_source_rows.json",
+    "ops/approved_sources/button1_live_event_source_rows.jsonl",
+    "ops/approved_sources/live_event_source_rows.json"
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "slice": "button1-multisport-approved-source-live-feed-population-v1",
+  "status": "implemented_and_validated",
+  "scope": "governed approved-source live feed population with multisport dashboard/runtime confirmation",
+  "files_changed": [
+    "ops/approved_sources/button1_live_event_source_rows.json",
+    "ops/approved_sources/button1_live_event_ingestion_config.json",
+    "operator_dashboard/test_button1_multisport_approved_source_live_feed_population_v1.py",
+    "docs/button1_multisport_approved_source_live_feed_population_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_live_feed_population_v1/live_feed_population_summary.json"
+  ],
+  "approved_source_event_rows_count": 4,
+  "diagnostics": [],
+  "event_cards": [
+    {
+      "candidate_id": "live_boxing_event_card_001",
+      "event_name": "Joshua vs Dubois",
+      "promotion": "Matchroom Boxing",
+      "sport": "boxing",
+      "modality": "boxing",
+      "event_date": "2026-09-21",
+      "source_url": "https://www.matchroomboxing.com/events/joshua-vs-dubois",
+      "source_name": "matchroom_official_boxing",
+      "source_type": "official",
+      "source_tier": "A",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1,
+      "readiness_status": "ready_to_save"
+    },
+    {
+      "candidate_id": "live_mma_event_card_001",
+      "event_name": "UFC 300",
+      "promotion": "UFC",
+      "sport": "mma",
+      "modality": "mma",
+      "event_date": "2026-07-12",
+      "source_url": "https://www.ufc.com/event/ufc-300",
+      "source_name": "ufc_official_event_pages",
+      "source_type": "official",
+      "source_tier": "A",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1,
+      "readiness_status": "ready_to_save"
+    },
+    {
+      "candidate_id": "live_kickboxing_event_card_001",
+      "event_name": "GLORY 100",
+      "promotion": "GLORY",
+      "sport": "kickboxing",
+      "modality": "kickboxing",
+      "event_date": "2026-08-08",
+      "source_url": "https://www.glorykickboxing.com/events/glory-100",
+      "source_name": "glory_official_event_pages",
+      "source_type": "official",
+      "source_tier": "A",
+      "provenance_status": "source_backed_ready",
+      "matchup_count": 1,
+      "readiness_status": "ready_to_save"
+    },
+    {
+      "candidate_id": "live_muay_thai_event_card_001",
+      "event_name": "ONE SAMURAI 1",
+      "promotion": "ONE Championship",
+      "sport": "muay_thai",
+      "modality": "muay_thai",
+      "event_date": "2026-04-29",
+      "source_url": "https://www.muaythairecords.com/events/one-samurai-1",
+      "source_name": "muay_thai_records_structured",
+      "source_type": "structured_records",
+      "source_tier": "B",
+      "provenance_status": "needs_review",
+      "matchup_count": 2,
+      "readiness_status": "needs_review",
+      "requires_secondary_confirmation": true
+    }
+  ],
+  "sports_present": [
+    "boxing",
+    "mma",
+    "kickboxing",
+    "muay_thai"
+  ],
+  "gate1_dry_run": {
+    "input_scope": "approved rows plus one non-source control row",
+    "would_save_count": 4,
+    "blocked_count": 1,
+    "blocked_candidate_ids": [
+      "non_source_control_001"
+    ],
+    "preview_only": true,
+    "write_authorized": false,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "mutation_performed": false
+  },
+  "dashboard_visibility": {
+    "source_backed_event_cards_panel_present": true,
+    "runtime_preview_contains_four_target_sports": true,
+    "event_cards_renderable_from_source_backed_rows": true
+  },
+  "governance": {
+    "gate1_weakened": false,
+    "auto_save_queue_rows": false,
+    "auto_generate_pdfs": false,
+    "auto_delivery": false,
+    "learning_calibration_write": false,
+    "button3_mutation": false,
+    "operator_approval_preserved": true
+  },
+  "tests": [
+    {
+      "name": "operator_dashboard/test_button1_multisport_approved_source_live_feed_population_v1.py",
+      "result": "18 passed"
+    },
+    {
+      "name": "operator_dashboard/test_button1_multisport_approved_source_event_card_dashboard_runtime_confirmation_v1.py",
+      "result": "5 passed"
+    }
+  ],
+  "verdict": "passed"
+}
