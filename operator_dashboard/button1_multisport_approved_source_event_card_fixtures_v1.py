@@ -106,8 +106,27 @@ def prepare_event_card_fixture_for_button1_v1(fixture_row: Dict[str, Any]) -> Di
     }
 
 
+def build_button1_runtime_payload_from_fixtures_v1() -> Dict[str, Any]:
+    """Build a deterministic runtime payload from all four governed fixtures."""
+
+    fixtures = get_button1_multisport_event_card_fixtures_v1()
+    prepared_rows = [prepare_event_card_fixture_for_button1_v1(row) for row in fixtures]
+    sport_order = [row.get("sport") for row in prepared_rows]
+
+    return {
+        "candidate_rows": prepared_rows,
+        "discovered_count": len(prepared_rows),
+        "extracted_count": len(prepared_rows),
+        "ready_for_report_count": len(prepared_rows),
+        "sports_visible": sport_order,
+        "preview_only": True,
+        "approval_required": True,
+    }
+
+
 __all__ = [
     "BUTTON1_MULTISPORT_EVENT_CARD_FIXTURES_V1",
     "get_button1_multisport_event_card_fixtures_v1",
     "prepare_event_card_fixture_for_button1_v1",
+    "build_button1_runtime_payload_from_fixtures_v1",
 ]

@@ -1,0 +1,30 @@
+{
+  "slice": "button1-multisport-approved-source-event-card-runtime-confirmation-v1",
+  "status": "implemented_validation_pending",
+  "runtime_confirmation": {
+    "sports_visible": ["boxing", "mma", "kickboxing", "muay_thai"],
+    "runtime_row_count": 4,
+    "classification_and_provenance_verified": true,
+    "preview_runner_discovered_count": 4,
+    "preview_runner_extracted_count": 4,
+    "gate1_dry_run_no_write_verified": true,
+    "muay_thai_needs_review_preserved": true
+  },
+  "governance": {
+    "preview_only": true,
+    "approval_required": true,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "mutation_performed": false,
+    "auto_queue_save": false,
+    "delivery": false,
+    "learning": false,
+    "calibration": false
+  },
+  "files": [
+    "operator_dashboard/button1_multisport_approved_source_event_card_fixtures_v1.py",
+    "operator_dashboard/test_button1_multisport_approved_source_event_card_runtime_confirmation_v1.py",
+    "docs/button1_multisport_approved_source_event_card_runtime_confirmation_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_event_card_runtime_confirmation_v1/source_event_card_runtime_confirmation_summary.json"
+  ]
+}
