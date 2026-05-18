@@ -1350,6 +1350,34 @@ _HTML_TEMPLATE = """\
     .page-block-summary, .page-block-sources {{ margin-top: 0.9em; }}
     .typography-body-secondary {{ line-height: 1.62; }}
     .typography-list-item li {{ margin-bottom: 0.32em; }}
+
+        /* Phase 4 page-break/layout polish (CSS only, metadata-driven) */
+        section[data-break-policy="keep_together"],
+        div[data-break-policy="keep_together"] {{
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }}
+        section[data-break-policy="allow_internal_break"],
+        section[data-break-policy="split_by_chunk"] {{
+            page-break-inside: auto;
+            break-inside: auto;
+        }}
+        h2[data-hierarchy-level="H1"] {{
+            page-break-after: avoid;
+            break-after: avoid-page;
+            orphans: 3;
+            widows: 3;
+        }}
+        .typography-body-secondary,
+        .typography-list-item li,
+        .qa-row {{
+            orphans: 3;
+            widows: 3;
+        }}
+        .typography-list-item li {{
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
