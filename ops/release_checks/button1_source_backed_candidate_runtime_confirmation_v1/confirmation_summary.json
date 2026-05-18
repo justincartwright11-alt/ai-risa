@@ -1,0 +1,44 @@
+{
+  "slice": "button1-source-backed-candidate-runtime-confirmation-v1",
+  "based_on": {
+    "source_commit": "fd4412a",
+    "source_tag": "button1-source-backed-candidate-ingestion-and-provenance-population-v1"
+  },
+  "runtime": {
+    "python": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "routes": [
+      "/api/local-ai/orchestrator/workflow-preview",
+      "/api/local-ai/gate1/save-fights/dry-run-apply-preview"
+    ]
+  },
+  "baseline_runtime": {
+    "use_runtime_context": true,
+    "candidate_rows": 31,
+    "would_save": 0,
+    "blocked": 31
+  },
+  "mixed_runtime_input": {
+    "candidate_rows": 3,
+    "event_url_evidence": "https://www.ufc.com/event/ufc-300",
+    "would_save": [
+      "url_backed_001"
+    ],
+    "blocked": [
+      "no_url_001"
+    ],
+    "row_assertions": {
+      "url_backed_001_has_provenance_origin": "event_level_source",
+      "url_backed_001_has_source_url": true,
+      "no_url_001_has_source_url": false
+    }
+  },
+  "governance": {
+    "confirmation_only": true,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "delivery_performed": false,
+    "learning_calibration_write_performed": false,
+    "gate_logic_relaxed": false
+  },
+  "verdict": "passed"
+}
