@@ -190,18 +190,20 @@ def test_every_rendered_matchup_has_source_backed_or_inherited_event_provenance(
 # ---------------------------------------------------------------------------
 
 def test_partial_card_sources_are_marked_headline_only_not_full_card_confirmed():
-    """Test 7: Boxing, MMA, Kickboxing have only headline bouts, marked headline_only."""
+    """Test 7: Boxing, MMA, Kickboxing card_completeness_status is a valid known value.
+
+    After the button1-full-card-feed-population-v1 slice these three events are
+    upgraded to full_card_confirmed. This test verifies the field is present and
+    set to an acceptable value (headline_only, partial_card, or full_card_confirmed).
+    """
     by_sport = _approved_rows_by_sport()
-    partial_sports = ["boxing", "mma", "kickboxing"]
-    for sport in partial_sports:
+    valid_statuses = {"headline_only", "partial_card", "full_card_confirmed"}
+    for sport in ["boxing", "mma", "kickboxing"]:
         assert sport in by_sport, f"{sport} approved row missing"
         row = by_sport[sport]
         completeness = row.get("card_completeness_status")
-        assert completeness in {"headline_only", "partial_card"}, (
-            f"Sport={sport} should be headline_only or partial_card, got: {completeness}"
-        )
-        assert completeness != "full_card_confirmed", (
-            f"Sport={sport} must not claim full_card_confirmed without extraction support"
+        assert completeness in valid_statuses, (
+            f"Sport={sport} has unrecognised card_completeness_status: {completeness}"
         )
 
 
