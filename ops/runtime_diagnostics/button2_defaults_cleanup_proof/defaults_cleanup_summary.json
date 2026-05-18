@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-05-18 14:49:17 UTC",
+  "dashboard_url": "http://127.0.0.1:5050",
+  "test_cases": [
+    {
+      "test_name": "Anthony Joshua vs Daniel Dubois",
+      "status": "PASSED",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 14,
+      "forbidden_strings_found": [],
+      "has_source_traceability": true,
+      "has_disclaimer": true
+    },
+    {
+      "test_name": "Rico Verhoeven vs Tariq Osaro",
+      "status": "PASSED",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 14,
+      "forbidden_strings_found": [],
+      "has_source_traceability": true,
+      "has_disclaimer": true
+    },
+    {
+      "test_name": "Jiri Prochazka vs Carlos Ulberg",
+      "status": "PASSED",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\jiri_prochazka_vs_carlos_ulberg_ufc_320_premium.pdf",
+      "page_count": 14,
+      "forbidden_strings_found": [],
+      "has_source_traceability": true,
+      "has_disclaimer": true
+    }
+  ],
+  "dashboard_links": {
+    "pdf_folder_link": true,
+    "library_link": true,
+    "library_route_accessible": true
+  }
+}

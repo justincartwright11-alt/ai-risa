@@ -1903,20 +1903,15 @@ _HTML_TEMPLATE = """\
     </section>
 
     <section class="report-page last-page" data-page-block-role="footer_metadata_block" data-break-policy="keep_together">
-        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Operator Traceability Appendix</h2>
-        <div class="operator-traceability-appendix">
-            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Disclaimer / Risk Control</h3>
+        <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Disclaimer / Risk Control</h2>
+        <div class="customer-traceability">
+            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Risk Control and Usage</h3>
             <pre class="typography-body-secondary" data-hierarchy-level="Body">{disclaimer_risk_control}</pre>
-            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Operator Summary Preview</h3>
-            <pre class="typography-body-secondary" data-hierarchy-level="Body">{handoff_summary_preview}</pre>
+            <h3 class="typography-section-header-l2" data-hierarchy-level="H2">What This Report Includes</h3>
+            <p class="typography-body" data-hierarchy-level="Body">Premium cover, executive dashboard panels, fighter architecture analysis, tactical edge mapping, scenario pathways, round control projection, risk/confidence framing, and source traceability.</p>
         </div>
-        <div class="meta-footer typography-page-metadata operator-traceability-appendix" data-hierarchy-level="Meta" data-page-block-role="footer_metadata_block" data-break-policy="keep_together" data-can-split="false">
-    <div class="qa-row">Source context: {source_context_kind} | Ingest mode: {source_ingest_mode}</div>
-    <div class="qa-row">Visual QA rollup: {rollup_status} | Certification: {certification_readiness} | Completeness: {visual_completeness}</div>
-    <div class="qa-row">Controlled export preview: {controlled_export_preview_status} | Gate: {controlled_export_gate}</div>
-    <div class="qa-row">Customer-ready preview: {customer_ready_status_preview} | Overall visual confidence: {overall_visual_confidence}</div>
-            </div>
-        </section>
+        <!-- Operator metadata excluded from customer-facing output -->
+    </section>
 
     <section
         id="button2-hierarchy-metadata"

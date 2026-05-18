@@ -124,22 +124,46 @@ def _build_blocks(report_context_preview):
 
     handoff_summary_raw = _clean_text(report_context_preview.get("handoff_summary_preview"), "No summary provided.")
     blocked_markers = [
+        "operator summary preview",
+        "premium selected-matchup intelligence summary",
         "template renderer profile",
+        "premium_template_pack_v29",
         "renderer mode",
-        "raw ingest mode",
-        "controlled_export_not_eligible",
-        "customer_ready_not_ready",
+        "source context",
+        "ingest mode",
         "visual qa",
+        "visual qA rollup",
+        "certification:",
+        "completeness:",
+        "controlled_export_not_eligible",
+        "controlled_export_preview",
+        "customer_ready_not_ready",
+        "customer_ready_status",
         "overall visual confidence",
         "valid layers",
         "missing layers",
+        "raw proof",
+        "raw ingest",
+        "raw status",
+        "meta-data",
     ]
     filtered_lines = []
     for line in handoff_summary_raw.splitlines():
-        lowered = line.strip().lower()
+        stripped = line.strip()
+        if not stripped:
+            continue
+        lowered = stripped.lower()
+        # Skip lines that contain blocked markers
         if any(marker in lowered for marker in blocked_markers):
             continue
+        # Skip lines that look like metadata assignments or raw operators statements
+        if ":" in stripped and any(keyword in lowered for keyword in ["readiness:", "source url:", "source type:", "promotion:", "event date:", "event name:", "template", "renderer", "ingest", "certification", "completeness"]):
+            # Allow these specific info lines
+            if any(keep in lowered for keep in ["event name:", "event date:", "source url:", "source type:", "promotion:", "readiness:"]):
+                filtered_lines.append(line)
+            continue
         filtered_lines.append(line)
+    
     handoff_summary = "\n".join(filtered_lines).strip() or "Premium summary prepared from selected matchup and source traceability context."
 
     return {

@@ -192,19 +192,17 @@ def _build_selected_matchup_premium_summary(selected_preview):
     promotion = selected_preview.get("promotion", "") if isinstance(selected_preview, dict) else ""
     source_type = selected_preview.get("source_type", "official") if isinstance(selected_preview, dict) else "official"
 
+    # Build customer-safe summary - excludes internal/debug metadata
     summary_lines = [
         "AI-RISA Premium Fight Report",
-        "Premium Selected-Matchup Intelligence Summary",
-        "Template renderer profile: premium_template_pack_v29",
+        "Premium Selected-Matchup Intelligence",
         "Matchup: " + str(fighter_a or "Unknown") + " vs " + str(fighter_b or "Unknown"),
         "Event: " + str(event_name or "Unknown"),
         "Event date: " + str(event_date or "Unknown"),
         "Promotion: " + str(promotion or "Unknown"),
-        "Readiness: " + str(readiness or "selection_pending"),
         "Source Traceability",
         "Source URL: " + str(source_url or "Unknown"),
         "Source type: " + str(source_type or "official"),
-        "Renderer mode: premium_template_path_routed",
     ]
     return "\n".join(summary_lines)
 
