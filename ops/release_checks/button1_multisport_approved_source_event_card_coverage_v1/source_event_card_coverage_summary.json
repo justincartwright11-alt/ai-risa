@@ -1,0 +1,21 @@
+{
+  "slice": "button1-multisport-approved-source-event-card-coverage-v1",
+  "status": "implemented_validation_pending",
+  "focus": "event-card source coverage and UFC classification audit",
+  "registry_audit": {
+    "ufc_official_expected_sport": "mma",
+    "ufc_stats_expected_sport": "mma",
+    "ufc_not_boxing_asserted": true
+  },
+  "coverage_assertions": [
+    "Tier A event-card coverage exists for MMA, boxing, and kickboxing",
+    "ONE multi-sport Tier A source is sport-compatible for MMA/kickboxing/muay_thai event-card discovery",
+    "Tier C source remains event-card discoverable but requires secondary confirmation and is not queue-save eligible",
+    "Tier D source remains alert-only, not event-card approved, and not queue-save eligible"
+  ],
+  "files": [
+    "operator_dashboard/test_button1_multisport_approved_source_event_card_coverage_v1.py",
+    "docs/button1_multisport_approved_source_event_card_coverage_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_event_card_coverage_v1/source_event_card_coverage_summary.json"
+  ]
+}

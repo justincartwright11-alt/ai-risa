@@ -13,7 +13,6 @@
 
 ## Sources Included by Sport
 ### Boxing
-- UFC official / UFC Stats (structured verification support)
 - Matchroom official event pages
 - Queensberry official event pages
 - Top Rank official event pages
