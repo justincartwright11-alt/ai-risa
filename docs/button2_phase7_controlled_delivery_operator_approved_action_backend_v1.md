@@ -2,7 +2,7 @@
 
 **Document Status:** Complete backend implementation + tests passing  
 **Implementation Type:** Backend-only (no UI)  
-**Commit Hash:** (will be updated on commit)  
+**Commit Hash:** 517a1b5  
 **Tag:** button2-phase7-controlled-delivery-operator-approved-action-backend-v1  
 **Date:** 2026-05-18
 
