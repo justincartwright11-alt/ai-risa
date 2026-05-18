@@ -1,0 +1,25 @@
+{
+  "slice": "operator-dashboard-runtime-preflight-status-panel-v1",
+  "status": "validated",
+  "panel": {
+    "display_only": true,
+    "location": "main_dashboard",
+    "title": "Runtime Preflight Status (Display-Only)"
+  },
+  "signals": {
+    "button2_pdf_output_root": true,
+    "msys_gtk_dll_path": true,
+    "weasyprint_render_readiness": true,
+    "reports_output_directory": true,
+    "safe_pdf_open_route_availability": true,
+    "current_server_port": true
+  },
+  "safety_scope": {
+    "auto_generation_changed": false,
+    "auto_delivery_changed": false,
+    "queue_mutation_changed": false,
+    "learning_or_calibration_changed": false,
+    "button3_mutation_changed": false,
+    "button1_discovery_changed": false
+  }
+}

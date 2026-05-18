@@ -271,6 +271,93 @@ def _is_safe_generated_pdf_filename(filename):
         return False
     return bool(re.match(r"^[A-Za-z0-9._-]+$", value))
 
+
+def _path_is_in_process_path(target_path):
+    if not isinstance(target_path, str) or not target_path.strip():
+        return False
+    normalized_target = os.path.normcase(os.path.normpath(target_path.strip()))
+    raw_path = os.environ.get("PATH", "")
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        return False
+    for entry in raw_path.split(os.pathsep):
+        cleaned = entry.strip().strip('"')
+        if not cleaned:
+            continue
+        normalized_entry = os.path.normcase(os.path.normpath(cleaned))
+        if normalized_entry == normalized_target:
+            return True
+    return False
+
+
+def _build_runtime_preflight_status(host_value):
+    output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
+    output_root_value = output_root.strip() if isinstance(output_root, str) else ""
+    output_root_ready = bool(output_root_value) and os.path.isdir(output_root_value)
+
+    gtk_path = r"C:\msys64\ucrt64\bin"
+    gtk_exists = os.path.isdir(gtk_path)
+    gtk_in_path = _path_is_in_process_path(gtk_path)
+
+    weasyprint_ready = False
+    weasyprint_detail = "import_unchecked"
+    try:
+        import weasyprint  # noqa: F401
+
+        weasyprint_ready = True
+        weasyprint_detail = "import_ok"
+    except Exception as exc:  # pragma: no cover - exact import error may vary by env
+        weasyprint_detail = "import_error:" + exc.__class__.__name__
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    reports_dir = os.path.join(repo_root, "reports")
+    reports_exists = os.path.isdir(reports_dir)
+    reports_writable = reports_exists and os.access(reports_dir, os.W_OK)
+
+    safe_route_available = any(
+        rule.rule == "/api/button2/generated-report/open" and "GET" in rule.methods
+        for rule in app.url_map.iter_rules()
+    )
+
+    host = host_value if isinstance(host_value, str) else ""
+    host = host.strip()
+    if ":" in host:
+        server_port = host.rsplit(":", 1)[-1]
+    elif host:
+        server_port = "80"
+    else:
+        server_port = "unknown"
+
+    return {
+        "button2_pdf_output_root": {
+            "ready": output_root_ready,
+            "value": output_root_value or "unset",
+        },
+        "msys_gtk_dll_path": {
+            "ready": gtk_exists and gtk_in_path,
+            "value": gtk_path,
+            "path_exists": gtk_exists,
+            "in_process_path": gtk_in_path,
+        },
+        "weasyprint_render_readiness": {
+            "ready": weasyprint_ready,
+            "value": weasyprint_detail,
+        },
+        "reports_output_directory": {
+            "ready": reports_exists and reports_writable,
+            "value": reports_dir,
+            "exists": reports_exists,
+            "writable": reports_writable,
+        },
+        "safe_pdf_open_route": {
+            "ready": safe_route_available,
+            "value": "/api/button2/generated-report/open",
+        },
+        "current_server_port": {
+            "ready": server_port != "unknown",
+            "value": server_port,
+        },
+    }
+
 # ─── Data Helpers ──────────────────────────────────────────────────────────────
 
 def _build_accuracy_comparison_summary():
@@ -314,7 +401,12 @@ def index():
     output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
     if not isinstance(output_root, str) or not output_root.strip():
         runtime_warning = "PDF output root missing - start dashboard with Windows launch script."
-    return render_template("index.html", button2_runtime_warning=runtime_warning)
+    runtime_preflight = _build_runtime_preflight_status(request.host)
+    return render_template(
+        "index.html",
+        button2_runtime_warning=runtime_warning,
+        runtime_preflight=runtime_preflight,
+    )
 
 
 @app.route("/advanced-dashboard")

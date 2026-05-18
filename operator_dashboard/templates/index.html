@@ -627,6 +627,47 @@
 
   </div><!-- /.three-buttons -->
 
+  <section id="runtime-preflight-panel" style="margin-top:22px;background:#1a1d2e;border:1px solid #2a2d3e;border-radius:12px;padding:20px 24px;">
+    <h3 style="font-size:0.9rem;color:#c9aa71;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Runtime Preflight Status (Display-Only)</h3>
+    <p style="font-size:0.8rem;color:#8a94b8;margin-bottom:14px;">Readiness snapshot captured at dashboard load. No auto-generation, no delivery, no queue writes, and no learning/calibration actions are performed.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;">
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>BUTTON2_PDF_OUTPUT_ROOT</strong><br>
+        Status: {{ 'READY' if runtime_preflight.button2_pdf_output_root.ready else 'MISSING' }}<br>
+        Value: {{ runtime_preflight.button2_pdf_output_root.value }}
+      </div>
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>MSYS2 / GTK DLL path</strong><br>
+        Status: {{ 'READY' if runtime_preflight.msys_gtk_dll_path.ready else 'MISSING' }}<br>
+        Value: {{ runtime_preflight.msys_gtk_dll_path.value }}<br>
+        Path exists: {{ 'yes' if runtime_preflight.msys_gtk_dll_path.path_exists else 'no' }}<br>
+        In PATH: {{ 'yes' if runtime_preflight.msys_gtk_dll_path.in_process_path else 'no' }}
+      </div>
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>WeasyPrint render readiness</strong><br>
+        Status: {{ 'READY' if runtime_preflight.weasyprint_render_readiness.ready else 'MISSING' }}<br>
+        Value: {{ runtime_preflight.weasyprint_render_readiness.value }}
+      </div>
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>reports output directory</strong><br>
+        Status: {{ 'READY' if runtime_preflight.reports_output_directory.ready else 'MISSING' }}<br>
+        Value: {{ runtime_preflight.reports_output_directory.value }}<br>
+        Exists: {{ 'yes' if runtime_preflight.reports_output_directory.exists else 'no' }}<br>
+        Writable: {{ 'yes' if runtime_preflight.reports_output_directory.writable else 'no' }}
+      </div>
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>safe PDF open route availability</strong><br>
+        Status: {{ 'READY' if runtime_preflight.safe_pdf_open_route.ready else 'MISSING' }}<br>
+        Route: {{ runtime_preflight.safe_pdf_open_route.value }}
+      </div>
+      <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#d7dce8;">
+        <strong>current server port</strong><br>
+        Status: {{ 'READY' if runtime_preflight.current_server_port.ready else 'MISSING' }}<br>
+        Value: {{ runtime_preflight.current_server_port.value }}
+      </div>
+    </div>
+  </section>
+
   <!-- ── Button 1 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b1-result-panel">
     <h3>Fight Queue</h3>
