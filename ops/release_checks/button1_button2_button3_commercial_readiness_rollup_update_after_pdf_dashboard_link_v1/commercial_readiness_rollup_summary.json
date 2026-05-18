@@ -1,0 +1,56 @@
+{
+  "slice": "button1-button2-button3-commercial-readiness-rollup-update-after-pdf-dashboard-link-v1",
+  "status": "implemented_docs_evidence_only_locked",
+  "scope": "docs/evidence-only commercial/demo readiness rollup update after Button 2 governed dashboard PDF open-link lock",
+  "evidence": {
+    "prior_rollup_update": {
+      "slice": "button1-button2-button3-commercial-readiness-rollup-update-after-pdf-render-v1",
+      "commit": "9d4d3e5"
+    },
+    "button2_pdf_dashboard_link_lock": {
+      "slice": "button2-generated-pdf-dashboard-link-v1",
+      "commit": "c67adb3",
+      "tag": "button2-generated-pdf-dashboard-link-v1"
+    }
+  },
+  "readiness": {
+    "button1": {
+      "status": "READY",
+      "basis": "full-card source-backed event cards across boxing, mma, kickboxing, and muay_thai confirmed"
+    },
+    "button2": {
+      "status": "READY",
+      "basis": "selected-matchup guarded PDF generation confirmed and governed dashboard open-link added",
+      "dashboard_open_link": {
+        "route": "/api/button2/generated-report/open?filename=<pdf_filename>",
+        "label": "Open Generated PDF",
+        "example": "/api/button2/generated-report/open?filename=anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
+      }
+    },
+    "button3": {
+      "status": "GOVERNED_PREVIEW_READY",
+      "basis": "result-review preview remains controlled; learning and calibration remain out of paid-pilot scope"
+    }
+  },
+  "safety_and_governance": {
+    "filename_only_contract": true,
+    "no_absolute_path_input": true,
+    "path_traversal_protected": true,
+    "pdf_extension_required": true,
+    "serve_only_from_button2_pdf_output_root": true,
+    "safe_400_404_failures": true,
+    "operator_approval_required": true,
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "remaining_blocker": "No technical blocker for governed demo/commercial review. Paid-pilot launch still requires management decision and sign-offs.",
+  "next_valid_business_slice": "paid-pilot-phase1-management-decision-record-v1",
+  "artifacts": [
+    "docs/button1_button2_button3_commercial_readiness_rollup_update_after_pdf_dashboard_link_v1.md",
+    "ops/release_checks/button1_button2_button3_commercial_readiness_rollup_update_after_pdf_dashboard_link_v1/commercial_readiness_rollup_summary.json"
+  ]
+}
