@@ -665,6 +665,9 @@
   <div class="result-panel" id="b2-result-panel">
     <h3>Report Generation</h3>
     <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
+    {% if button2_runtime_warning %}
+    <div id="b2-runtime-warning" class="status-msg error">{{ button2_runtime_warning }}</div>
+    {% endif %}
     <div id="b2-selected-matchup-preview" class="b2-selected-matchup-preview">
       No matchup selected for Button 2 yet. Use Button 1 Source-Backed Event Cards and click Select for PDF.
     </div>

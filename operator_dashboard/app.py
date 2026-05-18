@@ -310,7 +310,11 @@ def _build_waiting_row_selected_key(row):
 @app.route("/")
 def index():
     """3-button operator dashboard."""
-    return render_template("index.html")
+    runtime_warning = ""
+    output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
+    if not isinstance(output_root, str) or not output_root.strip():
+        runtime_warning = "PDF output root missing - start dashboard with Windows launch script."
+    return render_template("index.html", button2_runtime_warning=runtime_warning)
 
 
 @app.route("/advanced-dashboard")

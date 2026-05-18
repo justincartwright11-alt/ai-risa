@@ -1,0 +1,28 @@
+{
+  "slice": "operator-dashboard-windows-launch-script-and-runtime-env-guard-v1",
+  "status": "validated",
+  "launcher": {
+    "path": "scripts/start_ai_risa_dashboard_windows.ps1",
+    "repo_root_set": true,
+    "msys_ucrt64_path_prepended": true,
+    "py_dont_write_bytecode_set": true,
+    "button2_pdf_output_root_set": true,
+    "python_runtime_pinned": true,
+    "dll_directory_added": true,
+    "app_run_port": 5050
+  },
+  "runtime_guard": {
+    "warning_text": "PDF output root missing - start dashboard with Windows launch script.",
+    "button2_surface": true,
+    "button1_blocked": false,
+    "button3_blocked": false
+  },
+  "governance": {
+    "auto_delivery_enabled": false,
+    "email_enabled": false,
+    "external_api_delivery_enabled": false,
+    "queue_mutation_enabled": false,
+    "learning_or_calibration_mutation_enabled": false,
+    "button3_mutation_enabled": false
+  }
+}
