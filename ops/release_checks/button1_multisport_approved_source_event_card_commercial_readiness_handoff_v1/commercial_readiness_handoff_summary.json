@@ -1,0 +1,63 @@
+{
+  "slice": "button1-multisport-approved-source-event-card-commercial-readiness-handoff-v1",
+  "status": "implemented_docs_evidence_only_validation_not_required",
+  "scope": "docs/evidence-only commercial-readiness handoff",
+  "no_new_implementation": true,
+  "locked_evidence_chain": [
+    {
+      "slice": "button1-multisport-approved-source-registry-v1",
+      "commit": "0b6194f",
+      "tag": "button1-multisport-approved-source-registry-v1"
+    },
+    {
+      "slice": "button1-multisport-approved-source-event-card-coverage-v1",
+      "commit": "20cd333",
+      "tag": "button1-multisport-approved-source-event-card-coverage-v1"
+    },
+    {
+      "slice": "button1-multisport-approved-source-event-card-fixtures-v1",
+      "commit": "f388b85",
+      "tag": "button1-multisport-approved-source-event-card-fixtures-v1"
+    },
+    {
+      "slice": "button1-multisport-approved-source-event-card-runtime-confirmation-v1",
+      "commit": "c59ad26",
+      "tag": "button1-multisport-approved-source-event-card-runtime-confirmation-v1"
+    },
+    {
+      "slice": "button1-multisport-approved-source-event-card-dashboard-runtime-confirmation-v1",
+      "commit": "f834ab9",
+      "tag": "button1-multisport-approved-source-event-card-dashboard-runtime-confirmation-v1"
+    }
+  ],
+  "commercial_readiness": {
+    "button1_source_backed_event_cards_ui_surface_present": true,
+    "sports_confirmed": ["boxing", "mma", "kickboxing", "muay_thai"],
+    "all_rows_classified": true,
+    "all_rows_provenance_backed": true,
+    "runtime_accepts_fixture_backed_set": true
+  },
+  "governance": {
+    "preview_only": true,
+    "approval_required": true,
+    "write": false,
+    "mutation": false,
+    "auto_queue_save": false,
+    "pdf_generation": false,
+    "delivery": false,
+    "learning": false,
+    "calibration": false,
+    "muay_thai_needs_review_with_secondary_confirmation": true
+  },
+  "validation_rollup": {
+    "dashboard_runtime_confirmation_slice_passed": 5,
+    "runtime_confirmation_slice_passed": 5,
+    "fixtures_slice_passed": 6,
+    "coverage_slice_passed": 5,
+    "registry_slice_passed": 27
+  },
+  "artifacts": [
+    "docs/button1_multisport_approved_source_event_card_commercial_readiness_handoff_v1.md",
+    "ops/release_checks/button1_multisport_approved_source_event_card_commercial_readiness_handoff_v1/commercial_readiness_handoff_summary.json"
+  ]
+}
