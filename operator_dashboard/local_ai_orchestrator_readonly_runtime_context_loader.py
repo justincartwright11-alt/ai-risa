@@ -176,6 +176,80 @@ def _normalize_candidate_row_provenance(row: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _extract_row_provenance_urls(row: Dict[str, Any]) -> List[str]:
+    if not isinstance(row, dict):
+        return []
+
+    urls: List[str] = []
+    provenance = row.get("provenance")
+    if isinstance(provenance, dict):
+        src = _safe_text(provenance.get("source_url"))
+        if src:
+            urls.append(src)
+        urls.extend(_coerce_source_urls(provenance.get("source_urls")))
+
+    for key in ("source_url", "canonical_source_url", "provenance_url", "url", "event_url", "official_url", "source_link"):
+        src = _safe_text(row.get(key))
+        if src:
+            urls.append(src)
+
+    urls.extend(_coerce_source_urls(row.get("source_urls")))
+
+    deduped: List[str] = []
+    seen = set()
+    for url in urls:
+        if url and url not in seen:
+            deduped.append(url)
+            seen.add(url)
+    return deduped
+
+
+def _build_event_provenance_lookup(event_rows: List[Dict[str, Any]]) -> Dict[str, List[str]]:
+    lookup: Dict[str, List[str]] = {}
+    for row in event_rows:
+        if not isinstance(row, dict):
+            continue
+        event_name = _safe_text(row.get("event_name") or row.get("event") or row.get("event_title"))
+        if not event_name:
+            continue
+        urls = _extract_row_provenance_urls(row)
+        if not urls:
+            continue
+        lookup[event_name.lower()] = urls
+    return lookup
+
+
+def _propagate_event_provenance(
+    candidate_rows: List[Dict[str, Any]],
+    event_provenance_lookup: Dict[str, List[str]],
+) -> List[Dict[str, Any]]:
+    out_rows: List[Dict[str, Any]] = []
+    for row in candidate_rows:
+        normalized = _normalize_candidate_row_provenance(row)
+        if _extract_row_provenance_urls(normalized):
+            out_rows.append(normalized)
+            continue
+
+        event_name = _safe_text(normalized.get("event_name") or normalized.get("event") or normalized.get("event_title"))
+        key = event_name.lower() if event_name else ""
+        event_urls = event_provenance_lookup.get(key, []) if key else []
+        if not event_urls:
+            out_rows.append(normalized)
+            continue
+
+        enriched = dict(normalized)
+        enriched["source_url"] = event_urls[0]
+        enriched["source_urls"] = list(event_urls)
+        provenance = enriched.get("provenance") if isinstance(enriched.get("provenance"), dict) else {}
+        provenance = dict(provenance)
+        provenance["source_url"] = event_urls[0]
+        provenance["source_urls"] = list(event_urls)
+        enriched["provenance"] = provenance
+        enriched["provenance_origin"] = "event_level_source"
+        out_rows.append(enriched)
+    return out_rows
+
+
 def _build_fight_ref_from_row(row: Dict[str, Any]) -> str:
     if not isinstance(row, dict):
         return ""
@@ -280,7 +354,9 @@ def build_button1_runtime_context(
     raw_candidate_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", [])) + _safe_list_of_dict(
         state.get("local_candidate_rows", [])
     )
-    candidate_rows = [_normalize_candidate_row_provenance(row) for row in raw_candidate_rows]
+    event_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", []))
+    event_provenance_lookup = _build_event_provenance_lookup(event_rows)
+    candidate_rows = _propagate_event_provenance(raw_candidate_rows, event_provenance_lookup)
 
     payload = {
         "manual_text": state.get("manual_intake_text", ""),

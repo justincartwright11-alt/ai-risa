@@ -149,6 +149,60 @@ def test_button1_loader_maps_explicit_event_url_into_accepted_provenance_fields(
     assert "https://example.test/events/one-samurai-1" in row["source_urls"]
 
 
+def test_button1_loader_propagates_event_level_url_to_matching_local_rows(tmp_path):
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "discovered_candidate_rows": [
+                {
+                    "event_name": "ONE Samurai 1",
+                    "event_url": "https://example.test/events/one-samurai-1",
+                }
+            ],
+            "local_candidate_rows": [
+                {
+                    "fight_name": "A vs B",
+                    "event_name": "ONE Samurai 1",
+                    "source_tag": "bout_card_csv",
+                    "source_notes": "local queue only",
+                }
+            ],
+        },
+        workspace_root=str(tmp_path),
+    )
+    rows = pack.to_dict()["input_ref"]["payload"]["candidate_rows"]
+    local_row = next(row for row in rows if row.get("fight_name") == "A vs B")
+    assert local_row["source_url"] == "https://example.test/events/one-samurai-1"
+    assert local_row["provenance"]["source_url"] == "https://example.test/events/one-samurai-1"
+    assert local_row["provenance_origin"] == "event_level_source"
+
+
+def test_button1_loader_does_not_propagate_event_level_provenance_without_url(tmp_path):
+    pack = build_button1_runtime_context(
+        runtime_state_override={
+            "discovered_candidate_rows": [
+                {
+                    "event_name": "ONE Samurai 1",
+                    "source_tag": "event_queue_csv",
+                    "source_notes": "event_coverage_queue.csv",
+                }
+            ],
+            "local_candidate_rows": [
+                {
+                    "fight_name": "A vs B",
+                    "event_name": "ONE Samurai 1",
+                    "source_tag": "bout_card_csv",
+                    "source_notes": "local queue only",
+                }
+            ],
+        },
+        workspace_root=str(tmp_path),
+    )
+    rows = pack.to_dict()["input_ref"]["payload"]["candidate_rows"]
+    local_row = next(row for row in rows if row.get("fight_name") == "A vs B")
+    assert "source_url" not in local_row
+    assert "provenance" not in local_row
+
+
 def test_button1_runtime_context_includes_advanced_projection_records(tmp_path):
     pack = build_button1_runtime_context(
         runtime_state_override={

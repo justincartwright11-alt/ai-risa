@@ -1,0 +1,29 @@
+{
+  "slice": "button1-source-backed-candidate-ingestion-and-provenance-population-v1",
+  "status": "pass",
+  "governance": {
+    "preview_only": true,
+    "gate_logic_relaxed": false,
+    "synthetic_provenance_created": false
+  },
+  "changes": [
+    {
+      "file": "operator_dashboard/local_ai_orchestrator_readonly_runtime_context_loader.py",
+      "summary": "Propagate explicit event-level URL provenance to matching candidate rows by event_name."
+    },
+    {
+      "file": "operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py",
+      "summary": "Added positive and negative tests for event-level provenance propagation."
+    }
+  ],
+  "verification": {
+    "pytest_command": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pytest operator_dashboard/test_local_ai_orchestrator_readonly_runtime_context_loader_v1.py operator_dashboard/test_local_ai_orchestrator_gate1_dry_run_apply_preview_api_v1.py operator_dashboard/test_local_ai_orchestrator_gate1_approved_save_writer_api_preview_v1.py operator_dashboard/test_local_ai_orchestrator_button2_report_readiness_adapter_hook_v1.py operator_dashboard/test_local_ai_orchestrator_button3_source_yield_adapter_hook_v1.py",
+    "passed": 94,
+    "failed": 0
+  },
+  "assertions": [
+    "Rows with only source_tag/source_notes remain blocked.",
+    "Rows with explicit event URL evidence can become provenance-complete.",
+    "Current URL-missing cohort remains blocked until ingestion provides real URLs."
+  ]
+}
