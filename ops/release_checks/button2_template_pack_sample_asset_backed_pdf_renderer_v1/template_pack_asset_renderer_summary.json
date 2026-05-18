@@ -1,0 +1,76 @@
+{
+  "slice": "button2-template-pack-sample-asset-backed-pdf-renderer-v1",
+  "status": "implemented",
+  "root_cause": "Button 2 remained marker-styled HTML composition and did not use template sample pack assets/modules as rendering source of truth.",
+  "template_pack": {
+    "default_root": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+    "override_env": "BUTTON2_TEMPLATE_PACK_ROOT",
+    "resolved_root": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+    "files_discovered": [
+      "AI-RISA Logo.png",
+      "ai_risa_logo_clean_blend.png",
+      "ai_risa_logo_watermark_blend.png",
+      "ai_risa_report_template_v29_bar_alignment_fix.py",
+      "AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf",
+      "AI-RISA_Premium_Report_Template_v29_bar_alignment_fix.zip",
+      "contact_sheet_v29.png",
+      "extracted_text_v29.txt"
+    ]
+  },
+  "renderer": {
+    "asset_backed_adapter": "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "selected_matchup_route_bound": true,
+    "template_pack_asset_backed": true,
+    "minimum_page_count_required": 12,
+    "generated_page_count": 14
+  },
+  "generated_pdfs": [
+    {
+      "path": "reports/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 14
+    },
+    {
+      "path": "reports/rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 14
+    },
+    {
+      "path": "reports/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium.pdf",
+      "page_count": 14
+    }
+  ],
+  "visual_proof": {
+    "summary": "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/visual_proof_summary.json",
+    "contact_sheets": [
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_contact_sheet.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_contact_sheet.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_contact_sheet.png"
+    ]
+  },
+  "dashboard_and_library": {
+    "dashboard_has_pdf_reports_folder": true,
+    "dashboard_has_open_pdf_reports_library": true,
+    "safe_open_link_status": 200,
+    "library_lists_generated_file": true
+  },
+  "customer_facing_text_controls": {
+    "blocked_placeholders": [
+      "Radar data unavailable",
+      "Heat map data unavailable",
+      "Control-shift data unavailable",
+      "Method distribution data unavailable"
+    ],
+    "internal_debug_markers_demoted": true
+  },
+  "governance": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "tests": {
+    "suite_result": "31 passed, 0 failed",
+    "focused_test_file": "operator_dashboard/test_button2_template_pack_sample_asset_backed_pdf_renderer_v1.py"
+  }
+}

@@ -70,6 +70,10 @@ from operator_dashboard.button2_pdf_output_root_config_v1 import (
     OutputRootInvalidError,
 )
 from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
+from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
+    resolve_template_pack_assets,
+    TemplatePackResolverError,
+)
 from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
@@ -162,14 +166,20 @@ def _build_fight_id_from_selected_matchup(selected_preview):
     return core
 
 
-def _resolve_button2_template_pack_root():
-    configured = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
-    value = configured.strip() if isinstance(configured, str) else ""
-    if value:
-        return value
-    if os.path.isdir(_DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT):
-        return _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT
-    return ""
+def _resolve_button2_template_pack_preview():
+    try:
+        assets = resolve_template_pack_assets()
+        return {
+            "template_pack_root": assets.get("pack_root", ""),
+            "template_pack_available": True,
+            "template_pack_error": "",
+        }
+    except TemplatePackResolverError as e:
+        return {
+            "template_pack_root": e.attempted_path or _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT,
+            "template_pack_available": False,
+            "template_pack_error": e.message,
+        }
 
 
 def _build_selected_matchup_premium_summary(selected_preview):
@@ -221,7 +231,10 @@ def _build_ingest_payload_from_selected_matchup(selected_preview):
     selected = selected_preview if isinstance(selected_preview, dict) else {}
     source_url = selected.get("source_url", "")
     source_type = selected.get("source_type", "official")
-    template_pack_root = _resolve_button2_template_pack_root()
+    template_pack = _resolve_button2_template_pack_preview()
+    template_pack_root = template_pack.get("template_pack_root", "")
+    template_pack_available = bool(template_pack.get("template_pack_available", False))
+    template_pack_error = template_pack.get("template_pack_error", "")
 
     summary_preview = _build_selected_matchup_premium_summary(selected)
 
@@ -243,7 +256,8 @@ def _build_ingest_payload_from_selected_matchup(selected_preview):
         "ingest_mode": "premium_template_selected_matchup",
         "template_renderer_profile": "premium_template_pack_v29",
         "template_pack_root": template_pack_root,
-        "template_pack_available": bool(template_pack_root),
+        "template_pack_available": template_pack_available,
+        "template_pack_error": template_pack_error,
         "selected_matchup_payload": {
             "fighter_a": selected.get("fighter_a", ""),
             "fighter_b": selected.get("fighter_b", ""),

@@ -30,6 +30,11 @@ from operator_dashboard.button2_html_composition_entry_point_v1 import (
     build_button2_report_html,
 )
 from operator_dashboard.button2_pdf_render_gate_v1 import render_button2_pdf
+from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
+    render_button2_template_pack_asset_pdf,
+    TemplatePackResolverError,
+    TemplatePackRenderError,
+)
 from operator_dashboard.button2_pdf_output_root_config_v1 import (
     resolve_pdf_output_path,
     OutputRootNotConfiguredError,
@@ -183,52 +188,107 @@ def generate_button2_report_render_gate_integration(request_data):
             **telemetry,
         }
 
-    # ─── HTML Composition: Build Safe HTML Input ──────────────────────────────
-    try:
-        html_result = build_button2_report_html(report_context_preview)
-    except Exception as e:
-        return {
-            "ok": False,
-            "error": "html_composition_exception",
-            "message": f"HTML composition failed: {str(e)}",
-            **telemetry,
-        }
-    if not html_result.get("ok"):
-        return {
-            "ok": False,
-            "error": "html_composition_failed",
-            "message": f"Failed to build HTML: {html_result.get('error', 'unknown')}",
-            **telemetry,
-        }
+    renderer_profile = str(report_context_preview.get("template_renderer_profile", "")).strip()
+    use_asset_backed_renderer = renderer_profile.startswith("premium_template_pack_v29")
+    template_render_meta = {
+        "premium_template_render_used": False,
+        "renderer_profile": renderer_profile or "button2_html_composition_entry_point_v1",
+        "template_pack_root": str(report_context_preview.get("template_pack_root", "")),
+        "template_pack_available": bool(report_context_preview.get("template_pack_available", False)),
+        "template_pack_asset_backed": False,
+        "template_pack_assets": None,
+        "page_count": None,
+    }
 
-    html_content = html_result.get("html_content")
-    if not html_content or not isinstance(html_content, str):
-        return {
-            "ok": False,
-            "error": "html_composition_failed",
-            "message": "HTML content is missing or malformed.",
-            **telemetry,
-        }
-
-    # ─── Render Gate: Call Guarded PDF Renderer ──────────────────────────────
-    try:
-        render_result = render_button2_pdf(html_content)
-        pdf_bytes = render_result.get("pdf_bytes")
-        geometry_data = render_result.get("geometry_data")
-        if not pdf_bytes or not isinstance(pdf_bytes, bytes):
+    geometry_data = None
+    if use_asset_backed_renderer:
+        try:
+            render_result = render_button2_template_pack_asset_pdf(report_context_preview)
+            pdf_bytes = render_result.get("pdf_bytes")
+            if not pdf_bytes or not isinstance(pdf_bytes, bytes):
+                return {
+                    "ok": False,
+                    "error": "pdf_render_failed",
+                    "message": "Template-pack asset renderer returned no PDF content.",
+                    **telemetry,
+                }
+            template_render_meta.update({
+                "premium_template_render_used": True,
+                "renderer_profile": str(render_result.get("renderer_profile", "premium_template_pack_v29_asset_backed_v1")),
+                "template_pack_root": str(render_result.get("template_pack_root", template_render_meta["template_pack_root"])),
+                "template_pack_available": True,
+                "template_pack_asset_backed": bool(render_result.get("template_pack_asset_backed", False)),
+                "template_pack_assets": render_result.get("template_pack_assets"),
+                "page_count": render_result.get("page_count"),
+            })
+        except TemplatePackResolverError as e:
             return {
                 "ok": False,
-                "error": "pdf_render_failed",
-                "message": "PDF render returned no content.",
+                "error": "template_pack_unavailable",
+                "message": e.message,
+                "template_pack_error": e.to_dict(),
                 **telemetry,
             }
-    except Exception as e:
-        return {
-            "ok": False,
-            "error": "pdf_render_exception",
-            "message": f"PDF render failed: {str(e)}",
-            **telemetry,
-        }
+        except TemplatePackRenderError as e:
+            return {
+                "ok": False,
+                "error": "template_pack_render_failed",
+                "message": str(e),
+                **telemetry,
+            }
+        except Exception as e:
+            return {
+                "ok": False,
+                "error": "template_pack_render_exception",
+                "message": f"Template-pack render failed: {str(e)}",
+                **telemetry,
+            }
+    else:
+        # ─── HTML Composition fallback for non-template-pack profiles ─────────
+        try:
+            html_result = build_button2_report_html(report_context_preview)
+        except Exception as e:
+            return {
+                "ok": False,
+                "error": "html_composition_exception",
+                "message": f"HTML composition failed: {str(e)}",
+                **telemetry,
+            }
+        if not html_result.get("ok"):
+            return {
+                "ok": False,
+                "error": "html_composition_failed",
+                "message": f"Failed to build HTML: {html_result.get('error', 'unknown')}",
+                **telemetry,
+            }
+
+        html_content = html_result.get("html_content")
+        if not html_content or not isinstance(html_content, str):
+            return {
+                "ok": False,
+                "error": "html_composition_failed",
+                "message": "HTML content is missing or malformed.",
+                **telemetry,
+            }
+
+        try:
+            render_result = render_button2_pdf(html_content)
+            pdf_bytes = render_result.get("pdf_bytes")
+            geometry_data = render_result.get("geometry_data")
+            if not pdf_bytes or not isinstance(pdf_bytes, bytes):
+                return {
+                    "ok": False,
+                    "error": "pdf_render_failed",
+                    "message": "PDF render returned no content.",
+                    **telemetry,
+                }
+        except Exception as e:
+            return {
+                "ok": False,
+                "error": "pdf_render_exception",
+                "message": f"PDF render failed: {str(e)}",
+                **telemetry,
+            }
 
     # Mark PDF generation
     telemetry["pdf_generation_performed"] = True
@@ -286,12 +346,13 @@ def generate_button2_report_render_gate_integration(request_data):
         "ok": True,
         "message": "PDF generated and saved successfully.",
         "output_path": output_path,
-        "premium_template_render_used": True,
-        "renderer_profile": report_context_preview.get(
-            "template_renderer_profile", "button2_html_composition_entry_point_v1"
-        ),
-        "template_pack_root": report_context_preview.get("template_pack_root", ""),
-        "template_pack_available": bool(report_context_preview.get("template_pack_available", False)),
+        "premium_template_render_used": template_render_meta["premium_template_render_used"],
+        "renderer_profile": template_render_meta["renderer_profile"],
+        "template_pack_root": template_render_meta["template_pack_root"],
+        "template_pack_available": template_render_meta["template_pack_available"],
+        "template_pack_asset_backed": template_render_meta["template_pack_asset_backed"],
+        "template_pack_assets": template_render_meta["template_pack_assets"],
+        "page_count": template_render_meta["page_count"],
         "qa_summary": qa_summary,
         **telemetry,
     }

@@ -1,0 +1,107 @@
+[
+  {
+    "pdf_path": "reports/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+    "page_count": 14,
+    "picked_pages": [
+      1,
+      2,
+      3,
+      14
+    ],
+    "page_pngs": [
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_p1.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_p2.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_p3.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_p14.png"
+    ],
+    "contact_sheet": "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_contact_sheet.png",
+    "off_page_text_checks": [
+      {
+        "page": 1,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 2,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 3,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 14,
+        "off_page_text_detected": false
+      }
+    ]
+  },
+  {
+    "pdf_path": "reports/rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+    "page_count": 14,
+    "picked_pages": [
+      1,
+      2,
+      3,
+      14
+    ],
+    "page_pngs": [
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_p1.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_p2.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_p3.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_p14.png"
+    ],
+    "contact_sheet": "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_premium_contact_sheet.png",
+    "off_page_text_checks": [
+      {
+        "page": 1,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 2,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 3,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 14,
+        "off_page_text_detected": false
+      }
+    ]
+  },
+  {
+    "pdf_path": "reports/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium.pdf",
+    "page_count": 14,
+    "picked_pages": [
+      1,
+      2,
+      3,
+      14
+    ],
+    "page_pngs": [
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_p1.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_p2.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_p3.png",
+      "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_p14.png"
+    ],
+    "contact_sheet": "ops/release_checks/button2_template_pack_sample_asset_backed_pdf_renderer_v1/visual_proof/jiri_prochazka_vs_carlos_ulberg_ufc_320_premium_contact_sheet.png",
+    "off_page_text_checks": [
+      {
+        "page": 1,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 2,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 3,
+        "off_page_text_detected": false
+      },
+      {
+        "page": 14,
+        "off_page_text_detected": false
+      }
+    ]
+  }
+]
