@@ -1378,6 +1378,39 @@ _HTML_TEMPLATE = """\
             page-break-inside: avoid;
             break-inside: avoid;
         }}
+        /* Phase 4 chart/scenario rendering polish (CSS only, metadata-locked) */
+        .chart-scenario-render-surface {{
+            margin-top: 0.95em;
+            padding-top: 0.35em;
+            border-top: 1px solid #e7e7e7;
+        }}
+        .chart-scenario-render-surface[data-chart-module="scenario_tree"] {{
+            background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+            border-left: 3px solid #d5dce8;
+            padding-left: 0.5em;
+        }}
+        .chart-scenario-render-surface[data-chart-module="method_pathway"] {{
+            border-left: 3px solid #d7eadf;
+            padding-left: 0.5em;
+        }}
+        .chart-scenario-render-surface[data-chart-module="round_control"] {{
+            border-left: 3px solid #eadfbf;
+            padding-left: 0.5em;
+        }}
+        .chart-scenario-render-surface[data-chart-module="risk_collapse_markers"] {{
+            border-left: 3px solid #e7c9c9;
+            padding-left: 0.5em;
+        }}
+        .chart-scenario-render-surface .risk-marker[data-risk-severity="watch"] {{
+            border-bottom: 1px dashed #c5b787;
+        }}
+        .chart-scenario-render-surface .risk-marker[data-risk-severity="elevated"] {{
+            border-bottom: 1px dashed #d89d6a;
+        }}
+        .chart-scenario-render-surface .risk-marker[data-risk-severity="critical"] {{
+            border-bottom: 1px dashed #cf6f6f;
+            font-weight: 600;
+        }}
     .meta-footer {{ margin-top: 2em; border-top: 1px solid #eeeeee; padding-top: 0.5em; }}
     .qa-row {{ margin: 0.2em 0; }}
     .hierarchy-metadata {{ display: none; }}
