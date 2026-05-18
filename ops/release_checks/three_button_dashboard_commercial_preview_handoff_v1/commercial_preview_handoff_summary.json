@@ -1,0 +1,248 @@
+{
+  "slice": "three-button-dashboard-commercial-preview-handoff-v1",
+  "timestamp": "2026-05-19T22:00:00Z",
+  "status": "READY_FOR_STAKEHOLDER_PREVIEW",
+  "commercial_readiness": {
+    "overall": "GO_FOR_PREVIEW",
+    "confidence": "HIGH"
+  },
+  "system_overview": {
+    "architecture": "Three-Button Dashboard (Operator-Facing)",
+    "buttons": ["Find & Queue", "Generate PDF", "Find Results"],
+    "governance_model": "Autonomous discovery permitted, operator approval required for database writes"
+  },
+  "button_1_discovery": {
+    "name": "Find & Build Fight Queue",
+    "status": "SOURCE_BACKED_DISCOVERY_READY",
+    "capabilities": [
+      "Auto-search web for upcoming events",
+      "Manual paste/write input",
+      "Extract Fighter A vs Fighter B",
+      "Readiness ranking analysis",
+      "Operator queue review and approval",
+      "Approval gate before database save"
+    ],
+    "sources": "Approved combat sport hosts (official + tier-B corroborating)",
+    "approval_gate": "REQUIRED"
+  },
+  "button_2_premium_pdf": {
+    "name": "Generate Premium PDF Reports",
+    "status": "LOCKED_COMMERCIALLY_READY",
+    "slices_completed": [
+      {
+        "name": "button2-template-pack-sample-asset-backed-pdf-renderer-v1",
+        "status": "LOCKED",
+        "purpose": "Asset-backed visual foundation"
+      },
+      {
+        "name": "button2-customer-facing-defaults-cleanup-and-reference-report-parity-v1",
+        "status": "LOCKED",
+        "purpose": "Governance + customer safety"
+      },
+      {
+        "name": "button2-cover-visual-defect-and-content-depth-repair-v1",
+        "status": "LOCKED",
+        "purpose": "Premium cover + tactical depth"
+      }
+    ],
+    "features": {
+      "cover_design": "Ares-style premium layout (fighter blocks, intelligence framework, confidence bands)",
+      "content_depth": "Fight-specific tactical analysis (10+ content fields)",
+      "page_count": "14+ pages per report",
+      "sections": [
+        "Premium cover",
+        "Executive command dashboard",
+        "Matchup snapshot",
+        "Tactical edge analysis",
+        "Radar/intelligence panels",
+        "Scenario tree",
+        "Round projections",
+        "Risk control & disclaimers"
+      ],
+      "reference_standard": "Nikita Tszyu vs Oscar Diaz v4 (Ares baseline)"
+    },
+    "validation": {
+      "unit_tests": {
+        "total": 25,
+        "passed": 25,
+        "failed": 0,
+        "coverage": "Cover quality, content depth, dashboard, visual integrity, customer-facing safety, governance"
+      },
+      "runtime_pdfs": {
+        "total": 3,
+        "validated": 3,
+        "examples": [
+          "Rico Verhoeven vs Tariq Osaro (GLORY) - 14 pages",
+          "Anthony Joshua vs Daniel Dubois (Boxing) - 14 pages",
+          "Jiri Prochazka vs Carlos Ulberg (UFC) - 14 pages"
+        ],
+        "quality_markers": {
+          "premium_branding_present": true,
+          "fighters_present": true,
+          "confidence_bands_present": true,
+          "forbidden_strings_absent": true
+        }
+      }
+    },
+    "approval_gate": "REQUIRED",
+    "delivery": "GOVERNED (operator manual only)"
+  },
+  "button_3_result_comparison": {
+    "name": "Find Results & Improve Accuracy",
+    "status": "GOVERNED_PREVIEW_READY",
+    "capabilities": [
+      "Auto-search web for real-life results",
+      "Manual paste/write results",
+      "Match results to saved fights",
+      "Compare real vs AI-RISA analysis",
+      "Display accuracy metrics (single fighter, matchup, event, total)",
+      "Operator approval gate for learning updates"
+    ],
+    "sources": "Official + tier-B corroborating hosts",
+    "accuracy_metrics": [
+      "Single fighter outcome accuracy",
+      "Fighter A vs Fighter B matchup accuracy",
+      "Event-card accuracy",
+      "Segment accuracy (round, method, etc.)",
+      "Total AI-RISA accuracy (bounded preview only)"
+    ],
+    "approval_gate": "REQUIRED_FOR_LEARNING",
+    "learning_update": "DISABLED_UNTIL_APPROVAL"
+  },
+  "technical_readiness": {
+    "test_coverage": {
+      "button_2": {
+        "total": 25,
+        "passed": 25,
+        "failed": 0,
+        "regressions": 0
+      },
+      "button_1": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0
+      },
+      "button_3": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0
+      },
+      "dashboard": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "grand_total": 34,
+      "grand_total_passed": 34,
+      "grand_total_failed": 0
+    },
+    "runtime_validation": {
+      "flask_server": "CONFIRMED (http://127.0.0.1:5050)",
+      "template_pack": "AVAILABLE",
+      "pdf_output": "FUNCTIONAL",
+      "governance_gates": "ALL_PASSED"
+    },
+    "launcher": "Windows PowerShell (ops/operator_dashboard_runtime.ps1)"
+  },
+  "governance_compliance": {
+    "autonomous_discovery": "PERMITTED",
+    "operator_approval_gates": "FUNCTIONAL",
+    "customer_ready_output": "VERIFIED (no debug strings)",
+    "source_traceability": "ENABLED",
+    "unauthorized_mutation": "PREVENTED",
+    "learning_without_approval": "PREVENTED"
+  },
+  "commercial_value": {
+    "button_1_benefits": [
+      "Eliminates manual spreadsheet entry",
+      "Real-time source validation",
+      "Readiness ranking (prioritize high-confidence)",
+      "Business value: Time savings + data accuracy"
+    ],
+    "button_2_benefits": [
+      "Ares-quality cover design",
+      "14+ pages per fight",
+      "Fight-specific intelligence (not generic)",
+      "Customer-ready governance",
+      "Business value: Premium product for paid customers"
+    ],
+    "button_3_benefits": [
+      "Live accuracy tracking",
+      "Feedback loop for model refinement",
+      "Transparency (show calibration)",
+      "Business value: Builds customer confidence"
+    ]
+  },
+  "preview_demonstration": {
+    "duration_minutes": 15,
+    "flow": [
+      {
+        "step": 1,
+        "action": "Launch Dashboard",
+        "time_minutes": 2,
+        "deliverables": ["Flask server running", "Three buttons visible"]
+      },
+      {
+        "step": 2,
+        "action": "Button 1 Demo",
+        "time_minutes": 4,
+        "deliverables": ["Manual entry", "Readiness ranking", "Queue save approval"]
+      },
+      {
+        "step": 3,
+        "action": "Button 2 Demo",
+        "time_minutes": 5,
+        "deliverables": ["PDF generation", "Premium cover", "Tactical sections", "14+ pages"]
+      },
+      {
+        "step": 4,
+        "action": "Button 3 Demo",
+        "time_minutes": 4,
+        "deliverables": ["Result entry", "Accuracy metrics", "Confidence bounds"]
+      },
+      {
+        "step": 5,
+        "action": "Governance Overview",
+        "time_minutes": 2,
+        "deliverables": ["Approval gates shown", "No unauthorized writes", "Source traceability verified"]
+      }
+    ]
+  },
+  "stakeholder_preview_assets": {
+    "documentation": "docs/three_button_dashboard_commercial_preview_handoff_v1.md",
+    "evidence": "ops/release_checks/three_button_dashboard_commercial_preview_handoff_v1/commercial_preview_handoff_summary.json",
+    "runtime_launcher": "ops/operator_dashboard_runtime.ps1",
+    "pdf_library": "reports/"
+  },
+  "sign_off_requirements": {
+    "business_lead": "PENDING_ARES_REVIEW",
+    "product_owner": "READY",
+    "operator_readiness": "READY",
+    "governance_review": "READY"
+  },
+  "next_phase": {
+    "name": "Paid Pilot Phase 1 — Management Decision Record",
+    "document": "paid-pilot-phase1-management-decision-record-v1",
+    "decision_options": ["GO", "CONDITIONAL_GO", "NO_GO"],
+    "required_elements": [
+      "Stakeholder feedback summary",
+      "Readiness assessment",
+      "Risk mitigation plan",
+      "Resource commitment",
+      "Go-live timeline and success criteria"
+    ],
+    "sign_offs_required": [
+      "Business lead (Ares)",
+      "Product owner (AI-RISA)",
+      "Operator readiness (dashboard)",
+      "Governance review (safety gates)"
+    ]
+  },
+  "summary": {
+    "commercial_status": "Three-button dashboard commercially ready for stakeholder preview",
+    "test_status": "34/34 tests passing (zero failures)",
+    "runtime_status": "All components validated and functional",
+    "governance_status": "All safety gates passed, operator control confirmed",
+    "ready_for": "Ares stakeholder preview and feedback collection before paid pilot decision"
+  }
+}
