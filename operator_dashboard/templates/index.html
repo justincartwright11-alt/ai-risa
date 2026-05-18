@@ -358,6 +358,89 @@
       line-height: 1.35;
     }
 
+    .b1-event-cards-panel {
+      margin-top: 14px;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-left: 3px solid #61afef;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .b1-event-cards-panel h4 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #61afef;
+      margin-bottom: 8px;
+    }
+    .b1-event-cards-note {
+      font-size: 0.77rem;
+      color: #8a94b8;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .b1-event-card {
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      background: #141824;
+    }
+    .b1-event-card:first-child {
+      margin-top: 0;
+    }
+    .b1-event-header {
+      font-size: 0.8rem;
+      color: #e8eaed;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+    .b1-event-header strong {
+      color: #c9aa71;
+      font-weight: 700;
+    }
+    .b1-matchup-row {
+      border-top: 1px solid #2a2d3e;
+      padding-top: 8px;
+      margin-top: 8px;
+      font-size: 0.77rem;
+      color: #8a94b8;
+      line-height: 1.45;
+    }
+    .b1-matchup-row strong {
+      color: #e8eaed;
+    }
+    .b1-select-btn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      border: 1px solid #c9aa71;
+      background: rgba(201,170,113,0.1);
+      color: #c9aa71;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .b1-select-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .b2-selected-matchup-preview {
+      margin-top: 12px;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-left: 3px solid #98c379;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.78rem;
+      color: #8a94b8;
+      line-height: 1.45;
+    }
+    .b2-selected-matchup-preview strong {
+      color: #e8eaed;
+      font-weight: 700;
+    }
+
     /* ── Phase 3 Proof Stack Display (Read-Only) ─────────────────────── */
     .proof-display-panel {
       margin-top: 18px;
@@ -549,6 +632,14 @@
     <h3>Fight Queue</h3>
     <div id="b1-profile-cards-container" class="profile-preview-cards-container" style="display:none;"></div>
     <div id="b1-status" class="status-msg">Loading fight queue…</div>
+    <div class="b1-event-cards-panel" id="b1-event-cards-panel">
+      <h4>Source-Backed Event Cards</h4>
+      <div class="b1-event-cards-note">
+        Event Name | Promotion | Event Date | Source URL | Source Type | Provenance Status | Matchup Count.
+        Operator selection is explicit. Only source-backed matchups may be selected for Button 2 preview.
+      </div>
+      <div id="b1-event-cards-list" class="b1-event-cards-list">Run Button 1 preview to load source-backed event cards.</div>
+    </div>
     <div class="b1-export-preview-card" id="b1-dossier-export-preview-card">
       <h4>Copy-Safe Dossier Export Preview (Read-Only)</h4>
       <p class="b1-export-preview-note">
@@ -574,6 +665,9 @@
   <div class="result-panel" id="b2-result-panel">
     <h3>Report Generation</h3>
     <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
+    <div id="b2-selected-matchup-preview" class="b2-selected-matchup-preview">
+      No matchup selected for Button 2 yet. Use Button 1 Source-Backed Event Cards and click Select for PDF.
+    </div>
   </div>
 
   <!-- ── Phase 7: Controlled Delivery Preview Panel (Preview-Only, Internal) ──── -->
@@ -945,10 +1039,15 @@ const LOCAL_AI_GATE1_DRY_RUN_APPLY_PREVIEW_ENDPOINT =
   '/api/local-ai/gate1/save-fights/dry-run-apply-preview';
 const LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT =
   '/api/local-ai/gate1/save-fights/approved-save-writer-preview';
+const BUTTON1_BUTTON2_EVENT_CARD_MATCHUP_SELECT_PREVIEW_ENDPOINT =
+  '/api/button1-button2/event-card-matchup/select-preview';
 
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
 const SOURCE_BUTTON_FIND_RESULTS = 'button3_find_results';
+
+window.button1CandidateRowsForSelector = [];
+window.button2SelectedMatchupPreview = null;
 
 function postLocalAiWorkflowPreview(payload) {
   return fetch(LOCAL_AI_WORKFLOW_PREVIEW_ENDPOINT, {
@@ -2048,6 +2147,241 @@ function escapeHtml(unsafe) {
     .replace(/'/g, '&#039;');
 }
 
+function getSourceBackedUrlFromRow(row) {
+  if (!row || typeof row !== 'object') return '';
+  const directKeys = ['source_url', 'canonical_source_url', 'event_url', 'provenance_url', 'official_url', 'url'];
+  for (const key of directKeys) {
+    const value = row[key];
+    if (typeof value === 'string' && /^https?:\/\//i.test(value.trim())) {
+      return value.trim();
+    }
+  }
+  const provenance = row.provenance;
+  if (provenance && typeof provenance === 'object') {
+    const src = provenance.source_url;
+    if (typeof src === 'string' && /^https?:\/\//i.test(src.trim())) {
+      return src.trim();
+    }
+  }
+  return '';
+}
+
+function isRowSourceBackedForSelector(row) {
+  return getSourceBackedUrlFromRow(row).length > 0;
+}
+
+function buildEventCardAndMatchupSelectorModel(candidateRows) {
+  const rows = Array.isArray(candidateRows) ? candidateRows : [];
+  const eventMap = {};
+  const eventOrder = [];
+
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i] || {};
+    const eventName = String(row.event_name || row.event || row.event_title || 'Unknown Event').trim();
+    const eventId = eventName.toLowerCase();
+    const promotion = String(row.promotion || row.organization || row.league || '').trim();
+    const eventDate = String(row.event_date || row.date || '').trim();
+    const sourceUrl = getSourceBackedUrlFromRow(row);
+    const sourceType = String(row.source_type || row.source_tier || (sourceUrl ? 'official' : 'unknown')).trim();
+    const fighterA = String(row.fighter_a_name || row.fighter_a || row.fighter_name || row.red_fighter || '').trim();
+    const fighterB = String(row.fighter_b_name || row.fighter_b || row.opponent_name || row.blue_fighter || '').trim();
+    const weightClass = String(row.weight_class || row.division || '').trim();
+    const boutOrder = String(row.bout_order || row.card_order || '').trim();
+    const candidateId = String(row.matchup_id || row.candidate_id || row.fight_id || row.fight_key || row.matchup_key || row.id || ('row_' + i)).trim();
+
+    if (!eventMap[eventId]) {
+      eventMap[eventId] = {
+        event_id: eventId,
+        event_name: eventName,
+        promotion: promotion,
+        event_date: eventDate,
+        source_url: sourceUrl,
+        source_type: sourceType,
+        source_backed_count: 0,
+        matchup_count: 0,
+        matchups: [],
+        dedupe_keys: {}
+      };
+      eventOrder.push(eventId);
+    }
+
+    const eventEntry = eventMap[eventId];
+    if (!eventEntry.source_url && sourceUrl) eventEntry.source_url = sourceUrl;
+    if (!eventEntry.source_type && sourceType) eventEntry.source_type = sourceType;
+    if (!eventEntry.promotion && promotion) eventEntry.promotion = promotion;
+    if (!eventEntry.event_date && eventDate) eventEntry.event_date = eventDate;
+
+    if (!fighterA || !fighterB) continue;
+
+    const sortedPair = [fighterA.toLowerCase(), fighterB.toLowerCase()].sort().join('|');
+    const dedupeKey = eventId + '|' + (boutOrder || 'na') + '|' + sortedPair;
+    if (eventEntry.dedupe_keys[dedupeKey]) continue;
+    eventEntry.dedupe_keys[dedupeKey] = true;
+
+    const sourceBacked = isRowSourceBackedForSelector(row);
+    eventEntry.matchup_count += 1;
+    if (sourceBacked) eventEntry.source_backed_count += 1;
+
+    eventEntry.matchups.push({
+      event_id: eventId,
+      matchup_id: candidateId,
+      candidate_id: candidateId,
+      fighter_a: fighterA,
+      fighter_b: fighterB,
+      weight_class: weightClass,
+      bout_order: boutOrder,
+      source_backed: sourceBacked,
+      source_url: sourceUrl,
+      source_type: sourceType,
+      report_ready_status: sourceBacked ? 'ready_for_button2_preview' : 'review_only'
+    });
+  }
+
+  const events = eventOrder.map(id => {
+    const eventEntry = eventMap[id];
+    const sourceBacked = eventEntry.source_backed_count > 0;
+    return {
+      event_id: eventEntry.event_id,
+      event_name: eventEntry.event_name,
+      promotion: eventEntry.promotion || 'Unknown Promotion',
+      event_date: eventEntry.event_date || 'Unknown Date',
+      source_url: eventEntry.source_url || '',
+      source_type: eventEntry.source_type || 'unknown',
+      provenance_status: sourceBacked ? 'source_backed_ready' : 'review_only',
+      matchup_count: eventEntry.matchup_count,
+      matchups: eventEntry.matchups
+    };
+  });
+
+  return events;
+}
+
+function renderButton2SelectedMatchupPreview(data) {
+  const el = document.getElementById('b2-selected-matchup-preview');
+  if (!el) return;
+
+  if (!data || data.selected_for_button2 !== true) {
+    el.innerHTML = 'No matchup selected for Button 2 yet. Use Button 1 Source-Backed Event Cards and click Select for PDF.';
+    return;
+  }
+
+  const fighterA = escapeHtml(String(data.fighter_a || 'Unknown Fighter A'));
+  const fighterB = escapeHtml(String(data.fighter_b || 'Unknown Fighter B'));
+  const eventName = escapeHtml(String(data.event_name || 'Unknown Event'));
+  const sourceUrl = escapeHtml(String(data.source_url || 'No source URL'));
+  const sourceType = escapeHtml(String(data.source_type || 'unknown'));
+  const readiness = escapeHtml(String(data.report_ready_status || 'selection_pending'));
+
+  el.innerHTML =
+    '<strong>Selected matchup:</strong> ' + fighterA + ' vs ' + fighterB + '<br>' +
+    '<strong>Event:</strong> ' + eventName + '<br>' +
+    '<strong>Source:</strong> ' + sourceUrl + ' (' + sourceType + ')<br>' +
+    '<strong>Button 2 readiness:</strong> ' + readiness + '<br>' +
+    '<strong>Next action:</strong> Operator may click Generate Report when ready. No auto-generation performed.';
+}
+
+function renderButton1EventCardSelector(candidateRows) {
+  const listEl = document.getElementById('b1-event-cards-list');
+  if (!listEl) return;
+
+  window.button1CandidateRowsForSelector = Array.isArray(candidateRows) ? candidateRows : [];
+
+  const eventCards = buildEventCardAndMatchupSelectorModel(window.button1CandidateRowsForSelector);
+  if (!eventCards.length) {
+    listEl.innerHTML = 'No event cards available. Run Button 1 preview to hydrate candidate rows.';
+    return;
+  }
+
+  const htmlParts = [];
+  for (const eventCard of eventCards) {
+    const eventHeader =
+      '<div class="b1-event-header">' +
+      '<strong>Event Name:</strong> ' + escapeHtml(eventCard.event_name) + '<br>' +
+      '<strong>Promotion:</strong> ' + escapeHtml(eventCard.promotion) + '<br>' +
+      '<strong>Event Date:</strong> ' + escapeHtml(eventCard.event_date) + '<br>' +
+      '<strong>Source URL:</strong> ' + escapeHtml(eventCard.source_url || 'Missing source URL') + '<br>' +
+      '<strong>Source Type:</strong> ' + escapeHtml(eventCard.source_type) + '<br>' +
+      '<strong>Provenance Status:</strong> ' + escapeHtml(eventCard.provenance_status) + '<br>' +
+      '<strong>Matchup Count:</strong> ' + escapeHtml(String(eventCard.matchup_count)) +
+      '</div>';
+
+    let matchupHtml = '';
+    if (!eventCard.matchups.length) {
+      matchupHtml = '<div class="b1-matchup-row">No matchup rows found for this event card.</div>';
+    } else {
+      matchupHtml = eventCard.matchups.map(matchup => {
+        const disabled = matchup.source_backed ? '' : ' disabled';
+        const statusText = matchup.source_backed ? 'ready' : 'review_only';
+        return (
+          '<div class="b1-matchup-row">' +
+          '<strong>' + escapeHtml(matchup.fighter_a) + ' vs ' + escapeHtml(matchup.fighter_b) + '</strong><br>' +
+          'Weight Class: ' + escapeHtml(matchup.weight_class || 'Unknown') + ' | ' +
+          'Bout Order: ' + escapeHtml(matchup.bout_order || 'Unknown') + '<br>' +
+          'Source-backed status: ' + (matchup.source_backed ? 'yes' : 'no') + ' | ' +
+          'Button2 readiness status: ' + escapeHtml(statusText) + '<br>' +
+          '<button class="b1-select-btn"' + disabled +
+          ' data-event-id="' + escapeHtml(matchup.event_id) + '"' +
+          ' data-matchup-id="' + escapeHtml(matchup.matchup_id) + '"' +
+          ' data-candidate-id="' + escapeHtml(matchup.candidate_id) + '"' +
+          ' onclick="selectEventCardMatchupForPdfFromButton(this)">Select for PDF</button>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    htmlParts.push('<div class="b1-event-card">' + eventHeader + matchupHtml + '</div>');
+  }
+
+  listEl.innerHTML = htmlParts.join('');
+}
+
+function selectEventCardMatchupForPdf(eventId, matchupId, candidateId) {
+  const payload = {
+    event_id: String(eventId || ''),
+    matchup_id: String(matchupId || ''),
+    candidate_id: String(candidateId || ''),
+    operator_selected: true,
+    candidate_rows: Array.isArray(window.button1CandidateRowsForSelector)
+      ? window.button1CandidateRowsForSelector
+      : []
+  };
+
+  setStatus('b2-status', '<span class="spinner"></span>Validating explicit matchup selection preview…');
+
+  fetch(BUTTON1_BUTTON2_EVENT_CARD_MATCHUP_SELECT_PREVIEW_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.selected_for_button2 !== true) {
+        const reasons = Array.isArray(data && data.denial_reasons) ? data.denial_reasons : ['unsupported_selection'];
+        setStatus('b2-status', 'Selection denied: ' + reasons.join(', ') + '. No generation performed.', 'error');
+        window.button2SelectedMatchupPreview = null;
+        renderButton2SelectedMatchupPreview(null);
+        return;
+      }
+
+      window.button2SelectedMatchupPreview = data;
+      renderButton2SelectedMatchupPreview(data);
+      setStatus('b2-status', 'Selection accepted for Button 2 preview. Operator action still required to generate report.', 'ok');
+      showPanel('b2-result-panel');
+    })
+    .catch(() => {
+      setStatus('b2-status', 'Selection preview failed. No generation performed.', 'error');
+      window.button2SelectedMatchupPreview = null;
+      renderButton2SelectedMatchupPreview(null);
+    });
+}
+
+function selectEventCardMatchupForPdfFromButton(buttonEl) {
+  const eventId = buttonEl && buttonEl.dataset ? buttonEl.dataset.eventId : '';
+  const matchupId = buttonEl && buttonEl.dataset ? buttonEl.dataset.matchupId : '';
+  const candidateId = buttonEl && buttonEl.dataset ? buttonEl.dataset.candidateId : '';
+  selectEventCardMatchupForPdf(eventId, matchupId, candidateId);
+}
+
 function getConfidenceBadgeColor(grade) {
   const gradeMap = {
     'A': '#98c379',
@@ -2303,6 +2637,7 @@ function renderButton1IdentityResolverPreviewBulk(statusId, existingHtml, bulkDa
 
 function handleButton1Click() {
   showPanel('b1-result-panel');
+  renderButton1EventCardSelector(window.button1CandidateRowsForSelector || []);
   renderButton1DossierExportPreview(window.button1DossierExportPreview || null);
   setStatus('b1-status', '<span class="spinner"></span>Running local AI workflow preview…');
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_FIGHTS)
@@ -2316,6 +2651,8 @@ function handleButton1Click() {
       const operationId = tokenPreview && (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
         ? (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
         : 'preview';
+
+      renderButton1EventCardSelector(candidateRows);
 
       return postLocalAiGate1ApprovedSaveWriterPreview({
         gate_approval_token_preview: tokenPreview,
@@ -2439,6 +2776,7 @@ function handleButton1Click() {
 
 function handleButton2Click() {
   showPanel('b2-result-panel');
+  renderButton2SelectedMatchupPreview(window.button2SelectedMatchupPreview || null);
   setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
     .then(data => renderSimpleWorkflowSummary('b2-status', data))

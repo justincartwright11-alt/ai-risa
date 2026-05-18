@@ -76,6 +76,56 @@ _LOCAL_AI_SAFE_TELEMETRY = {
     "auto_apply_performed": False,
 }
 
+
+def _is_source_backed_candidate_row(row):
+    if not isinstance(row, dict):
+        return False
+
+    for key in ("source_url", "canonical_source_url", "event_url", "provenance_url", "official_url", "url"):
+        value = row.get(key)
+        if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
+            return True
+
+    provenance = row.get("provenance")
+    if isinstance(provenance, dict):
+        src = provenance.get("source_url")
+        if isinstance(src, str) and src.strip().lower().startswith(("http://", "https://")):
+            return True
+
+    return False
+
+
+def _candidate_row_id(row):
+    if not isinstance(row, dict):
+        return ""
+    for key in ("matchup_id", "candidate_id", "fight_id", "fight_key", "matchup_key", "id"):
+        value = row.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _candidate_row_event_id(row):
+    if not isinstance(row, dict):
+        return ""
+    event_name = row.get("event_name") or row.get("event") or row.get("event_title")
+    if not isinstance(event_name, str):
+        return ""
+    value = event_name.strip().lower()
+    return value
+
+
+def _extract_matchup_names(row):
+    if not isinstance(row, dict):
+        return "", ""
+
+    fighter_a = row.get("fighter_a") or row.get("fighter_a_name") or row.get("red_fighter") or row.get("fighter_name")
+    fighter_b = row.get("fighter_b") or row.get("fighter_b_name") or row.get("blue_fighter") or row.get("opponent_name")
+
+    fighter_a = fighter_a.strip() if isinstance(fighter_a, str) else ""
+    fighter_b = fighter_b.strip() if isinstance(fighter_b, str) else ""
+    return fighter_a, fighter_b
+
 # ─── Data Helpers ──────────────────────────────────────────────────────────────
 
 def _build_accuracy_comparison_summary():
@@ -182,6 +232,185 @@ def button1_to_button2_dossier_handoff_preview():
         "ok": True,
         **preview_payload,
         "button2_generation_performed": False,
+    })
+
+
+@app.route("/api/button1-button2/event-card-matchup/select-preview", methods=["POST"])
+def button1_button2_event_card_matchup_select_preview():
+    """Preview-only matchup selection from source-backed Button 1 rows into Button 2 candidate context."""
+    safety_flags = {
+        "pdf_generation_performed": False,
+        "queue_write_performed": False,
+        "delivery_performed": False,
+        "email_send_performed": False,
+        "external_api_delivery_performed": False,
+        "learning_apply_performed": False,
+        "calibration_write_performed": False,
+        "button3_mutation_performed": False,
+    }
+
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": "",
+            "event_date": "",
+            "promotion": "",
+            "source_url": "",
+            "source_type": "",
+            "fighter_a": "",
+            "fighter_b": "",
+            "matchup_id": "",
+            "candidate_id": "",
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["unsupported_selection"],
+            "safety_flags": safety_flags,
+        }), 400
+
+    event_id = body.get("event_id") if isinstance(body.get("event_id"), str) else ""
+    matchup_id = body.get("matchup_id") if isinstance(body.get("matchup_id"), str) else ""
+    candidate_id = body.get("candidate_id") if isinstance(body.get("candidate_id"), str) else ""
+    operator_selected = bool(body.get("operator_selected", False))
+    candidate_rows = body.get("candidate_rows", [])
+    if not isinstance(candidate_rows, list):
+        candidate_rows = []
+
+    if not operator_selected:
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": "",
+            "event_date": "",
+            "promotion": "",
+            "source_url": "",
+            "source_type": "",
+            "fighter_a": "",
+            "fighter_b": "",
+            "matchup_id": matchup_id,
+            "candidate_id": candidate_id,
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["operator_selection_required"],
+            "safety_flags": safety_flags,
+        })
+
+    if not event_id and not matchup_id and not candidate_id:
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": "",
+            "event_date": "",
+            "promotion": "",
+            "source_url": "",
+            "source_type": "",
+            "fighter_a": "",
+            "fighter_b": "",
+            "matchup_id": "",
+            "candidate_id": "",
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["operator_selection_required"],
+            "safety_flags": safety_flags,
+        })
+
+    matched = None
+    for row in candidate_rows:
+        if not isinstance(row, dict):
+            continue
+        row_id = _candidate_row_id(row)
+        if matchup_id and row_id == matchup_id:
+            matched = row
+            break
+        if candidate_id and row_id == candidate_id:
+            matched = row
+            break
+
+    if matched is None:
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": "",
+            "event_date": "",
+            "promotion": "",
+            "source_url": "",
+            "source_type": "",
+            "fighter_a": "",
+            "fighter_b": "",
+            "matchup_id": matchup_id,
+            "candidate_id": candidate_id,
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["missing_matchup"],
+            "safety_flags": safety_flags,
+        })
+
+    matched_event_id = _candidate_row_event_id(matched)
+    if event_id and matched_event_id and event_id.strip().lower() != matched_event_id:
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": matched.get("event_name", ""),
+            "event_date": matched.get("event_date", ""),
+            "promotion": matched.get("promotion", ""),
+            "source_url": matched.get("source_url", ""),
+            "source_type": matched.get("source_type", ""),
+            "fighter_a": _extract_matchup_names(matched)[0],
+            "fighter_b": _extract_matchup_names(matched)[1],
+            "matchup_id": _candidate_row_id(matched),
+            "candidate_id": _candidate_row_id(matched),
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["missing_event_card"],
+            "safety_flags": safety_flags,
+        })
+
+    if not _is_source_backed_candidate_row(matched):
+        return jsonify({
+            "selection_preview": True,
+            "selected_for_button2": False,
+            "event_name": matched.get("event_name", ""),
+            "event_date": matched.get("event_date", ""),
+            "promotion": matched.get("promotion", ""),
+            "source_url": "",
+            "source_type": matched.get("source_type", ""),
+            "fighter_a": _extract_matchup_names(matched)[0],
+            "fighter_b": _extract_matchup_names(matched)[1],
+            "matchup_id": _candidate_row_id(matched),
+            "candidate_id": _candidate_row_id(matched),
+            "report_ready_status": "selection_denied",
+            "denial_reasons": ["source_backed_matchup_required", "provenance_missing"],
+            "safety_flags": safety_flags,
+        })
+
+    source_url = ""
+    for key in ("source_url", "canonical_source_url", "event_url", "provenance_url", "official_url", "url"):
+        value = matched.get(key)
+        if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
+            source_url = value.strip()
+            break
+    if not source_url:
+        provenance = matched.get("provenance")
+        if isinstance(provenance, dict):
+            maybe = provenance.get("source_url")
+            if isinstance(maybe, str) and maybe.strip().lower().startswith(("http://", "https://")):
+                source_url = maybe.strip()
+
+    fighter_a, fighter_b = _extract_matchup_names(matched)
+
+    return jsonify({
+        "selection_preview": True,
+        "selected_for_button2": True,
+        "event_name": matched.get("event_name", ""),
+        "event_date": matched.get("event_date", ""),
+        "promotion": matched.get("promotion", ""),
+        "source_url": source_url,
+        "source_type": matched.get("source_type", "official"),
+        "fighter_a": fighter_a,
+        "fighter_b": fighter_b,
+        "matchup_id": _candidate_row_id(matched),
+        "candidate_id": _candidate_row_id(matched),
+        "report_ready_status": "ready_for_button2_preview",
+        "denial_reasons": [],
+        "safety_flags": safety_flags,
     })
 
 

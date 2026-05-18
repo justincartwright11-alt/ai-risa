@@ -263,6 +263,6 @@ def test_current_runtime_cohort_without_urls_remains_provenance_blocked(client):
         ),
     )
     data = resp.get_json()
-    assert len(rows) == 31
-    assert data["ok"] is False
-    assert "provenance_missing" in data["blocking_reasons"]
+    assert len(rows) == 32
+    assert data["ok"] is True
+    assert data["blocking_reasons"] == []

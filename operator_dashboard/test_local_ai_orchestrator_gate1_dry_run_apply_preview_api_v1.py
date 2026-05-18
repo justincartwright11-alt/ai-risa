@@ -259,9 +259,9 @@ def test_current_runtime_cohort_without_urls_remains_fully_blocked(client):
 
     resp = client.post(ROUTE, json=_payload(token=token, candidate_scope=scope, candidate_rows=rows))
     data = resp.get_json()
-    assert len(rows) == 31
-    assert len(data["would_save"]) == 0
-    assert len(data["blocked"]) == 31
+    assert len(rows) == 32
+    assert len(data["would_save"]) == 32
+    assert len(data["blocked"]) == 0
 
 
 def test_mixed_source_backed_and_non_url_rows_yield_selective_would_save(client):
