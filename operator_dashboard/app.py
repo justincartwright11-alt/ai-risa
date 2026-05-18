@@ -69,6 +69,9 @@ from operator_dashboard.button2_pdf_output_root_config_v1 import (
     OutputRootInvalidError,
 )
 from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
+from operator_dashboard.button3_result_comparison_preview_v1 import (
+    build_button3_result_comparison_preview,
+)
 
 app = Flask(__name__, template_folder="templates")
 
@@ -1055,6 +1058,29 @@ def button3_auto_result_source_yield_live_executor_preview():
                 "auto_apply_performed": False,
             },
         }), 500
+
+
+@app.route("/api/button3/result-comparison/preview-v1", methods=["POST"])
+def button3_result_comparison_preview_v1():
+    """Preview-only Button 3 result comparison route (no apply/mutation path)."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "message": "Request body must be a JSON object.",
+            "preview_only": True,
+            "mutation_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "queue_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    response = build_button3_result_comparison_preview(body)
+    return jsonify(response), 200
 
 
 @app.route("/api/operator/button3/official-result-auto-search-yield-sweep-preview", methods=["POST"])

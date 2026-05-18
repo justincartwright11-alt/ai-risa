@@ -897,7 +897,15 @@
   <!-- ── Button 3 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b3-result-panel">
     <h3>Find Results &amp; Compare — Preview</h3>
+    <div class="status-msg" id="b3-preview-language">Preview-only comparison path: no apply, no learning, no calibration, no queue mutation, no external delivery/API.</div>
     <div id="b3-status" class="status-msg"></div>
+
+    <div class="b3-comparison-preview-surface" id="b3-comparison-preview-surface" style="margin-top:12px;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:12px 14px;font-size:0.8rem;color:#d7dce8;line-height:1.6;">
+      <strong>Controlled Result Comparison Preview Fields</strong><br>
+      fight_id, event_name, fighter_a, fighter_b, predicted_winner, predicted_method, predicted_round,<br>
+      actual_winner, actual_method, actual_round, result_source_url, source_tier, comparison_status,
+      accuracy_preview, operator_review_required.
+    </div>
 
     <!-- Summary grid: 5 simple state labels only -->
     <div class="summary-grid" id="b3-summary-grid" style="display:none;">

@@ -1,0 +1,33 @@
+{
+  "slice": "button3-result-comparison-controlled-preview-path-v1",
+  "status": "validated",
+  "route": {
+    "added": true,
+    "path": "/api/button3/result-comparison/preview-v1",
+    "method": "POST",
+    "preview_only": true
+  },
+  "supported_statuses": [
+    "result_found",
+    "no_result_found",
+    "needs_source",
+    "conflict",
+    "ready_to_compare",
+    "needs_manual_review"
+  ],
+  "required_fields_present": true,
+  "governance_flags": {
+    "mutation_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "queue_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "scope_preserved": {
+    "button1_changes": false,
+    "button2_changes": false,
+    "auto_result_fill_added": false,
+    "fake_result_generation_added": false,
+    "external_delivery_changes": false
+  }
+}
