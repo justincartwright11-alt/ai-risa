@@ -1,0 +1,47 @@
+{
+  "slice": "button1-multisport-full-event-card-matchup-ingestion-v1",
+  "status": "locked",
+  "date": "2026-05-18",
+  "event_cards_upgraded": 4,
+  "matchup_counts": {
+    "boxing": { "before": 1, "after": 1, "card_completeness_status": "headline_only" },
+    "mma": { "before": 1, "after": 1, "card_completeness_status": "headline_only" },
+    "kickboxing": { "before": 1, "after": 1, "card_completeness_status": "headline_only" },
+    "muay_thai": { "before": 2, "after": 15, "card_completeness_status": "full_card_confirmed" }
+  },
+  "source_provenance": {
+    "boxing": { "source": "matchroomboxing.com", "tier": "A", "requires_secondary_confirmation": false },
+    "mma": { "source": "ufc.com/event/", "tier": "A", "requires_secondary_confirmation": false },
+    "kickboxing": { "source": "glorykickboxing.com/events/", "tier": "A", "requires_secondary_confirmation": false },
+    "muay_thai": { "source": "muaythairecords.com/events/", "tier": "B", "requires_secondary_confirmation": true }
+  },
+  "new_contract_fields_added": [
+    "card_completeness_status",
+    "matchup_count",
+    "expected_matchup_count",
+    "extraction_method",
+    "extraction_diagnostics",
+    "ruleset",
+    "title_fight",
+    "provenance_status",
+    "queue_save_eligible",
+    "review_reason"
+  ],
+  "gate1_result": "preview_only_no_writes",
+  "pdf_generated": false,
+  "delivered": false,
+  "learning_updated": false,
+  "calibration_updated": false,
+  "button3_mutated": false,
+  "dashboard_render": "card_completeness_status_visible_nested_matchups_expanded",
+  "governance_result": "all_constraints_satisfied",
+  "tests_file": "operator_dashboard/test_button1_multisport_full_event_card_matchup_ingestion_v1.py",
+  "test_count": 15,
+  "files_changed": [
+    "ops/approved_sources/button1_live_event_source_rows.json",
+    "operator_dashboard/templates/index.html",
+    "operator_dashboard/test_button1_multisport_full_event_card_matchup_ingestion_v1.py",
+    "docs/button1_multisport_full_event_card_matchup_ingestion_v1.md",
+    "ops/release_checks/button1_multisport_full_event_card_matchup_ingestion_v1/full_card_matchup_ingestion_summary.json"
+  ]
+}

@@ -2285,6 +2285,7 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
         event_date: eventDate,
         source_url: sourceUrl,
         source_type: sourceType,
+        card_completeness_status: '',
         source_backed_count: 0,
         matchup_count: 0,
         matchups: [],
@@ -2298,6 +2299,45 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
     if (!eventEntry.source_type && sourceType) eventEntry.source_type = sourceType;
     if (!eventEntry.promotion && promotion) eventEntry.promotion = promotion;
     if (!eventEntry.event_date && eventDate) eventEntry.event_date = eventDate;
+    const cardCompletenessStatus = String(row.card_completeness_status || '').trim();
+    if (!eventEntry.card_completeness_status && cardCompletenessStatus) {
+      eventEntry.card_completeness_status = cardCompletenessStatus;
+    }
+
+    // Expand nested matchups array from event card rows (full-card feed ingestion)
+    const nestedMatchups = Array.isArray(row.matchups) ? row.matchups : [];
+    for (let j = 0; j < nestedMatchups.length; j += 1) {
+      const mu = nestedMatchups[j] || {};
+      const muFighterA = String(mu.fighter_a || mu.fighter_a_name || '').trim();
+      const muFighterB = String(mu.fighter_b || mu.fighter_b_name || '').trim();
+      if (!muFighterA || !muFighterB) continue;
+      const muWeightClass = String(mu.weight_class || '').trim();
+      const muBoutOrder = String(mu.bout_order !== undefined ? mu.bout_order : '').trim();
+      const muSourceUrl = String(mu.source_url || sourceUrl || '').trim();
+      const muSourceBacked = /^https?:\/\//i.test(muSourceUrl);
+      const muReadiness = String(mu.button2_readiness_status || (muSourceBacked ? 'ready_for_button2_preview' : 'review_only')).trim();
+      const muCandidateId = String(mu.matchup_id || mu.candidate_id || (candidateId + '_mu_' + j)).trim();
+      const muSortedPair = [muFighterA.toLowerCase(), muFighterB.toLowerCase()].sort().join('|');
+      const muDedupeKey = eventId + '|' + (muBoutOrder || 'na') + '|' + muSortedPair;
+      if (eventEntry.dedupe_keys[muDedupeKey]) continue;
+      eventEntry.dedupe_keys[muDedupeKey] = true;
+      eventEntry.matchup_count += 1;
+      if (muSourceBacked) eventEntry.source_backed_count += 1;
+      eventEntry.matchups.push({
+        event_id: eventId,
+        matchup_id: muCandidateId,
+        candidate_id: muCandidateId,
+        selected_index: i,
+        fighter_a: muFighterA,
+        fighter_b: muFighterB,
+        weight_class: muWeightClass,
+        bout_order: muBoutOrder,
+        source_backed: muSourceBacked,
+        source_url: muSourceUrl,
+        source_type: sourceType,
+        report_ready_status: muReadiness
+      });
+    }
 
     if (!fighterA || !fighterB) continue;
 
@@ -2336,6 +2376,7 @@ function buildEventCardAndMatchupSelectorModel(candidateRows) {
       event_date: eventEntry.event_date || 'Unknown Date',
       source_url: eventEntry.source_url || '',
       source_type: eventEntry.source_type || 'unknown',
+      card_completeness_status: eventEntry.card_completeness_status || 'unknown',
       provenance_status: sourceBacked ? 'source_backed_ready' : 'review_only',
       matchup_count: eventEntry.matchup_count,
       matchups: eventEntry.matchups
@@ -2391,6 +2432,7 @@ function renderButton1EventCardSelector(candidateRows) {
       '<strong>Source URL:</strong> ' + escapeHtml(eventCard.source_url || 'Missing source URL') + '<br>' +
       '<strong>Source Type:</strong> ' + escapeHtml(eventCard.source_type) + '<br>' +
       '<strong>Provenance Status:</strong> ' + escapeHtml(eventCard.provenance_status) + '<br>' +
+      '<strong>Card Completeness:</strong> ' + escapeHtml(eventCard.card_completeness_status || 'unknown') + '<br>' +
       '<strong>Matchup Count:</strong> ' + escapeHtml(String(eventCard.matchup_count)) +
       '</div>';
 
