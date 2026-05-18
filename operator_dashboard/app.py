@@ -17,11 +17,12 @@ GOVERNANCE:
 import sys
 import os
 import re
+from urllib.parse import quote
 
 # Allow imports from workspace root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 
 from button3_auto_result_source_yield_live_executor_preview import (
     build_readonly_executor_preview_response,
@@ -61,6 +62,11 @@ from operator_dashboard.button2_dossier_handoff_report_context_preview import (
 )
 from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
     generate_button2_report_render_gate_integration,
+)
+from operator_dashboard.button2_pdf_output_root_config_v1 import (
+    get_pdf_output_root,
+    OutputRootNotConfiguredError,
+    OutputRootInvalidError,
 )
 from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
 
@@ -168,6 +174,23 @@ def _build_ingest_payload_from_selected_matchup(selected_preview):
         "destination_marker": "button2_report_generation_preview",
         "dossier_summary_preview": "\n".join(summary_lines),
     }
+
+
+def _is_safe_generated_pdf_filename(filename):
+    if not isinstance(filename, str):
+        return False
+    value = filename.strip()
+    if not value:
+        return False
+    if os.path.basename(value) != value:
+        return False
+    if "/" in value or "\\" in value or ".." in value:
+        return False
+    if value.startswith("."):
+        return False
+    if not value.lower().endswith(".pdf"):
+        return False
+    return bool(re.match(r"^[A-Za-z0-9._-]+$", value))
 
 # ─── Data Helpers ──────────────────────────────────────────────────────────────
 
@@ -600,6 +623,17 @@ def button2_selected_matchup_generate_guarded_v1():
             "message": "Generation returned malformed response.",
         }
 
+    if result.get("ok") is True:
+        output_path = result.get("output_path")
+        if isinstance(output_path, str) and output_path.strip():
+            output_filename = os.path.basename(output_path.strip())
+            if _is_safe_generated_pdf_filename(output_filename):
+                result["output_filename"] = output_filename
+                result["pdf_open_url"] = (
+                    "/api/button2/generated-report/open?filename="
+                    + quote(output_filename, safe="")
+                )
+
     result.update({
         "operator_action_required": True,
         "selected_matchup_required": True,
@@ -620,6 +654,45 @@ def button2_selected_matchup_generate_guarded_v1():
 
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
     return jsonify(result), status_code
+
+
+@app.route("/api/button2/generated-report/open", methods=["GET"])
+def button2_generated_report_open_v1():
+    """Serve generated Button 2 PDFs from the configured output root only."""
+    filename = request.args.get("filename", "")
+    if not _is_safe_generated_pdf_filename(filename):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_filename",
+            "message": "filename must be a safe PDF filename.",
+        }), 400
+
+    try:
+        output_root = get_pdf_output_root()
+    except (OutputRootNotConfiguredError, OutputRootInvalidError) as e:
+        return jsonify({
+            "ok": False,
+            "error": "output_root_unavailable",
+            "message": str(e),
+        }), 400
+
+    canonical_root = os.path.realpath(output_root)
+    candidate_path = os.path.realpath(os.path.join(output_root, filename))
+    if not candidate_path.startswith(canonical_root + os.sep):
+        return jsonify({
+            "ok": False,
+            "error": "path_traversal_rejected",
+            "message": "Requested file escapes configured output root.",
+        }), 400
+
+    if not os.path.isfile(candidate_path):
+        return jsonify({
+            "ok": False,
+            "error": "file_not_found",
+            "message": "Generated PDF was not found.",
+        }), 404
+
+    return send_from_directory(output_root, filename, mimetype="application/pdf")
 
 
 @app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])

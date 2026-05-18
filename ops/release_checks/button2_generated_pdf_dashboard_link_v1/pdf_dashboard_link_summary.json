@@ -1,0 +1,29 @@
+{
+  "slice": "button2-generated-pdf-dashboard-link-v1",
+  "status": "validated",
+  "route_added": "/api/button2/generated-report/open?filename=<pdf_filename>",
+  "dashboard_label": "Open Generated PDF",
+  "response_fields": [
+    "output_path",
+    "output_filename",
+    "pdf_open_url"
+  ],
+  "safety_controls": {
+    "filename_only": true,
+    "reject_path_separators": true,
+    "reject_parent_segments": true,
+    "reject_non_pdf": true,
+    "reject_missing_file": true,
+    "serve_from_configured_output_root_only": true,
+    "path_traversal_guard": true,
+    "safe_send_from_directory": true
+  },
+  "governance": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  }
+}

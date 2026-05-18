@@ -2531,11 +2531,19 @@ function renderButton2GuardedGenerateResult(response) {
 
   if (ok) {
     const outputPath = String(data.output_path || '').trim();
+    const outputFilename = String(data.output_filename || '').trim();
+    const openUrl = String(data.pdf_open_url || '').trim();
     const message = String(data.message || 'Guarded generation completed.').trim();
-    const safeOutput = outputPath ? ('Output path: ' + outputPath + '<br>') : '';
+    const safeOutput = outputPath ? ('Output path: ' + escapeHtml(outputPath) + '<br>') : '';
+    const safeFilename = outputFilename ? ('Output filename: ' + escapeHtml(outputFilename) + '<br>') : '';
+    const openLink = openUrl
+      ? ('<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open Generated PDF</a><br>')
+      : '';
     const html =
       message + '<br>' +
       safeOutput +
+      safeFilename +
+      openLink +
       'Operator action required: Yes<br>' +
       'Delivery performed: ' + (data.delivery_performed === true ? 'Yes' : 'No') + '<br>' +
       'External API delivery performed: ' + (data.external_api_delivery_performed === true ? 'Yes' : 'No') + '<br>' +

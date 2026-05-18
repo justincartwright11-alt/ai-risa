@@ -144,7 +144,7 @@ def test_guarded_route_delegates_generation_with_derived_fight_id(monkeypatch):
         return {
             "ok": True,
             "message": "PDF generated and saved successfully.",
-            "output_path": "C:/tmp/fight_report.pdf",
+            "output_path": "C:/tmp/rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium.pdf",
             "pdf_generation_performed": True,
             "file_write_performed": True,
             "export_performed": False,
@@ -171,6 +171,11 @@ def test_guarded_route_delegates_generation_with_derived_fight_id(monkeypatch):
     data = response.get_json()
     assert data["ok"] is True
     assert data["selected_matchup_generate_request_accepted"] is True
+    assert data["output_filename"] == "rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium.pdf"
+    assert data["pdf_open_url"] == (
+        "/api/button2/generated-report/open?filename="
+        "rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium.pdf"
+    )
     assert data["delivery_performed"] is False
     assert data["external_api_delivery_performed"] is False
     assert data["queue_write_performed"] is False
@@ -194,5 +199,7 @@ def test_dashboard_wires_button2_guarded_generate_endpoint():
 
     assert "/api/button2/selected-matchup/generate-guarded-v1" in html
     assert "postButton2SelectedMatchupGenerateGuarded" in html
+    assert "renderButton2GuardedGenerateResult" in html
     assert "Running explicit operator-approved guarded generation" in html
     assert "Explicit operator action requires a selected matchup" in html
+    assert "Open Generated PDF" in html
