@@ -1,0 +1,31 @@
+{
+  "slice": "button2-explicit-operator-generate-from-selected-matchup-guarded-v1",
+  "status": "implemented-and-runtime-confirmed",
+  "endpoint": "/api/button2/selected-matchup/generate-guarded-v1",
+  "requirements": {
+    "explicit_operator_action_required": true,
+    "selected_matchup_required": true,
+    "source_backed_required": true,
+    "no_queue_write": true,
+    "no_delivery": true,
+    "no_external_api_delivery": true,
+    "no_learning_apply": true,
+    "no_calibration_write": true,
+    "no_button3_mutation": true
+  },
+  "runtime_observations": {
+    "guarded_route_called_on_button2_click": true,
+    "delivery_api_call_observed": false,
+    "button3_mutation_call_observed": false,
+    "main_dashboard_button_count": 3,
+    "environment_blocker": "No module named 'weasyprint'"
+  },
+  "validation": {
+    "guarded_suite": "7 passed",
+    "focused_governed_bundle": "107 passed"
+  },
+  "artifacts": {
+    "doc": "docs/button2_explicit_operator_generate_from_selected_matchup_guarded_v1.md",
+    "tests": "operator_dashboard/test_button2_explicit_operator_generate_from_selected_matchup_guarded_v1.py"
+  }
+}

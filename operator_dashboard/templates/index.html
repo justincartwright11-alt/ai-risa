@@ -1041,6 +1041,8 @@ const LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT =
   '/api/local-ai/gate1/save-fights/approved-save-writer-preview';
 const BUTTON1_BUTTON2_EVENT_CARD_MATCHUP_SELECT_PREVIEW_ENDPOINT =
   '/api/button1-button2/event-card-matchup/select-preview';
+const BUTTON2_SELECTED_MATCHUP_GENERATE_GUARDED_ENDPOINT =
+  '/api/button2/selected-matchup/generate-guarded-v1';
 
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
@@ -2480,6 +2482,71 @@ function selectEventCardMatchupForPdfFromButton(buttonEl) {
   selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedIndex);
 }
 
+function renderButton2GuardedGenerateResult(response) {
+  const data = response && typeof response === 'object' ? response : {};
+  const ok = data.ok === true;
+  const statusClass = ok ? 'ok' : 'error';
+
+  if (ok) {
+    const outputPath = String(data.output_path || '').trim();
+    const message = String(data.message || 'Guarded generation completed.').trim();
+    const safeOutput = outputPath ? ('Output path: ' + outputPath + '<br>') : '';
+    const html =
+      message + '<br>' +
+      safeOutput +
+      'Operator action required: Yes<br>' +
+      'Delivery performed: ' + (data.delivery_performed === true ? 'Yes' : 'No') + '<br>' +
+      'External API delivery performed: ' + (data.external_api_delivery_performed === true ? 'Yes' : 'No') + '<br>' +
+      'Queue write performed: ' + (data.queue_write_performed === true ? 'Yes' : 'No') + '<br>' +
+      'Learning apply performed: ' + (data.learning_apply_performed === true ? 'Yes' : 'No') + '<br>' +
+      'Calibration write performed: ' + (data.calibration_write_performed === true ? 'Yes' : 'No') + '<br>' +
+      'Button 3 mutation performed: ' + (data.button3_mutation_performed === true ? 'Yes' : 'No');
+
+    setStatus('b2-status', html, statusClass);
+    return;
+  }
+
+  const err = String(data.error || 'guarded_generation_failed');
+  const msg = String(data.message || 'Guarded generation failed. No delivery was performed.');
+  setStatus('b2-status', msg + '<br>Error: ' + err, statusClass);
+}
+
+function postButton2SelectedMatchupGenerateGuarded(selectedPreview) {
+  const payload = {
+    operator_approved: true,
+    selected_matchup_preview: selectedPreview || null
+  };
+  return fetch(BUTTON2_SELECTED_MATCHUP_GENERATE_GUARDED_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .catch(() => ({
+      ok: false,
+      error: 'network_or_parse_error',
+      message: 'Could not complete guarded generation request.',
+      delivery_performed: false,
+      external_api_delivery_performed: false,
+      queue_write_performed: false,
+      learning_apply_performed: false,
+      calibration_write_performed: false,
+      button3_mutation_performed: false
+    }));
+}
+
+function runButton2WorkflowHealthPreview() {
+  return requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
+    .then(data => {
+      renderSimpleWorkflowSummary('b2-status', data);
+      return data;
+    })
+    .catch(() => {
+      setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error');
+      return null;
+    });
+}
+
 function getConfidenceBadgeColor(grade) {
   const gradeMap = {
     'A': '#98c379',
@@ -2876,10 +2943,27 @@ function handleButton2Click() {
   showPanel('b2-result-panel');
   restoreButton2SelectedMatchupPreviewFromPersistence();
   renderButton2SelectedMatchupPreview(window.button2SelectedMatchupPreview || null);
-  setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
-    .then(data => renderSimpleWorkflowSummary('b2-status', data))
-    .catch(() => setStatus('b2-status', 'Could not run local AI preview. No changes were made.', 'error'));
+
+  const selectedPreview = window.button2SelectedMatchupPreview;
+  if (!selectedPreview || selectedPreview.selected_for_button2 !== true) {
+    setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
+    runButton2WorkflowHealthPreview().then(() => {
+      const existing = document.getElementById('b2-status');
+      if (!existing) return;
+      existing.innerHTML += '<br><br>Explicit operator action requires a selected matchup. Use Button 1 Source-Backed Event Cards and click Select for PDF first. No generation performed.';
+      existing.className = 'status-msg error';
+    });
+    return;
+  }
+
+  setStatus('b2-status', '<span class="spinner"></span>Running explicit operator-approved guarded generation…');
+  postButton2SelectedMatchupGenerateGuarded(selectedPreview)
+    .then(response => {
+      renderButton2GuardedGenerateResult(response);
+    })
+    .catch(() => {
+      setStatus('b2-status', 'Guarded generation request failed. No delivery was performed.', 'error');
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -16,6 +16,7 @@ GOVERNANCE:
 
 import sys
 import os
+import re
 
 # Allow imports from workspace root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -125,6 +126,48 @@ def _extract_matchup_names(row):
     fighter_a = fighter_a.strip() if isinstance(fighter_a, str) else ""
     fighter_b = fighter_b.strip() if isinstance(fighter_b, str) else ""
     return fighter_a, fighter_b
+
+
+def _slugify_text(value):
+    text = value if isinstance(value, str) else ""
+    lowered = text.strip().lower()
+    lowered = re.sub(r"[^a-z0-9]+", "_", lowered)
+    lowered = re.sub(r"_+", "_", lowered).strip("_")
+    return lowered
+
+
+def _build_fight_id_from_selected_matchup(selected_preview):
+    if not isinstance(selected_preview, dict):
+        return ""
+    fighter_a = _slugify_text(selected_preview.get("fighter_a", ""))
+    fighter_b = _slugify_text(selected_preview.get("fighter_b", ""))
+    event_name = _slugify_text(selected_preview.get("event_name", ""))
+    core = "_vs_".join([part for part in (fighter_a, fighter_b) if part])
+    if event_name:
+        return (core + "_" + event_name).strip("_")
+    return core
+
+
+def _build_ingest_payload_from_selected_matchup(selected_preview):
+    fighter_a = selected_preview.get("fighter_a", "") if isinstance(selected_preview, dict) else ""
+    fighter_b = selected_preview.get("fighter_b", "") if isinstance(selected_preview, dict) else ""
+    event_name = selected_preview.get("event_name", "") if isinstance(selected_preview, dict) else ""
+    source_url = selected_preview.get("source_url", "") if isinstance(selected_preview, dict) else ""
+    readiness = selected_preview.get("report_ready_status", "") if isinstance(selected_preview, dict) else ""
+
+    summary_lines = [
+        "Selected Matchup Report Generation Context",
+        "Fighter A: " + str(fighter_a or "Unknown"),
+        "Fighter B: " + str(fighter_b or "Unknown"),
+        "Event: " + str(event_name or "Unknown"),
+        "Source URL: " + str(source_url or "Unknown"),
+        "Readiness: " + str(readiness or "selection_pending"),
+    ]
+
+    return {
+        "destination_marker": "button2_report_generation_preview",
+        "dossier_summary_preview": "\n".join(summary_lines),
+    }
 
 # ─── Data Helpers ──────────────────────────────────────────────────────────────
 
@@ -438,6 +481,143 @@ def generate_report():
     """
     data = request.get_json(silent=True) or {}
     result = generate_button2_report_render_gate_integration(data)
+    status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
+    return jsonify(result), status_code
+
+
+@app.route("/api/button2/selected-matchup/generate-guarded-v1", methods=["POST"])
+def button2_selected_matchup_generate_guarded_v1():
+    """Gate2 guarded generation from an explicitly selected Button1->Button2 matchup preview."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "message": "Request body must be a JSON object.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    operator_approved = bool(body.get("operator_approved", False))
+    if not operator_approved:
+        return jsonify({
+            "ok": False,
+            "error": "operator_approval_required",
+            "message": "Explicit operator approval is required for Button 2 generation.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 403
+
+    selected_preview = body.get("selected_matchup_preview")
+    if not isinstance(selected_preview, dict):
+        return jsonify({
+            "ok": False,
+            "error": "selected_matchup_required",
+            "message": "A selected_matchup_preview object is required.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    if selected_preview.get("selected_for_button2") is not True:
+        return jsonify({
+            "ok": False,
+            "error": "selected_matchup_not_ready",
+            "message": "Selected matchup must be confirmed for Button 2 before generation.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    source_url = selected_preview.get("source_url", "")
+    if not (isinstance(source_url, str) and source_url.strip().lower().startswith(("http://", "https://"))):
+        return jsonify({
+            "ok": False,
+            "error": "source_backed_matchup_required",
+            "message": "Selected matchup must be source-backed before generation.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    fight_id = _build_fight_id_from_selected_matchup(selected_preview)
+    if not fight_id:
+        return jsonify({
+            "ok": False,
+            "error": "fight_id_derive_failed",
+            "message": "Could not derive fight_id from selected matchup.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    ingest_payload = _build_ingest_payload_from_selected_matchup(selected_preview)
+    generation_payload = {
+        "operator_approved": True,
+        "fight_id": fight_id,
+        "ingest_payload": ingest_payload,
+    }
+
+    result = generate_button2_report_render_gate_integration(generation_payload)
+    if not isinstance(result, dict):
+        result = {
+            "ok": False,
+            "error": "generation_result_invalid",
+            "message": "Generation returned malformed response.",
+        }
+
+    result.update({
+        "operator_action_required": True,
+        "selected_matchup_required": True,
+        "selected_matchup_generate_request_accepted": True,
+        "selected_matchup_preview": {
+            "fighter_a": selected_preview.get("fighter_a", ""),
+            "fighter_b": selected_preview.get("fighter_b", ""),
+            "event_name": selected_preview.get("event_name", ""),
+            "source_url": selected_preview.get("source_url", ""),
+            "report_ready_status": selected_preview.get("report_ready_status", ""),
+        },
+        "queue_write_performed": False,
+        "external_api_delivery_performed": False,
+        "learning_apply_performed": False,
+        "calibration_write_performed": False,
+        "button3_mutation_performed": False,
+    })
+
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
     return jsonify(result), status_code
 
