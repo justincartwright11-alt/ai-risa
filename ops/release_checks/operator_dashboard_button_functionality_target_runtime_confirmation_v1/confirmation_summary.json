@@ -1,0 +1,39 @@
+{
+  "slice": "operator-dashboard-button-functionality-target-runtime-confirmation-v1",
+  "source_checkpoint": {
+    "commit": "d494ae1",
+    "tag": "operator-dashboard-button-functionality-diagnostic-runtime-artifact-cleanup-v1"
+  },
+  "runtime": {
+    "python_command": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe operator_dashboard/app.py",
+    "env": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "url": "http://127.0.0.1:5050/",
+    "port": 5050,
+    "browser_profile": "shared_page_0513641d-6912-45ff-9caf-e229a8b13321"
+  },
+  "checks": {
+    "dashboard_route_load": "pass",
+    "button1": "pass",
+    "button2": "pass",
+    "button3": "pass",
+    "advanced_dashboard_load": "pass",
+    "console_blocking_errors": "none"
+  },
+  "observed_requests": [
+    "GET / 200",
+    "POST /api/local-ai/orchestrator/workflow-preview 200",
+    "POST /api/local-ai/gate1/save-fights/approved-save-writer-preview 200",
+    "POST /api/global-fighters/known-records/loader-preview 200",
+    "POST /api/local-ai/gate1/save-fights/dry-run-apply-preview 200",
+    "GET /advanced-dashboard 200"
+  ],
+  "session_integrity": {
+    "fresh_navigation_cycle": true,
+    "wrong_instance_indication": false,
+    "stale_cache_indication": false
+  },
+  "verdict": "not_reproduced",
+  "next_safe_recommendation": "paid-pilot management GO/NO-GO may resume"
+}
