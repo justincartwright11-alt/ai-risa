@@ -537,6 +537,53 @@
     <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
   </div>
 
+  <!-- ── Phase 7: Controlled Delivery Preview Panel (Preview-Only, Internal) ──── -->
+  <section class="b2-controlled-delivery-preview-panel" id="b2-controlled-delivery-preview-panel" style="display:none;background:#1a1d2e;border:1px solid #2a2d3e;border-radius:12px;padding:24px 28px;margin-top:32px;">
+    <h3 style="font-size:0.9rem;color:#c9aa71;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;">Phase 7: Controlled Delivery Preview (Internal/Advanced Only)</h3>
+    <p style="font-size:0.85rem;color:#5a6480;margin-bottom:16px;"><strong>PREVIEW-ONLY SURFACE.</strong> No customer delivery performed. No email sent. No file transfer. No database/queue/ledger writes. No learning/calibration updates. For operator review and testing only.</p>
+    
+    <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;">
+      <div style="font-size:0.8rem;line-height:1.6;color:#e8eaed;">
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Preview Status:</strong> <span id="b2-cd-preview-ready">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Delivery Ready:</strong> <span id="b2-cd-delivery-ready">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Report ID:</strong> <span id="b2-cd-report-id">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Report Status:</strong> <span id="b2-cd-report-status">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Customer Identity Present:</strong> <span id="b2-cd-customer-identity">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Delivery Target Present:</strong> <span id="b2-cd-delivery-target">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Delivery Channel:</strong> <span id="b2-cd-delivery-channel">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Audit Ready:</strong> <span id="b2-cd-audit-ready">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Rollback Ready:</strong> <span id="b2-cd-rollback-ready">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Proof-of-Delivery Ready:</strong> <span id="b2-cd-proof-ready">—</span></div>
+        <div style="margin-bottom:12px;"><strong style="color:#c9aa71;">Operation ID:</strong> <span id="b2-cd-operation-id">—</span></div>
+      </div>
+    </div>
+
+    <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
+      <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Denial Reasons (if any):</strong></div>
+      <div id="b2-cd-denial-reasons" style="font-size:0.8rem;color:#e5c07b;line-height:1.6;">—</div>
+    </div>
+
+    <div style="background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:16px;margin-top:12px;">
+      <div style="font-size:0.8rem;color:#c9aa71;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;"><strong>Safety Flags (All Preview-Only):</strong></div>
+      <div style="font-size:0.75rem;color:#8a94b8;line-height:1.6;">
+        <div>• live_delivery_performed: <span style="color:#98c379;">false</span></div>
+        <div>• customer_delivery_performed: <span style="color:#98c379;">false</span></div>
+        <div>• email_send_performed: <span style="color:#98c379;">false</span></div>
+        <div>• database_write_performed: <span style="color:#98c379;">false</span></div>
+        <div>• queue_write_performed: <span style="color:#98c379;">false</span></div>
+        <div>• ledger_write_performed: <span style="color:#98c379;">false</span></div>
+        <div>• learning_apply_performed: <span style="color:#98c379;">false</span></div>
+        <div>• calibration_write_performed: <span style="color:#98c379;">false</span></div>
+        <div>• button1_mutation_performed: <span style="color:#98c379;">false</span></div>
+        <div>• button3_mutation_performed: <span style="color:#98c379;">false</span></div>
+      </div>
+    </div>
+
+    <div style="font-size:0.75rem;color:#5a6480;margin-top:12px;border-top:1px solid #2a2d3e;padding-top:12px;">
+      <strong>REMINDER:</strong> This panel is for operator testing and internal review only. No delivery actions are available. Button 1, Button 2, and Button 3 remain unchanged. All three main operator buttons are still available above.
+    </div>
+  </section>
+
   <!-- ── Phase 3 Proof Stack Display (Read-Only) ───────────────────── -->
   <section class="proof-display-panel" id="phase3-proof-display-panel">
     <h3>Phase 3 Rendered-Output Proof Stack</h3>
@@ -2177,6 +2224,79 @@ function handleButton3Click() {
   requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_RESULTS)
     .then(data => renderSimpleWorkflowSummary('b3-status', data))
     .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
+}
+
+// ── Phase 7: Controlled Delivery Preview ─────────────────────────────────────
+
+function testControlledDeliveryPreview() {
+  const payload = {
+    report_id: 'test_123',
+    report_status: 'customer_ready',
+    customer_identity: 'customer_1',
+    delivery_target: 'target_1',
+    delivery_channel: 'email',
+    operator_approval: true,
+    delivery_evidence: 'evidence_1',
+    audit_record: 'audit_1',
+    proof_of_delivery: 'proof_1',
+    rollback_pointer: 'rollback_1'
+  };
+
+  fetch('/api/button2/controlled-delivery/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => renderControlledDeliveryPreview(data))
+    .catch(err => {
+      console.error('Controlled delivery preview failed:', err);
+      renderControlledDeliveryPreview({ error: true, delivery_ready: false });
+    });
+}
+
+function renderControlledDeliveryPreview(response) {
+  const panel = document.getElementById('b2-controlled-delivery-preview-panel');
+  if (!panel) return;
+
+  const setField = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value || '—');
+  };
+
+  if (response.error || !response.controlled_delivery_preview) {
+    setField('b2-cd-preview-ready', 'false');
+    setField('b2-cd-delivery-ready', response.delivery_ready ? 'true' : 'false');
+    
+    const denialReasons = response.denial_reasons;
+    if (Array.isArray(denialReasons) && denialReasons.length > 0) {
+      const denialHtml = denialReasons.map(r => '<div>• ' + String(r) + '</div>').join('');
+      document.getElementById('b2-cd-denial-reasons').innerHTML = denialHtml;
+    } else {
+      setField('b2-cd-denial-reasons', response.denial_reason || '—');
+    }
+    return;
+  }
+
+  // Valid preview response
+  setField('b2-cd-preview-ready', 'true');
+  setField('b2-cd-delivery-ready', response.delivery_ready ? 'true' : 'false');
+  setField('b2-cd-report-id', response.report_id);
+  setField('b2-cd-report-status', response.report_status);
+  setField('b2-cd-customer-identity', response.customer_identity_present ? 'true' : 'false');
+  setField('b2-cd-delivery-target', response.delivery_target_present ? 'true' : 'false');
+  setField('b2-cd-delivery-channel', response.delivery_channel);
+  setField('b2-cd-audit-ready', response.audit_ready ? 'true' : 'false');
+  setField('b2-cd-rollback-ready', response.rollback_ready ? 'true' : 'false');
+  setField('b2-cd-proof-ready', response.proof_of_delivery_ready ? 'true' : 'false');
+  setField('b2-cd-operation-id', response.operation_id);
+
+  if (response.denial_reasons && Array.isArray(response.denial_reasons) && response.denial_reasons.length > 0) {
+    const denialHtml = response.denial_reasons.map(r => '<div>• ' + String(r) + '</div>').join('');
+    document.getElementById('b2-cd-denial-reasons').innerHTML = denialHtml;
+  } else {
+    setField('b2-cd-denial-reasons', '(none — preview ready)');
+  }
 }
 
 // Read-only render of proof-stack display; no endpoints and no write actions.
