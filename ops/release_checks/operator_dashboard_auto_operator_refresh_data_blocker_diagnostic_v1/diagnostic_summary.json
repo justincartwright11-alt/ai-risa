@@ -1,0 +1,72 @@
+{
+  "slice": "operator-dashboard-auto-operator-refresh-data-blocker-diagnostic-v1",
+  "checkpoint": {
+    "commit": "c1276ba",
+    "tag": "operator-dashboard-button-functionality-target-runtime-confirmation-v1"
+  },
+  "reported_blocker": "Dashboard cards remain at zero / waiting for refresh",
+  "status": "diagnosed_confirmed",
+  "severity": "critical",
+  "runtime": {
+    "python": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "url": "http://127.0.0.1:5050/",
+    "port": 5050,
+    "fresh_navigation_cycle": true,
+    "wrong_instance_indication": false
+  },
+  "ui_surface_checks": {
+    "waiting_for_refresh_text_present": false,
+    "ready_to_save_text_present": false,
+    "customer_ready_text_present": false,
+    "rows_scanned_text_present": false,
+    "auto_refresh_on_page_load_api_calls": 0
+  },
+  "button_click_network": [
+    {"url": "/api/local-ai/orchestrator/workflow-preview", "status": 200},
+    {"url": "/api/local-ai/gate1/save-fights/approved-save-writer-preview", "status": 200},
+    {"url": "/api/global-fighters/known-records/loader-preview", "status": 200},
+    {"url": "/api/local-ai/gate1/save-fights/dry-run-apply-preview", "status": 200},
+    {"url": "/api/local-ai/orchestrator/workflow-preview", "status": 200},
+    {"url": "/api/local-ai/orchestrator/workflow-preview", "status": 200}
+  ],
+  "endpoint_summaries": {
+    "button1_find_fights": {
+      "discovered_count": 0,
+      "ready_for_report_count": 0
+    },
+    "button2_generate_pdfs": {
+      "selected_fight_count": 0,
+      "report_ready_count": 0
+    },
+    "button3_find_results": {
+      "total_rows": 0,
+      "Results Found": 0,
+      "Needs Source": 0,
+      "Ready to Compare": 0
+    }
+  },
+  "data_source_findings": {
+    "event_coverage_queue_csv_exists": true,
+    "fighter_intake_unresolved_queue_csv_exists": true,
+    "one_samurai_1_bouts_csv_exists": true,
+    "accuracy_ledger_json_exists": false,
+    "button2_selected_ref_schema_mismatch": true,
+    "button1_summary_mapping_mismatch": true
+  },
+  "console_findings": {
+    "page_errors": [],
+    "console_errors": []
+  },
+  "tests": {
+    "targeted_zero_state_contract_tests": 3,
+    "result": "3 passed"
+  },
+  "suspected_root_cause": [
+    "Current runtime template does not include reported waiting-refresh card surface",
+    "No auto-refresh polling/data hydration on page load",
+    "Runtime-context to adapter summary mapping and source schema gaps produce zero counts"
+  ],
+  "launch_impact": "paid_pilot_go_no_go_blocked",
+  "recommended_repair_slice": "operator-dashboard-auto-operator-refresh-data-critical-repair-v1",
+  "final_verdict": "Confirmed data-hydration/contract blocker; not a click-handler blocker."
+}
