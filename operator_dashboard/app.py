@@ -196,6 +196,7 @@ def _build_selected_matchup_premium_summary(selected_preview):
     summary_lines = [
         "AI-RISA Premium Fight Report",
         "Premium Selected-Matchup Intelligence",
+        "Template renderer profile: premium_template_pack_v29",
         "Matchup: " + str(fighter_a or "Unknown") + " vs " + str(fighter_b or "Unknown"),
         "Event: " + str(event_name or "Unknown"),
         "Event date: " + str(event_date or "Unknown"),

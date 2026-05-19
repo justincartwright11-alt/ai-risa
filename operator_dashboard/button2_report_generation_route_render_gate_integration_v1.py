@@ -34,6 +34,7 @@ from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
     render_button2_template_pack_asset_pdf,
     TemplatePackResolverError,
     TemplatePackRenderError,
+    DEFAULT_TEMPLATE_PACK_ROOT,
 )
 from operator_dashboard.button2_pdf_output_root_config_v1 import (
     resolve_pdf_output_path,
@@ -64,6 +65,32 @@ def _base_telemetry():
         "database_ranking_writes": False,
         "result_report_learning_calibration": False,
     }
+
+
+def _is_selected_matchup_generation(ingest_payload, ingest_context, report_context_preview):
+    """Return True when request context represents selected-matchup generation."""
+    for payload in (ingest_payload, ingest_context, report_context_preview):
+        if not isinstance(payload, dict):
+            continue
+        ingest_mode = str(payload.get("ingest_mode", "")).strip().lower()
+        context_kind = str(payload.get("context_kind", "")).strip().lower()
+        source_context_kind = str(payload.get("source_context_kind", "")).strip().lower()
+        if "selected_matchup" in ingest_mode:
+            return True
+        if "selected_matchup" in context_kind:
+            return True
+        if "selected_matchup" in source_context_kind:
+            return True
+        selected_matchup_payload = payload.get("selected_matchup_payload")
+        if isinstance(selected_matchup_payload, dict) and selected_matchup_payload:
+            return True
+        selected_matchup = payload.get("selected_matchup")
+        if isinstance(selected_matchup, dict) and (
+            str(selected_matchup.get("fighter_a", "")).strip()
+            or str(selected_matchup.get("fighter_b", "")).strip()
+        ):
+            return True
+    return False
 
 
 def generate_button2_report_render_gate_integration(request_data):
@@ -189,7 +216,20 @@ def generate_button2_report_render_gate_integration(request_data):
         }
 
     renderer_profile = str(report_context_preview.get("template_renderer_profile", "")).strip()
-    use_asset_backed_renderer = renderer_profile.startswith("premium_template_pack_v29")
+    selected_matchup_generation = _is_selected_matchup_generation(
+        ingest_payload,
+        ingest_context,
+        report_context_preview,
+    )
+
+    if selected_matchup_generation:
+        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_selected_matchup_enforced"
+        template_pack_root = str(report_context_preview.get("template_pack_root", "")).strip()
+        if not template_pack_root:
+            report_context_preview["template_pack_root"] = DEFAULT_TEMPLATE_PACK_ROOT
+
+    renderer_profile = str(report_context_preview.get("template_renderer_profile", "")).strip()
+    use_asset_backed_renderer = selected_matchup_generation or renderer_profile.startswith("premium_template_pack_v29")
     template_render_meta = {
         "premium_template_render_used": False,
         "renderer_profile": renderer_profile or "button2_html_composition_entry_point_v1",

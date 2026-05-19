@@ -645,7 +645,7 @@ def _depth_rows(title, body, blocks):
         ("Watch Cue", "Watch reset speed after first contact and defensive hand integrity under pace spikes."),
         ("Command Instruction", "Preserve scoring geography before pace expansion; avoid low-value pressure volume."),
         ("Failure Consequence", "If position conversion drops while output rises, scorecard authority drifts quickly."),
-        ("Round Band", blocks.get("round_band", "R2-R4 (model-derived inflection band)")),
+        ("Control Window", blocks.get("round_band", "R2-R4 (model-derived inflection window)")),
         ("Visual/Data Read", "Visual signal and narrative are aligned to the same model-derived control and risk pathways."),
         ("Buyer Meaning", "Edge is probabilistic with volatility; allocate exposure as scenario-weighted rather than absolute."),
         ("Coach Meaning", "Prioritize lane discipline and reset quality before pace extension to preserve score authority."),
@@ -711,7 +711,7 @@ def _draw_cover(module, c, blocks):
     module.set_font(c, "Helvetica", 7.4, module.MUTED)
     c.drawString(title_left, 409, "AI-RISA Premium Fight Report")
     module.set_font(c, "Helvetica", 7.2, module.MUTED)
-    c.drawString(title_left, 397, f"Report Type: {blocks.get('report_type', 'Premium Fight Intelligence Report')}")
+    c.drawString(title_left, 397, "Premium Fight Intelligence Report")
 
     # Fighter versus structure with centered VS lane.
     module.panel(c, x, 274, (w // 3) - 10, 86, None, module.BLUE, module.PANEL, title_line=False)
@@ -786,7 +786,7 @@ def _draw_cover(module, c, blocks):
     # Headline projection
     module.panel(c, x, 20, w, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 18, 106, "HEADLINE PROJECTION")
+    c.drawString(x + 18, 106, "HEADLINE PREDICTION")
     module.para(c, blocks["headline"], x + 18, 30, w - 36, 58, size=8.9, col=module.WHITE, min_size=8.0)
 
     # Footer with source/operator approval
@@ -904,6 +904,8 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     module.panel(c, x, 82, w, 378, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 18, 438, "Fighter Architecture Radar")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 18, 424, "Fighter Overview | Tale of the Tape")
 
     cx = x + 255
     cy = 250
@@ -1144,7 +1146,7 @@ def _draw_failure_heat_map(module, c, blocks):
     module.panel(c, x + 18, 92, left_w - 8, 108, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
     c.drawString(x + 32, 178, "Body Risk Heat Map Interpretation")
-    module.para(c, f"Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. In this matchup, exposure spikes when {blocks['fighter_a']} forces pace without positional conversion or {blocks['fighter_b']} loses reset timing. Round Band: R2-R4 is the inflection lane.", x + 32, 128, left_w - 34, 46, size=7.5, col=module.WHITE, min_size=6.8)
+    module.para(c, f"Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. In this matchup, exposure spikes when {blocks['fighter_a']} forces pace without positional conversion or {blocks['fighter_b']} loses reset timing. Control Window: R2-R4 is the inflection lane.", x + 32, 128, left_w - 34, 46, size=7.5, col=module.WHITE, min_size=6.8)
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 32, 114, "Failure Consequence")
     module.para(c, "If composure and pocket exits decay together, one momentum swing can override earlier control reads.", x + 32, 90, left_w - 34, 20, size=7.8, col=module.WHITE, min_size=7.0)
@@ -1215,7 +1217,7 @@ def _draw_round_control_graph(module, c, blocks):
         y=96,
         w=w - 36,
         title="Control Shift Notes",
-        text="Round Band Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.",
+        text="Control Window Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.",
         border_color=module.BLUE,
         fill_color=module.PANEL_BLUE,
         body_font_size=7.8,
@@ -1393,11 +1395,16 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
     x = module.SAFE_X + 18
     w = module.PAGE_W - 2 * x
 
+    module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
+    c.drawString(x, 446, title)
+    module.set_font(c, "Helvetica", 7.6, module.MUTED)
+    c.drawString(x, 434, subtitle)
+
     # Main narrative block
-    module.panel(c, x, 320, w, 110, None, module.PANEL, module.PANEL, title_line=False)
+    module.panel(c, x, 320, w, 108, None, module.PANEL, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 18, 410, "MAIN NARRATIVE")
-    module.para(c, body, x + 18, 330, w - 36, 70, size=8.9, col=module.WHITE, min_size=8.0)
+    c.drawString(x + 18, 406, "MAIN NARRATIVE")
+    module.para(c, body, x + 18, 330, w - 36, 66, size=8.9, col=module.WHITE, min_size=8.0)
 
     # Lower lenses
     module.panel(c, x, 200, w, 100, None, module.GOLD, module.PANEL, title_line=False)

@@ -48,7 +48,7 @@ DEPTH_MARKERS = [
     "Watch Cue",
     "Command Instruction",
     "Failure Consequence",
-    "Round Band",
+    "Control Window",
 ]
 
 
