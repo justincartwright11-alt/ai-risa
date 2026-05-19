@@ -1,0 +1,62 @@
+{
+  "active_baseline_tag": "button2-jbalia-direct-template-renderer-rebuild-v1",
+  "non_regression_anchors": [
+    "9adc303",
+    "e0a2fd0"
+  ],
+  "all_24_pages": true,
+  "all_fresh_filenames": true,
+  "all_jbalia_direct_profile": true,
+  "all_cover_markers_ok": true,
+  "all_dashboard_markers_ok": true,
+  "all_forbidden_absent": true,
+  "all_quality_gate_passed": true,
+  "all_open_route_200": true,
+  "all_library_list_exact": true,
+  "all_governance_false": true,
+  "all_no_stale_reuse": true,
+  "all_sections_present": true,
+  "all_selected_matchup_correct": true,
+  "matchups": [
+    {
+      "slug": "rico",
+      "fighter_a": "Rico Verhoeven",
+      "fighter_b": "Tariq Osaro",
+      "event": "GLORY 100",
+      "page_count": 24,
+      "renderer_profile": "premium_template_pack_v29_jbalia_direct_v1",
+      "quality_gate_passed": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_direct_template_renderer_rebuild_v1\\pdf_output\\rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260519T070003Z_ff76657de4a7.pdf"
+    },
+    {
+      "slug": "anthony",
+      "fighter_a": "Anthony Joshua",
+      "fighter_b": "Daniel Dubois",
+      "event": "Joshua vs Dubois",
+      "page_count": 24,
+      "renderer_profile": "premium_template_pack_v29_jbalia_direct_v1",
+      "quality_gate_passed": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_direct_template_renderer_rebuild_v1\\pdf_output\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260519T070003Z_6da09f994ce3.pdf"
+    },
+    {
+      "slug": "alex",
+      "fighter_a": "Alex Pereira",
+      "fighter_b": "Jiri Prochazka",
+      "event": "UFC 300",
+      "page_count": 24,
+      "renderer_profile": "premium_template_pack_v29_jbalia_direct_v1",
+      "quality_gate_passed": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_direct_template_renderer_rebuild_v1\\pdf_output\\alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T070003Z_d29db9331be2.pdf"
+    },
+    {
+      "slug": "nadaka",
+      "fighter_a": "Nadaka Yoshinari",
+      "fighter_b": "Songchainoi Kiatsongrit",
+      "event": "ONE Samurai 1",
+      "page_count": 24,
+      "renderer_profile": "premium_template_pack_v29_jbalia_direct_v1",
+      "quality_gate_passed": true,
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_direct_template_renderer_rebuild_v1\\pdf_output\\nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T070003Z_c90e8142928a.pdf"
+    }
+  ]
+}

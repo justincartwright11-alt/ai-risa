@@ -39,6 +39,10 @@ from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
     TemplatePackRenderError,
     DEFAULT_TEMPLATE_PACK_ROOT,
 )
+from operator_dashboard.button2_jbalia_direct_template_renderer_v1 import (
+    render_button2_jbalia_direct_template_pdf,
+    DirectJbaliaRendererError,
+)
 from operator_dashboard.button2_pdf_output_root_config_v1 import (
     resolve_pdf_output_path,
     get_pdf_output_root,
@@ -267,13 +271,14 @@ def generate_button2_report_render_gate_integration(request_data):
     )
 
     if selected_matchup_generation:
-        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1"
+        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_jbalia_direct_v1"
         template_pack_root = str(report_context_preview.get("template_pack_root", "")).strip()
         if not template_pack_root:
             report_context_preview["template_pack_root"] = DEFAULT_TEMPLATE_PACK_ROOT
 
     renderer_profile = str(report_context_preview.get("template_renderer_profile", "")).strip()
-    use_asset_backed_renderer = selected_matchup_generation or renderer_profile.startswith("premium_template_pack_v29")
+    use_direct_jbalia_renderer = selected_matchup_generation
+    use_asset_backed_renderer = not use_direct_jbalia_renderer and (renderer_profile.startswith("premium_template_pack_v29"))
     template_render_meta = {
         "premium_template_render_used": False,
         "renderer_profile": renderer_profile or "button2_html_composition_entry_point_v1",
@@ -285,9 +290,56 @@ def generate_button2_report_render_gate_integration(request_data):
     }
 
     geometry_data = None
-    renderer_route_used = "template_pack_asset_renderer" if use_asset_backed_renderer else "html_fallback_renderer"
+    renderer_route_used = "template_pack_asset_renderer" if use_asset_backed_renderer else ("template_pack_jbalia_direct_renderer" if use_direct_jbalia_renderer else "html_fallback_renderer")
 
-    if use_asset_backed_renderer:
+    if use_direct_jbalia_renderer:
+        try:
+            render_result = render_button2_jbalia_direct_template_pdf(report_context_preview)
+            pdf_bytes = render_result.get("pdf_bytes")
+            if not pdf_bytes or not isinstance(pdf_bytes, bytes):
+                return {
+                    "ok": False,
+                    "error": "pdf_render_failed",
+                    "message": "Direct Jbalia renderer returned no PDF content.",
+                    **telemetry,
+                }
+            
+            # Quality gate check
+            quality_gate_passed = render_result.get("quality_gate_passed", False)
+            forbidden_found = render_result.get("forbidden_strings_found", [])
+            if not quality_gate_passed or forbidden_found:
+                return {
+                    "ok": False,
+                    "error": "quality_gate_failed",
+                    "message": f"PDF quality gate failed: forbidden strings detected: {forbidden_found}",
+                    "forbidden_strings": forbidden_found,
+                    **telemetry,
+                }
+            
+            template_render_meta.update({
+                "premium_template_render_used": True,
+                "renderer_profile": str(render_result.get("renderer_profile", "premium_template_pack_v29_jbalia_direct_v1")),
+                "template_pack_root": str(render_result.get("template_pack_root", template_render_meta["template_pack_root"])),
+                "template_pack_available": True,
+                "template_pack_asset_backed": bool(render_result.get("template_pack_asset_backed", False)),
+                "template_pack_assets": None,
+                "page_count": int(render_result.get("page_count", 0)),
+            })
+        except DirectJbaliaRendererError as e:
+            return {
+                "ok": False,
+                "error": "jbalia_renderer_failed",
+                "message": str(e),
+                **telemetry,
+            }
+        except Exception as e:
+            return {
+                "ok": False,
+                "error": "jbalia_renderer_exception",
+                "message": f"Direct Jbalia render failed: {str(e)}",
+                **telemetry,
+            }
+    elif use_asset_backed_renderer:
         try:
             render_result = render_button2_template_pack_asset_pdf(report_context_preview)
             pdf_bytes = render_result.get("pdf_bytes")
