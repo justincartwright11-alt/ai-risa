@@ -1,0 +1,246 @@
+{
+  "slice": "paid-pilot-phase1-signoff-collection-workflow-v1",
+  "workflow_version": "v1",
+  "created": "2026-05-19",
+  "purpose": "Define the process for collecting five required management approvals and converting PENDING MANAGEMENT DECISION to GO / CONDITIONAL GO / NO-GO",
+  "required_sign_off_roles": [
+    {
+      "sequence": 1,
+      "role": "Product Lead",
+      "department": "Product/Strategy",
+      "responsibility": "Feature completeness, customer value, roadmap alignment",
+      "approval_question": "Do you confirm that AI-RISA Premium Report Factory is feature-complete and ready for paid-pilot engagement with the customer?",
+      "acceptable_responses": ["GO", "CONDITIONAL GO", "NO-GO"],
+      "evidence_to_review": [
+        "docs/paid_pilot_phase1_management_decision_record_v1.md",
+        "ops/release_checks/button2_jbalia_hard_bind_four_matchup_live_smoke_v1/live_smoke_summary.json",
+        "ops/release_checks/button2_jbalia_template_sample_renderer_hard_bind_v1/visual_proof/",
+        "Button 1 queue UI/UX documentation",
+        "Button 3 comparison preview mockup"
+      ]
+    },
+    {
+      "sequence": 2,
+      "role": "Engineering Lead",
+      "department": "Engineering",
+      "responsibility": "Technical readiness, code quality, maintainability",
+      "approval_question": "Do you confirm that the technical baseline is stable, tested, and production-ready for pilot deployment?",
+      "acceptable_responses": ["GO", "CONDITIONAL GO", "NO-GO"],
+      "evidence_to_review": [
+        "docs/paid_pilot_phase1_management_decision_record_v1.md",
+        "ops/release_checks/button2_jbalia_hard_bind_four_matchup_live_smoke_v1/live_smoke_summary.json",
+        "operator_dashboard/test_button2_jbalia_template_sample_renderer_hard_bind_v1.py",
+        "Git commits: 9adc303, e0a2fd0, caba638, ef1c76c",
+        "scripts/start_ai_risa_dashboard_windows.ps1"
+      ]
+    },
+    {
+      "sequence": 3,
+      "role": "Operations Lead",
+      "department": "Operations",
+      "responsibility": "Deployment readiness, support capability, SLA feasibility",
+      "approval_question": "Do you confirm that operations infrastructure, staffing, and support processes are ready to support the pilot customer?",
+      "acceptable_responses": ["GO", "CONDITIONAL GO", "NO-GO"],
+      "evidence_to_review": [
+        "docs/paid_pilot_phase1_management_decision_record_v1.md",
+        "Operator training curriculum",
+        "PDF delivery workflow diagram",
+        "Backup/disaster recovery plan",
+        "Incident response playbook",
+        "Support ticket SLA documentation",
+        "Weekly metrics tracking template"
+      ]
+    },
+    {
+      "sequence": 4,
+      "role": "Compliance/Legal",
+      "department": "Legal/Compliance",
+      "responsibility": "Data privacy, liability, contract terms, regulatory requirements",
+      "approval_question": "Do you confirm that legal and compliance requirements are met and documentation is acceptable for pilot engagement?",
+      "acceptable_responses": ["GO", "CONDITIONAL GO", "NO-GO"],
+      "evidence_to_review": [
+        "docs/paid_pilot_phase1_management_decision_record_v1.md",
+        "Data privacy impact assessment",
+        "PDF disclaimer language review",
+        "Customer contract draft",
+        "Regulatory checklist",
+        "Insurance coverage confirmation"
+      ]
+    },
+    {
+      "sequence": 5,
+      "role": "Business Owner",
+      "department": "Executive/Finance",
+      "responsibility": "Business case viability, pilot ROI, customer fit",
+      "approval_question": "Do you confirm that the business case is sound, customer is qualified, and budget is authorized for the pilot engagement?",
+      "acceptable_responses": ["GO", "CONDITIONAL GO", "NO-GO"],
+      "evidence_to_review": [
+        "docs/paid_pilot_phase1_management_decision_record_v1.md",
+        "Customer qualification checklist",
+        "Pricing/contract economics model",
+        "Pilot ROI projection",
+        "Market opportunity analysis",
+        "Budget approval documentation",
+        "Executive sponsor assignment"
+      ]
+    }
+  ],
+  "go_criteria": {
+    "description": "All five roles must vote GO and all launch conditions confirmed",
+    "requirements": [
+      "Product Lead: GO",
+      "Engineering Lead: GO",
+      "Operations Lead: GO",
+      "Compliance/Legal: GO",
+      "Business Owner: GO",
+      "All 8 launch condition items: CONFIRMED",
+      "Customer identified and contract signed",
+      "Operator trained and assigned"
+    ],
+    "outcome": "Immediate pilot launch authorization"
+  },
+  "conditional_go_criteria": {
+    "description": "At least 4 roles approve with documented conditions",
+    "requirements": [
+      "4 or 5 roles vote CONDITIONAL GO or GO",
+      "Conditions documented and owned",
+      "Mitigation plan approved for each condition",
+      "Re-review date scheduled"
+    ],
+    "outcome": "Pilot launch authorized with conditions; weekly check-ins required; escalation path defined"
+  },
+  "no_go_criteria": {
+    "description": "Any single role votes NO-GO with blocking issue",
+    "requirements": [
+      "Blocking issue(s) identified",
+      "Mitigation path unclear or infeasible",
+      "Re-review date scheduled"
+    ],
+    "outcome": "Pilot launch postponed; development/resolution work defined; decision re-opened after remediation"
+  },
+  "launch_condition_checklist": [
+    {
+      "sequence": 1,
+      "condition": "Customer identified and approved",
+      "responsible_role": "Business Owner",
+      "status": "PENDING",
+      "evidence_type": "Customer contract"
+    },
+    {
+      "sequence": 2,
+      "condition": "Pilot pricing and contract signed",
+      "responsible_role": "Business Owner",
+      "status": "PENDING",
+      "evidence_type": "Signed contract"
+    },
+    {
+      "sequence": 3,
+      "condition": "Support channel ready",
+      "responsible_role": "Operations Lead",
+      "status": "PENDING",
+      "evidence_type": "Support ticket system setup"
+    },
+    {
+      "sequence": 4,
+      "condition": "Operator assigned and trained",
+      "responsible_role": "Operations Lead",
+      "status": "PENDING",
+      "evidence_type": "Training sign-off"
+    },
+    {
+      "sequence": 5,
+      "condition": "Report delivery workflow confirmed",
+      "responsible_role": "Operations Lead",
+      "status": "PENDING",
+      "evidence_type": "Workflow document"
+    },
+    {
+      "sequence": 6,
+      "condition": "Legal/commercial disclaimers reviewed",
+      "responsible_role": "Compliance/Legal",
+      "status": "PENDING",
+      "evidence_type": "Approved disclaimer text"
+    },
+    {
+      "sequence": 7,
+      "condition": "Baseline PDF template approved",
+      "responsible_role": "Product Lead",
+      "status": "PENDING",
+      "evidence_type": "Template review sign-off"
+    },
+    {
+      "sequence": 8,
+      "condition": "Pilot success metrics defined",
+      "responsible_role": "Business Owner / Product Lead",
+      "status": "PENDING",
+      "evidence_type": "Metrics document"
+    }
+  ],
+  "workflow_timeline": [
+    {
+      "day": 1,
+      "activity": "Distribute sign-off templates to all five roles",
+      "owner": "Workflow Coordinator",
+      "deliverable": "Sign-off request email"
+    },
+    {
+      "day": 2,
+      "activity": "Roles review evidence and draft approvals",
+      "owner": "All five roles",
+      "deliverable": "Draft sign-off templates"
+    },
+    {
+      "day": 3,
+      "activity": "Consolidate responses; identify any blockers",
+      "owner": "Workflow Coordinator",
+      "deliverable": "Blocker summary (if any)"
+    },
+    {
+      "day": 4,
+      "activity": "Final review and consolidation",
+      "owner": "Executive Sponsor",
+      "deliverable": "Decision summary"
+    },
+    {
+      "day": 5,
+      "activity": "Update paid-pilot-phase1-management-decision-record-v1",
+      "owner": "Workflow Coordinator",
+      "deliverable": "Signed decision record"
+    },
+    {
+      "day": 6,
+      "activity": "Approve and lock final decision",
+      "owner": "Executive Sponsor",
+      "deliverable": "Tagged decision commit"
+    }
+  ],
+  "final_update_process": {
+    "step_1": "Consolidate all five sign-off templates; verify all fields complete; calculate final decision",
+    "step_2": "Update docs/paid_pilot_phase1_management_decision_record_v1.md with signatures, dates, and final status",
+    "step_3": "Update ops/release_checks/paid_pilot_phase1_management_decision_record_v1/management_decision_summary.json with all role outcomes",
+    "step_4": "Commit and tag updated decision record with tag: paid-pilot-phase1-management-decision-record-signed-v1",
+    "step_5": "Execute next actions (launch prep, condition tracking, or re-review based on decision)"
+  },
+  "next_actions_by_decision": {
+    "GO": "Proceed to launch preparation (deployment, customer onboarding, first report generation)",
+    "CONDITIONAL GO": "Begin condition tracking; schedule weekly check-ins; escalate blockers to executive sponsor",
+    "NO-GO": "Defer pilot; open Phase 2 planning or product refinement work"
+  },
+  "workflow_execution_checklist": [
+    "All five roles receive sign-off request with evidence links",
+    "Sign-off templates completed and returned by all roles",
+    "No blocking issues identified (or mitigation plan approved)",
+    "Final decision consolidated (GO / CONDITIONAL GO / NO-GO)",
+    "Decision record updated with signatures and dates",
+    "Summary JSON updated with final statuses",
+    "Commit and tag created for signed decision record",
+    "Next action authorized (launch prep, condition tracking, or re-review)"
+  ],
+  "archive_location": "ops/release_checks/paid_pilot_phase1_management_decision_record_v1/sign_offs/",
+  "naming_convention": "[ROLE_TITLE]_signoff_[DATE]_[APPROVER_INITIALS].md",
+  "evidence_artifacts": [
+    "docs/paid_pilot_phase1_management_decision_record_v1.md",
+    "ops/release_checks/button2_jbalia_hard_bind_four_matchup_live_smoke_v1/live_smoke_summary.json",
+    "ops/release_checks/button2_jbalia_template_sample_renderer_hard_bind_v1/jbalia_template_sample_renderer_hard_bind_summary.json"
+  ]
+}
