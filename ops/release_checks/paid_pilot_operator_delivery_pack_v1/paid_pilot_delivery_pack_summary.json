@@ -1,0 +1,95 @@
+{
+  "slice": "paid-pilot-operator-delivery-pack-v1",
+  "date": "2026-05-19",
+  "objective": "Controlled manual paid pilot for AI-RISA Premium Fight Intelligence Report. Operator reviews and delivers each report manually. No automatic or external API delivery.",
+  "customer_offer": {
+    "product": "AI-RISA Premium Fight Intelligence Report",
+    "deliverable": "PDF report for requested fight(s)/event(s), 24 pages, source-traceable, operator QA.",
+    "not": [
+      "Not a guaranteed pick",
+      "Not financial advice",
+      "Not automated betting instruction"
+    ]
+  },
+  "pricing_options": [
+    "Single premium report",
+    "Multi-fight pack",
+    "Full event-card pack",
+    "Founding customer discount option"
+  ],
+  "customer_intake": [
+    "Fight/event requested",
+    "Customer type",
+    "Delivery email/contact",
+    "Required deadline",
+    "Special focus requested"
+  ],
+  "operator_workflow": [
+    "Start dashboard on port 5050",
+    "Button 1: confirm/promote ready fights",
+    "Button 2: refresh queue",
+    "Select one/multiple/all-ready fights",
+    "Generate PDFs",
+    "Open generated PDFs",
+    "Perform QA check",
+    "Deliver manually",
+    "Record delivery"
+  ],
+  "pdf_qa_checklist": [
+    "Correct fighters and event",
+    "Correct source map",
+    "24 pages",
+    "No stale matchup names",
+    "Open PDF works",
+    "Customer-ready",
+    "Disclaimer present",
+    "No broken/empty sections",
+    "No visual overlap"
+  ],
+  "delivery_script": {
+    "customer_message": "Your AI-RISA Premium Fight Intelligence Report is attached. This report is for informational and entertainment purposes only. Please review the attached PDF and let us know if you have any questions or require a revision.",
+    "disclaimer": "This report is not financial advice, not a guaranteed outcome, and not an automated betting instruction. All analysis is for informational purposes only.",
+    "revision_handling": "If you notice any errors, missing pages, or incorrect matchups, reply to this message and we will review and correct your report promptly."
+  },
+  "refund_policy": [
+    "Wrong matchup",
+    "Broken PDF",
+    "Missing pages",
+    "Source issue",
+    "Delayed delivery",
+    "Customer revision request"
+  ],
+  "daily_log_template": [
+    "Date",
+    "Customer",
+    "Fight/event",
+    "PDFs generated",
+    "Delivered yes/no",
+    "Issues",
+    "Revenue",
+    "Notes"
+  ],
+  "pilot_go_no_go": {
+    "go": [
+      "Dashboard loads",
+      "Queue rows appear",
+      "PDFs generate/open",
+      "QA passes"
+    ],
+    "no_go": [
+      "Queue fails",
+      "PDF mismatch",
+      "Governance fails",
+      "Open links fail"
+    ]
+  },
+  "governance_lock": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false,
+    "manual_delivery_only": true
+  },
+  "final_verdict": "AI-RISA is ready for a controlled paid pilot with manual operator delivery."
+}
