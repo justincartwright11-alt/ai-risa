@@ -1,0 +1,69 @@
+{
+  "slice": "three-button-commercial-readiness-final-rollup-after-button2-visual-depth-v1",
+  "date": "2026-05-19",
+  "rollup_type": "docs_evidence_only",
+  "active_baseline": {
+    "slice": "button2-premium-pdf-fighter-overview-heatmap-visual-depth-v1",
+    "commit": "25fe3bd",
+    "tag": "button2-premium-pdf-fighter-overview-heatmap-visual-depth-v1"
+  },
+  "system_state": {
+    "button1": {
+      "status": "READY",
+      "slice": "button1-auto-discovery-readiness-ranking-hardening-v1",
+      "commit": "9122cb0",
+      "tag": "button1-auto-discovery-readiness-ranking-hardening-v1"
+    },
+    "button2": {
+      "status": "READY",
+      "slice": "button2-premium-pdf-fighter-overview-heatmap-visual-depth-v1",
+      "commit": "25fe3bd",
+      "tag": "button2-premium-pdf-fighter-overview-heatmap-visual-depth-v1",
+      "runtime_proof": {
+        "all_24_pages": true,
+        "all_required_present": true,
+        "all_forbidden_absent": true,
+        "all_open_routes_200": true,
+        "all_governance_false": true,
+        "validation_tests": {
+          "passed": 34,
+          "failed": 0
+        }
+      }
+    },
+    "button3": {
+      "status": "GOVERNED_PREVIEW_READY",
+      "preview_path_slice": "button3-result-comparison-controlled-preview-path-v1",
+      "preview_path_commit": "9069050",
+      "preview_path_tag": "button3-result-comparison-controlled-preview-path-v1",
+      "runtime_confirm_slice": "button3-result-comparison-controlled-preview-dashboard-runtime-confirmation-v1",
+      "runtime_confirm_commit": "775f94d",
+      "runtime_confirm_tag": "button3-result-comparison-controlled-preview-dashboard-runtime-confirmation-v1",
+      "mutation_path_open": false
+    }
+  },
+  "runtime_and_routes": {
+    "launcher_preflight_locked": true,
+    "button2_guarded_generation_locked": true,
+    "pdf_open_route_locked": true,
+    "pdf_library_route_locked": true
+  },
+  "governance_boundary": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "decision_boundary": {
+    "next_slice": "paid-pilot-phase1-management-decision-record-v1",
+    "open_condition": "written GO / CONDITIONAL GO / NO-GO decision and sign-offs"
+  },
+  "references": [
+    "docs/three_button_commercial_readiness_final_rollup_after_button2_visual_depth_v1.md",
+    "docs/button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1.md",
+    "ops/release_checks/button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1/fighter_overview_heatmap_visual_depth_summary.json",
+    "docs/button1_button2_button3_commercial_readiness_final_rollup_after_ranking_v1.md"
+  ]
+}
