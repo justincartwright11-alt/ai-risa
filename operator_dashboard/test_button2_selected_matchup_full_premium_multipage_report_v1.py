@@ -83,7 +83,8 @@ def test_guarded_selected_matchup_generation_produces_multipage_pdf(monkeypatch,
     assert response.status_code == 200
     data = response.get_json()
     assert data["ok"] is True
-    assert data["output_filename"].endswith("_premium.pdf")
+    assert "_premium_" in data["output_filename"]
+    assert data["output_filename"].endswith(".pdf")
     assert data["pdf_open_url"].endswith(data["output_filename"])
 
     output_path = data["output_path"]

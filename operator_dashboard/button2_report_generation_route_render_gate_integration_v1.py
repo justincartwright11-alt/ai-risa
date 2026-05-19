@@ -18,7 +18,10 @@ GOVERNANCE:
   - Visual QA disabled by default
 """
 
+import io
 import os
+import re
+from datetime import datetime, timezone
 
 from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
     build_button2_readonly_dossier_handoff_ingest_preview,
@@ -38,6 +41,7 @@ from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
 )
 from operator_dashboard.button2_pdf_output_root_config_v1 import (
     resolve_pdf_output_path,
+    get_pdf_output_root,
     OutputRootNotConfiguredError,
     OutputRootInvalidError,
     FightKeyInvalidError,
@@ -91,6 +95,46 @@ def _is_selected_matchup_generation(ingest_payload, ingest_context, report_conte
         ):
             return True
     return False
+
+
+def _is_safe_output_filename(filename):
+    if not isinstance(filename, str):
+        return False
+    value = filename.strip()
+    if not value:
+        return False
+    if os.path.basename(value) != value:
+        return False
+    if "/" in value or "\\" in value or ".." in value:
+        return False
+    if not value.lower().endswith(".pdf"):
+        return False
+    return bool(re.match(r"^[A-Za-z0-9._-]+$", value))
+
+
+def _build_output_path_with_optional_override(fight_id, output_filename_override):
+    override = str(output_filename_override or "").strip()
+    if not override:
+        return resolve_pdf_output_path(fight_id)
+
+    if not _is_safe_output_filename(override):
+        raise FightKeyInvalidError("output_filename_override must be a safe PDF filename")
+
+    output_root = get_pdf_output_root()
+    canonical_root = os.path.realpath(output_root)
+    candidate = os.path.realpath(os.path.join(output_root, override))
+    if not candidate.startswith(canonical_root + os.sep):
+        raise PathTraversalError("output_filename_override escapes configured output root")
+    return candidate
+
+
+def _derive_pdf_page_count(pdf_bytes):
+    try:
+        from pypdf import PdfReader
+
+        return len(PdfReader(io.BytesIO(pdf_bytes)).pages)
+    except Exception:
+        return None
 
 
 def generate_button2_report_render_gate_integration(request_data):
@@ -241,6 +285,8 @@ def generate_button2_report_render_gate_integration(request_data):
     }
 
     geometry_data = None
+    renderer_route_used = "template_pack_asset_renderer" if use_asset_backed_renderer else "html_fallback_renderer"
+
     if use_asset_backed_renderer:
         try:
             render_result = render_button2_template_pack_asset_pdf(report_context_preview)
@@ -334,8 +380,9 @@ def generate_button2_report_render_gate_integration(request_data):
     telemetry["pdf_generation_performed"] = True
 
     # ─── Output Path Resolution: Server-Controlled Only ──────────────────────
+    output_filename_override = request_data.get("output_filename_override")
     try:
-        output_path = resolve_pdf_output_path(fight_id)
+        output_path = _build_output_path_with_optional_override(fight_id, output_filename_override)
     except (OutputRootNotConfiguredError, OutputRootInvalidError, FightKeyInvalidError, PathTraversalError) as e:
         return {
             "ok": False,
@@ -346,6 +393,18 @@ def generate_button2_report_render_gate_integration(request_data):
 
     # ─── File Write: No Write Without Approval + Composition + Render + Path ─
     output_dir = os.path.dirname(output_path)
+    existed_before_write = os.path.exists(output_path)
+    pre_write_mtime = None
+    pre_write_size = None
+    if existed_before_write:
+        try:
+            pre_stat = os.stat(output_path)
+            pre_write_mtime = float(pre_stat.st_mtime)
+            pre_write_size = int(pre_stat.st_size)
+        except Exception:
+            pre_write_mtime = None
+            pre_write_size = None
+
     try:
         # Ensure output directory exists
         if not os.path.exists(output_dir):
@@ -364,6 +423,26 @@ def generate_button2_report_render_gate_integration(request_data):
 
     # Mark file write
     telemetry["file_write_performed"] = True
+
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    file_modified_at = None
+    file_modified_epoch = None
+    file_size_bytes = None
+    try:
+        out_stat = os.stat(output_path)
+        file_modified_epoch = float(out_stat.st_mtime)
+        file_modified_at = datetime.fromtimestamp(out_stat.st_mtime, tz=timezone.utc).isoformat(timespec="seconds")
+        file_size_bytes = int(out_stat.st_size)
+    except Exception:
+        pass
+
+    stale_file_reused = False
+    if existed_before_write and pre_write_mtime is not None and pre_write_size is not None:
+        stale_file_reused = (pre_write_size == file_size_bytes and pre_write_mtime == file_modified_epoch)
+
+    page_count = template_render_meta["page_count"]
+    if not isinstance(page_count, int) or page_count <= 0:
+        page_count = _derive_pdf_page_count(pdf_bytes)
 
     # ─── Visual QA Results: Side-Channel Only, Preview Mode ──────────────────
     qa_summary = None
@@ -391,12 +470,19 @@ def generate_button2_report_render_gate_integration(request_data):
         "report_status": "customer_ready",
         "report_quality_status": "customer_ready_verified",
         "premium_template_render_used": template_render_meta["premium_template_render_used"],
+        "renderer_route_used": renderer_route_used,
         "renderer_profile": template_render_meta["renderer_profile"],
         "template_pack_root": template_render_meta["template_pack_root"],
         "template_pack_available": template_render_meta["template_pack_available"],
         "template_pack_asset_backed": template_render_meta["template_pack_asset_backed"],
         "template_pack_assets": template_render_meta["template_pack_assets"],
-        "page_count": template_render_meta["page_count"],
+        "page_count": page_count,
+        "generated_at": generated_at,
+        "file_modified_at": file_modified_at,
+        "file_size_bytes": file_size_bytes,
+        "file_overwritten": existed_before_write,
+        "stale_file_reused": stale_file_reused,
+        "generation_request_id": str(request_data.get("generation_request_id", "") or ""),
         "qa_summary": qa_summary,
         **telemetry,
     }

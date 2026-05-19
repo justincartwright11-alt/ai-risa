@@ -108,11 +108,9 @@ def test_guarded_generation_returns_open_link_and_governance_flags(monkeypatch):
     data = response.get_json()
 
     assert data["ok"] is True
-    assert data["output_filename"] == "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
-    assert data["pdf_open_url"] == (
-        "/api/button2/generated-report/open?filename="
-        "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
-    )
+    assert data["output_filename"].startswith("anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium")
+    assert data["output_filename"].endswith(".pdf")
+    assert data["pdf_open_url"].endswith(data["output_filename"])
     assert data["premium_template_render_used"] is True
     assert data["renderer_profile"] == "premium_template_pack_v29"
 

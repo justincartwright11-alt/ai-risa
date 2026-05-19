@@ -52,11 +52,9 @@ def test_successful_generation_response_includes_open_link_fields(monkeypatch):
     assert response.status_code == 200
     data = response.get_json()
     assert data["ok"] is True
-    assert data["output_filename"] == "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
-    assert data["pdf_open_url"] == (
-        "/api/button2/generated-report/open?filename="
-        "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
-    )
+    assert data["output_filename"].startswith("anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium")
+    assert data["output_filename"].endswith(".pdf")
+    assert data["pdf_open_url"].endswith(data["output_filename"])
 
 
 def test_dashboard_renderer_has_clickable_open_link_and_fallback_condition():

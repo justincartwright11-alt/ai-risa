@@ -18,6 +18,8 @@ import sys
 import os
 import re
 from datetime import datetime
+from datetime import timezone
+import uuid
 from urllib.parse import quote
 
 # Allow imports from workspace root
@@ -95,6 +97,28 @@ _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT = (
     r"C:\ai_risa_next_dashboard_polish\ops\prf_reports\template_pack_sample"
 )
 
+_BUTTON2_FORBIDDEN_MARKERS = [
+    "01 | PREMIUM COVER",
+    "PREMIUM COVER",
+    "Cover Page",
+    "where the fight is owned",
+    "where the fight can flip",
+    "what the corner must solve",
+    "SECTION LENS",
+    "MODEL STATUS",
+    "REPORT TYPE",
+    "ROUND BAND",
+    "SOURCE TRACEABILITY Source Traceability",
+    "customer_ready_not_ready",
+    "draft_only",
+    "controlled_export_not_eligible",
+    "visual QA rollup",
+    "template renderer profile",
+    "raw ingest mode",
+    "valid layers",
+    "missing layers",
+]
+
 
 def _is_source_backed_candidate_row(row):
     if not isinstance(row, dict):
@@ -164,6 +188,75 @@ def _build_fight_id_from_selected_matchup(selected_preview):
     if event_name:
         return (core + "_" + event_name).strip("_")
     return core
+
+
+def _utc_now_iso_seconds():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _build_selected_matchup_output_filename(fight_id, generation_request_id):
+    safe_fight_id = _slugify_text(fight_id)
+    if not safe_fight_id:
+        safe_fight_id = "selected_matchup"
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    req_short = _slugify_text(generation_request_id)[:12] or "req"
+    return f"{safe_fight_id}_premium_{stamp}_{req_short}.pdf"
+
+
+def _extract_pdf_text_and_page_count(output_path):
+    if not isinstance(output_path, str) or not output_path.strip() or not os.path.isfile(output_path):
+        return "", None
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(output_path)
+        text = "\n".join((page.extract_text() or "") for page in reader.pages)
+        return text, len(reader.pages)
+    except Exception:
+        return "", None
+
+
+def _scan_forbidden_markers(pdf_text):
+    lower_text = str(pdf_text or "").lower()
+    found = []
+    hits = {}
+    for marker in _BUTTON2_FORBIDDEN_MARKERS:
+        present = marker.lower() in lower_text
+        hits[marker] = present
+        if present:
+            found.append(marker)
+    return {
+        "any_forbidden_found": bool(found),
+        "found_markers": found,
+        "marker_hits": hits,
+    }
+
+
+def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
+    if not isinstance(selected_preview, dict):
+        return False
+    text_lower = str(pdf_text or "").lower()
+    fighter_a = str(selected_preview.get("fighter_a", "")).strip().lower()
+    fighter_b = str(selected_preview.get("fighter_b", "")).strip().lower()
+    event_name = str(selected_preview.get("event_name", "")).strip().lower()
+    if not fighter_a or not fighter_b:
+        return False
+    fighters_present = fighter_a in text_lower and fighter_b in text_lower
+    event_present = (not event_name) or (event_name in text_lower)
+    return fighters_present and event_present
+
+
+def _collect_file_metadata(output_path):
+    if not isinstance(output_path, str) or not output_path.strip() or not os.path.isfile(output_path):
+        return {
+            "file_modified_at": None,
+            "file_size_bytes": None,
+        }
+    stat = os.stat(output_path)
+    return {
+        "file_modified_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(timespec="seconds"),
+        "file_size_bytes": int(stat.st_size),
+    }
 
 
 def _resolve_button2_template_pack_preview():
@@ -828,11 +921,21 @@ def button2_selected_matchup_generate_guarded_v1():
             "button3_mutation_performed": False,
         }), 400
 
+    generation_request_id = uuid.uuid4().hex
+    selected_matchup_id = (
+        selected_preview.get("matchup_id")
+        or selected_preview.get("candidate_id")
+        or fight_id
+    )
+    output_filename_override = _build_selected_matchup_output_filename(fight_id, generation_request_id)
+
     ingest_payload = _build_ingest_payload_from_selected_matchup(selected_preview)
     generation_payload = {
         "operator_approved": True,
         "fight_id": fight_id,
         "ingest_payload": ingest_payload,
+        "output_filename_override": output_filename_override,
+        "generation_request_id": generation_request_id,
     }
 
     result = generate_button2_report_render_gate_integration(generation_payload)
@@ -844,10 +947,47 @@ def button2_selected_matchup_generate_guarded_v1():
         }
     result = _decorate_button2_generated_pdf_open_link(result)
 
+    generated_pdf_text = ""
+    extracted_page_count = None
+    file_meta = {
+        "file_modified_at": None,
+        "file_size_bytes": None,
+    }
+    text_scan = {
+        "any_forbidden_found": False,
+        "found_markers": [],
+        "marker_hits": {},
+    }
+    selected_matchup_matches_pdf_text = False
+
+    if result.get("ok") is True:
+        output_path = result.get("output_path", "")
+        generated_pdf_text, extracted_page_count = _extract_pdf_text_and_page_count(output_path)
+        file_meta = _collect_file_metadata(output_path)
+        text_scan = _scan_forbidden_markers(generated_pdf_text)
+        selected_matchup_matches_pdf_text = _selected_matchup_matches_pdf_text(selected_preview, generated_pdf_text)
+
     result.update({
         "operator_action_required": True,
         "selected_matchup_required": True,
         "selected_matchup_generate_request_accepted": True,
+        "selected_matchup_fighter_a": selected_preview.get("fighter_a", ""),
+        "selected_matchup_fighter_b": selected_preview.get("fighter_b", ""),
+        "selected_matchup_event": selected_preview.get("event_name", ""),
+        "selected_matchup_id": selected_matchup_id,
+        "generation_request_id": generation_request_id,
+        "renderer_route_used": result.get("renderer_route_used", "unknown"),
+        "renderer_profile": result.get("renderer_profile", ""),
+        "template_pack_root": result.get("template_pack_root", _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT),
+        "template_pack_asset_backed": bool(result.get("template_pack_asset_backed", False)),
+        "jbalia_layout_applied": bool(result.get("premium_template_render_used", False)),
+        "generated_at": result.get("generated_at") or _utc_now_iso_seconds(),
+        "file_modified_at": file_meta.get("file_modified_at") or result.get("file_modified_at"),
+        "file_size_bytes": file_meta.get("file_size_bytes") or result.get("file_size_bytes"),
+        "page_count": extracted_page_count or result.get("page_count"),
+        "text_scan_forbidden_markers": text_scan,
+        "selected_matchup_matches_pdf_text": selected_matchup_matches_pdf_text,
+        "stale_file_reused": bool(result.get("stale_file_reused", False)),
         "selected_matchup_preview": {
             "fighter_a": selected_preview.get("fighter_a", ""),
             "fighter_b": selected_preview.get("fighter_b", ""),

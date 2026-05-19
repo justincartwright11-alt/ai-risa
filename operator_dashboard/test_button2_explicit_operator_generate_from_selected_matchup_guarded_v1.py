@@ -171,11 +171,9 @@ def test_guarded_route_delegates_generation_with_derived_fight_id(monkeypatch):
     data = response.get_json()
     assert data["ok"] is True
     assert data["selected_matchup_generate_request_accepted"] is True
-    assert data["output_filename"] == "rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium.pdf"
-    assert data["pdf_open_url"] == (
-        "/api/button2/generated-report/open?filename="
-        "rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium.pdf"
-    )
+    assert data["output_filename"].startswith("rodtang_jitmuangnon_vs_takeru_segawa_one_samurai_1_premium_")
+    assert data["output_filename"].endswith(".pdf")
+    assert data["pdf_open_url"].endswith(data["output_filename"])
     assert data["delivery_performed"] is False
     assert data["external_api_delivery_performed"] is False
     assert data["queue_write_performed"] is False
