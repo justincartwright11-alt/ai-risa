@@ -82,18 +82,14 @@ VISUAL_MODULE_MARKERS = [
     "Scenario Tree / Method Pathways",
 ]
 
-DEPTH_MARKERS = [
-    "Tactical Thesis",
-    "Mechanism",
+LEGACY_SECTION_CARD_LABELS = [
+    "SECTION LENS",
+    "MODEL STATUS",
+    "REPORT TYPE",
+    "ROUND BAND",
     "Fighter A Pathway",
     "Fighter B Counter-Pathway",
-    "Watch Cue",
-    "Command Instruction",
-    "Failure Consequence",
-    "Control Window",
-    "Visual/Data Read",
-    "Buyer Meaning",
-    "Coach Meaning",
+    "Buyer Meaning / Coach Meaning",
 ]
 
 MATCHUPS = [
@@ -163,8 +159,8 @@ def _assert_report_contract(data: dict, reader: PdfReader) -> None:
     for marker in VISUAL_MODULE_MARKERS:
         assert marker in text, f"Missing visual marker: {marker}"
 
-    for marker in DEPTH_MARKERS:
-        assert marker in text, f"Missing depth marker: {marker}"
+    for marker in LEGACY_SECTION_CARD_LABELS:
+        assert marker.lower() not in lower, f"Legacy section-card label should be absent: {marker}"
 
     for bad in FORBIDDEN:
         assert bad.lower() not in lower, f"Forbidden/default text present: {bad}"

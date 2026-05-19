@@ -108,6 +108,11 @@ _BUTTON2_FORBIDDEN_MARKERS = [
     "MODEL STATUS",
     "REPORT TYPE",
     "ROUND BAND",
+    "Fighter A Pathway",
+    "Fighter B Counter-Pathway",
+    "Buyer Meaning / Coach Meaning",
+    "Buyer Meaning",
+    "Coach Meaning",
     "SOURCE TRACEABILITY Source Traceability",
     "customer_ready_not_ready",
     "draft_only",
@@ -117,6 +122,13 @@ _BUTTON2_FORBIDDEN_MARKERS = [
     "raw ingest mode",
     "valid layers",
     "missing layers",
+]
+
+_BUTTON2_FORBIDDEN_CONCATENATION_SNIPPETS = [
+    "Fighter B Counter-Pathway Daniel",
+    "Fighter A Pathway Anthony",
+    "Buyer Meaning / Coach MeaningBuyer",
+    "Command Instruction Preserve",
 ]
 
 
@@ -225,10 +237,19 @@ def _scan_forbidden_markers(pdf_text):
         hits[marker] = present
         if present:
             found.append(marker)
+    concat_hits = {}
+    concat_found = []
+    for snippet in _BUTTON2_FORBIDDEN_CONCATENATION_SNIPPETS:
+        present = snippet.lower() in lower_text
+        concat_hits[snippet] = present
+        if present:
+            concat_found.append(snippet)
     return {
-        "any_forbidden_found": bool(found),
+        "any_forbidden_found": bool(found or concat_found),
         "found_markers": found,
         "marker_hits": hits,
+        "found_concatenation_snippets": concat_found,
+        "concatenation_hits": concat_hits,
     }
 
 
@@ -967,7 +988,56 @@ def button2_selected_matchup_generate_guarded_v1():
         text_scan = _scan_forbidden_markers(generated_pdf_text)
         selected_matchup_matches_pdf_text = _selected_matchup_matches_pdf_text(selected_preview, generated_pdf_text)
 
+        if text_scan.get("any_forbidden_found"):
+            try:
+                if isinstance(output_path, str) and output_path.strip() and os.path.isfile(output_path):
+                    os.remove(output_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "ok": False,
+                "error": "customer_pdf_quality_gate_failed",
+                "reason": "legacy_section_card_engine_detected",
+                "message": "Customer-facing PDF quality gate failed due to legacy section-card markers.",
+                "customer_pdf_quality_gate_failed": True,
+                "operator_action_required": True,
+                "selected_matchup_required": True,
+                "selected_matchup_generate_request_accepted": True,
+                "selected_matchup_fighter_a": selected_preview.get("fighter_a", ""),
+                "selected_matchup_fighter_b": selected_preview.get("fighter_b", ""),
+                "selected_matchup_event": selected_preview.get("event_name", ""),
+                "selected_matchup_id": selected_matchup_id,
+                "generation_request_id": generation_request_id,
+                "renderer_route_used": result.get("renderer_route_used", "unknown"),
+                "renderer_profile": result.get("renderer_profile", ""),
+                "template_pack_root": result.get("template_pack_root", _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT),
+                "template_pack_asset_backed": bool(result.get("template_pack_asset_backed", False)),
+                "jbalia_layout_applied": bool(result.get("premium_template_render_used", False)),
+                "generated_at": result.get("generated_at") or _utc_now_iso_seconds(),
+                "file_modified_at": file_meta.get("file_modified_at") or result.get("file_modified_at"),
+                "file_size_bytes": file_meta.get("file_size_bytes") or result.get("file_size_bytes"),
+                "page_count": extracted_page_count or result.get("page_count"),
+                "text_scan_forbidden_markers": text_scan,
+                "selected_matchup_matches_pdf_text": selected_matchup_matches_pdf_text,
+                "stale_file_reused": bool(result.get("stale_file_reused", False)),
+                "selected_matchup_preview": {
+                    "fighter_a": selected_preview.get("fighter_a", ""),
+                    "fighter_b": selected_preview.get("fighter_b", ""),
+                    "event_name": selected_preview.get("event_name", ""),
+                    "source_url": selected_preview.get("source_url", ""),
+                    "report_ready_status": selected_preview.get("report_ready_status", ""),
+                },
+                "queue_write_performed": False,
+                "delivery_performed": False,
+                "external_api_delivery_performed": False,
+                "learning_apply_performed": False,
+                "calibration_write_performed": False,
+                "button3_mutation_performed": False,
+            }), 422
+
     result.update({
+        "customer_pdf_quality_gate_failed": False,
         "operator_action_required": True,
         "selected_matchup_required": True,
         "selected_matchup_generate_request_accepted": True,

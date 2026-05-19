@@ -476,7 +476,7 @@ def _build_blocks(report_context_preview):
         # Headline with more specific projection
         "headline": (
             f"{fighter_a} enters with the clearest control lane if the fight stays at a pressure-to-reset cadence. "
-            f"The tactical thesis is simple: deny {fighter_b} clean geography, win the first re-entry after every break, and make late-round reads expensive. "
+            f"The operating thesis is simple: deny {fighter_b} clean geography, win the first re-entry after every break, and make late-round reads expensive. "
             f"If {fighter_b} turns the fight into clean, countable exchanges, the edge compresses quickly."
         ),
         # Matchup snapshot with tactical depth
@@ -632,36 +632,11 @@ def _build_blocks(report_context_preview):
     }
 
 
-def _depth_rows(title, body, blocks):
+def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
     fighter_a = blocks.get("fighter_a", "Fighter A")
     fighter_b = blocks.get("fighter_b", "Fighter B")
     compact_body = re.sub(r"\s+", " ", str(body or "")).strip()
     compact_body = compact_body[:210] + "..." if len(compact_body) > 210 else compact_body
-    return [
-        ("Tactical Thesis", compact_body or f"{fighter_a} has the projection lane when reset control remains disciplined."),
-        ("Mechanism", f"Model-derived mechanism: {fighter_a} pressure geometry versus {fighter_b} clean counter timing."),
-        ("Fighter A Pathway", f"{fighter_a} scores by winning first re-entry and forcing defensive resets under pressure."),
-        ("Fighter B Counter-Pathway", f"{fighter_b} flips momentum through layered counters, clean exits, and reduced forced exchanges."),
-        ("Watch Cue", "Watch reset speed after first contact and defensive hand integrity under pace spikes."),
-        ("Command Instruction", "Preserve scoring geography before pace expansion; avoid low-value pressure volume."),
-        ("Failure Consequence", "If position conversion drops while output rises, scorecard authority drifts quickly."),
-        ("Control Window", blocks.get("round_band", "R2-R4 (model-derived inflection window)")),
-        ("Visual/Data Read", "Visual signal and narrative are aligned to the same model-derived control and risk pathways."),
-        ("Buyer Meaning", "Edge is probabilistic with volatility; allocate exposure as scenario-weighted rather than absolute."),
-        ("Coach Meaning", "Prioritize lane discipline and reset quality before pace extension to preserve score authority."),
-    ]
-
-
-def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
-    rows = _depth_rows(title, body, blocks)
-    left_items = []
-    right_items = []
-    for idx, (label, text) in enumerate(rows):
-        item = (label, text, module.BLUE if idx < 5 else module.RED, module.PANEL_BLUE if idx < 5 else module.PANEL)
-        if idx % 2 == 0:
-            left_items.append(item)
-        else:
-            right_items.append(item)
 
     draw_two_column_safe_layout(
         module,
@@ -670,8 +645,34 @@ def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
         y_top=y,
         w=w,
         column_gap=12,
-        left_items=left_items,
-        right_items=right_items,
+        left_items=[
+            (
+                "Primary Control Read",
+                compact_body or f"{fighter_a} keeps edge by winning first re-entry and preserving scoring geography.",
+                module.BLUE,
+                module.PANEL_BLUE,
+            ),
+            (
+                "Risk Trigger",
+                "If pressure output rises without position conversion, card authority can drift quickly.",
+                module.RED,
+                module.PANEL,
+            ),
+        ],
+        right_items=[
+            (
+                "Counter Risk",
+                f"{fighter_b} gains leverage when exits are clean and entries are rushed or unlayered.",
+                module.RED,
+                module.PANEL,
+            ),
+            (
+                "Corner Command",
+                "Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.",
+                module.GOLD2,
+                module.PANEL,
+            ),
+        ],
         footer_reserved=8,
     )
 
@@ -1385,7 +1386,7 @@ def _draw_customer_appendix(module, c):
     module.panel(c, x, 98, w, 146, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
     c.drawString(x + 24, 224, "WHAT THIS REPORT INCLUDES")
-    module.para(c, "Executive cover design, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and Source Traceability / source map pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
+    module.para(c, "Executive cover design, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and source-map evidence pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
     module.para(c, "No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.", x + 24, 116, w - 48, 26, size=9.4, col=module.MUTED, min_size=8.5)
     c.showPage()
 
@@ -1504,7 +1505,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     _draw_cover(module, c, blocks)
     _draw_executive(module, c, blocks)
     _draw_text_section(module, c, 3, "Headline Projection", "Ares parity headline lane", blocks["headline"], blocks)
-    _draw_text_section(module, c, 4, "Matchup Snapshot", "Core Claim / Mechanism / Pathways", blocks["matchup_snapshot"], blocks)
+    _draw_text_section(module, c, 4, "Matchup Snapshot", "Primary matchup intelligence snapshot", blocks["matchup_snapshot"], blocks)
     _draw_fighter_architecture_radar(module, c, blocks)
     _draw_tactical_edge_table(module, c, blocks)
     _draw_text_section(module, c, 7, "Decision Structure", "Decision Structure / Command Layer", blocks["decision_structure"], blocks)
