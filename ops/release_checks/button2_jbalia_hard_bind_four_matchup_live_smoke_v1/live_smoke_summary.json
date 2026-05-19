@@ -1,0 +1,215 @@
+{
+  "slice": "button2-jbalia-hard-bind-four-matchup-live-smoke-v1",
+  "active_baseline_tag": "button2-jbalia-template-sample-renderer-hard-bind-v1",
+  "active_baseline_commit": "caba638",
+  "non_regression_anchors": [
+    {
+      "tag": "button2-disable-section-card-engine-and-force-jbalia-premium-renderer-v1",
+      "commit": "9adc303"
+    },
+    {
+      "tag": "button2-selected-matchup-live-route-output-path-repair-v1",
+      "commit": "e0a2fd0"
+    }
+  ],
+  "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+  "reports": [
+    {
+      "slug": "rico",
+      "fighter_a": "Rico Verhoeven",
+      "fighter_b": "Tariq Osaro",
+      "event_name": "GLORY 100",
+      "status_code": 200,
+      "ok": true,
+      "renderer_profile": "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1",
+      "renderer_route_used": "template_pack_asset_renderer",
+      "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+      "output_filename": "rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260519T055420Z_cd01ac5a0742.pdf",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\generated_pdfs\\rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260519T055420Z_cd01ac5a0742.pdf",
+      "page_count": 24,
+      "response_page_count": 24,
+      "stale_file_reused": false,
+      "selected_matchup_matches_pdf_text": true,
+      "cover_markers_ok": true,
+      "dashboard_markers_ok": true,
+      "forbidden_hits": [],
+      "open_route_status": 200,
+      "library_status": 200,
+      "library_lists_exact_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_contact_sheet.png",
+        "pages": {
+          "cover": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_cover.png",
+          "executive_dashboard": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_executive_dashboard.png",
+          "headline_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_headline_projection.png",
+          "matchup_snapshot": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_matchup_snapshot.png",
+          "fighter_architecture_radar": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_fighter_architecture_radar.png",
+          "tactical_edge_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_tactical_edge_map.png",
+          "round_control_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_round_control_projection.png",
+          "scorecard_scenario": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_scorecard_scenario.png",
+          "source_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_source_map.png",
+          "disclaimer": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\rico_disclaimer.png"
+        }
+      }
+    },
+    {
+      "slug": "anthony",
+      "fighter_a": "Anthony Joshua",
+      "fighter_b": "Daniel Dubois",
+      "event_name": "Joshua vs Dubois",
+      "status_code": 200,
+      "ok": true,
+      "renderer_profile": "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1",
+      "renderer_route_used": "template_pack_asset_renderer",
+      "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+      "output_filename": "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260519T055422Z_cd0c2a6d2593.pdf",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\generated_pdfs\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260519T055422Z_cd0c2a6d2593.pdf",
+      "page_count": 24,
+      "response_page_count": 24,
+      "stale_file_reused": false,
+      "selected_matchup_matches_pdf_text": true,
+      "cover_markers_ok": true,
+      "dashboard_markers_ok": true,
+      "forbidden_hits": [],
+      "open_route_status": 200,
+      "library_status": 200,
+      "library_lists_exact_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_contact_sheet.png",
+        "pages": {
+          "cover": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_cover.png",
+          "executive_dashboard": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_executive_dashboard.png",
+          "headline_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_headline_projection.png",
+          "matchup_snapshot": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_matchup_snapshot.png",
+          "fighter_architecture_radar": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_fighter_architecture_radar.png",
+          "tactical_edge_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_tactical_edge_map.png",
+          "round_control_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_round_control_projection.png",
+          "scorecard_scenario": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_scorecard_scenario.png",
+          "source_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_source_map.png",
+          "disclaimer": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\anthony_disclaimer.png"
+        }
+      }
+    },
+    {
+      "slug": "alex",
+      "fighter_a": "Alex Pereira",
+      "fighter_b": "Jiri Prochazka",
+      "event_name": "UFC 300",
+      "status_code": 200,
+      "ok": true,
+      "renderer_profile": "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1",
+      "renderer_route_used": "template_pack_asset_renderer",
+      "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+      "output_filename": "alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T055423Z_39246e5cb184.pdf",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\generated_pdfs\\alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T055423Z_39246e5cb184.pdf",
+      "page_count": 24,
+      "response_page_count": 24,
+      "stale_file_reused": false,
+      "selected_matchup_matches_pdf_text": true,
+      "cover_markers_ok": true,
+      "dashboard_markers_ok": true,
+      "forbidden_hits": [],
+      "open_route_status": 200,
+      "library_status": 200,
+      "library_lists_exact_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_contact_sheet.png",
+        "pages": {
+          "cover": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_cover.png",
+          "executive_dashboard": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_executive_dashboard.png",
+          "headline_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_headline_projection.png",
+          "matchup_snapshot": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_matchup_snapshot.png",
+          "fighter_architecture_radar": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_fighter_architecture_radar.png",
+          "tactical_edge_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_tactical_edge_map.png",
+          "round_control_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_round_control_projection.png",
+          "scorecard_scenario": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_scorecard_scenario.png",
+          "source_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_source_map.png",
+          "disclaimer": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\alex_disclaimer.png"
+        }
+      }
+    },
+    {
+      "slug": "nadaka",
+      "fighter_a": "Nadaka Yoshinari",
+      "fighter_b": "Songchainoi Kiatsongrit",
+      "event_name": "ONE Samurai 1",
+      "status_code": 200,
+      "ok": true,
+      "renderer_profile": "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1",
+      "renderer_route_used": "template_pack_asset_renderer",
+      "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+      "output_filename": "nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T055425Z_c262df66b0a9.pdf",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\generated_pdfs\\nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T055425Z_c262df66b0a9.pdf",
+      "page_count": 24,
+      "response_page_count": 24,
+      "stale_file_reused": false,
+      "selected_matchup_matches_pdf_text": true,
+      "cover_markers_ok": true,
+      "dashboard_markers_ok": true,
+      "forbidden_hits": [],
+      "open_route_status": 200,
+      "library_status": 200,
+      "library_lists_exact_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_contact_sheet.png",
+        "pages": {
+          "cover": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_cover.png",
+          "executive_dashboard": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_executive_dashboard.png",
+          "headline_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_headline_projection.png",
+          "matchup_snapshot": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_matchup_snapshot.png",
+          "fighter_architecture_radar": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_fighter_architecture_radar.png",
+          "tactical_edge_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_tactical_edge_map.png",
+          "round_control_projection": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_round_control_projection.png",
+          "scorecard_scenario": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_scorecard_scenario.png",
+          "source_map": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_source_map.png",
+          "disclaimer": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_jbalia_hard_bind_four_matchup_live_smoke_v1\\visual_proof\\nadaka_disclaimer.png"
+        }
+      }
+    }
+  ],
+  "all_http_200": true,
+  "all_ok": true,
+  "all_jbalia_renderer_profile": true,
+  "all_24_pages": true,
+  "all_stale_file_reused_false": true,
+  "all_selected_matchup_integrity_true": true,
+  "all_cover_markers_ok": true,
+  "all_dashboard_markers_ok": true,
+  "all_forbidden_absent": true,
+  "all_open_route_200": true,
+  "all_library_route_200": true,
+  "all_library_list_exact_filename": true,
+  "all_governance_false": true
+}
