@@ -17,6 +17,7 @@ GOVERNANCE:
 import sys
 import os
 import re
+import json
 from datetime import datetime
 from datetime import timezone
 import uuid
@@ -654,6 +655,311 @@ def _list_generated_pdf_library_rows(output_root):
 
     rows.sort(key=lambda item: item.get("modified_ts", 0.0), reverse=True)
     return rows
+
+
+def _repo_root_path():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _button1_canonical_source_path():
+    return os.path.join(
+        _repo_root_path(),
+        "ops",
+        "approved_sources",
+        "button1_live_event_source_rows.json",
+    )
+
+
+def _button2_canonical_queue_path():
+    return os.path.join(
+        _repo_root_path(),
+        "ops",
+        "prf_queue",
+        "button2_approved_fight_queue.json",
+    )
+
+
+def _safe_json_load(path):
+    if not isinstance(path, str) or not path.strip() or not os.path.isfile(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _safe_text(value):
+    if isinstance(value, str):
+        return value.strip()
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _safe_bool(value, default=False):
+    if value is None:
+        return bool(default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return bool(value)
+
+
+def _url_from_row(row):
+    if not isinstance(row, dict):
+        return ""
+    for key in ("source_url", "canonical_source_url", "event_url", "provenance_url", "official_url", "url"):
+        value = row.get(key)
+        if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
+            return value.strip()
+    provenance = row.get("provenance")
+    if isinstance(provenance, dict):
+        src = provenance.get("source_url")
+        if isinstance(src, str) and src.strip().lower().startswith(("http://", "https://")):
+            return src.strip()
+    return ""
+
+
+def _derive_event_id(event_row):
+    if not isinstance(event_row, dict):
+        return ""
+    event_id = _safe_text(event_row.get("event_id") or event_row.get("candidate_id"))
+    if event_id:
+        return event_id
+    event_name = _safe_text(event_row.get("event_name") or event_row.get("event") or event_row.get("event_title"))
+    return _slugify_text(event_name)
+
+
+def _derive_source_matchup_id(event_row, matchup_row, matchup_index):
+    if isinstance(matchup_row, dict):
+        for key in ("matchup_id", "candidate_id", "fight_id", "fight_key", "matchup_key", "id"):
+            value = _safe_text(matchup_row.get(key))
+            if value:
+                return value
+
+    base_id = _safe_text(event_row.get("candidate_id") or event_row.get("event_id"))
+    if base_id:
+        return f"{base_id}_mu_{matchup_index}"
+
+    event_name = _safe_text(event_row.get("event_name") or event_row.get("event") or event_row.get("event_title"))
+    fighter_a = _safe_text((matchup_row or {}).get("fighter_a") or (matchup_row or {}).get("fighter_a_name"))
+    fighter_b = _safe_text((matchup_row or {}).get("fighter_b") or (matchup_row or {}).get("fighter_b_name"))
+    return _slugify_text(f"{event_name}_{fighter_a}_vs_{fighter_b}_{matchup_index}") or f"matchup_{matchup_index}"
+
+
+def _normalize_readiness_status(value):
+    status = _safe_text(value).lower()
+    if not status:
+        return ""
+    if status == "ready_to_save":
+        return "ready_for_button2_preview"
+    return status
+
+
+def _readiness_is_promotable(value):
+    status = _normalize_readiness_status(value)
+    return status in {
+        "ready",
+        "ready_for_button2_preview",
+        "ready_for_button2_generation",
+        "ready_for_button2",
+        "customer_ready",
+        "customer_ready_verified",
+    }
+
+
+def _flatten_button1_canonical_matchup_rows():
+    source_doc = _safe_json_load(_button1_canonical_source_path())
+    events = source_doc.get("events") if isinstance(source_doc, dict) else []
+    if not isinstance(events, list):
+        return []
+
+    flattened = []
+    for event_row in events:
+        if not isinstance(event_row, dict):
+            continue
+
+        event_name = _safe_text(event_row.get("event_name") or event_row.get("event") or event_row.get("event_title"))
+        if not event_name:
+            continue
+
+        event_source_url = _url_from_row(event_row)
+        event_source_type = _safe_text(event_row.get("source_type")) or "official"
+        event_provenance = _safe_text(event_row.get("provenance_status")) or "source_backed"
+        event_readiness = _safe_text(
+            event_row.get("button2_readiness_status")
+            or event_row.get("report_ready_status")
+            or event_row.get("ready_state")
+        )
+        event_queue_save_eligible = _safe_bool(event_row.get("queue_save_eligible"), default=True)
+        event_blocked_reason = _safe_text(event_row.get("blocked_reason"))
+
+        matchups = event_row.get("matchups")
+        if not isinstance(matchups, list) or not matchups:
+            matchups = [{}]
+
+        for idx, matchup_row in enumerate(matchups):
+            if not isinstance(matchup_row, dict):
+                continue
+
+            fighter_a = _safe_text(matchup_row.get("fighter_a") or matchup_row.get("fighter_a_name"))
+            fighter_b = _safe_text(matchup_row.get("fighter_b") or matchup_row.get("fighter_b_name"))
+            if not fighter_a or not fighter_b:
+                continue
+
+            source_url = _url_from_row(matchup_row) or event_source_url
+            source_type = _safe_text(matchup_row.get("source_type")) or event_source_type
+            provenance_status = _safe_text(matchup_row.get("provenance_status")) or event_provenance
+            readiness = _safe_text(
+                matchup_row.get("button2_readiness_status")
+                or matchup_row.get("report_ready_status")
+                or matchup_row.get("ready_state")
+                or event_readiness
+            )
+            queue_save_eligible = _safe_bool(
+                matchup_row.get("queue_save_eligible"),
+                default=event_queue_save_eligible,
+            )
+            blocked_reason = _safe_text(matchup_row.get("blocked_reason") or event_blocked_reason)
+
+            source_matchup_id = _derive_source_matchup_id(event_row, matchup_row, idx)
+            canonical_matchup_id = _safe_text(matchup_row.get("matchup_id"))
+            if not canonical_matchup_id:
+                canonical_matchup_id = _slugify_text(
+                    f"{event_name}_{fighter_a}_vs_{fighter_b}"
+                ) or source_matchup_id
+
+            flattened.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": canonical_matchup_id,
+                "event_id": _derive_event_id(event_row),
+                "event_name": event_name,
+                "event_date": _safe_text(matchup_row.get("event_date") or event_row.get("event_date")),
+                "promotion": _safe_text(matchup_row.get("promotion") or event_row.get("promotion")),
+                "fighter_a": fighter_a,
+                "fighter_b": fighter_b,
+                "weight_class": _safe_text(matchup_row.get("weight_class") or event_row.get("weight_class")),
+                "bout_order": matchup_row.get("bout_order") if isinstance(matchup_row.get("bout_order"), int) else (event_row.get("bout_order") if isinstance(event_row.get("bout_order"), int) else None),
+                "source_url": source_url,
+                "source_type": source_type or "official",
+                "provenance_status": provenance_status or "source_backed",
+                "button2_readiness_status": _normalize_readiness_status(readiness),
+                "report_ready_status": _normalize_readiness_status(readiness),
+                "customer_ready_possible": _safe_bool(matchup_row.get("customer_ready_possible"), default=True),
+                "blocked_reason": blocked_reason,
+                "queue_save_eligible": queue_save_eligible,
+                "source_backed": bool(source_url),
+            })
+
+    return flattened
+
+
+def _queue_duplicate_fallback_key(event_name, fighter_a, fighter_b, source_url):
+    event_key = _slugify_text(event_name)
+    a_key = _slugify_text(fighter_a)
+    b_key = _slugify_text(fighter_b)
+    source_txt = _safe_text(source_url)
+    source_domain = ""
+    if source_txt:
+        try:
+            source_domain = (_safe_text(urlparse(source_txt).netloc)).lower()
+        except Exception:
+            source_domain = ""
+    source_key = _slugify_text(source_domain or source_txt)
+    return f"{event_key}|{a_key}|{b_key}|{source_key}"
+
+
+def _build_queue_dedupe_indexes(queue_rows):
+    id_set = set()
+    fallback_set = set()
+    for row in queue_rows:
+        if not isinstance(row, dict):
+            continue
+        row_matchup_id = _safe_text(row.get("matchup_id")).lower()
+        if row_matchup_id:
+            id_set.add(row_matchup_id)
+        fallback_key = _queue_duplicate_fallback_key(
+            row.get("event_name", ""),
+            row.get("fighter_a", ""),
+            row.get("fighter_b", ""),
+            row.get("source_url", ""),
+        )
+        if fallback_key:
+            fallback_set.add(fallback_key)
+    return id_set, fallback_set
+
+
+def _build_button2_queue_row_from_button1(source_row, approved_at):
+    return {
+        "matchup_id": _safe_text(source_row.get("matchup_id")),
+        "event_name": _safe_text(source_row.get("event_name")),
+        "event_id": _safe_text(source_row.get("event_id")),
+        "event_date": _safe_text(source_row.get("event_date")),
+        "promotion": _safe_text(source_row.get("promotion")),
+        "fighter_a": _safe_text(source_row.get("fighter_a")),
+        "fighter_b": _safe_text(source_row.get("fighter_b")),
+        "weight_class": _safe_text(source_row.get("weight_class")),
+        "bout_order": source_row.get("bout_order") if isinstance(source_row.get("bout_order"), int) else None,
+        "source_url": _safe_text(source_row.get("source_url")),
+        "source_type": _safe_text(source_row.get("source_type")) or "official",
+        "provenance_status": _safe_text(source_row.get("provenance_status")) or "source_backed",
+        "button2_readiness_status": _normalize_readiness_status(source_row.get("button2_readiness_status") or source_row.get("report_ready_status")) or "ready_for_button2_preview",
+        "report_ready_status": _normalize_readiness_status(source_row.get("report_ready_status") or source_row.get("button2_readiness_status")) or "ready_for_button2_preview",
+        "customer_ready_possible": bool(source_row.get("customer_ready_possible", True)),
+        "blocked_reason": _safe_text(source_row.get("blocked_reason")),
+        "approved_for_button2": True,
+        "approved_at": approved_at,
+        "approved_by": "operator",
+        "queue_source": "button1_promote_ready_matchups_to_button2_queue_v1",
+    }
+
+
+def _queue_counts(queue_rows):
+    ready_statuses = {
+        "ready",
+        "ready_for_button2_preview",
+        "ready_for_button2_generation",
+        "ready_for_button2",
+        "customer_ready",
+        "customer_ready_verified",
+    }
+    ready_count = 0
+    blocked_count = 0
+    for row in queue_rows:
+        if not isinstance(row, dict):
+            continue
+        status = _safe_text(row.get("button2_readiness_status") or row.get("report_ready_status")).lower()
+        blocked_reason = _safe_text(row.get("blocked_reason"))
+        customer_ready_possible = bool(row.get("customer_ready_possible", True))
+        if status in ready_statuses and not blocked_reason and customer_ready_possible:
+            ready_count += 1
+        else:
+            blocked_count += 1
+    return ready_count, blocked_count
+
+
+def _write_canonical_button2_queue(queue_rows):
+    queue_path = _button2_canonical_queue_path()
+    os.makedirs(os.path.dirname(queue_path), exist_ok=True)
+    ready_count, blocked_count = _queue_counts(queue_rows)
+    payload = {
+        "queue": queue_rows,
+        "metadata": {
+            "source": "operator_approved_fight_queue",
+            "last_updated_at": _utc_now_iso_seconds(),
+            "total_rows": len(queue_rows),
+            "ready_count": ready_count,
+            "blocked_count": blocked_count,
+            "canonical_source": True,
+        },
+    }
+    with open(queue_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=True)
 
 
 def _path_is_in_process_path(target_path):
@@ -1408,6 +1714,252 @@ def button2_queue_ready_v1():
         "source_of_truth": "ops/prf_queue/button2_approved_fight_queue.json",
     }
 
+    resp = make_response(jsonify(response), 200)
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+@app.route("/api/button1/promote-ready-matchups-to-button2-queue", methods=["POST"])
+def button1_promote_ready_matchups_to_button2_queue_v1():
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+    if not isinstance(body, dict):
+        return jsonify({
+            "ok": False,
+            "error": "invalid_request_body",
+            "message": "Request body must be a JSON object.",
+            "requested_count": 0,
+            "promoted_count": 0,
+            "skipped_count": 0,
+            "duplicate_count": 0,
+            "queue_before_count": 0,
+            "queue_after_count": 0,
+            "promoted_rows": [],
+            "skipped_rows": [],
+            "duplicate_rows": [],
+            "canonical_source": "ops/approved_sources/button1_live_event_source_rows.json",
+            "canonical_destination": "ops/prf_queue/button2_approved_fight_queue.json",
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    operator_approval = bool(body.get("operator_approval", False))
+    if not operator_approval:
+        return jsonify({
+            "ok": False,
+            "error": "operator_approval_required",
+            "message": "Explicit operator approval is required for queue promotion.",
+            "requested_count": 0,
+            "promoted_count": 0,
+            "skipped_count": 0,
+            "duplicate_count": 0,
+            "queue_before_count": len(load_button2_queue_readonly()),
+            "queue_after_count": len(load_button2_queue_readonly()),
+            "promoted_rows": [],
+            "skipped_rows": [],
+            "duplicate_rows": [],
+            "canonical_source": "ops/approved_sources/button1_live_event_source_rows.json",
+            "canonical_destination": "ops/prf_queue/button2_approved_fight_queue.json",
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 403
+
+    promote_all_ready = bool(body.get("promote_all_ready", False))
+    requested_matchup_ids_raw = body.get("matchup_ids", [])
+    requested_matchup_ids = []
+    if isinstance(requested_matchup_ids_raw, list):
+        requested_matchup_ids = [
+            _safe_text(v)
+            for v in requested_matchup_ids_raw
+            if _safe_text(v)
+        ]
+
+    if not promote_all_ready and not requested_matchup_ids:
+        return jsonify({
+            "ok": False,
+            "error": "matchup_ids_or_promote_all_ready_required",
+            "message": "Provide matchup_ids[] or set promote_all_ready=true.",
+            "requested_count": 0,
+            "promoted_count": 0,
+            "skipped_count": 0,
+            "duplicate_count": 0,
+            "queue_before_count": len(load_button2_queue_readonly()),
+            "queue_after_count": len(load_button2_queue_readonly()),
+            "promoted_rows": [],
+            "skipped_rows": [],
+            "duplicate_rows": [],
+            "canonical_source": "ops/approved_sources/button1_live_event_source_rows.json",
+            "canonical_destination": "ops/prf_queue/button2_approved_fight_queue.json",
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 400
+
+    source_rows = _flatten_button1_canonical_matchup_rows()
+    source_by_id = {}
+    for row in source_rows:
+        source_id = _safe_text(row.get("source_matchup_id"))
+        if source_id and source_id not in source_by_id:
+            source_by_id[source_id] = row
+
+    canonical_queue_path = _button2_canonical_queue_path()
+    queue_doc = _safe_json_load(canonical_queue_path)
+    queue_rows = queue_doc.get("queue") if isinstance(queue_doc, dict) else []
+    if not isinstance(queue_rows, list):
+        queue_rows = []
+    queue_rows = [dict(r) for r in queue_rows if isinstance(r, dict)]
+
+    queue_before_count = len(queue_rows)
+    existing_id_keys, existing_fallback_keys = _build_queue_dedupe_indexes(queue_rows)
+
+    candidate_rows = []
+    skipped_rows = []
+    requested_ids_set = set(_safe_text(v) for v in requested_matchup_ids if _safe_text(v))
+
+    if promote_all_ready:
+        for row in source_rows:
+            if not _safe_bool(row.get("queue_save_eligible"), default=False):
+                continue
+            if not _readiness_is_promotable(row.get("button2_readiness_status") or row.get("report_ready_status")):
+                continue
+            if _safe_text(row.get("blocked_reason")):
+                continue
+            if not _safe_bool(row.get("source_backed"), default=False):
+                continue
+            candidate_rows.append(row)
+    else:
+        for requested_id in requested_ids_set:
+            source_row = source_by_id.get(requested_id)
+            if source_row is None:
+                skipped_rows.append({
+                    "source_matchup_id": requested_id,
+                    "reason": "matchup_id_not_found_in_canonical_button1_source",
+                })
+                continue
+            candidate_rows.append(source_row)
+
+    promoted_rows = []
+    duplicate_rows = []
+    approved_at = _utc_now_iso_seconds()
+
+    for row in candidate_rows:
+        source_matchup_id = _safe_text(row.get("source_matchup_id"))
+        matchup_id = _safe_text(row.get("matchup_id"))
+        readiness = _safe_text(row.get("button2_readiness_status") or row.get("report_ready_status"))
+        blocked_reason = _safe_text(row.get("blocked_reason"))
+        source_backed = _safe_bool(row.get("source_backed"), default=False)
+        queue_save_eligible = _safe_bool(row.get("queue_save_eligible"), default=False)
+
+        if not queue_save_eligible:
+            skipped_rows.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": matchup_id,
+                "event_name": _safe_text(row.get("event_name")),
+                "fighter_a": _safe_text(row.get("fighter_a")),
+                "fighter_b": _safe_text(row.get("fighter_b")),
+                "reason": "queue_save_not_eligible",
+            })
+            continue
+
+        if not source_backed:
+            skipped_rows.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": matchup_id,
+                "event_name": _safe_text(row.get("event_name")),
+                "fighter_a": _safe_text(row.get("fighter_a")),
+                "fighter_b": _safe_text(row.get("fighter_b")),
+                "reason": "not_source_backed",
+            })
+            continue
+
+        if not _readiness_is_promotable(readiness):
+            skipped_rows.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": matchup_id,
+                "event_name": _safe_text(row.get("event_name")),
+                "fighter_a": _safe_text(row.get("fighter_a")),
+                "fighter_b": _safe_text(row.get("fighter_b")),
+                "reason": "not_ready_for_button2",
+                "readiness_status": _normalize_readiness_status(readiness),
+            })
+            continue
+
+        if blocked_reason:
+            skipped_rows.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": matchup_id,
+                "event_name": _safe_text(row.get("event_name")),
+                "fighter_a": _safe_text(row.get("fighter_a")),
+                "fighter_b": _safe_text(row.get("fighter_b")),
+                "reason": "blocked_reason_present",
+                "blocked_reason": blocked_reason,
+            })
+            continue
+
+        fallback_key = _queue_duplicate_fallback_key(
+            row.get("event_name", ""),
+            row.get("fighter_a", ""),
+            row.get("fighter_b", ""),
+            row.get("source_url", ""),
+        )
+        matchup_id_key = matchup_id.lower()
+
+        if (matchup_id_key and matchup_id_key in existing_id_keys) or (fallback_key and fallback_key in existing_fallback_keys):
+            duplicate_rows.append({
+                "source_matchup_id": source_matchup_id,
+                "matchup_id": matchup_id,
+                "event_name": _safe_text(row.get("event_name")),
+                "fighter_a": _safe_text(row.get("fighter_a")),
+                "fighter_b": _safe_text(row.get("fighter_b")),
+                "reason": "duplicate_existing_queue_row",
+            })
+            continue
+
+        queue_row = _build_button2_queue_row_from_button1(row, approved_at)
+        queue_rows.append(queue_row)
+        promoted_rows.append(queue_row)
+        if matchup_id_key:
+            existing_id_keys.add(matchup_id_key)
+        if fallback_key:
+            existing_fallback_keys.add(fallback_key)
+
+    if promoted_rows:
+        _write_canonical_button2_queue(queue_rows)
+
+    requested_count = len(candidate_rows) if promote_all_ready else len(requested_ids_set)
+    queue_after_count = len(queue_rows)
+    response = {
+        "ok": True,
+        "requested_count": requested_count,
+        "promoted_count": len(promoted_rows),
+        "skipped_count": len(skipped_rows),
+        "duplicate_count": len(duplicate_rows),
+        "queue_before_count": queue_before_count,
+        "queue_after_count": queue_after_count,
+        "promoted_rows": promoted_rows,
+        "skipped_rows": skipped_rows,
+        "duplicate_rows": duplicate_rows,
+        "canonical_source": "ops/approved_sources/button1_live_event_source_rows.json",
+        "canonical_destination": "ops/prf_queue/button2_approved_fight_queue.json",
+        "queue_write_performed": len(promoted_rows) > 0,
+        "delivery_performed": False,
+        "external_api_delivery_performed": False,
+        "learning_apply_performed": False,
+        "calibration_write_performed": False,
+        "button3_mutation_performed": False,
+    }
     resp = make_response(jsonify(response), 200)
     resp.headers["Cache-Control"] = "no-store"
     return resp

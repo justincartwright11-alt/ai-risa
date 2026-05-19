@@ -1,0 +1,59 @@
+{
+  "slice": "button1-to-button2-weekly-matchup-queue-promotion-repair-v1",
+  "date": "2026-05-19",
+  "port": 5050,
+  "promotion": {
+    "promoted_count": 0,
+    "duplicate_count": 15,
+    "skipped_count": 0,
+    "queue_before_count": 21,
+    "queue_after_count": 21
+  },
+  "button2_queue": {
+    "total_rows": 21,
+    "ready_count": 21
+  },
+  "pdf_generation": {
+    "single": [
+      {
+        "matchup": "Alex Pereira vs Jiri Prochazka",
+        "event": "UFC 300",
+        "generated": 1
+      }
+    ],
+    "multi": [
+      {
+        "matchup": "Islam Makhachev vs Dustin Poirier",
+        "event": "UFC 300"
+      },
+      {
+        "matchup": "Max Holloway vs Justin Gaethje",
+        "event": "UFC 300"
+      }
+    ],
+    "multi_generated": 2
+  },
+  "pdf_text_proof": {
+    "Islam Makhachev": true,
+    "Dustin Poirier": true,
+    "UFC 300": true
+  },
+  "governance_flags": {
+    "promotion": {
+      "queue_write_performed": false
+    },
+    "batch_generation": {
+      "report_generation_performed": true,
+      "queue_write_performed": false,
+      "delivery_performed": false,
+      "external_api_delivery_performed": false,
+      "learning_apply_performed": false,
+      "calibration_write_performed": false,
+      "button3_mutation_performed": false
+    }
+  },
+  "environment": {
+    "weasyprint_warning": "import_error:OSError (non-blocking, generation succeeded)",
+    "output_root_ready": true
+  }
+}

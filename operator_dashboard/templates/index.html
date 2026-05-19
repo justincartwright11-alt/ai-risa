@@ -733,6 +733,13 @@
         Event Name | Promotion | Event Date | Source URL | Source Type | Provenance Status | Matchup Count.
         Operator selection is explicit. Only source-backed matchups may be selected for Button 2 preview.
       </div>
+      <div id="b1-promotion-toolbar" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
+        <button class="b1-select-btn" id="b1-save-selected-ready-to-pdf-queue-btn" onclick="button1SaveSelectedReadyToPdfQueue()">Save Selected Ready to PDF Queue</button>
+        <button class="b1-select-btn" id="b1-save-all-ready-to-pdf-queue-btn" onclick="button1SaveAllReadyToPdfQueue()">Save All Ready to PDF Queue</button>
+      </div>
+      <div id="b1-promotion-status" class="status-msg" style="margin-top:8px;">
+        Promotion status: no promotion run yet.
+      </div>
       <div id="b1-event-cards-list" class="b1-event-cards-list">Run Button 1 preview to load source-backed event cards.</div>
     </div>
     <div class="b1-export-preview-card" id="b1-dossier-export-preview-card">
@@ -1203,6 +1210,8 @@ const LOCAL_AI_GATE1_APPROVED_SAVE_WRITER_PREVIEW_ENDPOINT =
   '/api/local-ai/gate1/save-fights/approved-save-writer-preview';
 const BUTTON1_BUTTON2_EVENT_CARD_MATCHUP_SELECT_PREVIEW_ENDPOINT =
   '/api/button1-button2/event-card-matchup/select-preview';
+const BUTTON1_PROMOTE_READY_MATCHUPS_TO_BUTTON2_QUEUE_ENDPOINT =
+  '/api/button1/promote-ready-matchups-to-button2-queue';
 const BUTTON2_SELECTED_MATCHUP_GENERATE_GUARDED_ENDPOINT =
   '/api/button2/selected-matchup/generate-guarded-v1';
 
@@ -1213,8 +1222,151 @@ const BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY = 'ai_risa_button2_selected_m
 const BUTTON2_QUEUE_ROWS_STORAGE_KEY = 'ai_risa_button2_queue_rows_v1';
 
 window.button1CandidateRowsForSelector = [];
+window.button1PromotionSelectedMatchupIds = {};
 window.button2SelectedMatchupPreview = null;
 window.button2QueueRows = [];
+
+function button1PromotionReadinessIsReady(statusValue) {
+  const status = String(statusValue || '').trim().toLowerCase();
+  return status === 'ready' ||
+    status === 'ready_for_button2_preview' ||
+    status === 'ready_for_button2_generation' ||
+    status === 'ready_for_button2' ||
+    status === 'customer_ready' ||
+    status === 'customer_ready_verified' ||
+    status === 'ready_to_save';
+}
+
+function button1PromotionMatchupIsEligible(matchup) {
+  if (!matchup || typeof matchup !== 'object') return false;
+  const sourceBacked = matchup.source_backed === true;
+  const ready = button1PromotionReadinessIsReady(matchup.report_ready_status);
+  const blocked = String(matchup.blocked_reason || '').trim();
+  return sourceBacked && ready && !blocked;
+}
+
+function button1PromotionSelectedIdsFromCurrentRows() {
+  const selected = window.button1PromotionSelectedMatchupIds || {};
+  const rows = buildEventCardAndMatchupSelectorModel(window.button1CandidateRowsForSelector || []);
+  const ids = [];
+  rows.forEach(eventCard => {
+    (eventCard.matchups || []).forEach(matchup => {
+      const matchupId = String(matchup.matchup_id || '').trim();
+      if (!matchupId || !selected[matchupId]) return;
+      if (!button1PromotionMatchupIsEligible(matchup)) return;
+      ids.push(matchupId);
+    });
+  });
+  return ids;
+}
+
+function button1TogglePromotionSelection(inputEl) {
+  if (!inputEl || !inputEl.dataset) return;
+  const matchupId = String(inputEl.dataset.matchupId || '').trim();
+  if (!matchupId) return;
+  if (!window.button1PromotionSelectedMatchupIds) {
+    window.button1PromotionSelectedMatchupIds = {};
+  }
+  if (inputEl.checked) {
+    window.button1PromotionSelectedMatchupIds[matchupId] = true;
+  } else {
+    delete window.button1PromotionSelectedMatchupIds[matchupId];
+  }
+}
+
+function button1RenderPromotionResult(data, selectedMode) {
+  const statusEl = document.getElementById('b1-promotion-status');
+  if (!statusEl) return;
+  const payload = data && typeof data === 'object' ? data : {};
+  const ok = payload.ok === true;
+  if (!ok) {
+    const msg = String(payload.message || payload.error || 'Promotion request failed.').trim();
+    statusEl.innerHTML =
+      'Promotion failed: ' + escapeHtml(msg) + '<br>' +
+      'No queue mutation performed. Use explicit operator action to retry.';
+    statusEl.className = 'status-msg error';
+    return;
+  }
+
+  const skippedRows = Array.isArray(payload.skipped_rows) ? payload.skipped_rows : [];
+  const duplicateRows = Array.isArray(payload.duplicate_rows) ? payload.duplicate_rows : [];
+  const skippedReasons = skippedRows.slice(0, 12).map(r => {
+    const reason = String((r && r.reason) || 'unspecified_skip_reason');
+    const matchup = String((r && r.matchup_id) || (r && r.source_matchup_id) || 'unknown_matchup');
+    return matchup + ': ' + reason;
+  });
+
+  const summary = [
+    (selectedMode ? 'Selected-ready promotion completed.' : 'All-ready promotion completed.'),
+    'promoted_count=' + String(payload.promoted_count || 0),
+    'skipped_count=' + String(payload.skipped_count || 0),
+    'duplicate_count=' + String(payload.duplicate_count || 0),
+    'queue_before_count=' + String(payload.queue_before_count || 0),
+    'queue_after_count=' + String(payload.queue_after_count || 0),
+    'Operator next step: Click Button 2 Refresh Queue to load promoted rows.'
+  ];
+
+  if (skippedReasons.length) {
+    summary.push('Skipped reasons: ' + skippedReasons.join(' | '));
+  }
+  if (duplicateRows.length) {
+    summary.push('Duplicate rows were skipped safely.');
+  }
+
+  statusEl.innerHTML = summary.map(line => escapeHtml(line)).join('<br>');
+  statusEl.className = 'status-msg ok';
+}
+
+function button1RunPromotionRequest(payload, selectedMode) {
+  const statusEl = document.getElementById('b1-promotion-status');
+  if (statusEl) {
+    statusEl.innerHTML = '<span class="spinner"></span>Running approved queue promotion...';
+    statusEl.className = 'status-msg';
+  }
+
+  fetch(BUTTON1_PROMOTE_READY_MATCHUPS_TO_BUTTON2_QUEUE_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json())
+    .then(data => {
+      button1RenderPromotionResult(data, selectedMode);
+      if (data && data.ok === true && selectedMode) {
+        window.button1PromotionSelectedMatchupIds = {};
+        renderButton1EventCardSelector(window.button1CandidateRowsForSelector || []);
+      }
+    })
+    .catch(() => {
+      button1RenderPromotionResult({
+        ok: false,
+        message: 'Promotion request failed. No queue mutation performed.'
+      }, selectedMode);
+    });
+}
+
+function button1SaveSelectedReadyToPdfQueue() {
+  const selectedIds = button1PromotionSelectedIdsFromCurrentRows();
+  if (!selectedIds.length) {
+    const statusEl = document.getElementById('b1-promotion-status');
+    if (statusEl) {
+      statusEl.innerHTML = 'No ready/source-backed selected rows to promote. Select rows first.';
+      statusEl.className = 'status-msg error';
+    }
+    return;
+  }
+  button1RunPromotionRequest({
+    operator_approval: true,
+    matchup_ids: selectedIds
+  }, true);
+}
+
+function button1SaveAllReadyToPdfQueue() {
+  button1RunPromotionRequest({
+    operator_approval: true,
+    promote_all_ready: true
+  }, false);
+}
 
 function getPreviewOnlySelectionPersistenceFlags() {
   return {
@@ -2788,6 +2940,11 @@ function renderButton1EventCardSelector(candidateRows) {
     } else {
       matchupHtml = eventCard.matchups.map(matchup => {
         const disabled = matchup.source_backed ? '' : ' disabled';
+        const promotionEligible = button1PromotionMatchupIsEligible(matchup);
+        const promoteDisabled = promotionEligible ? '' : ' disabled';
+        const promoteChecked = window.button1PromotionSelectedMatchupIds && window.button1PromotionSelectedMatchupIds[matchup.matchup_id]
+          ? ' checked'
+          : '';
         const statusText = matchup.source_backed ? 'ready' : 'review_only';
         return (
           '<div class="b1-matchup-row">' +
@@ -2801,6 +2958,10 @@ function renderButton1EventCardSelector(candidateRows) {
           'Readiness score: ' + escapeHtml(String(matchup.readiness_score || 0)) + '<br>' +
           'Recommended action: ' + escapeHtml(String(matchup.recommended_operator_action || 'wait_for_more_card_data')) + '<br>' +
           'Key reasons: ' + escapeHtml((Array.isArray(matchup.ranking_reasons) ? matchup.ranking_reasons.slice(0, 2).join('; ') : 'none') || 'none') + '<br>' +
+          '<label style="display:inline-flex;align-items:center;gap:6px;margin-right:8px;">' +
+          '<input type="checkbox" data-matchup-id="' + escapeHtml(matchup.matchup_id) + '" onchange="button1TogglePromotionSelection(this)"' + promoteDisabled + promoteChecked + '>' +
+          'Save-ready' +
+          '</label>' +
           '<button class="b1-select-btn"' + disabled +
           ' data-event-id="' + escapeHtml(matchup.event_id) + '"' +
           ' data-matchup-id="' + escapeHtml(matchup.matchup_id) + '"' +
