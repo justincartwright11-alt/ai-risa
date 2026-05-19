@@ -440,6 +440,60 @@
       color: #e8eaed;
       font-weight: 700;
     }
+    .b2-queued-matchups-panel {
+      margin-top: 12px;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-left: 3px solid #61afef;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.78rem;
+      color: #8a94b8;
+      line-height: 1.45;
+    }
+    .b2-queued-matchups-panel h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #61afef;
+      margin-bottom: 8px;
+    }
+    .b2-queued-matchups-list {
+      display: grid;
+      gap: 8px;
+    }
+    .b2-queued-matchup-row {
+      border: 1px solid #2a2d3e;
+      border-radius: 8px;
+      background: #141824;
+      padding: 8px;
+    }
+    .b2-queued-matchup-row.active {
+      border-color: #98c379;
+      box-shadow: 0 0 0 1px rgba(152,195,121,0.3) inset;
+    }
+    .b2-queued-matchup-title {
+      color: #e8eaed;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .b2-queued-matchup-meta {
+      color: #8a94b8;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+    .b2-select-row-btn {
+      margin-top: 6px;
+      padding: 6px 10px;
+      border: 1px solid #61afef;
+      background: rgba(97,175,239,0.1);
+      color: #61afef;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
     /* ── Phase 3 Proof Stack Display (Read-Only) ─────────────────────── */
     .proof-display-panel {
@@ -714,6 +768,10 @@
     {% endif %}
     <div id="b2-selected-matchup-preview" class="b2-selected-matchup-preview">
       No matchup selected for Button 2 yet. Use Button 1 Source-Backed Event Cards and click Select for PDF.
+    </div>
+    <div id="b2-queued-matchups-panel" class="b2-queued-matchups-panel">
+      <h4>Queued Matchups (Select One)</h4>
+      <div id="b2-queued-matchups-list" class="b2-queued-matchups-list">Run Button 1 or Button 2 preview to load queue rows.</div>
     </div>
   </div>
 
@@ -1103,9 +1161,11 @@ const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
 const SOURCE_BUTTON_FIND_RESULTS = 'button3_find_results';
 const BUTTON2_SELECTED_MATCHUP_PREVIEW_STORAGE_KEY = 'ai_risa_button2_selected_matchup_preview_v1';
+const BUTTON2_QUEUE_ROWS_STORAGE_KEY = 'ai_risa_button2_queue_rows_v1';
 
 window.button1CandidateRowsForSelector = [];
 window.button2SelectedMatchupPreview = null;
+window.button2QueueRows = [];
 
 function getPreviewOnlySelectionPersistenceFlags() {
   return {
@@ -1190,6 +1250,69 @@ function restoreButton2SelectedMatchupPreviewFromPersistence() {
   if (!restored) return;
   window.button2SelectedMatchupPreview = restored;
   renderButton2SelectedMatchupPreview(restored);
+}
+
+function sanitizeButton2QueueRowForPicker(row, index) {
+  if (!row || typeof row !== 'object') return null;
+  const matchupId = String(
+    row.matchup_id || row.candidate_id || row.fight_id || row.fight_key || row.matchup_key || row.id || ''
+  ).trim();
+  if (!matchupId) return null;
+
+  const fighterA = String(row.fighter_a || row.fighter_a_name || row.red_fighter || row.fighter_name || '').trim();
+  const fighterB = String(row.fighter_b || row.fighter_b_name || row.blue_fighter || row.opponent_name || '').trim();
+  const eventName = String(row.event_name || row.event || row.event_title || '').trim();
+  const readiness = String(row.report_ready_status || row.readiness || row.button2_readiness || '').trim();
+
+  return {
+    matchup_id: matchupId,
+    candidate_id: matchupId,
+    fighter_a: fighterA,
+    fighter_b: fighterB,
+    event_name: eventName,
+    event_date: String(row.event_date || '').trim(),
+    promotion: String(row.promotion || '').trim(),
+    source_url: String(row.source_url || row.canonical_source_url || row.event_url || row.provenance_url || row.official_url || row.url || '').trim(),
+    source_type: String(row.source_type || 'official').trim(),
+    report_ready_status: readiness,
+    selected_index: Number.isFinite(Number(index)) ? Number(index) : -1
+  };
+}
+
+function persistButton2QueueRows(rows) {
+  if (!window.localStorage) return;
+  try {
+    const safeRows = Array.isArray(rows)
+      ? rows.map((row, idx) => sanitizeButton2QueueRowForPicker(row, idx)).filter(Boolean)
+      : [];
+    if (!safeRows.length) {
+      window.localStorage.removeItem(BUTTON2_QUEUE_ROWS_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(BUTTON2_QUEUE_ROWS_STORAGE_KEY, JSON.stringify(safeRows));
+  } catch (_err) {
+    // Persistence is best-effort only.
+  }
+}
+
+function loadButton2QueueRowsFromPersistence() {
+  if (!window.localStorage) return [];
+  try {
+    const raw = window.localStorage.getItem(BUTTON2_QUEUE_ROWS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((row, idx) => sanitizeButton2QueueRowForPicker(row, idx)).filter(Boolean);
+  } catch (_err) {
+    return [];
+  }
+}
+
+function restoreButton2QueueRowsFromPersistence() {
+  const restored = loadButton2QueueRowsFromPersistence();
+  if (!restored.length) return;
+  window.button2QueueRows = restored;
+  renderButton2QueuedMatchupRows(restored);
 }
 
 function postLocalAiWorkflowPreview(payload) {
@@ -2514,11 +2637,73 @@ function renderButton2SelectedMatchupPreview(data) {
     '<strong>Next action:</strong> Operator may click Generate Report when ready. No auto-generation performed.';
 }
 
+function renderButton2QueuedMatchupRows(candidateRows) {
+  const listEl = document.getElementById('b2-queued-matchups-list');
+  if (!listEl) return;
+
+  const rows = Array.isArray(candidateRows)
+    ? candidateRows.map((row, idx) => sanitizeButton2QueueRowForPicker(row, idx)).filter(Boolean)
+    : [];
+
+  window.button2QueueRows = rows;
+  persistButton2QueueRows(rows);
+
+  if (!rows.length) {
+    listEl.innerHTML = 'No queued matchup rows available. Run Button 1 or Button 2 preview to hydrate queue rows.';
+    return;
+  }
+
+  const selectedMatchupId = String(
+    (window.button2SelectedMatchupPreview && (window.button2SelectedMatchupPreview.matchup_id || window.button2SelectedMatchupPreview.candidate_id)) || ''
+  ).trim();
+
+  const htmlRows = rows.map((row, idx) => {
+    const fighterA = escapeHtml(String(row.fighter_a || 'Unknown Fighter A'));
+    const fighterB = escapeHtml(String(row.fighter_b || 'Unknown Fighter B'));
+    const eventName = escapeHtml(String(row.event_name || 'Unknown Event'));
+    const sourceLabel = escapeHtml(String(row.source_url || row.source_type || 'n/a'));
+    const readiness = escapeHtml(String(row.report_ready_status || 'unknown'));
+    const matchupId = escapeHtml(String(row.matchup_id || ''));
+    const isActive = selectedMatchupId && row.matchup_id === selectedMatchupId;
+
+    return (
+      '<div class="b2-queued-matchup-row' + (isActive ? ' active' : '') + '">' +
+      '<div class="b2-queued-matchup-title">' + fighterA + ' vs ' + fighterB + '</div>' +
+      '<div class="b2-queued-matchup-meta">' +
+      'Event: ' + eventName + '<br>' +
+      'Source: ' + sourceLabel + '<br>' +
+      'Button 2 readiness: ' + readiness + '<br>' +
+      'matchup_id: ' + matchupId +
+      '</div>' +
+      '<button class="b2-select-row-btn" data-queue-index="' + String(idx) + '" onclick="selectButton2QueuedMatchupByIndex(this)">Select Row</button>' +
+      '</div>'
+    );
+  });
+
+  listEl.innerHTML = htmlRows.join('');
+}
+
+function selectButton2QueuedMatchupByIndex(buttonEl) {
+  const idx = buttonEl && buttonEl.dataset ? Number(buttonEl.dataset.queueIndex) : NaN;
+  if (!Number.isFinite(idx)) return;
+  const rows = Array.isArray(window.button2QueueRows) ? window.button2QueueRows : [];
+  if (idx < 0 || idx >= rows.length) return;
+  const row = rows[idx] || {};
+
+  selectEventCardMatchupForPdf(
+    String(row.event_name || ''),
+    String(row.matchup_id || ''),
+    String(row.candidate_id || ''),
+    idx
+  );
+}
+
 function renderButton1EventCardSelector(candidateRows) {
   const listEl = document.getElementById('b1-event-cards-list');
   if (!listEl) return;
 
   window.button1CandidateRowsForSelector = Array.isArray(candidateRows) ? candidateRows : [];
+  renderButton2QueuedMatchupRows(window.button1CandidateRowsForSelector);
 
   const eventCards = buildEventCardAndMatchupSelectorModel(window.button1CandidateRowsForSelector);
   if (!eventCards.length) {
@@ -2621,6 +2806,7 @@ function selectEventCardMatchupForPdf(eventId, matchupId, candidateId, selectedI
       const safePreview = sanitizeSelectedMatchupPreviewForPersistence(data) || data;
       window.button2SelectedMatchupPreview = safePreview;
       renderButton2SelectedMatchupPreview(safePreview);
+      renderButton2QueuedMatchupRows(window.button2QueueRows || window.button1CandidateRowsForSelector || []);
       persistButton2SelectedMatchupPreview(safePreview);
       setStatus('b2-status', 'Selection accepted for Button 2 preview. Operator action still required to generate report.', 'ok');
       showPanel('b2-result-panel');
@@ -2681,9 +2867,13 @@ function renderButton2GuardedGenerateResult(response) {
 }
 
 function postButton2SelectedMatchupGenerateGuarded(selectedPreview) {
+  const matchupId = String(
+    (selectedPreview && (selectedPreview.matchup_id || selectedPreview.candidate_id)) || ''
+  ).trim();
   const payload = {
     operator_approved: true,
-    selected_matchup_preview: selectedPreview || null
+    selected_matchup_id: matchupId,
+    approved_queue_rows: Array.isArray(window.button2QueueRows) ? window.button2QueueRows : []
   };
   return fetch(BUTTON2_SELECTED_MATCHUP_GENERATE_GUARDED_ENDPOINT, {
     method: 'POST',
@@ -2708,6 +2898,13 @@ function runButton2WorkflowHealthPreview() {
   return requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_GENERATE_PDFS)
     .then(data => {
       renderSimpleWorkflowSummary('b2-status', data);
+      const candidateRows = extractButton1CandidateRowsFromWorkflow(data);
+      if (Array.isArray(candidateRows) && candidateRows.length) {
+        window.button1CandidateRowsForSelector = candidateRows;
+        renderButton2QueuedMatchupRows(candidateRows);
+      } else {
+        renderButton2QueuedMatchupRows(window.button2QueueRows || []);
+      }
       return data;
     })
     .catch(() => {
@@ -3111,6 +3308,12 @@ function handleButton1Click() {
 function handleButton2Click() {
   showPanel('b2-result-panel');
   restoreButton2SelectedMatchupPreviewFromPersistence();
+  restoreButton2QueueRowsFromPersistence();
+  if (Array.isArray(window.button1CandidateRowsForSelector) && window.button1CandidateRowsForSelector.length) {
+    renderButton2QueuedMatchupRows(window.button1CandidateRowsForSelector);
+  } else {
+    renderButton2QueuedMatchupRows(window.button2QueueRows || []);
+  }
   renderButton2SelectedMatchupPreview(window.button2SelectedMatchupPreview || null);
 
   const selectedPreview = window.button2SelectedMatchupPreview;
@@ -3119,7 +3322,7 @@ function handleButton2Click() {
     runButton2WorkflowHealthPreview().then(() => {
       const existing = document.getElementById('b2-status');
       if (!existing) return;
-      existing.innerHTML += '<br><br>Explicit operator action requires a selected matchup. Use Button 1 Source-Backed Event Cards and click Select for PDF first. No generation performed.';
+      existing.innerHTML += '<br><br>Explicit operator action requires a selected queued matchup row. Choose one in the Button 2 panel first. No generation performed.';
       existing.className = 'status-msg error';
     });
     return;
@@ -3137,6 +3340,8 @@ function handleButton2Click() {
 
 document.addEventListener('DOMContentLoaded', () => {
   restoreButton2SelectedMatchupPreviewFromPersistence();
+  restoreButton2QueueRowsFromPersistence();
+  renderButton2QueuedMatchupRows(window.button2QueueRows || []);
 });
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────

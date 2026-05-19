@@ -21,11 +21,12 @@ from datetime import datetime
 from datetime import timezone
 import uuid
 from urllib.parse import quote
+from urllib.parse import urlparse
 
 # Allow imports from workspace root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
 
 from button3_auto_result_source_yield_live_executor_preview import (
     build_readonly_executor_preview_response,
@@ -133,6 +134,12 @@ _BUTTON2_FORBIDDEN_CONCATENATION_SNIPPETS = [
     "Command Instruction Preserve",
 ]
 
+_BUTTON2_STALE_NAME_PAIRS = [
+    ("anthony joshua", "daniel dubois"),
+    ("rico verhoeven", "tariq osaro"),
+    ("jbalia", "diatta"),
+]
+
 
 def _is_source_backed_candidate_row(row):
     if not isinstance(row, dict):
@@ -182,6 +189,94 @@ def _extract_matchup_names(row):
     fighter_a = fighter_a.strip() if isinstance(fighter_a, str) else ""
     fighter_b = fighter_b.strip() if isinstance(fighter_b, str) else ""
     return fighter_a, fighter_b
+
+
+def _build_selected_matchup_preview_from_row(row):
+    if not isinstance(row, dict):
+        return {}
+    fighter_a, fighter_b = _extract_matchup_names(row)
+    source_url = ""
+    for key in ("source_url", "canonical_source_url", "event_url", "provenance_url", "official_url", "url"):
+        value = row.get(key)
+        if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
+            source_url = value.strip()
+            break
+    if not source_url:
+        provenance = row.get("provenance")
+        if isinstance(provenance, dict):
+            maybe = provenance.get("source_url")
+            if isinstance(maybe, str) and maybe.strip().lower().startswith(("http://", "https://")):
+                source_url = maybe.strip()
+
+    return {
+        "selected_for_button2": True,
+        "selection_preview": True,
+        "event_name": row.get("event_name") or row.get("event") or row.get("event_title") or "",
+        "event_date": row.get("event_date") or "",
+        "promotion": row.get("promotion") or "",
+        "source_url": source_url,
+        "source_type": row.get("source_type") or "official",
+        "fighter_a": fighter_a,
+        "fighter_b": fighter_b,
+        "matchup_id": _candidate_row_id(row),
+        "candidate_id": _candidate_row_id(row),
+        "report_ready_status": row.get("report_ready_status") or row.get("readiness") or row.get("button2_readiness") or "",
+        "denial_reasons": [],
+    }
+
+
+def _is_button2_row_ready_for_generation(row):
+    if not isinstance(row, dict):
+        return False
+    readiness = str(
+        row.get("report_ready_status")
+        or row.get("readiness")
+        or row.get("button2_readiness")
+        or ""
+    ).strip().lower()
+    if not readiness:
+        return False
+    return readiness in {
+        "ready",
+        "ready_for_button2_preview",
+        "ready_for_button2",
+        "customer_ready",
+        "customer_ready_verified",
+    }
+
+
+def _resolve_selected_matchup_row_from_queue(selected_matchup_id, queue_rows):
+    matchup_id = str(selected_matchup_id or "").strip()
+    if not matchup_id:
+        return None, "selected_matchup_id_required", 400
+
+    if not isinstance(queue_rows, list) or not queue_rows:
+        return None, "approved_queue_rows_required", 400
+
+    matched = []
+    for row in queue_rows:
+        if not isinstance(row, dict):
+            continue
+        if _candidate_row_id(row) == matchup_id:
+            matched.append(row)
+
+    if not matched:
+        return None, "selected_matchup_unknown", 422
+    if len(matched) > 1:
+        return None, "selected_matchup_duplicated", 422
+
+    row = matched[0]
+    fighter_a, fighter_b = _extract_matchup_names(row)
+    if not fighter_a or not fighter_b:
+        return None, "selected_matchup_incomplete", 422
+
+    if not _is_button2_row_ready_for_generation(row):
+        return None, "selected_matchup_not_ready", 422
+
+    if not _is_source_backed_candidate_row(row):
+        return None, "source_backed_matchup_required", 422
+
+    return row, "", 200
 
 
 def _slugify_text(value):
@@ -267,6 +362,66 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     fighters_present = fighter_a in text_lower and fighter_b in text_lower
     event_present = (not event_name) or (event_name in text_lower)
     return fighters_present and event_present
+
+
+def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count):
+    violations = []
+    text_lower = str(pdf_text or "").lower()
+
+    fighter_a = str(selected_preview.get("fighter_a", "")).strip().lower()
+    fighter_b = str(selected_preview.get("fighter_b", "")).strip().lower()
+    event_name = str(selected_preview.get("event_name", "")).strip().lower()
+    source_url = str(selected_preview.get("source_url", "")).strip().lower()
+    source_domain = ""
+    if source_url:
+        source_domain = (urlparse(source_url).netloc or "").lower().strip()
+
+    if not fighter_a or fighter_a not in text_lower:
+        violations.append("fighter_a_missing_in_pdf_text")
+    if not fighter_b or fighter_b not in text_lower:
+        violations.append("fighter_b_missing_in_pdf_text")
+    if event_name and event_name not in text_lower:
+        violations.append("event_name_missing_in_pdf_text")
+
+    if source_url:
+        if source_url not in text_lower and (not source_domain or source_domain not in text_lower):
+            violations.append("source_url_or_domain_missing_in_pdf_text")
+
+    expected_slug = _build_fight_id_from_selected_matchup(selected_preview)
+    output_filename = str(result.get("output_filename") or "").strip().lower()
+    output_path = str(result.get("output_path") or "").strip()
+    report_id = str(result.get("report_id") or "").strip().lower()
+
+    if expected_slug:
+        if expected_slug not in output_filename:
+            violations.append("selected_slug_missing_from_output_filename")
+        slug_tokens = [token for token in expected_slug.split("_") if token]
+        if report_id and slug_tokens and not any(token in report_id for token in slug_tokens):
+            violations.append("selected_slug_missing_from_report_id")
+
+    if page_count != 24:
+        violations.append("page_count_must_equal_24")
+
+    if not output_path or not os.path.isfile(output_path):
+        violations.append("output_path_missing_or_not_written")
+    else:
+        try:
+            output_root = get_pdf_output_root()
+            root_real = os.path.realpath(output_root)
+            file_real = os.path.realpath(output_path)
+            if not file_real.startswith(root_real + os.sep):
+                violations.append("output_path_outside_configured_root")
+        except Exception:
+            violations.append("output_root_unavailable_for_validation")
+
+    selected_names = {fighter_a, fighter_b}
+    for name_a, name_b in _BUTTON2_STALE_NAME_PAIRS:
+        if name_a in selected_names and name_b in selected_names:
+            continue
+        if name_a in text_lower and name_b in text_lower:
+            violations.append(f"stale_pair_present:{name_a}:{name_b}")
+
+    return len(violations) == 0, violations
 
 
 def _collect_file_metadata(output_path):
@@ -880,12 +1035,18 @@ def button2_selected_matchup_generate_guarded_v1():
             "button3_mutation_performed": False,
         }), 403
 
-    selected_preview = body.get("selected_matchup_preview")
-    if not isinstance(selected_preview, dict):
+    selected_matchup_id = body.get("selected_matchup_id")
+    queue_rows = body.get("approved_queue_rows")
+
+    matched_row, resolution_error, resolution_status = _resolve_selected_matchup_row_from_queue(
+        selected_matchup_id,
+        queue_rows,
+    )
+    if matched_row is None:
         return jsonify({
             "ok": False,
-            "error": "selected_matchup_required",
-            "message": "A selected_matchup_preview object is required.",
+            "error": resolution_error,
+            "message": "Selected matchup resolution failed. Provide a valid selected_matchup_id from approved_queue_rows.",
             "operator_action_required": True,
             "selected_matchup_required": True,
             "queue_write_performed": False,
@@ -894,7 +1055,23 @@ def button2_selected_matchup_generate_guarded_v1():
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
-        }), 400
+        }), resolution_status
+
+    selected_preview = _build_selected_matchup_preview_from_row(matched_row)
+    if not isinstance(selected_preview, dict) or not selected_preview:
+        return jsonify({
+            "ok": False,
+            "error": "selected_matchup_incomplete",
+            "message": "Selected matchup is incomplete and cannot be generated.",
+            "operator_action_required": True,
+            "selected_matchup_required": True,
+            "queue_write_performed": False,
+            "delivery_performed": False,
+            "external_api_delivery_performed": False,
+            "learning_apply_performed": False,
+            "calibration_write_performed": False,
+            "button3_mutation_performed": False,
+        }), 422
 
     if selected_preview.get("selected_for_button2") is not True:
         return jsonify({
@@ -909,7 +1086,7 @@ def button2_selected_matchup_generate_guarded_v1():
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
-        }), 400
+        }), 422
 
     source_url = selected_preview.get("source_url", "")
     if not (isinstance(source_url, str) and source_url.strip().lower().startswith(("http://", "https://"))):
@@ -925,7 +1102,7 @@ def button2_selected_matchup_generate_guarded_v1():
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
-        }), 400
+        }), 422
 
     fight_id = _build_fight_id_from_selected_matchup(selected_preview)
     if not fight_id:
@@ -941,14 +1118,10 @@ def button2_selected_matchup_generate_guarded_v1():
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
-        }), 400
+        }), 422
 
     generation_request_id = uuid.uuid4().hex
-    selected_matchup_id = (
-        selected_preview.get("matchup_id")
-        or selected_preview.get("candidate_id")
-        or fight_id
-    )
+    selected_matchup_id = selected_preview.get("matchup_id") or selected_preview.get("candidate_id") or fight_id
     output_filename_override = _build_selected_matchup_output_filename(fight_id, generation_request_id)
 
     ingest_payload = _build_ingest_payload_from_selected_matchup(selected_preview)
@@ -982,14 +1155,23 @@ def button2_selected_matchup_generate_guarded_v1():
     }
     selected_matchup_matches_pdf_text = False
 
+    strict_gate_passed = False
+    strict_gate_violations = []
+
     if result.get("ok") is True:
         output_path = result.get("output_path", "")
         generated_pdf_text, extracted_page_count = _extract_pdf_text_and_page_count(output_path)
         file_meta = _collect_file_metadata(output_path)
         text_scan = _scan_forbidden_markers(generated_pdf_text)
         selected_matchup_matches_pdf_text = _selected_matchup_matches_pdf_text(selected_preview, generated_pdf_text)
+        strict_gate_passed, strict_gate_violations = _selected_matchup_passes_strict_pdf_quality_gate(
+            selected_preview,
+            result,
+            generated_pdf_text,
+            extracted_page_count,
+        )
 
-        if text_scan.get("any_forbidden_found"):
+        if text_scan.get("any_forbidden_found") or not strict_gate_passed:
             try:
                 if isinstance(output_path, str) and output_path.strip() and os.path.isfile(output_path):
                     os.remove(output_path)
@@ -1000,8 +1182,10 @@ def button2_selected_matchup_generate_guarded_v1():
                 "ok": False,
                 "error": "customer_pdf_quality_gate_failed",
                 "reason": "legacy_section_card_engine_detected",
-                "message": "Customer-facing PDF quality gate failed due to legacy section-card markers.",
+                "message": "Customer-facing PDF quality gate failed.",
                 "customer_pdf_quality_gate_failed": True,
+                "strict_quality_gate_passed": strict_gate_passed,
+                "strict_quality_gate_violations": strict_gate_violations,
                 "operator_action_required": True,
                 "selected_matchup_required": True,
                 "selected_matchup_generate_request_accepted": True,
@@ -1037,8 +1221,13 @@ def button2_selected_matchup_generate_guarded_v1():
                 "button3_mutation_performed": False,
             }), 422
 
+    if result.get("ok") is not True:
+        strict_gate_violations.append("generation_failed_before_pdf_quality_gate")
+
     result.update({
         "customer_pdf_quality_gate_failed": False,
+        "strict_quality_gate_passed": strict_gate_passed,
+        "strict_quality_gate_violations": strict_gate_violations,
         "operator_action_required": True,
         "selected_matchup_required": True,
         "selected_matchup_generate_request_accepted": True,
@@ -1066,6 +1255,7 @@ def button2_selected_matchup_generate_guarded_v1():
             "source_url": selected_preview.get("source_url", ""),
             "report_ready_status": selected_preview.get("report_ready_status", ""),
         },
+        "resolved_from_approved_queue_rows": True,
         "queue_write_performed": False,
         "external_api_delivery_performed": False,
         "learning_apply_performed": False,
@@ -1074,7 +1264,10 @@ def button2_selected_matchup_generate_guarded_v1():
     })
 
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
-    return jsonify(result), status_code
+    response = make_response(jsonify(result), status_code)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/api/button2/generated-report/open", methods=["GET"])
@@ -1113,7 +1306,10 @@ def button2_generated_report_open_v1():
             "message": "Generated PDF was not found.",
         }), 404
 
-    return send_from_directory(output_root, filename, mimetype="application/pdf")
+    response = send_from_directory(output_root, filename, mimetype="application/pdf")
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/api/button2/generated-report/library", methods=["GET"])
@@ -1136,7 +1332,7 @@ def button2_generated_report_library_v1():
         }), 400
 
     rows = _list_generated_pdf_library_rows(output_root)
-    return render_template(
+    response = make_response(render_template(
         "button2_pdf_library.html",
         pdf_rows=rows,
         output_root=output_root,
@@ -1149,7 +1345,10 @@ def button2_generated_report_library_v1():
         learning_apply_performed=False,
         calibration_write_performed=False,
         button3_mutation_performed=False,
-    )
+    ))
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])

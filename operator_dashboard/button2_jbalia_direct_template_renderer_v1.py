@@ -361,6 +361,9 @@ def _build_jbalia_section_content(section_number, context):
     fighter_b = _clean_text(context.get("fighter_b", "Fighter B"))
     fighter_a_ln = _fighter_last_name(fighter_a, "Fighter A")
     fighter_b_ln = _fighter_last_name(fighter_b, "Fighter B")
+    event_name = _clean_text(context.get("event_name", "Premium Event"))
+    source_url = _clean_text(context.get("source_url", "n/a"))
+    report_id = _clean_text(context.get("report_id", "ARISA-REPORT-001"))
     
     sections = {
         3: {
@@ -533,9 +536,10 @@ def _build_jbalia_section_content(section_number, context):
         23: {
             "title": "TRACEABILITY / SOURCE MAP",
             "narrative": (
-                f"Traceability and source map: all projection data is linked to source verification chains. "
-                f"Each fighter stat, matchup metric, and projection pathway is traceable to operator-approved source material. "
-                f"Source transparency is core to customer trust and integrity of the analysis."
+                f"Traceability and source map: all projection data is linked to source verification chains for {event_name}. "
+                f"Primary source: {source_url}. "
+                f"Report ID: {report_id}. "
+                f"Each fighter stat, matchup metric, and projection pathway is traceable to operator-approved source material."
             ),
         },
         24: {
@@ -687,6 +691,7 @@ def render_button2_jbalia_direct_template_pdf(report_context_preview):
     return {
         "pdf_bytes": pdf_bytes,
         "page_count": len(pdf_pages),
+        "report_id": context.get("report_id", ""),
         "quality_gate_passed": quality_gate_passed,
         "forbidden_strings_found": forbidden_found,
         "renderer_profile": "premium_template_pack_v29_jbalia_direct_v1",

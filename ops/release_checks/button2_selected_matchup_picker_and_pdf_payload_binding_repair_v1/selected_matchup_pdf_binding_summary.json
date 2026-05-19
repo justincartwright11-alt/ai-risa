@@ -1,0 +1,55 @@
+{
+  "slice": "button2-selected-matchup-picker-and-pdf-payload-binding-repair-v1",
+  "status": "pass",
+  "root_cause": {
+    "frontend": "Button 2 reused persisted selected_matchup_preview and auto-generated without explicit in-panel queue row selection.",
+    "backend": "Guarded route accepted selected_matchup_preview directly instead of requiring selected_matchup_id resolution from approved queue rows.",
+    "quality_gate": "Success path did not enforce strict selected payload assertions for event/source/slug/page-count/path."
+  },
+  "files_changed": [
+    "operator_dashboard/app.py",
+    "operator_dashboard/templates/index.html",
+    "operator_dashboard/button2_jbalia_direct_template_renderer_v1.py",
+    "operator_dashboard/test_button2_selected_matchup_picker_and_pdf_payload_binding_repair_v1.py",
+    "docs/button2_selected_matchup_picker_and_pdf_payload_binding_repair_v1.md"
+  ],
+  "required_contracts": {
+    "selected_matchup_id_required": true,
+    "approved_queue_rows_required": true,
+    "server_side_row_resolution": true,
+    "no_selected_preview_trust_for_generation": true,
+    "strict_pdf_text_quality_gate": true,
+    "cache_control_no_store_dynamic_routes": true
+  },
+  "tests": {
+    "focused_regression": {
+      "command": "python -m pytest operator_dashboard/test_button2_selected_matchup_picker_and_pdf_payload_binding_repair_v1.py -q",
+      "result": "10 passed"
+    },
+    "requested_existing_1": {
+      "command": "python -m pytest operator_dashboard/test_operator_dashboard_generate_panel_customer_ready_pdf_actions_v1.py -q",
+      "result": "file not found"
+    },
+    "requested_existing_2": {
+      "command": "python -m pytest operator_dashboard/test_operator_dashboard_report_generation_checkbox_render_hard_block_v4.py -q",
+      "result": "file not found"
+    }
+  },
+  "live_smoke": {
+    "result": "pass",
+    "selected_matchup": "Nadaka Yoshinari vs Songchainoi Kiatsongrit",
+    "selected_event": "ONE Samurai 1",
+    "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T080440Z_fcc1bd6f88c2.pdf",
+    "open_route_status": 200,
+    "strict_quality_gate_passed": true,
+    "stale_joshua_dubois_present": false
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  }
+}
