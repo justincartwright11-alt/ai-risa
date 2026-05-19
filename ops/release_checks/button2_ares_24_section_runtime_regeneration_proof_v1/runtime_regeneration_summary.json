@@ -1,0 +1,138 @@
+{
+  "slice": "button2-ares-24-section-runtime-regeneration-proof-v1",
+  "date": "2026-05-19",
+  "repo_state": {
+    "head_commit": "2a36277",
+    "tag_at_head": "button2-selected-matchup-ares-24-section-customer-ready-parity-v1",
+    "working_tree_clean": true
+  },
+  "stale_server_killed": {
+    "was_running": true,
+    "pid_killed": 37592,
+    "port": 5050
+  },
+  "stale_pdfs_removed": [
+    "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+    "reports/rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+    "reports/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf"
+  ],
+  "launcher_used": "scripts/start_ai_risa_dashboard_windows.ps1",
+  "root_cause_of_stale_14_page_pdf": "The alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf file uploaded by the user was generated BEFORE the Ares 24-section parity slice was applied (pre-commit 2a36277). The stale server (PID 37592) was also running with the old cached renderer code. Fresh generation from the locked launcher with the locked renderer produces 24 pages.",
+  "generated_pdfs": [
+    {
+      "matchup": "Alex Pereira vs Jiri Prochazka",
+      "event_name": "UFC 300",
+      "source_url": "https://www.ufc.com/event/ufc-300",
+      "pdf_path": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "page_count_from_api": 24,
+      "page_count_from_pdf": 24,
+      "all_24_sections_present": true,
+      "all_forbidden_phrases_clean": true,
+      "governance": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified",
+        "draft_only": null,
+        "controlled_export_not_eligible": null
+      }
+    },
+    {
+      "matchup": "Rico Verhoeven vs Tariq Osaro",
+      "event_name": "GLORY 100",
+      "source_url": "https://www.glorykickboxing.com/events/glory-100",
+      "pdf_path": "reports/rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count_from_api": 24,
+      "page_count_from_pdf": 24,
+      "all_24_sections_present": true,
+      "all_forbidden_phrases_clean": true,
+      "governance": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified",
+        "draft_only": null,
+        "controlled_export_not_eligible": null
+      }
+    },
+    {
+      "matchup": "Anthony Joshua vs Daniel Dubois",
+      "event_name": "Joshua vs Dubois",
+      "source_url": "https://www.matchroomboxing.com/events/joshua-vs-dubois",
+      "pdf_path": "reports/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count_from_api": 24,
+      "page_count_from_pdf": 24,
+      "all_24_sections_present": true,
+      "all_forbidden_phrases_clean": true,
+      "governance": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified",
+        "draft_only": null,
+        "controlled_export_not_eligible": null
+      }
+    }
+  ],
+  "section_scan_result": {
+    "all_sections_present_in_all_reports": true,
+    "sections_verified": [
+      "Cover Page",
+      "Fight Intelligence Dashboard",
+      "Headline Projection",
+      "Matchup Snapshot",
+      "Fighter Architecture Radar",
+      "Tactical Edge Map",
+      "Decision Structure",
+      "Energy Use Analysis",
+      "Fatigue Failure Points",
+      "Mental Condition Under Stress",
+      "Collapse Triggers",
+      "Deception and Unpredictability",
+      "Range / Geography Control",
+      "Round-by-Round Control Projection",
+      "Scenario Tree / Method Pathways",
+      "Scorecard Scenario",
+      "Stoppage Windows",
+      "Risk Warnings and Exposure Discipline",
+      "Betting Market Intelligence",
+      "Coach / Corner Notes",
+      "Final Projection",
+      "Confidence Explanation",
+      "Traceability / Source Map",
+      "Disclaimer / Risk Control"
+    ]
+  },
+  "forbidden_phrase_scan": {
+    "all_clean_in_all_reports": true,
+    "phrases_checked": [
+      "where the fight is owned",
+      "where the fight can flip",
+      "what the corner must solve",
+      "SOURCE TRACEABILITY Source Traceability",
+      "customer_ready_not_ready",
+      "draft_only",
+      "controlled_export_not_eligible"
+    ],
+    "note_on_premium_cover": "'Premium Cover' appears only in the Fight Intelligence Dashboard summary description paragraph ('Premium cover, executive dashboard panels...') as product description text — NOT as a standalone section placeholder header. The locked parity test does not list it as forbidden. Not counted as a forbidden phrase."
+  },
+  "pdf_library_route": {
+    "endpoint": "/api/button2/pdf-library",
+    "result": "HTTP 404 — route not present in current app.py; open_pdf route also returns 404 which is expected (no registered handler). PDF generation and file output are confirmed via file system path."
+  },
+  "parity_tests": {
+    "test_file": "operator_dashboard/test_button2_selected_matchup_ares_24_section_customer_ready_parity_v1.py",
+    "tests_run": 4,
+    "tests_passed": 4,
+    "tests_failed": 0,
+    "result": "PASS"
+  },
+  "summary": {
+    "all_generation_ok": true,
+    "all_24_plus_pages": true,
+    "all_sections_present": true,
+    "all_forbidden_clean": true,
+    "all_governance_flags_correct": true,
+    "all_parity_tests_pass": true
+  }
+}
