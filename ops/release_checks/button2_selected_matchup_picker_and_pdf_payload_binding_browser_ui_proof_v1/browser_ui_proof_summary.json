@@ -1,0 +1,61 @@
+{
+  "slice": "button2-selected-matchup-picker-and-pdf-payload-binding-browser-ui-proof-v1",
+  "status": "pass",
+  "baseline": {
+    "slice": "button2-selected-matchup-picker-and-pdf-payload-binding-repair-v1",
+    "commit": "6fa6097",
+    "tag": "button2-selected-matchup-picker-and-pdf-payload-binding-repair-v1"
+  },
+  "server": {
+    "url": "http://127.0.0.1:5051",
+    "button2_pdf_output_root": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports"
+  },
+  "ui_rows": [
+    {
+      "matchup_id": "glory100_rico_tariq",
+      "matchup": "Rico Verhoeven vs Tariq Osaro",
+      "event": "GLORY 100",
+      "source": "https://www.glorykickboxing.com/events/glory-100",
+      "readiness": "ready_for_button2_preview"
+    },
+    {
+      "matchup_id": "onesamurai_nadaka_songchainoi",
+      "matchup": "Nadaka Yoshinari vs Songchainoi Kiatsongrit",
+      "event": "ONE Samurai 1",
+      "source": "https://www.onefc.com/events/one-samurai-1",
+      "readiness": "ready_for_button2_preview"
+    }
+  ],
+  "generated_reports": [
+    {
+      "selected_matchup_id": "glory100_rico_tariq",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260519T081349Z_38b7a3ec0f39.pdf",
+      "open_url": "/api/button2/generated-report/open?filename=rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260519T081349Z_38b7a3ec0f39.pdf"
+    },
+    {
+      "selected_matchup_id": "onesamurai_nadaka_songchainoi",
+      "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T081401Z_f9a5017743bc.pdf",
+      "open_url": "/api/button2/generated-report/open?filename=nadaka_yoshinari_vs_songchainoi_kiatsongrit_one_samurai_1_premium_20260519T081401Z_f9a5017743bc.pdf"
+    }
+  ],
+  "content_validation": {
+    "a_exists": true,
+    "b_exists": true,
+    "a_has_rico": true,
+    "a_has_event": true,
+    "b_has_nadaka": true,
+    "b_has_event": true,
+    "b_has_joshua_dubois": false,
+    "texts_different": true,
+    "a_len": 9485,
+    "b_len": 9639
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  }
+}
