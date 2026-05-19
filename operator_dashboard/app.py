@@ -173,6 +173,9 @@ def _build_selected_matchup_preview_from_row(row):
         "report_ready_status": row.get("report_ready_status") or row.get("button2_readiness_status") or row.get("readiness") or row.get("button2_readiness") or "",
         "denial_reasons": [],
         "selected_for_button2": bool(selected_for_button2),
+        "event_name": str(row.get("event_name") or "").strip(),
+        "event_date": str(row.get("event_date") or "").strip(),
+        "promotion": str(row.get("promotion") or "").strip(),
     }
 
 
@@ -336,6 +339,16 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     if event_name and event_name not in text_lower:
         violations.append("event_name_missing_in_pdf_text")
 
+    # Event binding gate: block customer_ready when event is unresolved
+    _UNKNOWN_EVENT_TOKENS = {"unknown event", "unknown_event", "n/a", ""}
+    if not event_name or event_name.strip().lower() in _UNKNOWN_EVENT_TOKENS:
+        violations.append("event_binding_incomplete_no_event_name")
+    event_date_raw = str(selected_preview.get("event_date", "")).strip().lower()
+    if not event_date_raw or event_date_raw == "n/a":
+        violations.append("event_binding_incomplete_no_event_date")
+    if "unknown event" in text_lower or "unknown_event" in text_lower:
+        violations.append("event_binding_unknown_event_in_pdf")
+
     if source_url:
         if source_url not in text_lower and (not source_domain or source_domain not in text_lower):
             violations.append("source_url_or_domain_missing_in_pdf_text")
@@ -351,6 +364,8 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         slug_tokens = [token for token in expected_slug.split("_") if token]
         if report_id and slug_tokens and not any(token in report_id for token in slug_tokens):
             violations.append("selected_slug_missing_from_report_id")
+    if report_id and "unknown_event" in report_id:
+        violations.append("event_binding_unknown_event_in_report_id")
 
     if page_count != 24:
         violations.append("page_count_must_equal_24")
