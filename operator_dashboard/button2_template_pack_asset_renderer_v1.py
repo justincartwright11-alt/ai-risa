@@ -48,6 +48,255 @@ def _clean_text(value, fallback=""):
     return text or fallback
 
 
+def _normalize_text(text):
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
+def _wrap_text_to_width(c, text, font_name, font_size, max_width):
+    text = _normalize_text(text)
+    if not text:
+        return []
+    words = text.split(" ")
+    lines = []
+    current = ""
+    for word in words:
+        candidate = word if not current else f"{current} {word}"
+        if c.stringWidth(candidate, font_name, font_size) <= max_width:
+            current = candidate
+            continue
+        if current:
+            lines.append(current)
+            current = word
+            continue
+        # Single very long token: hard-wrap by characters.
+        chunk = ""
+        for ch in word:
+            probe = f"{chunk}{ch}"
+            if c.stringWidth(probe, font_name, font_size) <= max_width:
+                chunk = probe
+            else:
+                if chunk:
+                    lines.append(chunk)
+                chunk = ch
+        current = chunk
+    if current:
+        lines.append(current)
+    return lines
+
+
+def measure_wrapped_text_height(c, text, width, font_name="Helvetica", font_size=8.0, line_height=1.25, min_lines=1):
+    lines = _wrap_text_to_width(c, text, font_name, font_size, width)
+    line_count = max(min_lines, len(lines))
+    return line_count * font_size * line_height, lines
+
+
+def split_content_if_overflow(c, text, width, max_height, font_name="Helvetica", font_size=8.0, line_height=1.25):
+    lines = _wrap_text_to_width(c, text, font_name, font_size, width)
+    if not lines:
+        return "", ""
+    line_px = font_size * line_height
+    max_lines = max(1, int(max_height // line_px))
+    if len(lines) <= max_lines:
+        return " ".join(lines), ""
+    visible = " ".join(lines[:max_lines])
+    overflow = " ".join(lines[max_lines:])
+    return visible, overflow
+
+
+def check_box_fits_page(y, box_h, min_y=20):
+    return y >= min_y and (y + box_h) <= 460
+
+
+def prevent_footer_collision(y, box_h, footer_reserved=18):
+    return max(y, footer_reserved), box_h
+
+
+def draw_wrapped_text_box(module, c, text, x, y, w, h, *, font_name="Helvetica", font_size=8.0, color=None, padding=8):
+    color = color or module.WHITE
+    inner_w = max(10, w - padding * 2)
+    inner_h = max(10, h - padding * 2)
+    visible, overflow = split_content_if_overflow(
+        c,
+        text,
+        inner_w,
+        inner_h,
+        font_name=font_name,
+        font_size=font_size,
+    )
+    module.para(
+        c,
+        visible,
+        x + padding,
+        y + padding,
+        inner_w,
+        inner_h,
+        size=font_size,
+        col=color,
+        min_size=max(6.8, font_size - 0.6),
+    )
+    return overflow
+
+
+def draw_auto_height_card(
+    module,
+    c,
+    *,
+    x,
+    y,
+    w,
+    title,
+    text,
+    border_color,
+    fill_color,
+    title_color=None,
+    body_font_size=8.0,
+    min_h=48,
+    max_h=140,
+):
+    title_color = title_color or border_color
+    title_h = 18
+    text_h, _ = measure_wrapped_text_height(c, text, w - 16, font_name="Helvetica", font_size=body_font_size)
+    desired_h = max(min_h, int(title_h + text_h + 16))
+    card_h = min(max_h, desired_h)
+    y, card_h = prevent_footer_collision(y, card_h)
+    module.panel(c, x, y, w, card_h, None, border_color, fill_color, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.2, title_color)
+    c.drawString(x + 8, y + card_h - 13, title)
+    overflow = draw_wrapped_text_box(
+        module,
+        c,
+        text,
+        x + 2,
+        y + 2,
+        w - 4,
+        card_h - title_h,
+        font_name="Helvetica",
+        font_size=body_font_size,
+        color=module.WHITE,
+        padding=6,
+    )
+    return card_h, overflow
+
+
+def draw_two_column_safe_layout(module, c, *, x, y_top, w, column_gap, left_items, right_items, footer_reserved=18):
+    col_w = (w - column_gap) / 2
+    left_y = y_top
+    right_y = y_top
+    for title, text, border, fill in left_items:
+        h, overflow = draw_auto_height_card(
+            module,
+            c,
+            x=x,
+            y=left_y,
+            w=col_w,
+            title=title,
+            text=text,
+            border_color=border,
+            fill_color=fill,
+            max_h=118,
+        )
+        left_y -= h + 8
+        if overflow and left_y > footer_reserved + 54:
+            h2, _ = draw_auto_height_card(
+                module,
+                c,
+                x=x,
+                y=left_y,
+                w=col_w,
+                title=f"{title} (cont.)",
+                text=overflow,
+                border_color=border,
+                fill_color=fill,
+                max_h=98,
+            )
+            left_y -= h2 + 8
+    for title, text, border, fill in right_items:
+        h, overflow = draw_auto_height_card(
+            module,
+            c,
+            x=x + col_w + column_gap,
+            y=right_y,
+            w=col_w,
+            title=title,
+            text=text,
+            border_color=border,
+            fill_color=fill,
+            max_h=118,
+        )
+        right_y -= h + 8
+        if overflow and right_y > footer_reserved + 54:
+            h2, _ = draw_auto_height_card(
+                module,
+                c,
+                x=x + col_w + column_gap,
+                y=right_y,
+                w=col_w,
+                title=f"{title} (cont.)",
+                text=overflow,
+                border_color=border,
+                fill_color=fill,
+                max_h=98,
+            )
+            right_y -= h2 + 8
+    return min(left_y, right_y)
+
+
+def draw_table_with_wrapped_cells(module, c, *, x, y_top, table_w, columns, rows, header_h=20, footer_reserved=22):
+    col_widths = [table_w * frac for _, frac in columns]
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.8)
+    c.line(x, y_top - 8, x + table_w, y_top - 8)
+
+    cx = x
+    for idx, (title, _) in enumerate(columns):
+        module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
+        c.drawString(cx + 4, y_top, title)
+        cx += col_widths[idx]
+
+    y = y_top - header_h
+    remaining_rows = []
+    for row in rows:
+        heights = []
+        for idx, value in enumerate(row):
+            h, _ = measure_wrapped_text_height(c, value, col_widths[idx] - 10, font_name="Helvetica", font_size=7.3)
+            heights.append(h)
+        row_h = max(24, int(max(heights) + 12))
+        if y - row_h <= footer_reserved:
+            remaining_rows.append(row)
+            continue
+
+        cx = x
+        for idx, value in enumerate(row):
+            color = module.WHITE
+            if idx == 1:
+                lowered = str(value).lower()
+                if "fighter a" in lowered:
+                    color = module.BLUE
+                elif "fighter b" in lowered:
+                    color = module.RED
+            draw_wrapped_text_box(
+                module,
+                c,
+                value,
+                cx,
+                y - row_h + 2,
+                col_widths[idx],
+                row_h - 4,
+                font_name="Helvetica",
+                font_size=7.3,
+                color=color,
+                padding=4,
+            )
+            cx += col_widths[idx]
+
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
+        c.setLineWidth(0.45)
+        c.line(x, y - row_h + 2, x + table_w, y - row_h + 2)
+        y -= row_h
+
+    return y, remaining_rows
+
+
 def _customer_command_footer(module, c, x, y, w):
     """Customer-facing command footer that replaces generic placeholder lanes."""
     gap = 16
@@ -398,31 +647,33 @@ def _depth_rows(title, body, blocks):
         ("Failure Consequence", "If position conversion drops while output rises, scorecard authority drifts quickly."),
         ("Round Band", blocks.get("round_band", "R2-R4 (model-derived inflection band)")),
         ("Visual/Data Read", "Visual signal and narrative are aligned to the same model-derived control and risk pathways."),
-        ("Buyer Meaning / Coach Meaning", "Buyer: edge is probabilistic with volatility. Coach: prioritize lane discipline over forced pace."),
+        ("Buyer Meaning", "Edge is probabilistic with volatility; allocate exposure as scenario-weighted rather than absolute."),
+        ("Coach Meaning", "Prioritize lane discipline and reset quality before pace extension to preserve score authority."),
     ]
 
 
 def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
     rows = _depth_rows(title, body, blocks)
-    left_w = (w - 18) / 2
-    right_x = x + left_w + 18
-    card_h = 76
+    left_items = []
+    right_items = []
+    for idx, (label, text) in enumerate(rows):
+        item = (label, text, module.BLUE if idx < 5 else module.RED, module.PANEL_BLUE if idx < 5 else module.PANEL)
+        if idx % 2 == 0:
+            left_items.append(item)
+        else:
+            right_items.append(item)
 
-    module.panel(c, x, y, left_w, card_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.panel(c, right_x, y, left_w, card_h, None, module.RED, module.PANEL, title_line=False)
-
-    ly = y + card_h - 14
-    ry = y + card_h - 14
-    for idx, (label, text) in enumerate(rows[:5]):
-        module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
-        c.drawString(x + 8, ly, label)
-        module.para(c, text, x + 68, ly - 8, left_w - 76, 12, size=6.6, col=module.WHITE, min_size=6.2)
-        ly -= 14
-    for label, text in rows[5:]:
-        module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
-        c.drawString(right_x + 8, ry, label)
-        module.para(c, text, right_x + 118, ry - 8, left_w - 126, 12, size=6.6, col=module.WHITE, min_size=6.2)
-        ry -= 14
+    draw_two_column_safe_layout(
+        module,
+        c,
+        x=x,
+        y_top=y,
+        w=w,
+        column_gap=12,
+        left_items=left_items,
+        right_items=right_items,
+        footer_reserved=8,
+    )
 
 
 def _draw_cover(module, c, blocks):
@@ -466,8 +717,20 @@ def _draw_cover(module, c, blocks):
     module.panel(c, x, 274, (w // 3) - 10, 86, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
     c.drawString(x + 12, 350, "FIGHTER A")
-    module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
-    c.drawCentredString(x + (w // 6), 328, blocks["fighter_a"])
+    module.set_font(c, "Helvetica-Bold", 12.0, module.WHITE)
+    draw_wrapped_text_box(
+        module,
+        c,
+        blocks["fighter_a"],
+        x + 10,
+        314,
+        (w // 3) - 30,
+        28,
+        font_name="Helvetica-Bold",
+        font_size=12.0,
+        color=module.WHITE,
+        padding=2,
+    )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
     c.drawCentredString(x + (w // 6), 307, blocks.get("projected_edge", "Model-derived edge"))
 
@@ -482,8 +745,20 @@ def _draw_cover(module, c, blocks):
     module.panel(c, x + (2 * w // 3) + 10, 274, (w // 3) - 10, 86, None, module.RED, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
     c.drawRightString(x + w - 14, 350, "FIGHTER B")
-    module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
-    c.drawCentredString(x + w - (w // 6), 327, blocks["fighter_b"])
+    module.set_font(c, "Helvetica-Bold", 12.0, module.WHITE)
+    draw_wrapped_text_box(
+        module,
+        c,
+        blocks["fighter_b"],
+        x + (2 * w // 3) + 20,
+        314,
+        (w // 3) - 30,
+        28,
+        font_name="Helvetica-Bold",
+        font_size=12.0,
+        color=module.WHITE,
+        padding=2,
+    )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
     c.drawCentredString(x + w - (w // 6), 307, "Model-derived counter lane")
 
@@ -545,10 +820,20 @@ def _draw_executive(module, c, blocks):
     ]
     for i, (title, value, col) in enumerate(top_cards):
         xx = x + 8 + i * (card_w + card_gap)
-        module.panel(c, xx, 374, card_w, 64, None, col, module.PANEL, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 8.2, module.WHITE)
-        c.drawString(xx + 8, 422, title)
-        module.para(c, str(value), xx + 8, 384, card_w - 16, 30, size=7.2, col=module.WHITE, min_size=6.8)
+        draw_auto_height_card(
+            module,
+            c,
+            x=xx,
+            y=374,
+            w=card_w,
+            title=title,
+            text=str(value),
+            border_color=col,
+            fill_color=module.PANEL,
+            body_font_size=7.2,
+            min_h=64,
+            max_h=64,
+        )
 
     # 5-7: zone cards.
     zone_w = (w - 20) / 3
@@ -559,11 +844,20 @@ def _draw_executive(module, c, blocks):
     ]
     for i, (title, line1, line2, col) in enumerate(zones):
         xx = x + 10 + i * zone_w
-        module.panel(c, xx, 290, zone_w - 6, 74, None, col, module.PANEL, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 8.2, module.WHITE)
-        c.drawString(xx + 8, 348, title)
-        module.para(c, line1, xx + 8, 324, zone_w - 22, 20, size=7.0, col=module.WHITE, min_size=6.6)
-        module.para(c, line2, xx + 8, 302, zone_w - 22, 18, size=6.8, col=module.MUTED, min_size=6.4)
+        draw_auto_height_card(
+            module,
+            c,
+            x=xx,
+            y=290,
+            w=zone_w - 6,
+            title=title,
+            text=f"{line1} {line2}",
+            border_color=col,
+            fill_color=module.PANEL,
+            body_font_size=6.9,
+            min_h=74,
+            max_h=74,
+        )
 
     # 8-9: round snapshot + mini method chart.
     module.panel(c, x + 8, 196, (w - 18) / 2, 84, None, module.BLUE, module.PANEL_BLUE, title_line=False)
@@ -583,13 +877,20 @@ def _draw_executive(module, c, blocks):
     ], mx + 10, 214, mw - 20, 38)
 
     # 10-11: command and risk notes.
-    module.panel(c, x, 86, w, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.6, module.BLUE)
-    c.drawString(x + 12, 170, "Command Read")
-    module.para(c, blocks.get("command_read", "Model-derived command read."), x + 12, 144, w - 24, 20, size=7.6, col=module.WHITE, min_size=7.0)
-    module.set_font(c, "Helvetica-Bold", 8.2, module.GOLD2)
-    c.drawString(x + 12, 124, "Risk Control Note")
-    module.para(c, "Treat this board as probabilistic intelligence. Preserve lane discipline and downgrade confidence when visual/data cues diverge.", x + 12, 98, w - 24, 22, size=7.2, col=module.WHITE, min_size=6.8)
+    draw_auto_height_card(
+        module,
+        c,
+        x=x,
+        y=86,
+        w=w,
+        title="Command Read",
+        text=f"{blocks.get('command_read', 'Model-derived command read.')} Treat this board as probabilistic intelligence. Preserve lane discipline and downgrade confidence when visual/data cues diverge.",
+        border_color=module.BLUE,
+        fill_color=module.PANEL_BLUE,
+        body_font_size=7.3,
+        min_h=100,
+        max_h=100,
+    )
 
     module.set_font(c, "Helvetica", 7.6, module.MUTED)
     c.drawString(x + 12, 90, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
@@ -691,43 +992,45 @@ def _draw_tactical_edge_table(module, c, blocks):
     table_x = x + 20
     table_w = w - 40
     header_y = 404
-    col_w = [0.19 * table_w, 0.13 * table_w, 0.14 * table_w, 0.33 * table_w, 0.21 * table_w]
-    headers = ["Tactical Layer", "Edge", "Confidence", "Why It Matters", "Watch Cue"]
-    cx = table_x
-    for i, title in enumerate(headers):
-        module.set_font(c, "Helvetica-Bold", 8.7, module.GOLD2)
-        c.drawString(cx + 5, header_y, title)
-        cx += col_w[i]
-    c.setStrokeColor(module.GOLD)
-    c.setLineWidth(0.8)
-    c.line(table_x, header_y - 8, table_x + table_w, header_y - 8)
-
+    columns = [
+        ("Tactical Layer", 0.19),
+        ("Edge", 0.13),
+        ("Confidence", 0.14),
+        ("Why It Matters", 0.33),
+        ("Watch Cue", 0.21),
+    ]
     rows = [
-        ("Pressure Rhythm", blocks["fighter_a"], "Model-derived 58%", "Layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4.", "Watch if exits are forced twice in one sequence."),
-        ("Counter Entry Timing", blocks["fighter_b"], "Model-derived 33%", "Clean exits and counter sequencing reduce pressure efficiency and compress card margin.", "Watch delayed counters after reset feints."),
+        ("Pressure Rhythm", "Fighter A", "Model-derived 58%", "Layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4.", "Watch if exits are forced twice in one sequence."),
+        ("Counter Entry Timing", "Fighter B", "Model-derived 33%", "Clean exits and counter sequencing reduce pressure efficiency and compress card margin.", "Watch delayed counters after reset feints."),
         ("Range Geography", "Contested", "Model-derived 54%", "Who owns mid-range after first contact controls volume quality and risk exposure.", "Watch center-line denial after contact."),
-        ("Pocket Exit Discipline", blocks["fighter_a"], "Model-derived 52-60%", "Disciplined exits prevent swing-variance exchanges and preserve score integrity.", "Watch defensive hand return on exits."),
+        ("Pocket Exit Discipline", "Fighter A", "Model-derived 52-60%", "Disciplined exits prevent swing-variance exchanges and preserve score integrity.", "Watch defensive hand return on exits."),
         ("Late-Round Reliability", "Volatile", "Model-derived high", "Fatigue and composure shifts can overturn prior lane control when discipline decays.", "Watch R4-R5 composure under pace spikes."),
     ]
-
-    y = header_y - 16
-    for layer, edge, conf, why, cue in rows:
-        est_lines = max(2, min(5, int((len(why) + len(cue)) / 56) + 1))
-        row_h = 24 + est_lines * 10
-        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
-        c.setLineWidth(0.45)
-        c.line(table_x, y - row_h + 4, table_x + table_w, y - row_h + 4)
-
-        module.set_font(c, "Helvetica-Bold", 8.2, module.WHITE)
-        module.para(c, layer, table_x + 5, y - 16, col_w[0] - 10, row_h - 8, size=8.0, col=module.WHITE, min_size=7.0)
-        module.set_font(c, "Helvetica-Bold", 8.2, module.BLUE if edge == blocks["fighter_a"] else module.RED)
-        module.para(c, edge, table_x + col_w[0] + 5, y - 16, col_w[1] - 10, row_h - 8, size=8.0, col=module.BLUE if edge == blocks["fighter_a"] else module.RED, min_size=7.0)
-        module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-        module.para(c, conf, table_x + col_w[0] + col_w[1] + 5, y - 16, col_w[2] - 10, row_h - 8, size=7.8, col=module.GOLD2, min_size=7.0)
-        base_x = table_x + col_w[0] + col_w[1] + col_w[2]
-        module.para(c, why, base_x + 5, y - 16, col_w[3] - 10, row_h - 8, size=7.6, col=module.WHITE, min_size=7.0)
-        module.para(c, cue, base_x + col_w[3] + 5, y - 16, col_w[4] - 10, row_h - 8, size=7.4, col=module.MUTED, min_size=6.8)
-        y -= row_h
+    y, remaining = draw_table_with_wrapped_cells(
+        module,
+        c,
+        x=table_x,
+        y_top=header_y,
+        table_w=table_w,
+        columns=columns,
+        rows=rows,
+        footer_reserved=196,
+    )
+    if remaining:
+        draw_auto_height_card(
+            module,
+            c,
+            x=table_x,
+            y=max(194, y - 6),
+            w=table_w,
+            title="Tactical Edge Table (cont.)",
+            text=" ".join(" | ".join(r) for r in remaining),
+            border_color=module.GOLD,
+            fill_color=module.PANEL2,
+            body_font_size=7.0,
+            min_h=42,
+            max_h=70,
+        )
 
     module.panel(c, x + 20, 92, w - 40, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
@@ -823,7 +1126,19 @@ def _draw_failure_heat_map(module, c, blocks):
 
         module.set_font(c, "Helvetica", 7.1, module.MUTED)
         cue = "watch defensive hand discipline" if label in ["Defense", "Pocket Exits"] else "watch reset speed under pressure"
-        module.para(c, cue, col_x[3], y, 96, 18, size=6.9, col=module.MUTED, min_size=6.6)
+        draw_wrapped_text_box(
+            module,
+            c,
+            cue,
+            col_x[3],
+            y,
+            96,
+            18,
+            font_name="Helvetica",
+            font_size=6.9,
+            color=module.MUTED,
+            padding=1,
+        )
         y -= row_h
 
     module.panel(c, x + 18, 92, left_w - 8, 108, None, module.BLUE, module.PANEL_BLUE, title_line=False)
@@ -893,10 +1208,20 @@ def _draw_round_control_graph(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
     c.drawString(plot_x + 220, plot_y + plot_h + 10, f"{blocks['fighter_b']} control estimate")
 
-    module.panel(c, x + 18, 96, w - 36, 84, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 30, 146, "Control Shift Notes")
-    module.para(c, "Round Band Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.", x + 30, 106, w - 60, 50, size=7.9, col=module.WHITE, min_size=7.0)
+    draw_auto_height_card(
+        module,
+        c,
+        x=x + 18,
+        y=96,
+        w=w - 36,
+        title="Control Shift Notes",
+        text="Round Band Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.",
+        border_color=module.BLUE,
+        fill_color=module.PANEL_BLUE,
+        body_font_size=7.8,
+        min_h=84,
+        max_h=84,
+    )
     _draw_depth_footer(module, c, x + 18, 8, w - 36, "Round-by-Round Control Projection", "Graph lane-to-lane momentum shifts are interpreted with command and risk controls.", blocks)
     c.showPage()
 
@@ -979,7 +1304,19 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
     cx = table_x
     col_widths = [table_w * frac for _, frac in cols]
     for idx, value in enumerate(values):
-        module.para(c, value, cx + 4, row_y - 10, col_widths[idx] - 8, 32, size=7.8, col=module.WHITE, min_size=7.0)
+        draw_wrapped_text_box(
+            module,
+            c,
+            value,
+            cx + 2,
+            row_y - 18,
+            col_widths[idx] - 4,
+            42,
+            font_name="Helvetica",
+            font_size=7.6,
+            color=module.WHITE,
+            padding=2,
+        )
         cx += col_widths[idx]
     c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.15))
     c.setLineWidth(0.45)
@@ -1016,8 +1353,32 @@ def _draw_customer_appendix(module, c):
     module.panel(c, x, 258, w, 198, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
     c.drawString(x + 24, 432, "Disclaimer / Risk Control")
-    module.para(c, "This report is customer-facing competitive intelligence, not certainty. It is probabilistic, source-traceable, and intended to support disciplined review rather than automatic action.", x + 24, 346, w - 48, 66, size=10.0, col=module.WHITE, min_size=8.8)
-    module.para(c, "Use this report alongside operator judgment, source verification, and context from the broader fight card. If a cue is unresolved, the correct move is to downgrade confidence, not to invent clarity.", x + 24, 286, w - 48, 58, size=9.6, col=module.WHITE, min_size=8.6)
+    draw_wrapped_text_box(
+        module,
+        c,
+        "This report is customer-facing competitive intelligence, not certainty. It is probabilistic, source-traceable, and intended to support disciplined review rather than automatic action.",
+        x + 20,
+        340,
+        w - 40,
+        76,
+        font_name="Helvetica",
+        font_size=9.8,
+        color=module.WHITE,
+        padding=4,
+    )
+    draw_wrapped_text_box(
+        module,
+        c,
+        "Use this report alongside operator judgment, source verification, and context from the broader fight card. If a cue is unresolved, the correct move is to downgrade confidence, not to invent clarity.",
+        x + 20,
+        284,
+        w - 40,
+        54,
+        font_name="Helvetica",
+        font_size=9.2,
+        color=module.WHITE,
+        padding=4,
+    )
 
     module.panel(c, x, 98, w, 146, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
@@ -1055,19 +1416,43 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
         module.para(c, str(value), xx + 8, chip_y + 8, chip_w - 16, 14, size=6.6, col=module.WHITE, min_size=6.2)
 
     if number == 4:
-        module.panel(c, x + 18, 216, w - 36, 154, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+        module.panel(c, x + 18, 220, w - 36, 150, None, module.BLUE, module.PANEL_BLUE, title_line=False)
         module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
-        c.drawString(x + 30, 350, "Fighter Overview / Tale of the Tape")
+        c.drawString(x + 30, 352, "Fighter Overview / Tale of the Tape")
         module.set_font(c, "Helvetica", 8.2, module.WHITE)
-        c.drawString(x + 30, 336, f"{blocks['fighter_a']} vs {blocks['fighter_b']} | model-derived unless source-confirmed")
+        c.drawString(x + 30, 338, f"{blocks['fighter_a']} vs {blocks['fighter_b']} | model-derived unless source-confirmed")
 
-        module.panel(c, x + 24, 286, 212, 38, None, module.BLUE, module.PANEL, title_line=False)
-        module.panel(c, x + (w / 2) - 36, 286, 72, 38, None, module.GOLD, module.PANEL, title_line=False)
-        module.panel(c, x + w - 236, 286, 212, 38, None, module.RED, module.PANEL, title_line=False)
+        module.panel(c, x + 24, 288, 212, 40, None, module.BLUE, module.PANEL, title_line=False)
+        module.panel(c, x + (w / 2) - 36, 288, 72, 40, None, module.GOLD, module.PANEL, title_line=False)
+        module.panel(c, x + w - 236, 288, 212, 40, None, module.RED, module.PANEL, title_line=False)
         module.set_font(c, "Helvetica-Bold", 8.0, module.WHITE)
-        c.drawCentredString(x + 130, 309, f"{blocks['fighter_a']} BLOCK")
-        c.drawCentredString(x + w / 2, 309, "VS")
-        c.drawCentredString(x + w - 130, 309, f"{blocks['fighter_b']} BLOCK")
+        draw_wrapped_text_box(
+            module,
+            c,
+            f"{blocks['fighter_a']} BLOCK",
+            x + 32,
+            296,
+            196,
+            28,
+            font_name="Helvetica-Bold",
+            font_size=8.0,
+            color=module.WHITE,
+            padding=2,
+        )
+        c.drawCentredString(x + w / 2, 311, "VS")
+        draw_wrapped_text_box(
+            module,
+            c,
+            f"{blocks['fighter_b']} BLOCK",
+            x + w - 228,
+            296,
+            196,
+            28,
+            font_name="Helvetica-Bold",
+            font_size=8.0,
+            color=module.WHITE,
+            padding=2,
+        )
 
         fields = [
             ("Record", blocks.get("record_a", "model-derived"), blocks.get("record_b", "model-derived")),
@@ -1076,7 +1461,7 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
             ("Height", blocks.get("height_a", "model-derived"), blocks.get("height_b", "model-derived")),
             ("Reach", blocks.get("reach_a", "model-derived"), blocks.get("reach_b", "model-derived")),
         ]
-        fy = 316
+        fy = 318
         for label, av, bv in fields:
             module.set_font(c, "Helvetica", 7.8, module.MUTED)
             c.drawString(x + 34, fy, f"{label}: {av} (model-derived)")
@@ -1093,7 +1478,7 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
             ("Power Threat", "power_a", "power_b"),
             ("Range Control", "range_a", "range_b"),
         ]
-        by = 238
+        by = 242
         bw = (w - 286) / 2
         bh = 8
         for label, ak, bk in metric_rows:
@@ -1107,22 +1492,21 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
             c.rect(x + w - 146 - int(bw * bv / 100), by, int(bw * bv / 100), bh, fill=1, stroke=0)
             by -= 9
 
-        module.panel(c, x + 18, 106, w - 36, 106, None, module.GOLD, module.PANEL2, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
-        c.drawString(x + 30, 190, "Tactical Thesis")
-        module.para(c, body, x + 30, 158, w - 60, 26, size=7.5, col=module.WHITE, min_size=6.8)
-        module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 30, 146, "Mechanism")
-        module.set_font(c, "Helvetica", 7.3, module.WHITE)
-        c.drawString(x + 98, 146, "Model-derived pacing and geometry disruption")
-        module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 30, 132, "Fighter A Pathway")
-        module.set_font(c, "Helvetica", 7.3, module.WHITE)
-        c.drawString(x + 124, 132, f"{blocks['fighter_a']} wins reset and re-entry lane")
-        module.set_font(c, "Helvetica-Bold", 7.8, module.RED)
-        c.drawString(x + 30, 118, "Interpretation")
-        module.set_font(c, "Helvetica", 7.3, module.WHITE)
-        module.para(c, f"Comparison bars indicate {blocks['fighter_a']} pressure/power edge versus {blocks['fighter_b']} range/defense counters. Buyer Meaning: edge plus volatility. Coach Meaning: own first re-entry.", x + 92, 110, w - 108, 20, size=7.0, col=module.WHITE, min_size=6.6)
+        draw_auto_height_card(
+            module,
+            c,
+            x=x + 18,
+            y=116,
+            w=w - 36,
+            title="Interpretation",
+            text=f"Physical profile, style profile, pressure pattern, scoring route, danger route, and coach meaning are aligned to the matchup signal. {body}",
+            border_color=module.GOLD,
+            fill_color=module.PANEL2,
+            body_font_size=7.4,
+            min_h=90,
+            max_h=90,
+        )
+        _draw_depth_footer(module, c, x + 18, 8, w - 36, title, body, blocks)
     else:
         module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
         module.para(c, body, x + 30, 236, w - 60, 122, size=8.4, col=module.WHITE, min_size=7.2)

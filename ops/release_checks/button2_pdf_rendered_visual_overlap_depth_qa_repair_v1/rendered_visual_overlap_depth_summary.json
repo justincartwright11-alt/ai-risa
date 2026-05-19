@@ -1,0 +1,195 @@
+{
+  "slice": "button2-pdf-rendered-visual-overlap-depth-qa-repair-v1",
+  "deleted_stale_reports": [],
+  "library_route_status": 200,
+  "reports": [
+    {
+      "matchup": "Alex Pereira vs Jiri Prochazka",
+      "event": "UFC 300",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "page_count": 24,
+      "forbidden_text_clean": true,
+      "sections_24_present": true,
+      "cover_safe_zone_pass": true,
+      "dashboard_card_fit_pass": true,
+      "tactical_table_fit_pass": true,
+      "heatmap_column_fit_pass": true,
+      "lower_depth_panel_fit_pass": true,
+      "footer_collision_pass": true,
+      "source_page_clean_pass": true,
+      "manual_visual_inspection_verdict": "PASS",
+      "manual_visual_notes": "Contact sheet reviewed for overlap, clipping, and footer collisions.",
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof_paths": {
+        "pages": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p04_fighter_overview.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p05_fighter_radar.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p09_body_risk_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p16_scorecard_scenario.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p20_coach_corner_notes.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_contact_sheet.png"
+      }
+    },
+    {
+      "matchup": "Anthony Joshua vs Daniel Dubois",
+      "event": "Joshua vs Dubois",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 24,
+      "forbidden_text_clean": true,
+      "sections_24_present": true,
+      "cover_safe_zone_pass": true,
+      "dashboard_card_fit_pass": true,
+      "tactical_table_fit_pass": true,
+      "heatmap_column_fit_pass": true,
+      "lower_depth_panel_fit_pass": true,
+      "footer_collision_pass": true,
+      "source_page_clean_pass": true,
+      "manual_visual_inspection_verdict": "PASS",
+      "manual_visual_notes": "Contact sheet reviewed for overlap, clipping, and footer collisions.",
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof_paths": {
+        "pages": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p04_fighter_overview.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p05_fighter_radar.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p09_body_risk_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p16_scorecard_scenario.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p20_coach_corner_notes.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_contact_sheet.png"
+      }
+    },
+    {
+      "matchup": "Rico Verhoeven vs Tariq Osaro",
+      "event": "GLORY 100",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 24,
+      "forbidden_text_clean": true,
+      "sections_24_present": true,
+      "cover_safe_zone_pass": true,
+      "dashboard_card_fit_pass": true,
+      "tactical_table_fit_pass": true,
+      "heatmap_column_fit_pass": true,
+      "lower_depth_panel_fit_pass": true,
+      "footer_collision_pass": true,
+      "source_page_clean_pass": true,
+      "manual_visual_inspection_verdict": "PASS",
+      "manual_visual_notes": "Contact sheet reviewed for overlap, clipping, and footer collisions.",
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof_paths": {
+        "pages": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p04_fighter_overview.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p05_fighter_radar.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p09_body_risk_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p16_scorecard_scenario.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p20_coach_corner_notes.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_contact_sheet.png"
+      }
+    }
+  ],
+  "all_24_pages": true,
+  "all_24_sections_present": true,
+  "all_forbidden_text_clean": true,
+  "all_cover_safe_zone_pass": true,
+  "all_dashboard_card_fit_pass": true,
+  "all_tactical_table_fit_pass": true,
+  "all_heatmap_column_fit_pass": true,
+  "all_lower_depth_panel_fit_pass": true,
+  "all_footer_collision_pass": true,
+  "all_source_page_clean_pass": true,
+  "all_open_routes_200": true,
+  "all_governance_flags_false": true,
+  "visual_proof_paths": [
+    {
+      "pages": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p01_cover.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p02_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p04_fighter_overview.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p06_tactical_edge_table.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p05_fighter_radar.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p09_body_risk_heat_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p14_round_control_graph.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p16_scorecard_scenario.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p20_coach_corner_notes.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p23_source_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p24_disclaimer.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_contact_sheet.png"
+    },
+    {
+      "pages": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p01_cover.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p02_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p04_fighter_overview.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p06_tactical_edge_table.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p05_fighter_radar.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p09_body_risk_heat_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p14_round_control_graph.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p16_scorecard_scenario.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p20_coach_corner_notes.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p23_source_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p24_disclaimer.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_contact_sheet.png"
+    },
+    {
+      "pages": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p01_cover.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p02_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p04_fighter_overview.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p06_tactical_edge_table.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p05_fighter_radar.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p09_body_risk_heat_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p14_round_control_graph.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p16_scorecard_scenario.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p20_coach_corner_notes.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p23_source_map.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p24_disclaimer.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_pdf_rendered_visual_overlap_depth_qa_repair_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_contact_sheet.png"
+    }
+  ]
+}
