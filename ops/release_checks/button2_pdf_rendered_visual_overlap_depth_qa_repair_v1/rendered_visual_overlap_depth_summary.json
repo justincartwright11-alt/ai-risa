@@ -1,6 +1,8 @@
 {
   "slice": "button2-pdf-rendered-visual-overlap-depth-qa-repair-v1",
-  "deleted_stale_reports": [],
+  "deleted_stale_reports": [
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf"
+  ],
   "library_route_status": 200,
   "reports": [
     {

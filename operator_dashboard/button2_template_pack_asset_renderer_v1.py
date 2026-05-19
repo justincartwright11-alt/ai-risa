@@ -1393,124 +1393,26 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
     x = module.SAFE_X + 18
     w = module.PAGE_W - 2 * x
 
-    module.panel(c, x, 96, w, 364, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 18, 438, title)
-    module.set_font(c, "Helvetica", 8.0, module.MUTED)
-    c.drawString(x + 18, 424, subtitle)
+    # Main narrative block
+    module.panel(c, x, 320, w, 110, None, module.PANEL, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 18, 410, "MAIN NARRATIVE")
+    module.para(c, body, x + 18, 330, w - 36, 70, size=8.9, col=module.WHITE, min_size=8.0)
 
-    chips = [
-        ("SECTION LENS", title, module.BLUE),
-        ("MODEL STATUS", blocks.get("model_status", "model-derived unless source-confirmed"), module.RED),
-        ("ROUND BAND", blocks.get("round_band", "R2-R4"), module.GOLD2),
-        ("REPORT TYPE", blocks.get("report_type", "Premium Fight Intelligence Report"), module.GOLD2),
-    ]
-    chip_y = 390
-    chip_w = (w - 50) / 4
-    for idx, (label, value, col) in enumerate(chips):
-        xx = x + 18 + idx * (chip_w + 6)
-        module.panel(c, xx, chip_y, chip_w, 40, None, col, module.SOFT, r=5, lw=0.8, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 7.0, col)
-        c.drawString(xx + 8, chip_y + 26, label)
-        module.set_font(c, "Helvetica", 6.9, module.WHITE)
-        module.para(c, str(value), xx + 8, chip_y + 8, chip_w - 16, 14, size=6.6, col=module.WHITE, min_size=6.2)
-
-    if number == 4:
-        module.panel(c, x + 18, 220, w - 36, 150, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
-        c.drawString(x + 30, 352, "Fighter Overview / Tale of the Tape")
-        module.set_font(c, "Helvetica", 8.2, module.WHITE)
-        c.drawString(x + 30, 338, f"{blocks['fighter_a']} vs {blocks['fighter_b']} | model-derived unless source-confirmed")
-
-        module.panel(c, x + 24, 288, 212, 40, None, module.BLUE, module.PANEL, title_line=False)
-        module.panel(c, x + (w / 2) - 36, 288, 72, 40, None, module.GOLD, module.PANEL, title_line=False)
-        module.panel(c, x + w - 236, 288, 212, 40, None, module.RED, module.PANEL, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 8.0, module.WHITE)
-        draw_wrapped_text_box(
-            module,
-            c,
-            f"{blocks['fighter_a']} BLOCK",
-            x + 32,
-            296,
-            196,
-            28,
-            font_name="Helvetica-Bold",
-            font_size=8.0,
-            color=module.WHITE,
-            padding=2,
-        )
-        c.drawCentredString(x + w / 2, 311, "VS")
-        draw_wrapped_text_box(
-            module,
-            c,
-            f"{blocks['fighter_b']} BLOCK",
-            x + w - 228,
-            296,
-            196,
-            28,
-            font_name="Helvetica-Bold",
-            font_size=8.0,
-            color=module.WHITE,
-            padding=2,
-        )
-
-        fields = [
-            ("Record", blocks.get("record_a", "model-derived"), blocks.get("record_b", "model-derived")),
-            ("Stance", blocks.get("stance_a", "model-derived"), blocks.get("stance_b", "model-derived")),
-            ("Age", blocks.get("age_a", "model-derived"), blocks.get("age_b", "model-derived")),
-            ("Height", blocks.get("height_a", "model-derived"), blocks.get("height_b", "model-derived")),
-            ("Reach", blocks.get("reach_a", "model-derived"), blocks.get("reach_b", "model-derived")),
-        ]
-        fy = 318
-        for label, av, bv in fields:
-            module.set_font(c, "Helvetica", 7.8, module.MUTED)
-            c.drawString(x + 34, fy, f"{label}: {av} (model-derived)")
-            c.drawRightString(x + w - 34, fy, f"{label}: {bv} (model-derived)")
-            fy -= 14
-
-        metric_rows = [
-            ("Striking", "striking_a", "striking_b"),
-            ("Grappling", "grappling_a", "grappling_b"),
-            ("Cardio", "cardio_a", "cardio_b"),
-            ("Defense", "defense_a", "defense_b"),
-            ("Experience", "experience_a", "experience_b"),
-            ("Pressure", "pressure_a", "pressure_b"),
-            ("Power Threat", "power_a", "power_b"),
-            ("Range Control", "range_a", "range_b"),
-        ]
-        by = 242
-        bw = (w - 286) / 2
-        bh = 8
-        for label, ak, bk in metric_rows:
-            module.set_font(c, "Helvetica", 7.6, module.MUTED)
-            c.drawString(x + 30, by + 1, label)
-            av = float(blocks.get(ak, 60))
-            bv = float(blocks.get(bk, 60))
-            c.setFillColor(module.BLUE)
-            c.rect(x + 146, by, int(bw * av / 100), bh, fill=1, stroke=0)
-            c.setFillColor(module.RED)
-            c.rect(x + w - 146 - int(bw * bv / 100), by, int(bw * bv / 100), bh, fill=1, stroke=0)
-            by -= 9
-
-        draw_auto_height_card(
-            module,
-            c,
-            x=x + 18,
-            y=116,
-            w=w - 36,
-            title="Interpretation",
-            text=f"Physical profile, style profile, pressure pattern, scoring route, danger route, and coach meaning are aligned to the matchup signal. {body}",
-            border_color=module.GOLD,
-            fill_color=module.PANEL2,
-            body_font_size=7.4,
-            min_h=90,
-            max_h=90,
-        )
-        _draw_depth_footer(module, c, x + 18, 8, w - 36, title, body, blocks)
-    else:
-        module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-        module.para(c, body, x + 30, 236, w - 60, 122, size=8.4, col=module.WHITE, min_size=7.2)
-        _draw_depth_footer(module, c, x + 24, 116, w - 48, title, body, blocks)
+    # Lower lenses
+    module.panel(c, x, 200, w, 100, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
+    c.drawString(x + 20, 278, "CONTROL LENS")
+    module.set_font(c, "Helvetica", 7.5, module.WHITE)
+    c.drawString(x + 20, 264, blocks.get("control_zone", "-"))
+    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
+    c.drawString(x + (w // 3), 278, "DANGER LENS")
+    module.set_font(c, "Helvetica", 7.5, module.WHITE)
+    c.drawString(x + (w // 3), 264, blocks.get("danger_zone", "-"))
+    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
+    c.drawString(x + (2 * w // 3), 278, "COMMAND READ")
+    module.set_font(c, "Helvetica", 7.5, module.WHITE)
+    c.drawString(x + (2 * w // 3), 264, blocks.get("command_read", "-"))
     c.showPage()
 
 
