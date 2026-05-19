@@ -759,19 +759,57 @@
   <!-- ── Button 2 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b2-result-panel">
     <h3>Report Generation</h3>
-    <div id="b2-status" class="status-msg">Select a fight from the queue to generate a report.</div>
+    <div id="b2-status" class="status-msg">Load queue rows and select one, many, all ready, or one event card.</div>
     <div class="status-msg" id="b2-pdf-library-link-row">
       <a id="b2-pdf-library-link" href="/api/button2/generated-report/library" target="_blank" rel="noopener noreferrer">PDF Reports Folder</a>
     </div>
     {% if button2_runtime_warning %}
     <div id="b2-runtime-warning" class="status-msg error">{{ button2_runtime_warning }}</div>
     {% endif %}
-    <div id="b2-selected-matchup-preview" class="b2-selected-matchup-preview">
-      No matchup selected for Button 2 yet. Use Button 1 Source-Backed Event Cards and click Select for PDF.
+
+    <div id="b2-multiselect-toolbar" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;">
+      <button class="b2-select-row-btn" id="b2-refresh-queue-btn" onclick="button2RefreshQueue()">Refresh Queue</button>
+      <button class="b2-select-row-btn" id="b2-select-all-ready-btn" onclick="button2SelectAllReady()">Select All Ready</button>
+      <button class="b2-select-row-btn" id="b2-clear-selection-btn" onclick="button2ClearSelection()">Clear Selection</button>
+      <button class="b2-select-row-btn" id="b2-select-full-event-btn" onclick="button2SelectFullEventCard()">Select Full Event Card</button>
+      <button class="b2-select-row-btn" id="b2-generate-selected-btn" onclick="button2GenerateSelectedBatch()">Generate Selected PDFs</button>
     </div>
-    <div id="b2-queued-matchups-panel" class="b2-queued-matchups-panel">
-      <h4>Queued Matchups (Select One)</h4>
-      <div id="b2-queued-matchups-list" class="b2-queued-matchups-list">Run Button 1 or Button 2 preview to load queue rows.</div>
+
+    <div style="margin-top:10px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;">
+      <select id="b2-event-filter" style="padding:8px;border-radius:6px;border:1px solid #2a2d3e;background:#141824;color:#e8eaed;" onchange="button2ApplyEventFilter()">
+        <option value="">All Events</option>
+      </select>
+      <label style="font-size:0.78rem;color:#8a94b8;display:flex;align-items:center;gap:6px;">
+        <input type="checkbox" id="b2-operator-approval" /> Operator approval
+      </label>
+    </div>
+
+    <div id="b2-selection-counts" class="b2-selected-matchup-preview" style="margin-top:10px;">
+      selected=0 | ready_selected=0 | blocked_selected=0 | event_card_selected=0
+    </div>
+
+    <div id="b2-queued-matchups-panel" class="b2-queued-matchups-panel" style="overflow-x:auto;">
+      <h4>Queued Matchups (Select One) - Real Queue</h4>
+      <table id="b2-queue-table" style="width:100%;border-collapse:collapse;font-size:0.76rem;">
+        <thead>
+          <tr style="text-align:left;color:#c9aa71;border-bottom:1px solid #2a2d3e;">
+            <th style="padding:6px;">Pick</th>
+            <th style="padding:6px;">Matchup</th>
+            <th style="padding:6px;">Event</th>
+            <th style="padding:6px;">Promotion</th>
+            <th style="padding:6px;">Date</th>
+            <th style="padding:6px;">Source/Provenance</th>
+            <th style="padding:6px;">Readiness</th>
+            <th style="padding:6px;">Blocked</th>
+            <th style="padding:6px;">Generated</th>
+            <th style="padding:6px;">PDF Path</th>
+            <th style="padding:6px;">Open</th>
+          </tr>
+        </thead>
+        <tbody id="b2-queue-table-body">
+          <tr><td colspan="11" style="padding:8px;color:#8a94b8;">Click Refresh Queue to load canonical saved/approved rows.</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -3305,43 +3343,264 @@ function handleButton1Click() {
 
 // ── Button 2: Generate Premium PDF ───────────────────────────────────────────
 
-function handleButton2Click() {
-  showPanel('b2-result-panel');
-  restoreButton2SelectedMatchupPreviewFromPersistence();
-  restoreButton2QueueRowsFromPersistence();
-  if (Array.isArray(window.button1CandidateRowsForSelector) && window.button1CandidateRowsForSelector.length) {
-    renderButton2QueuedMatchupRows(window.button1CandidateRowsForSelector);
-  } else {
-    renderButton2QueuedMatchupRows(window.button2QueueRows || []);
-  }
-  renderButton2SelectedMatchupPreview(window.button2SelectedMatchupPreview || null);
+window.button2CanonicalQueueRows = [];
+window.button2SelectedMatchupIds = {};
+window.button2GenerationByMatchupId = {};
 
-  const selectedPreview = window.button2SelectedMatchupPreview;
-  if (!selectedPreview || selectedPreview.selected_for_button2 !== true) {
-    setStatus('b2-status', '<span class="spinner"></span>Running local AI workflow preview…');
-    runButton2WorkflowHealthPreview().then(() => {
-      const existing = document.getElementById('b2-status');
-      if (!existing) return;
-      existing.innerHTML += '<br><br>Explicit operator action requires a selected queued matchup row. Choose one in the Button 2 panel first. No generation performed.';
-      existing.className = 'status-msg error';
-    });
+function button2ReadinessIsReady(row) {
+  const status = String((row && (row.button2_readiness_status || row.report_ready_status)) || '').trim().toLowerCase();
+  const blockedReason = String((row && row.blocked_reason) || '').trim();
+  const customerReady = row && row.customer_ready_possible !== false;
+  const readyStatuses = {
+    ready: true,
+    ready_for_button2_generation: true,
+    ready_for_button2_preview: true,
+    ready_for_button2: true,
+    customer_ready: true,
+    customer_ready_verified: true
+  };
+  return !!readyStatuses[status] && !blockedReason && customerReady;
+}
+
+function button2FilteredRows() {
+  const eventFilterEl = document.getElementById('b2-event-filter');
+  const filterValue = eventFilterEl ? String(eventFilterEl.value || '').trim().toLowerCase() : '';
+  const rows = Array.isArray(window.button2CanonicalQueueRows) ? window.button2CanonicalQueueRows : [];
+  if (!filterValue) return rows;
+  return rows.filter(row => {
+    const eventId = String(row.event_id || '').trim().toLowerCase();
+    const eventName = String(row.event_name || '').trim().toLowerCase();
+    return filterValue === eventId || filterValue === eventName;
+  });
+}
+
+function button2RenderEventFilter() {
+  const el = document.getElementById('b2-event-filter');
+  if (!el) return;
+  const rows = Array.isArray(window.button2CanonicalQueueRows) ? window.button2CanonicalQueueRows : [];
+  const options = {};
+  rows.forEach(row => {
+    const key = String(row.event_id || row.event_name || '').trim();
+    const label = String(row.event_name || row.event_id || 'Unknown Event').trim();
+    if (!key) return;
+    options[key] = label;
+  });
+  const current = String(el.value || '');
+  const parts = ['<option value="">All Events</option>'];
+  Object.keys(options).sort().forEach(key => {
+    const selected = current === key ? ' selected' : '';
+    parts.push('<option value="' + escapeHtml(key) + '"' + selected + '>' + escapeHtml(options[key]) + '</option>');
+  });
+  el.innerHTML = parts.join('');
+}
+
+function button2UpdateSelectionCounts() {
+  const el = document.getElementById('b2-selection-counts');
+  if (!el) return;
+
+  const rows = button2FilteredRows();
+  const selectedIds = window.button2SelectedMatchupIds || {};
+  let selected = 0;
+  let readySelected = 0;
+  let blockedSelected = 0;
+
+  rows.forEach(row => {
+    const matchupId = String(row.matchup_id || '').trim();
+    if (!matchupId || !selectedIds[matchupId]) return;
+    selected += 1;
+    if (button2ReadinessIsReady(row)) {
+      readySelected += 1;
+    } else {
+      blockedSelected += 1;
+    }
+  });
+
+  const eventFilterEl = document.getElementById('b2-event-filter');
+  const eventSelected = eventFilterEl && String(eventFilterEl.value || '').trim() ? selected : 0;
+  el.textContent =
+    'selected=' + String(selected) +
+    ' | ready_selected=' + String(readySelected) +
+    ' | blocked_selected=' + String(blockedSelected) +
+    ' | event_card_selected=' + String(eventSelected);
+}
+
+function button2RenderQueueTable() {
+  const bodyEl = document.getElementById('b2-queue-table-body');
+  if (!bodyEl) return;
+  const rows = button2FilteredRows();
+
+  if (!rows.length) {
+    bodyEl.innerHTML = '<tr><td colspan="11" style="padding:8px;color:#8a94b8;">No queue rows for current filter.</td></tr>';
+    button2UpdateSelectionCounts();
     return;
   }
 
-  setStatus('b2-status', '<span class="spinner"></span>Running explicit operator-approved guarded generation…');
-  postButton2SelectedMatchupGenerateGuarded(selectedPreview)
-    .then(response => {
-      renderButton2GuardedGenerateResult(response);
+  const selectedIds = window.button2SelectedMatchupIds || {};
+  const generated = window.button2GenerationByMatchupId || {};
+
+  const html = rows.map(row => {
+    const matchupId = String(row.matchup_id || '').trim();
+    const checked = selectedIds[matchupId] ? ' checked' : '';
+    const ready = button2ReadinessIsReady(row);
+    const gen = generated[matchupId] || null;
+    const generatedStatus = gen ? (gen.ok ? 'generated' : 'failed') : '-';
+    const outputPath = gen && gen.output_path ? String(gen.output_path) : '-';
+    const openUrl = gen && gen.open_url ? String(gen.open_url) : '';
+    const openLink = openUrl ? '<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open PDF</a>' : '-';
+    const blockedReason = String(row.blocked_reason || (ready ? '' : 'not_ready')).trim() || '-';
+    const sourceCell = String(row.source_type || 'unknown') + ' | ' + String(row.provenance_status || 'unknown');
+
+    return (
+      '<tr style="border-bottom:1px solid #2a2d3e;">' +
+      '<td style="padding:6px;"><input type="checkbox" data-matchup-id="' + escapeHtml(matchupId) + '" onchange="button2ToggleSelection(this)"' + checked + '></td>' +
+      '<td style="padding:6px;">' + escapeHtml(String(row.fighter_a || '')) + ' vs ' + escapeHtml(String(row.fighter_b || '')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(String(row.event_name || row.event_id || '')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(String(row.promotion || '')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(String(row.event_date || '')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(sourceCell) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(String(row.button2_readiness_status || row.report_ready_status || 'unknown')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(blockedReason) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(generatedStatus) + '</td>' +
+      '<td style="padding:6px;word-break:break-all;">' + escapeHtml(outputPath) + '</td>' +
+      '<td style="padding:6px;">' + openLink + '</td>' +
+      '</tr>'
+    );
+  }).join('');
+
+  bodyEl.innerHTML = html;
+  button2UpdateSelectionCounts();
+}
+
+function button2ToggleSelection(inputEl) {
+  const matchupId = inputEl && inputEl.dataset ? String(inputEl.dataset.matchupId || '').trim() : '';
+  if (!matchupId) return;
+  if (!window.button2SelectedMatchupIds) window.button2SelectedMatchupIds = {};
+  if (inputEl.checked) {
+    window.button2SelectedMatchupIds[matchupId] = true;
+  } else {
+    delete window.button2SelectedMatchupIds[matchupId];
+  }
+  button2UpdateSelectionCounts();
+}
+
+function button2RefreshQueue() {
+  setStatus('b2-status', '<span class="spinner"></span>Loading canonical queue rows…');
+  fetch('/api/button2/queue-ready', { method: 'GET', headers: { 'Cache-Control': 'no-store' } })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.ok !== true) {
+        throw new Error('queue_ready_failed');
+      }
+      const rows = Array.isArray(data.queue_rows) ? data.queue_rows : [];
+      window.button2CanonicalQueueRows = rows;
+      window.button2SelectedMatchupIds = {};
+      button2RenderEventFilter();
+      button2RenderQueueTable();
+      setStatus('b2-status', 'Queue refreshed from canonical source. total_rows=' + String(data.total_rows || rows.length) + ', ready_count=' + String(data.ready_count || 0), 'ok');
     })
     .catch(() => {
-      setStatus('b2-status', 'Guarded generation request failed. No delivery was performed.', 'error');
+      setStatus('b2-status', 'Queue refresh failed. No generation performed.', 'error');
     });
 }
 
+function button2ApplyEventFilter() {
+  button2RenderQueueTable();
+}
+
+function button2SelectAllReady() {
+  if (!window.button2SelectedMatchupIds) window.button2SelectedMatchupIds = {};
+  button2FilteredRows().forEach(row => {
+    const matchupId = String(row.matchup_id || '').trim();
+    if (matchupId && button2ReadinessIsReady(row)) {
+      window.button2SelectedMatchupIds[matchupId] = true;
+    }
+  });
+  button2RenderQueueTable();
+}
+
+function button2ClearSelection() {
+  window.button2SelectedMatchupIds = {};
+  button2RenderQueueTable();
+}
+
+function button2SelectFullEventCard() {
+  const eventFilterEl = document.getElementById('b2-event-filter');
+  const filterValue = eventFilterEl ? String(eventFilterEl.value || '').trim() : '';
+  if (!filterValue) {
+    setStatus('b2-status', 'Select an event in the event filter before using Select Full Event Card.', 'error');
+    return;
+  }
+  if (!window.button2SelectedMatchupIds) window.button2SelectedMatchupIds = {};
+  button2FilteredRows().forEach(row => {
+    const matchupId = String(row.matchup_id || '').trim();
+    if (matchupId) {
+      window.button2SelectedMatchupIds[matchupId] = true;
+    }
+  });
+  button2RenderQueueTable();
+}
+
+function button2GenerateSelectedBatch() {
+  const approvalEl = document.getElementById('b2-operator-approval');
+  const operatorApproval = !!(approvalEl && approvalEl.checked);
+  if (!operatorApproval) {
+    setStatus('b2-status', 'Operator approval is required before generating selected PDFs.', 'error');
+    return;
+  }
+
+  const selectedIds = Object.keys(window.button2SelectedMatchupIds || {});
+  if (!selectedIds.length) {
+    setStatus('b2-status', 'Nothing selected. Pick one or more queue rows before generation.', 'error');
+    return;
+  }
+
+  const payload = {
+    selected_matchup_ids: selectedIds,
+    operator_approval: true
+  };
+
+  setStatus('b2-status', '<span class="spinner"></span>Generating selected PDFs from canonical queue…');
+  fetch('/api/button2/generate-selected-batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      const data = result.data || {};
+      const rowResults = Array.isArray(data.results) ? data.results : [];
+      rowResults.forEach(row => {
+        const matchupId = String(row.matchup_id || '').trim();
+        if (!matchupId) return;
+        window.button2GenerationByMatchupId[matchupId] = row;
+      });
+      button2RenderQueueTable();
+
+      const outputPaths = Array.isArray(data.output_paths) ? data.output_paths : [];
+      const summary = [
+        'requested=' + String(data.requested_count || 0),
+        'generated=' + String(data.generated_count || 0),
+        'failed=' + String(data.failed_count || 0),
+        'skipped=' + String(data.skipped_count || 0)
+      ].join(' | ');
+      const pathHtml = outputPaths.length
+        ? '<br>output_paths:<br>' + outputPaths.map(p => escapeHtml(String(p))).join('<br>')
+        : '';
+      setStatus('b2-status', 'Batch generation completed. ' + summary + pathHtml, result.ok ? 'ok' : 'error');
+    })
+    .catch(() => {
+      setStatus('b2-status', 'Batch generation request failed. No delivery performed.', 'error');
+    });
+}
+
+function handleButton2Click() {
+  showPanel('b2-result-panel');
+  button2RefreshQueue();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  restoreButton2SelectedMatchupPreviewFromPersistence();
-  restoreButton2QueueRowsFromPersistence();
-  renderButton2QueuedMatchupRows(window.button2QueueRows || []);
+  button2RenderEventFilter();
+  button2RenderQueueTable();
 });
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────

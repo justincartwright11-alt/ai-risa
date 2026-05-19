@@ -1,0 +1,77 @@
+{
+  "slice": "button2-real-queue-multiselect-and-bulk-pdf-generation-repair-v1",
+  "runtime_url": "http://127.0.0.1:5050",
+  "runtime_port": 5050,
+  "localStorage_seeding_used": false,
+  "canonical_queue_source": "ops/prf_queue/button2_approved_fight_queue.json",
+  "queue_ready": {
+    "status_code": 200,
+    "total_rows": 6,
+    "ready_count": 6,
+    "blocked_count": 0
+  },
+  "one_selection": {
+    "requested_count": 1,
+    "generated_count": 1,
+    "failed_count": 0,
+    "skipped_count": 0,
+    "output_paths": [
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T091303Z_d800994801a6.pdf"
+    ]
+  },
+  "multi_selection": {
+    "requested_count": 2,
+    "generated_count": 2,
+    "failed_count": 0,
+    "skipped_count": 0,
+    "output_paths": [
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T091303Z_081c8b1d5421.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T091303Z_d1f688c5f332.pdf"
+    ]
+  },
+  "all_ready_selection": {
+    "requested_count": 6,
+    "generated_count": 6,
+    "failed_count": 0,
+    "skipped_count": 0,
+    "output_paths": [
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T091303Z_02c5e81c38e9.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T091303Z_8a477e9c35ca.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\zebaztian_kadestam_vs_john_kavanagh_one_169_premium_20260519T091303Z_0abab3be683c.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\natalia_novikova_vs_xiaonan_martinez_one_169_premium_20260519T091303Z_d1d75eeb8468.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\tyrone_spong_vs_lancelot_proton_de_la_chapelle_glory_85_premium_20260519T091303Z_d33e0f17dc32.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\kayla_harrison_vs_larissa_pacheco_pfl_2026_season_premium_20260519T091304Z_800a44050fc5.pdf"
+    ]
+  },
+  "pdf_text_checks": {
+    "checked": [
+      {
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T091303Z_081c8b1d5421.pdf",
+        "fighter_a": "Sean Strickland",
+        "fighter_b": "Dricus du Plessis",
+        "contains_fighter_a": true,
+        "contains_fighter_b": true,
+        "page_count": 24,
+        "text_preview": "PREMIUM FIGHT\nINTELLIGENCE REPORT\nTHE INTELLIGENCE BENEATH THE VIOLENCE\nSTRICKLAND\nSean Strickland\nVS\nPLESSIS\nDricus du Plessis\nUFC 304 | 2026-07-27 | CUSTOMER READY\nReport ID: ARISA-SEAN_STRICKLAND_DRIC-001 | Confidence: 60% | Generated: May 19, 2026 19:13\nAI-RISA | COMBAT INTELLIGENCE | OPERATOR APPROVED | SOURCE TRACEABLE\nPAGE 01\n\nEXECUTIVE COMMAND DASHBOARD\nPREMIUM FIGHT INTELLIGENCE DOSSIER\nH"
+      },
+      {
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T091303Z_d1f688c5f332.pdf",
+        "fighter_a": "Ryan Curtis",
+        "fighter_b": "Adam Borics",
+        "contains_fighter_a": true,
+        "contains_fighter_b": true,
+        "page_count": 24,
+        "text_preview": "PREMIUM FIGHT\nINTELLIGENCE REPORT\nTHE INTELLIGENCE BENEATH THE VIOLENCE\nCURTIS\nRyan Curtis\nVS\nBORICS\nAdam Borics\nBellator 298 | 2026-06-15 | CUSTOMER READY\nReport ID: ARISA-RYAN_CURTIS_ADAM_BOR-001 | Confidence: 60% | Generated: May 19, 2026 19:13\nAI-RISA | COMBAT INTELLIGENCE | OPERATOR APPROVED | SOURCE TRACEABLE\nPAGE 01\n\nEXECUTIVE COMMAND DASHBOARD\nPREMIUM FIGHT INTELLIGENCE DOSSIER\nHEADLINE PR"
+      }
+    ],
+    "different_content_between_two_files": true
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  }
+}
