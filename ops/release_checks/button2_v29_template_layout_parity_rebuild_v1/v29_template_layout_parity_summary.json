@@ -1,0 +1,101 @@
+{
+  "slice": "button2-v29-template-layout-parity-rebuild-v1",
+  "status": "implemented",
+  "template_contract_sources": {
+    "pack_root_workspace": "reports/template_pack_sample",
+    "pack_root_external": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+    "zip": "reports/template_pack_sample/AI-RISA_Premium_Report_Template_v29_bar_alignment_fix.zip",
+    "reference_pdf": "reports/template_pack_sample/AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf",
+    "template_script": "reports/template_pack_sample/ai_risa_report_template_v29_bar_alignment_fix.py",
+    "contact_sheet_reference": "reports/template_pack_sample/contact_sheet_v29.png",
+    "extracted_text_reference": "reports/template_pack_sample/extracted_text_v29.txt"
+  },
+  "contract_pages": [1, 2, 5, 9, 14, 15, 23, 24],
+  "mismatch_findings_pre_rebuild": [
+    "cover composition not matching v29 hierarchy",
+    "simplified dashboard card language and geometry",
+    "radar page numbering mismatch (PAGE 04 shown on page 5 in prior artifacts)",
+    "generic section pages too plain versus v29 density",
+    "header/footer parity drift",
+    "source/disclaimer parity drift"
+  ],
+  "implementation": {
+    "renderer_file": "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "gate_file": "operator_dashboard/app.py",
+    "approach": "render via canonical v29 template functions with selected-matchup data bound into module.DATA/module.TEXT and strict v29 layout marker gate"
+  },
+  "strict_gate": {
+    "required_v29_layout_markers": [
+      "premium fight",
+      "intelligence report",
+      "the intelligence beneath the violence",
+      "02 | executive command dashboard",
+      "05 | fighter architecture radar",
+      "page 05",
+      "14 | round-by-round control projection",
+      "15 | scenario tree / method pathways",
+      "23 | traceability / source map",
+      "24 | disclaimer / risk control"
+    ],
+    "plain_fallback_reject_markers": [
+      "main narrative",
+      "ares parity"
+    ],
+    "failure_status": "v29_template_layout_parity_failed"
+  },
+  "tests": {
+    "new_suite": {
+      "file": "operator_dashboard/test_button2_v29_template_layout_parity_rebuild_v1.py",
+      "result": "12 passed"
+    },
+    "required_regression_suites": [
+      {
+        "file": "operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py",
+        "result": "10 passed"
+      },
+      {
+        "file": "operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py",
+        "result": "16 passed"
+      },
+      {
+        "file": "operator_dashboard/test_button1_to_button2_weekly_matchup_queue_promotion_repair_v1.py",
+        "result": "12 passed"
+      }
+    ],
+    "py_compile": "passed"
+  },
+  "live_proof": {
+    "batch_id": "a5cf86bee8d24f76924fe774162b489a",
+    "fights": [
+      "ufc_300_max_holloway_vs_justin_gaethje",
+      "ufc_300_bo_nickal_vs_cody_brundage"
+    ],
+    "results": {
+      "generated": 2,
+      "failed": 0,
+      "customer_ready": true,
+      "visual_gate_status": "premium_template_confirmed"
+    },
+    "summary_file": "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/live_visual_proof_summary.json",
+    "proof_contact_sheet_combined": "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_v29_vs_generated_required_pages.png",
+    "proof_contact_sheet_pages": [
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p01.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p02.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p05.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p09.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p14.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p15.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p23.png",
+      "ops/release_checks/button2_v29_template_layout_parity_rebuild_v1/proof/contact_sheet_p24.png"
+    ]
+  },
+  "governance": {
+    "operator_approval_required": true,
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "verdict": "v29 layout parity rebuild implemented and validated; proceed to manual operator visual scan before delivery"
+}

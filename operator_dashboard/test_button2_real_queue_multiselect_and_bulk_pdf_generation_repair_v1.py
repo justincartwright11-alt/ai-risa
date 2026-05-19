@@ -31,6 +31,7 @@ def _fake_generator(monkeypatch, tmp_path):
         fighter_a = str(selected.get("fighter_a") or "")
         fighter_b = str(selected.get("fighter_b") or "")
         event_name = str(selected.get("event_name") or "")
+        event_date = str(selected.get("event_date") or "")
         source_url = str(selected.get("source_url") or "")
         out_name = payload.get("output_filename_override")
         out_path = Path(tmp_path) / out_name
@@ -38,7 +39,18 @@ def _fake_generator(monkeypatch, tmp_path):
         text_by_path[str(out_path)] = (
             f"{fighter_a} vs {fighter_b}\n"
             f"Event: {event_name}\n"
+            f"Event Date: {event_date}\n"
             f"Source: {source_url}\n"
+            "PREMIUM FIGHT\n"
+            "INTELLIGENCE REPORT\n"
+            "THE INTELLIGENCE BENEATH THE VIOLENCE\n"
+            "02 | EXECUTIVE COMMAND DASHBOARD\n"
+            "05 | FIGHTER ARCHITECTURE RADAR\n"
+            "PAGE 05\n"
+            "14 | ROUND-BY-ROUND CONTROL PROJECTION\n"
+            "15 | SCENARIO TREE / METHOD PATHWAYS\n"
+            "23 | TRACEABILITY / SOURCE MAP\n"
+            "24 | DISCLAIMER / RISK CONTROL\n"
             "EXECUTIVE COMMAND DASHBOARD\n"
             "FIGHTER ARCHITECTURE RADAR\n"
             "TACTICAL EDGE MAP\n"

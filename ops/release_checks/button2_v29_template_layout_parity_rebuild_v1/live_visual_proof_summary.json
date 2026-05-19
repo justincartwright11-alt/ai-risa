@@ -1,0 +1,50 @@
+{
+  "reference_pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\template_pack_sample\\AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf",
+  "generated_pdfs": {
+    "max": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\max_holloway_vs_justin_gaethje_ufc_300_premium_20260519T142747Z_676e9ade7163.pdf",
+    "bo": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\bo_nickal_vs_cody_brundage_ufc_300_premium_20260519T142748Z_29b7d20a840d.pdf"
+  },
+  "required_pages": [
+    1,
+    2,
+    5,
+    9,
+    14,
+    15,
+    23,
+    24
+  ],
+  "contact_sheet_pages": [
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p01.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p02.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p05.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p09.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p14.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p15.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p23.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_p24.png"
+  ],
+  "combined_contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_layout_parity_rebuild_v1\\proof\\contact_sheet_v29_vs_generated_required_pages.png",
+  "text_extraction_checks": {
+    "max": {
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\max_holloway_vs_justin_gaethje_ufc_300_premium_20260519T142747Z_676e9ade7163.pdf",
+      "page_count": 24,
+      "ufc_300_present": true,
+      "event_date_present": true,
+      "source_url_present": true,
+      "unknown_event_absent": true,
+      "unknown_event_slug_absent": true,
+      "page_05_marker_present": true
+    },
+    "bo": {
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\bo_nickal_vs_cody_brundage_ufc_300_premium_20260519T142748Z_29b7d20a840d.pdf",
+      "page_count": 24,
+      "ufc_300_present": true,
+      "event_date_present": true,
+      "source_url_present": true,
+      "unknown_event_absent": true,
+      "unknown_event_slug_absent": true,
+      "page_05_marker_present": true
+    }
+  }
+}

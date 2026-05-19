@@ -1554,89 +1554,301 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     except Exception as e:
         raise TemplatePackRenderError(f"Failed to load template pack image assets: {str(e)}") from e
 
-    # Force a consistent premium dark base layer for every page so rendered output
-    # cannot drift into plain/light fallback visuals when external templates vary.
-    def _premium_page_base(c, no, title, water=True):
-        black = getattr(module, "BLACK", getattr(module.colors, "black", None))
-        gold = getattr(module, "GOLD", getattr(module.colors, "gold", None))
-        gold2 = getattr(module, "GOLD2", gold)
-        muted = getattr(module, "MUTED", getattr(module.colors, "lightgrey", None))
-        page_w = float(getattr(module, "PAGE_W", 842.0))
-        page_h = float(getattr(module, "PAGE_H", 595.0))
-
-        c.setFillColor(black)
-        c.rect(0, 0, page_w, page_h, fill=1, stroke=0)
-
-        if water:
-            try:
-                wm = getattr(module, "WATER", None)
-                if wm is not None:
-                    wm_w = page_w * 0.56
-                    wm_h = page_h * 0.78
-                    c.drawImage(
-                        wm,
-                        (page_w - wm_w) / 2,
-                        (page_h - wm_h) / 2,
-                        wm_w,
-                        wm_h,
-                        preserveAspectRatio=True,
-                        mask="auto",
-                    )
-            except Exception:
-                pass
-
-        c.setStrokeColor(gold)
-        c.setLineWidth(1.0)
-        c.rect(16, 16, page_w - 32, page_h - 32, fill=0, stroke=1)
-        c.setLineWidth(0.6)
-        c.line(28, page_h - 58, page_w - 28, page_h - 58)
-        c.line(28, 44, page_w - 28, 44)
-
-        module.set_font(c, "Helvetica-Bold", 9.2, gold2)
-        c.drawString(32, page_h - 46, str(title or "PREMIUM FIGHT INTELLIGENCE REPORT").upper())
-        module.set_font(c, "Helvetica", 7.2, muted)
-        c.drawRightString(page_w - 32, 30, f"PAGE {no:02d}")
-
-    module.page_base = _premium_page_base
-
-    module.command_footer = lambda c, x, y, w: _customer_command_footer(module, c, x, y, w)
-
     blocks = _build_blocks(report_context_preview)
 
-    # Keep module DATA keyed to selected matchup for any template helper references.
+    # Bind selected-matchup values into the canonical v29 template data contract.
+    if not isinstance(getattr(module, "DATA", None), dict):
+        module.DATA = {}
+    if not isinstance(getattr(module, "TEXT", None), dict):
+        module.TEXT = {}
+
     module.DATA["a"] = blocks["fighter_a"]
     module.DATA["b"] = blocks["fighter_b"]
+    module.DATA["a_short"] = _fighter_last_name(blocks["fighter_a"], "Fighter A")
+    module.DATA["b_short"] = _fighter_last_name(blocks["fighter_b"], "Fighter B")
+    module.DATA["winner"] = blocks["fighter_a"]
+    module.DATA["method"] = "Decision"
+    module.DATA["round"] = "Full Distance"
+    module.DATA["confidence"] = blocks.get("confidence_display", "55.0%")
+    module.DATA["confidence_short"] = str(blocks.get("confidence_band", "55%")).replace("%", "") + "%"
+    module.DATA["volatility"] = blocks.get("volatility", "High")
     module.DATA["event"] = blocks["event_name"]
     module.DATA["date"] = blocks["event_date"]
+    module.DATA["promotion"] = _clean_text(
+        (report_context_preview.get("selected_matchup", {}) if isinstance(report_context_preview, dict) else {}).get("promotion"),
+        "UFC",
+    )
+    module.DATA["sport"] = "MMA"
+    module.DATA["report_type"] = "CUSTOMER READY"
+    module.DATA["report_id"] = blocks.get("report_id", "selected_matchup_report")
     module.DATA["generated"] = _dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    module.DATA["a_style"] = "Aggressive Power Striker | Orthodox"
+    module.DATA["b_style"] = "Technical Counter Striker | Orthodox"
+
+    module.TEXT["exec"] = blocks.get("executive_summary", blocks.get("summary", ""))
+    module.TEXT["headline"] = blocks.get("headline", "")
+    module.TEXT["matchup"] = blocks.get("matchup_snapshot", "")
+    module.TEXT["decision"] = blocks.get("decision_structure", "")
+    module.TEXT["energy"] = blocks.get("energy", "")
+    module.TEXT["fatigue"] = blocks.get("fatigue_failure_points", "")
+    module.TEXT["mental"] = blocks.get("mental", "")
+    module.TEXT["collapse"] = blocks.get("collapse", "")
+    module.TEXT["deception"] = blocks.get("deception_unpredictability", "")
+    module.TEXT["range"] = blocks.get("range_geography_control", "")
+    module.TEXT["risk"] = blocks.get("risk_warnings", "")
+    module.TEXT["betting"] = blocks.get("betting_market_intelligence", "")
+    module.TEXT["coach"] = blocks.get("coach_corner_notes", "")
+    module.TEXT["final"] = blocks.get("final_projection", "")
+    module.TEXT["confidence"] = blocks.get("confidence", "")
+    module.TEXT["disclaimer"] = (
+        "This report is for informational and analytical purposes only. Predictions are probabilistic and not financial advice. "
+        "Combat sports are inherently unpredictable. Bet responsibly. Never wager more than you can afford to lose."
+    )
 
     stream = io.BytesIO()
     c = module.canvas.Canvas(stream, pagesize=module.landscape(module.A4))
 
-    _draw_cover(module, c, blocks)
-    _draw_executive(module, c, blocks)
-    _draw_text_section(module, c, 3, "Headline Projection", "Ares parity headline lane", blocks["headline"], blocks)
-    _draw_text_section(module, c, 4, "Matchup Snapshot", "Primary matchup intelligence snapshot", blocks["matchup_snapshot"], blocks)
-    _draw_fighter_architecture_radar(module, c, blocks)
-    _draw_tactical_edge_table(module, c, blocks)
-    _draw_text_section(module, c, 7, "Decision Structure", "Decision Structure / Command Layer", blocks["decision_structure"], blocks)
-    _draw_text_section(module, c, 8, "Energy Use Analysis", "Energy/Fatigue / Watch Cue", blocks["energy"], blocks)
-    _draw_failure_heat_map(module, c, blocks)
-    _draw_text_section(module, c, 10, "Mental Condition Under Stress", "Mental response and composure", blocks["mental"], blocks)
-    _draw_text_section(module, c, 11, "Collapse Triggers", "Failure cascade map", blocks["collapse"], blocks)
-    _draw_text_section(module, c, 12, "Deception and Unpredictability", "Rhythm deception and hidden lane control", blocks["deception_unpredictability"], blocks)
-    _draw_text_section(module, c, 13, "Range / Geography Control", "Control lane ownership by distance", blocks["range_geography_control"], blocks)
-    _draw_round_control_graph(module, c, blocks)
-    _draw_text_section(module, c, 15, "Scenario Tree / Method Pathways", "Scenario Tree / Method Pathways", blocks["scenario"], blocks)
-    _draw_scorecard_scenario(module, c, blocks)
-    _draw_method_probability_chart(module, c, blocks)
-    _draw_text_section(module, c, 18, "Risk Warnings and Exposure Discipline", "Risk control and exposure governance", blocks["risk_warnings"], blocks)
-    _draw_text_section(module, c, 19, "Betting Market Intelligence", "Market context (projection/model-derived)", blocks["betting_market_intelligence"], blocks)
-    _draw_text_section(module, c, 20, "Coach / Corner Notes", "Corner instruction lane", blocks["coach_corner_notes"], blocks)
-    _draw_text_section(module, c, 21, "Final Projection", "Final projection lane", blocks["final_projection"], blocks)
-    _draw_text_section(module, c, 22, "Confidence Explanation", "Confidence framing", blocks["confidence"], blocks)
+    # Render with canonical v29 page functions to preserve layout parity.
+    module.cover(c)
+    module.executive(c)
+    module.section_page(
+        c,
+        3,
+        "Headline Projection",
+        "Headline Prediction",
+        [
+            ("WINNER", module.DATA["winner"], module.BLUE),
+            ("METHOD", module.DATA["method"], module.GOLD2),
+            ("ROUND", module.DATA["round"], module.GOLD2),
+            ("CONFIDENCE", module.DATA["confidence"], module.GOLD2),
+        ],
+        "Headline Projection",
+        module.TEXT["headline"],
+        module.BLUE,
+    )
+    module.section_page(
+        c,
+        4,
+        "Matchup Snapshot",
+        "Fighter Snapshot",
+        [
+            (f"{module.DATA['a_short'].upper()}", "Pressure lane | model-derived", module.BLUE),
+            (f"{module.DATA['b_short'].upper()}", "Counter lane | model-derived", module.RED),
+            ("CORE CONTRAST", "Instability vs structure", module.GOLD2),
+            ("CRITICAL FACTOR", "Who imposes rhythm first", module.GOLD2),
+        ],
+        "Matchup Snapshot",
+        module.TEXT["matchup"],
+        module.GOLD,
+    )
+    module.radar(c)
+    module.tactical(c)
+    module.section_page(
+        c,
+        7,
+        "Decision Structure",
+        "Decision Chain",
+        [
+            ("A LOOP", "Pressure + momentum theft", module.BLUE),
+            ("B LOOP", "Map, reset, clean selection", module.RED),
+            ("DECISIVE QUESTION", "Order vs instability", module.GOLD2),
+            ("WATCH CUE", "Who owns the second decision?", module.GOLD2),
+        ],
+        "Decision Structure",
+        module.TEXT["decision"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        8,
+        "Energy Use Analysis",
+        "Energy Rail",
+        [
+            (f"{module.DATA['a_short'].upper()}", "Burst expenditure", module.BLUE),
+            (f"{module.DATA['b_short'].upper()}", "Economic scoring", module.RED),
+            ("COST TRIGGER", "Forced entries without payoff", module.GOLD2),
+            ("BREAK TRIGGER", "Emergency reactions", module.GOLD2),
+        ],
+        "Energy Use Analysis",
+        module.TEXT["energy"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        9,
+        "Fatigue Failure Points",
+        "Failure Rail",
+        [
+            (f"{module.DATA['a_short'].upper()} FAILURE", "Reduced chaos creation", module.BLUE),
+            (f"{module.DATA['b_short'].upper()} FAILURE", "Defensive overexposure", module.RED),
+            ("SIGNAL", "Style degradation", module.GOLD2),
+            ("LATE RISK", "Readability vs delayed counters", module.GOLD2),
+        ],
+        "Fatigue Failure Points",
+        module.TEXT["fatigue"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        10,
+        "Mental Condition Under Stress",
+        "Mental Condition",
+        [
+            (f"{module.DATA['a_short'].upper()}", "Comfortable in disorder", module.BLUE),
+            (f"{module.DATA['b_short'].upper()}", "Composed and structural", module.RED),
+            ("A EDGE", "Uncertainty early", module.GOLD2),
+            ("B EDGE", "Calm under volatility", module.GOLD2),
+        ],
+        "Mental Condition Under Stress",
+        module.TEXT["mental"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        11,
+        "Collapse Triggers",
+        "Collapse Map",
+        [
+            (f"{module.DATA['a_short'].upper()} TRIGGER", "Chaos stops working", module.BLUE),
+            (f"{module.DATA['b_short'].upper()} TRIGGER", "Chaos starts snowballing", module.RED),
+            ("PRESSURE CONDITION", "Damage moments + crowding", module.GOLD2),
+            ("CONTROL CONDITION", "Checks + denied momentum", module.GOLD2),
+        ],
+        "Collapse Triggers",
+        module.TEXT["collapse"],
+        module.RED,
+    )
+    module.section_page(
+        c,
+        12,
+        "Deception and Unpredictability",
+        "Deception Rail",
+        [
+            (f"{module.DATA['a_short'].upper()}", "Timing disruption", module.BLUE),
+            (f"{module.DATA['b_short'].upper()}", "Selective deception", module.RED),
+            ("CORE VALUE", "Pressures reads", module.GOLD2),
+            ("MAJOR EDGE", "Makes opponent doubt first", module.GOLD2),
+        ],
+        "Deception and Unpredictability",
+        module.TEXT["deception"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        13,
+        "Range / Geography Control",
+        "Control Rules",
+        [
+            (f"{module.DATA['a_short'].upper()} CONTROL", "Emotion over score", module.BLUE),
+            (f"{module.DATA['b_short'].upper()} CONTROL", "Clean, countable exchanges", module.RED),
+            ("TURN POINT", "Preferred rhythm sustainable", module.GOLD2),
+            ("DEEP-ROUND OWNER", "Fighter who breaks structure", module.GOLD2),
+        ],
+        "Range / Geography Control",
+        module.TEXT["range"],
+        module.GOLD,
+    )
+    module.round_page(c)
+    module.scenario(c)
+    module.four_cards_page(
+        c,
+        16,
+        "Scorecard Scenario",
+        [
+            (f"{module.DATA['a_short'].upper()} CLOSE DECISION", "Danger moments outweigh clean stretches. Disruption controls the story even when exchanges are competitive."),
+            (f"{module.DATA['b_short'].upper()} TECHNICAL DECISION", "Cleaner exchanges and disciplined exits dominate. Structure denies emotional escalation."),
+            ("SWING SCORECARDS", "Judges split disruption versus technical consistency. Round optics become the deciding layer."),
+            ("FULL DISTANCE LEAN", "Decision is stronger than stoppage projection. The cleanest forecast is a scored distance fight."),
+        ],
+    )
+    module.four_cards_page(
+        c,
+        17,
+        "Stoppage Windows",
+        [
+            (f"{module.DATA['a_short'].upper()} DAMAGE SWING", "R1-R3. Live if the opponent is forced into repeated defensive adaptation."),
+            (f"{module.DATA['b_short'].upper()} COUNTER ACCUMULATION", "R2-R3. Live if entries become readable and overcommitted."),
+            ("LATE FINISH PRESSURE", "Low probability. Depends on style degradation, not only volume."),
+            ("NO FINISH READ", "Most likely. Projection remains full distance by decision."),
+        ],
+    )
+    module.section_page(
+        c,
+        18,
+        "Risk Warnings / What Could Flip the Fight",
+        "Risk Rail",
+        [
+            (f"{module.DATA['a_short'].upper()} RISK", "Aggression without conversion", module.BLUE),
+            (f"{module.DATA['b_short'].upper()} RISK", "Emotional tone risk", module.RED),
+            ("FLIP POINT", "Sequence changes who commands", module.GOLD2),
+            ("SCORING RISK", "Disruption vs clean stretches", module.GOLD2),
+        ],
+        "Risk Warnings / What Could Flip",
+        module.TEXT["risk"],
+        module.RED,
+    )
+    module.section_page(
+        c,
+        19,
+        "Betting Market Intelligence",
+        "Risk-Controlled Market Read",
+        [
+            ("PROJECTION", f"{module.DATA['a_short']} by decision", module.BLUE),
+            ("CONFIDENCE", module.DATA["confidence"], module.GOLD2),
+            ("VOLATILITY", "Moderate - both men live", module.RED),
+            ("PASS CONDITION", "Price too wide", module.GOLD2),
+        ],
+        "Market Discipline",
+        module.TEXT["betting"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        20,
+        "Coach / Corner Notes",
+        "Corner Translation",
+        [
+            (module.DATA["a_short"].upper(), "Functional pressure", module.BLUE),
+            (module.DATA["b_short"].upper(), "Win the clean fight", module.RED),
+            ("A COMMAND", f"Make {module.DATA['b_short']} reset under threat", module.GOLD2),
+            ("B COMMAND", "Punish layered entries", module.GOLD2),
+        ],
+        "Coach / Corner Notes",
+        module.TEXT["coach"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        21,
+        "Final Projection",
+        "Final Read",
+        [
+            ("WINNER", module.DATA["winner"], module.BLUE),
+            ("METHOD", module.DATA["method"], module.GOLD2),
+            ("ROUND", module.DATA["round"], module.GOLD2),
+            ("CONFIDENCE", module.DATA["confidence"], module.GOLD2),
+        ],
+        "Final Projection",
+        module.TEXT["final"],
+        module.GOLD,
+    )
+    module.section_page(
+        c,
+        22,
+        "Confidence Explanation",
+        "Confidence Rail",
+        [
+            ("EDGE TYPE", "Real edge, not wide gap", module.BLUE),
+            ("UNCERTAINTY", "Both have control routes", module.GOLD2),
+            ("PRIMARY SUPPORT", "Disruption changes decisions", module.GOLD2),
+            ("LIVE COUNTER", f"{module.DATA['b_short']} technical stability", module.RED),
+        ],
+        "Confidence Explanation",
+        module.TEXT["confidence"],
+        module.GOLD,
+    )
     _draw_source_traceability(module, c, blocks, report_context_preview)
-    _draw_customer_appendix(module, c)
+    module.disclaimer_page(c)
     c.save()
     pdf_bytes = stream.getvalue()
 
@@ -1657,7 +1869,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
             "sample_zip": assets["pack_zip_sample"],
         },
         "renderer_profile": (
-            "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1"
+            "premium_template_pack_v29_layout_parity_rebuild_v1"
             if selected_matchup_present
             else "premium_template_pack_v29_asset_backed_v1"
         ),

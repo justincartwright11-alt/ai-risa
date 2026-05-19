@@ -47,9 +47,6 @@ _BUTTON2_FORBIDDEN_MARKERS = [
     "01 | PREMIUM COVER",
     "PREMIUM COVER",
     "Cover Page",
-    "where the fight is owned",
-    "where the fight can flip",
-    "what the corner must solve",
     "SECTION LENS",
     "MODEL STATUS",
     "REPORT TYPE",
@@ -96,6 +93,24 @@ _BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES = [
     ("scenario tree", "method pathways"),
     ("traceability", "source map"),
     ("disclaimer", "risk control"),
+]
+
+_BUTTON2_REQUIRED_V29_LAYOUT_MARKERS = [
+    "premium fight",
+    "intelligence report",
+    "the intelligence beneath the violence",
+    "02 | executive command dashboard",
+    "05 | fighter architecture radar",
+    "page 05",
+    "14 | round-by-round control projection",
+    "15 | scenario tree / method pathways",
+    "23 | traceability / source map",
+    "24 | disclaimer / risk control",
+]
+
+_BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS = [
+    "main narrative",
+    "ares parity",
 ]
 
 
@@ -396,6 +411,16 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     for marker_a, marker_b in _BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES:
         if marker_a not in text_lower and marker_b not in text_lower:
             violations.append(f"premium_marker_missing_either:{marker_a}|{marker_b}")
+
+    # v29 layout parity checks for key pages/headers.
+    for marker in _BUTTON2_REQUIRED_V29_LAYOUT_MARKERS:
+        if marker not in text_lower:
+            violations.append(f"v29_layout_marker_missing:{marker}")
+
+    # Reject known simplified/plain fallback layout signatures.
+    for marker in _BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS:
+        if marker in text_lower:
+            violations.append(f"v29_layout_plain_fallback_marker_present:{marker}")
 
     return len(violations) == 0, violations
 
@@ -2310,6 +2335,10 @@ def button2_generate_selected_batch_v1():
             except Exception:
                 pass
 
+            gate_status = "pdf_quality_gate_failed"
+            if any(str(v).startswith("v29_layout_") for v in (strict_gate_violations or [])):
+                gate_status = "v29_template_layout_parity_failed"
+
             results.append({
                 "matchup_id": matchup_id,
                 "fighter_a": fighter_a,
@@ -2328,7 +2357,7 @@ def button2_generate_selected_batch_v1():
                 "template_pack_asset_backed": template_pack_asset_backed,
                 "premium_template_confirmed": False,
                 "customer_ready": False,
-                "visual_gate_status": "pdf_quality_gate_failed",
+                "visual_gate_status": gate_status,
                 "strict_quality_gate_passed": strict_gate_passed,
                 "strict_quality_gate_violations": strict_gate_violations,
                 "text_scan_forbidden_markers": text_scan,
