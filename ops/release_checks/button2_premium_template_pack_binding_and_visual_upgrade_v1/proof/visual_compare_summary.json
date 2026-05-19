@@ -1,0 +1,46 @@
+{
+  "new_pdf": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114638Z_b6a854b6067e.pdf",
+  "bad_pdf": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T111341Z_a6dbb42a6a57.pdf",
+  "ref_pdf": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample\\AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf",
+  "new_page_count": 24,
+  "bad_page_count": 24,
+  "ref_page_count": 24,
+  "new_markers": {
+    "EXECUTIVE COMMAND DASHBOARD": true,
+    "FIGHTER ARCHITECTURE RADAR": true,
+    "TACTICAL EDGE MAP": true,
+    "SCENARIO TREE / METHOD PATHWAYS": true,
+    "TRACEABILITY / SOURCE MAP": true,
+    "DISCLAIMER / RISK CONTROL": true
+  },
+  "bad_markers": {
+    "EXECUTIVE COMMAND DASHBOARD": true,
+    "FIGHTER ARCHITECTURE RADAR": true,
+    "TACTICAL EDGE MAP": true,
+    "SCENARIO TREE / METHOD PATHWAYS": true,
+    "TRACEABILITY / SOURCE MAP": true,
+    "DISCLAIMER / RISK CONTROL": true
+  },
+  "new_contains": {
+    "Alex Pereira": true,
+    "Jiri Prochazka": true,
+    "UFC 300": true,
+    "ufc.com": true
+  },
+  "new_template_bleed": {
+    "Bahram Rajabzadeh": false,
+    "Donovan Wisse": false,
+    "Anthony Joshua": false,
+    "Daniel Dubois": false
+  },
+  "contact_sheets": {
+    "new": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\new_generated_contact_sheet_pages_1_2_5_15_23.png",
+    "old": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\old_generated_contact_sheet_pages_1_2_5_15_23.png",
+    "reference": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\v29_reference_contact_sheet_pages_1_2_5_15_23.png"
+  },
+  "extracted_text_files": {
+    "new": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\new_generated_extracted_text.txt",
+    "old": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\bad_generated_extracted_text.txt",
+    "reference": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_template_pack_binding_and_visual_upgrade_v1\\proof\\reference_v29_extracted_text.txt"
+  }
+}

@@ -39,6 +39,12 @@ def _fake_generator(monkeypatch, tmp_path):
             f"{fighter_a} vs {fighter_b}\n"
             f"Event: {event_name}\n"
             f"Source: {source_url}\n"
+            "EXECUTIVE COMMAND DASHBOARD\n"
+            "FIGHTER ARCHITECTURE RADAR\n"
+            "TACTICAL EDGE MAP\n"
+            "SCENARIO TREE / METHOD PATHWAYS\n"
+            "TRACEABILITY / SOURCE MAP\n"
+            "DISCLAIMER / RISK CONTROL\n"
         )
         return {
             "ok": True,

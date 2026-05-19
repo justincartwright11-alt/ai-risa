@@ -1,0 +1,87 @@
+{
+  "slice": "button2-premium-template-pack-binding-and-visual-upgrade-v1",
+  "date": "2026-05-19",
+  "root_cause": [
+    "Batch route allowed fallback PDF generation after premium renderer failures, enabling plain report substitution.",
+    "Selected-matchup premium renderer path reporting could remain ambiguous in live diagnostics.",
+    "Template pack root resolution was not explicitly searched across all approved priority locations."
+  ],
+  "template_path_priority": [
+    "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+    "<workspace>/reports/template_pack_sample",
+    "<workspace>/operator_dashboard/assets/template_pack_sample or <workspace>/operator_dashboard/assets"
+  ],
+  "template_path_used": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample",
+  "defect_reproduced_with": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T111341Z_a6dbb42a6a57.pdf",
+  "reference_pdf": "C:/ai_risa_next_dashboard_polish/ops/prf_reports/template_pack_sample/AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf",
+  "live_proof": {
+    "port": 5050,
+    "queue_refresh": {
+      "total_rows": 21,
+      "ready_count": 21
+    },
+    "generated_proof_pdf": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114638Z_b6a854b6067e.pdf",
+    "selected_route_generated_pdf": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114917Z_2c37fdb1fce6.pdf",
+    "payload_binding": {
+      "Alex Pereira": true,
+      "Jiri Prochazka": true,
+      "UFC 300": true,
+      "ufc.com": true
+    },
+    "template_sample_name_bleed": {
+      "Bahram Rajabzadeh": false,
+      "Donovan Wisse": false,
+      "Anthony Joshua": false,
+      "Daniel Dubois": false
+    },
+    "premium_markers_present": {
+      "EXECUTIVE COMMAND DASHBOARD": true,
+      "FIGHTER ARCHITECTURE RADAR": true,
+      "TACTICAL EDGE MAP": true,
+      "SCENARIO TREE or METHOD PATHWAYS": true,
+      "TRACEABILITY or SOURCE MAP": true,
+      "DISCLAIMER or RISK CONTROL": true
+    }
+  },
+  "proof_artifacts": {
+    "summary": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/visual_compare_summary.json",
+    "delta_metrics": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/visual_delta_metrics.json",
+    "new_contact_sheet": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/new_generated_contact_sheet_pages_1_2_5_15_23.png",
+    "old_contact_sheet": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/old_generated_contact_sheet_pages_1_2_5_15_23.png",
+    "reference_contact_sheet": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/v29_reference_contact_sheet_pages_1_2_5_15_23.png",
+    "new_extracted_text": "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/new_generated_extracted_text.txt"
+  },
+  "tests": [
+    {
+      "path": "operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py",
+      "result": "10 passed"
+    },
+    {
+      "path": "operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py",
+      "result": "16 passed"
+    },
+    {
+      "path": "operator_dashboard/test_button1_to_button2_weekly_matchup_queue_promotion_repair_v1.py",
+      "result": "12 passed"
+    }
+  ],
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "files_changed": [
+    "operator_dashboard/app.py",
+    "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "operator_dashboard/button2_jbalia_direct_template_renderer_v1.py",
+    "operator_dashboard/button2_report_generation_route_render_gate_integration_v1.py",
+    "operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py",
+    "operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py",
+    "docs/button2_premium_template_pack_binding_and_visual_upgrade_v1.md",
+    "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/template_pack_binding_summary.json"
+  ],
+  "final_verdict": "Premium template-pack binding and visual quality gating are enforced for Button 2 selected/batch generation; plain fallback acceptance is closed while governance locks remain false."
+}

@@ -142,9 +142,22 @@ _BUTTON2_FORBIDDEN_CONCATENATION_SNIPPETS = [
 ]
 
 _BUTTON2_STALE_NAME_PAIRS = [
+    ("bahram rajabzadeh", "donovan wisse"),
     ("anthony joshua", "daniel dubois"),
     ("rico verhoeven", "tariq osaro"),
     ("jbalia", "diatta"),
+]
+
+_BUTTON2_REQUIRED_PREMIUM_MARKERS = [
+    "executive command dashboard",
+    "fighter architecture radar",
+    "tactical edge map",
+]
+
+_BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES = [
+    ("scenario tree", "method pathways"),
+    ("traceability", "source map"),
+    ("disclaimer", "risk control"),
 ]
 
 
@@ -429,6 +442,14 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
             continue
         if name_a in text_lower and name_b in text_lower:
             violations.append(f"stale_pair_present:{name_a}:{name_b}")
+
+    for marker in _BUTTON2_REQUIRED_PREMIUM_MARKERS:
+        if marker not in text_lower:
+            violations.append(f"premium_marker_missing:{marker}")
+
+    for marker_a, marker_b in _BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES:
+        if marker_a not in text_lower and marker_b not in text_lower:
+            violations.append(f"premium_marker_missing_either:{marker_a}|{marker_b}")
 
     return len(violations) == 0, violations
 
@@ -2302,13 +2323,21 @@ def button2_generate_selected_batch_v1():
                 "message": "Primary generation returned malformed response.",
             }
         if result.get("ok") is not True:
-            fallback_result = _generate_button2_fallback_pdf(
-                selected_preview,
-                fight_id,
-                output_filename_override,
-            )
-            if isinstance(fallback_result, dict) and fallback_result.get("ok") is True:
-                result = fallback_result
+            results.append({
+                "matchup_id": matchup_id,
+                "fighter_a": fighter_a,
+                "fighter_b": fighter_b,
+                "event_name": event_name,
+                "ok": False,
+                "output_path": "",
+                "output_filename": "",
+                "open_url": "",
+                "error": result.get("error", "generation_failed"),
+                "reason": result.get("message", "PDF generation failed"),
+                "content_gate_passed": False,
+            })
+            failed_count += 1
+            continue
 
         if result.get("ok") is True:
             result = _decorate_button2_generated_pdf_open_link(result)

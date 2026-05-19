@@ -1,0 +1,27 @@
+{
+  "page_1": {
+    "mean_absdiff_old_vs_new": 0.0017225253411195024,
+    "mean_absdiff_new_vs_ref": 237.13163808236482,
+    "mean_absdiff_old_vs_ref": 237.13218799952918
+  },
+  "page_2": {
+    "mean_absdiff_old_vs_new": 0.0,
+    "mean_absdiff_new_vs_ref": 232.02804545897516,
+    "mean_absdiff_old_vs_ref": 232.02804545897516
+  },
+  "page_5": {
+    "mean_absdiff_old_vs_new": 0.0,
+    "mean_absdiff_new_vs_ref": 233.7194346674362,
+    "mean_absdiff_old_vs_ref": 233.7194346674362
+  },
+  "page_15": {
+    "mean_absdiff_old_vs_new": 0.0,
+    "mean_absdiff_new_vs_ref": 235.88101539135243,
+    "mean_absdiff_old_vs_ref": 235.88101539135243
+  },
+  "page_23": {
+    "mean_absdiff_old_vs_new": 0.0,
+    "mean_absdiff_new_vs_ref": 237.81878963801657,
+    "mean_absdiff_old_vs_ref": 237.81878963801657
+  }
+}

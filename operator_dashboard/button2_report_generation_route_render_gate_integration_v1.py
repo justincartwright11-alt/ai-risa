@@ -271,14 +271,22 @@ def generate_button2_report_render_gate_integration(request_data):
     )
 
     if selected_matchup_generation:
-        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_jbalia_direct_v1"
+        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1"
         template_pack_root = str(report_context_preview.get("template_pack_root", "")).strip()
         if not template_pack_root:
             report_context_preview["template_pack_root"] = DEFAULT_TEMPLATE_PACK_ROOT
 
     renderer_profile = str(report_context_preview.get("template_renderer_profile", "")).strip()
-    use_direct_jbalia_renderer = selected_matchup_generation
-    use_asset_backed_renderer = not use_direct_jbalia_renderer and (renderer_profile.startswith("premium_template_pack_v29"))
+    use_direct_jbalia_renderer = False
+    use_asset_backed_renderer = renderer_profile.startswith("premium_template_pack_v29")
+
+    if selected_matchup_generation and not (use_asset_backed_renderer or use_direct_jbalia_renderer):
+        return {
+            "ok": False,
+            "error": "premium_template_profile_required",
+            "message": "Selected matchup generation requires premium template-pack renderer profile.",
+            **telemetry,
+        }
     template_render_meta = {
         "premium_template_render_used": False,
         "renderer_profile": renderer_profile or "button2_html_composition_entry_point_v1",

@@ -9,6 +9,11 @@ from pathlib import Path
 
 DEFAULT_TEMPLATE_PACK_ROOT = r"C:\ai_risa_next_dashboard_polish\ops\prf_reports\template_pack_sample"
 REQUIRED_MODULE = "ai_risa_report_template_v29_bar_alignment_fix.py"
+_WORKSPACE_TEMPLATE_PACK_RELATIVE = os.path.join("reports", "template_pack_sample")
+_PACKAGED_TEMPLATE_PACK_CANDIDATES = [
+    os.path.join("assets", "template_pack_sample"),
+    "assets",
+]
 _REQUIRED_LOGO_CANDIDATES = [
     "AI-RISA Logo.png",
     "ai_risa_logo_clean_blend.png",
@@ -39,6 +44,47 @@ class TemplatePackResolverError(Exception):
 
 class TemplatePackRenderError(Exception):
     pass
+
+
+def _build_template_pack_root_candidates():
+    candidates = []
+    override = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
+    if isinstance(override, str) and override.strip():
+        candidates.append(override.strip())
+
+    candidates.append(DEFAULT_TEMPLATE_PACK_ROOT)
+
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    workspace_root = os.path.dirname(module_dir)
+    candidates.append(os.path.join(workspace_root, _WORKSPACE_TEMPLATE_PACK_RELATIVE))
+
+    for rel_path in _PACKAGED_TEMPLATE_PACK_CANDIDATES:
+        candidates.append(os.path.join(module_dir, rel_path))
+
+    deduped = []
+    seen = set()
+    for candidate in candidates:
+        normalized = os.path.normpath(candidate)
+        key = normalized.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(normalized)
+    return deduped
+
+
+def resolve_template_pack_root_path():
+    searched_paths = _build_template_pack_root_candidates()
+    for candidate in searched_paths:
+        if os.path.isdir(candidate):
+            return candidate, searched_paths
+    attempted = searched_paths[0] if searched_paths else DEFAULT_TEMPLATE_PACK_ROOT
+    raise TemplatePackResolverError(
+        "Template pack root directory does not exist in any configured location.",
+        attempted_path=attempted,
+        missing=searched_paths,
+        cause="missing_template_pack_root",
+    )
 
 
 def _clean_text(value, fallback=""):
@@ -341,17 +387,8 @@ def _customer_command_footer(module, c, x, y, w):
 
 
 def resolve_template_pack_assets():
-    override = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
-    root = override.strip() if isinstance(override, str) and override.strip() else DEFAULT_TEMPLATE_PACK_ROOT
+    root, searched_paths = resolve_template_pack_root_path()
     attempted_path = root
-
-    if not os.path.isdir(root):
-        raise TemplatePackResolverError(
-            "Template pack root directory does not exist.",
-            attempted_path=attempted_path,
-            missing=[root],
-            cause="missing_template_pack_root",
-        )
 
     module_path = os.path.join(root, REQUIRED_MODULE)
     missing = []
@@ -386,6 +423,7 @@ def resolve_template_pack_assets():
 
     return {
         "pack_root": root,
+        "searched_paths": searched_paths,
         "module_path": module_path,
         "logo_path": logo_path,
         "watermark_path": watermark_path,
@@ -803,7 +841,7 @@ def _draw_cover(module, c, blocks):
     module.set_font(c, "Helvetica", 6.5, module.GREY)
     c.drawRightString(x + w, 10, f"Generated: {_dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
     module.set_font(c, "Helvetica", 5.9, module.MUTED)
-    c.drawRightString(x + w, 18, "template_pack_sample logo_brand_3d_renderer_template_pack_sample")
+    c.drawRightString(x + w, 18, "AI-RISA BRAND MARK")
 
     c.showPage()
 

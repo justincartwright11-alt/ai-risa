@@ -30,6 +30,10 @@ import os
 import re
 from pathlib import Path
 
+from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
+    resolve_template_pack_assets as _resolve_shared_template_pack_assets,
+)
+
 
 DEFAULT_TEMPLATE_PACK_ROOT = r"C:\ai_risa_next_dashboard_polish\ops\prf_reports\template_pack_sample"
 REQUIRED_MODULE = "ai_risa_report_template_v29_bar_alignment_fix.py"
@@ -107,45 +111,10 @@ def _check_forbidden_customer_strings(text):
 
 def resolve_template_pack_assets():
     """Resolve and validate template pack assets."""
-    override = os.environ.get("BUTTON2_TEMPLATE_PACK_ROOT", "")
-    root = override.strip() if isinstance(override, str) and override.strip() else DEFAULT_TEMPLATE_PACK_ROOT
-
-    if not os.path.isdir(root):
-        raise DirectJbaliaRendererError(
-            f"Template pack root does not exist: {root}"
-        )
-
-    module_path = os.path.join(root, REQUIRED_MODULE)
-    if not os.path.isfile(module_path):
-        raise DirectJbaliaRendererError(
-            f"Required template module not found: {module_path}"
-        )
-
-    logo_path = ""
-    for candidate in ["AI-RISA Logo.png", "ai_risa_logo_clean_blend.png"]:
-        full = os.path.join(root, candidate)
-        if os.path.isfile(full):
-            logo_path = full
-            break
-    if not logo_path:
-        raise DirectJbaliaRendererError("Logo asset not found in template pack")
-
-    watermark_path = ""
-    for candidate in ["ai_risa_logo_watermark_blend.png", "ai_risa_logo_clean_blend.png", "AI-RISA Logo.png"]:
-        full = os.path.join(root, candidate)
-        if os.path.isfile(full):
-            watermark_path = full
-            break
-    if not watermark_path:
-        raise DirectJbaliaRendererError("Watermark asset not found in template pack")
-
-    return {
-        "pack_root": root,
-        "module_path": module_path,
-        "logo_path": logo_path,
-        "watermark_path": watermark_path,
-        "pack_pdf_sample": os.path.join(root, "AI-RISA_Premium_Fight_Intelligence_Report_v29_bar_alignment_fix.pdf"),
-    }
+    try:
+        return _resolve_shared_template_pack_assets()
+    except Exception as exc:
+        raise DirectJbaliaRendererError(str(exc))
 
 
 def _load_template_module(module_path):
