@@ -1,0 +1,22 @@
+{
+  "slice": "button2-final-visual-collision-depth-repair-commercial-handoff-v1",
+  "scope": "docs_evidence_only",
+  "locked_upstream_slice": "button2-premium-pdf-final-visual-collision-and-depth-repair-v1",
+  "locked_commit": "0154937",
+  "locked_tag": "button2-premium-pdf-final-visual-collision-and-depth-repair-v1",
+  "proof": {
+    "reports_24_pages": true,
+    "visual_proof_pngs": true,
+    "tests_passed": 8,
+    "tests_failed": 0,
+    "forbidden_default_scan_clean": true,
+    "open_routes_http_200": true,
+    "governance_flags_false": true
+  },
+  "evidence_paths": {
+    "proof_json": "ops/release_checks/button2_premium_pdf_final_visual_collision_and_depth_repair_v1/final_visual_collision_depth_summary.json",
+    "visual_proof_dir": "ops/release_checks/button2_premium_pdf_final_visual_collision_and_depth_repair_v1/visual_proof/"
+  },
+  "commercial_outcome": "Button 2 premium PDF output is now visually hardened, deeper, and ready for stakeholder review.",
+  "next_business_boundary": "paid-pilot-phase1-management-decision-record-v1"
+}
