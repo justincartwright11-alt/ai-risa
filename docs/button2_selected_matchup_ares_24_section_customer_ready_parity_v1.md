@@ -116,6 +116,6 @@ All proof reports and route responses remained governed:
 - button3_mutation_performed=false
 
 ## Lock Fields
-- Commit hash: pending
-- Tag: pending
-- Final git status: pending
+- Commit hash: 445cc7f
+- Tag: button2-selected-matchup-ares-24-section-customer-ready-parity-v1
+- Final git status: clean after lock commit/tag
