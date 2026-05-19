@@ -758,8 +758,8 @@
 
   <!-- ── Button 2 Result Area ──────────────────────────────────────── -->
   <div class="result-panel" id="b2-result-panel">
-    <h3>Report Generation</h3>
-    <div id="b2-status" class="status-msg">Load queue rows and select one, many, all ready, or one event card.</div>
+    <h3>Select fights to generate PDFs</h3>
+    <div id="b2-status" class="status-msg">Select fights to generate PDFs.</div>
     <div class="status-msg" id="b2-pdf-library-link-row">
       <a id="b2-pdf-library-link" href="/api/button2/generated-report/library" target="_blank" rel="noopener noreferrer">PDF Reports Folder</a>
     </div>
@@ -771,7 +771,7 @@
       <button class="b2-select-row-btn" id="b2-refresh-queue-btn" onclick="button2RefreshQueue()">Refresh Queue</button>
       <button class="b2-select-row-btn" id="b2-select-all-ready-btn" onclick="button2SelectAllReady()">Select All Ready</button>
       <button class="b2-select-row-btn" id="b2-clear-selection-btn" onclick="button2ClearSelection()">Clear Selection</button>
-      <button class="b2-select-row-btn" id="b2-select-full-event-btn" onclick="button2SelectFullEventCard()">Select Full Event Card</button>
+      <button class="b2-select-row-btn" id="b2-select-full-event-btn" title="Select Full Event Card" onclick="button2SelectFullEventCard()">Select Event Card</button>
       <button class="b2-select-row-btn" id="b2-generate-selected-btn" onclick="button2GenerateSelectedBatch()">Generate Selected PDFs</button>
     </div>
 
@@ -784,8 +784,12 @@
       </label>
     </div>
 
+    <div id="b2-source-of-truth-note" class="status-msg" style="margin-top:8px;">
+      Source of truth: canonical server queue (no browser localStorage seeding).
+    </div>
+
     <div id="b2-selection-counts" class="b2-selected-matchup-preview" style="margin-top:10px;">
-      selected=0 | ready_selected=0 | blocked_selected=0 | event_card_selected=0
+      total_rows_loaded=0 | selected_rows=0 | ready_selected=0 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=0 | failed_or_skipped_last_run=0
     </div>
 
     <div id="b2-queued-matchups-panel" class="b2-queued-matchups-panel" style="overflow-x:auto;">
@@ -801,7 +805,7 @@
             <th style="padding:6px;">Source/Provenance</th>
             <th style="padding:6px;">Readiness</th>
             <th style="padding:6px;">Blocked</th>
-            <th style="padding:6px;">Generated</th>
+            <th style="padding:6px;">Row Status</th>
             <th style="padding:6px;">PDF Path</th>
             <th style="padding:6px;">Open</th>
           </tr>
@@ -810,6 +814,13 @@
           <tr><td colspan="11" style="padding:8px;color:#8a94b8;">Click Refresh Queue to load canonical saved/approved rows.</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <div id="b2-generation-result-panel" class="b2-selected-matchup-preview" style="margin-top:12px;">
+      <strong>Generation results</strong><br>
+      generated_count=0 | failed_count=0 | skipped_count=0<br>
+      No delivery performed. Governance flags remain false.
+      <div id="b2-generation-result-details" style="margin-top:8px;">No generation run yet.</div>
     </div>
   </div>
 
@@ -3346,6 +3357,11 @@ function handleButton1Click() {
 window.button2CanonicalQueueRows = [];
 window.button2SelectedMatchupIds = {};
 window.button2GenerationByMatchupId = {};
+window.button2LastRunStats = {
+  generated_count: 0,
+  failed_count: 0,
+  skipped_count: 0
+};
 
 function button2ReadinessIsReady(row) {
   const status = String((row && (row.button2_readiness_status || row.report_ready_status)) || '').trim().toLowerCase();
@@ -3399,6 +3415,7 @@ function button2UpdateSelectionCounts() {
   if (!el) return;
 
   const rows = button2FilteredRows();
+  const allRows = Array.isArray(window.button2CanonicalQueueRows) ? window.button2CanonicalQueueRows : [];
   const selectedIds = window.button2SelectedMatchupIds || {};
   let selected = 0;
   let readySelected = 0;
@@ -3417,11 +3434,66 @@ function button2UpdateSelectionCounts() {
 
   const eventFilterEl = document.getElementById('b2-event-filter');
   const eventSelected = eventFilterEl && String(eventFilterEl.value || '').trim() ? selected : 0;
+  const lastRun = window.button2LastRunStats || { generated_count: 0, failed_count: 0, skipped_count: 0 };
   el.textContent =
-    'selected=' + String(selected) +
+    'total_rows_loaded=' + String(allRows.length) +
+    ' | selected_rows=' + String(selected) +
     ' | ready_selected=' + String(readySelected) +
     ' | blocked_selected=' + String(blockedSelected) +
-    ' | event_card_selected=' + String(eventSelected);
+    ' | event_selected=' + String(eventSelected) +
+    ' | pdfs_generated_last_run=' + String(lastRun.generated_count || 0) +
+    ' | failed_or_skipped_last_run=' + String((lastRun.failed_count || 0) + (lastRun.skipped_count || 0));
+}
+
+function button2RenderGenerationResultPanel(data) {
+  const panel = document.getElementById('b2-generation-result-panel');
+  const details = document.getElementById('b2-generation-result-details');
+  if (!panel || !details) return;
+
+  const payload = data && typeof data === 'object' ? data : {};
+  const generatedCount = Number(payload.generated_count || 0);
+  const failedCount = Number(payload.failed_count || 0);
+  const skippedCount = Number(payload.skipped_count || 0);
+
+  window.button2LastRunStats = {
+    generated_count: generatedCount,
+    failed_count: failedCount,
+    skipped_count: skippedCount
+  };
+
+  const rows = Array.isArray(payload.results) ? payload.results : [];
+  const generatedRows = rows.filter(r => r && r.ok === true);
+  const nonGeneratedRows = rows.filter(r => !r || r.ok !== true);
+
+  const generatedHtml = generatedRows.length
+    ? generatedRows.map(r => {
+      const filename = String(r.output_filename || '').trim() || '(filename unavailable)';
+      const link = String(r.open_url || '').trim();
+      const linkHtml = link
+        ? ' - <a href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">Open PDF</a>'
+        : '';
+      return '<div>PDF generated: ' + escapeHtml(filename) + linkHtml + '</div>';
+    }).join('')
+    : '<div>No PDFs generated in last run.</div>';
+
+  const failedHtml = nonGeneratedRows.length
+    ? nonGeneratedRows.map(r => {
+      const matchup = escapeHtml(String((r && r.matchup_id) || 'unknown_matchup'));
+      const reason = escapeHtml(String((r && (r.reason || r.error)) || 'no_reason_provided'));
+      return '<div>' + matchup + ' - ' + reason + '</div>';
+    }).join('')
+    : '<div>No failed/skipped rows.</div>';
+
+  panel.innerHTML =
+    '<strong>Generation results</strong><br>' +
+    'generated_count=' + String(generatedCount) +
+    ' | failed_count=' + String(failedCount) +
+    ' | skipped_count=' + String(skippedCount) + '<br>' +
+    'No delivery performed. Governance flags remain false.' +
+    '<div id="b2-generation-result-details" style="margin-top:8px;">' +
+    '<div><strong>Generated PDFs</strong></div>' + generatedHtml +
+    '<div style="margin-top:6px;"><strong>Failed or skipped rows</strong></div>' + failedHtml +
+    '</div>';
 }
 
 function button2RenderQueueTable() {
@@ -3443,12 +3515,15 @@ function button2RenderQueueTable() {
     const checked = selectedIds[matchupId] ? ' checked' : '';
     const ready = button2ReadinessIsReady(row);
     const gen = generated[matchupId] || null;
-    const generatedStatus = gen ? (gen.ok ? 'generated' : 'failed') : '-';
+    const generatedStatus = gen
+      ? (gen.ok ? 'PDF generated' : (String(gen.error || '').toLowerCase().indexOf('skip') >= 0 ? 'Skipped' : 'Failed'))
+      : (ready ? 'Ready' : 'Not ready');
     const outputPath = gen && gen.output_path ? String(gen.output_path) : '-';
     const openUrl = gen && gen.open_url ? String(gen.open_url) : '';
     const openLink = openUrl ? '<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open PDF</a>' : '-';
-    const blockedReason = String(row.blocked_reason || (ready ? '' : 'not_ready')).trim() || '-';
+    const blockedReason = String(row.blocked_reason || (ready ? '' : 'Blocked')).trim() || '-';
     const sourceCell = String(row.source_type || 'unknown') + ' | ' + String(row.provenance_status || 'unknown');
+    const readinessLabel = ready ? 'Ready' : 'Blocked';
 
     return (
       '<tr style="border-bottom:1px solid #2a2d3e;">' +
@@ -3458,7 +3533,7 @@ function button2RenderQueueTable() {
       '<td style="padding:6px;">' + escapeHtml(String(row.promotion || '')) + '</td>' +
       '<td style="padding:6px;">' + escapeHtml(String(row.event_date || '')) + '</td>' +
       '<td style="padding:6px;">' + escapeHtml(sourceCell) + '</td>' +
-      '<td style="padding:6px;">' + escapeHtml(String(row.button2_readiness_status || row.report_ready_status || 'unknown')) + '</td>' +
+      '<td style="padding:6px;">' + escapeHtml(readinessLabel) + '</td>' +
       '<td style="padding:6px;">' + escapeHtml(blockedReason) + '</td>' +
       '<td style="padding:6px;">' + escapeHtml(generatedStatus) + '</td>' +
       '<td style="padding:6px;word-break:break-all;">' + escapeHtml(outputPath) + '</td>' +
@@ -3494,9 +3569,12 @@ function button2RefreshQueue() {
       const rows = Array.isArray(data.queue_rows) ? data.queue_rows : [];
       window.button2CanonicalQueueRows = rows;
       window.button2SelectedMatchupIds = {};
+      window.button2GenerationByMatchupId = {};
+      window.button2LastRunStats = { generated_count: 0, failed_count: 0, skipped_count: 0 };
       button2RenderEventFilter();
       button2RenderQueueTable();
-      setStatus('b2-status', 'Queue refreshed from canonical source. total_rows=' + String(data.total_rows || rows.length) + ', ready_count=' + String(data.ready_count || 0), 'ok');
+      button2RenderGenerationResultPanel({ generated_count: 0, failed_count: 0, skipped_count: 0, results: [] });
+      setStatus('b2-status', 'Queue refreshed. Select fights to generate PDFs. total_rows=' + String(data.total_rows || rows.length) + ', ready_count=' + String(data.ready_count || 0), 'ok');
     })
     .catch(() => {
       setStatus('b2-status', 'Queue refresh failed. No generation performed.', 'error');
@@ -3527,7 +3605,7 @@ function button2SelectFullEventCard() {
   const eventFilterEl = document.getElementById('b2-event-filter');
   const filterValue = eventFilterEl ? String(eventFilterEl.value || '').trim() : '';
   if (!filterValue) {
-    setStatus('b2-status', 'Select an event in the event filter before using Select Full Event Card.', 'error');
+    setStatus('b2-status', 'Select an event in the event filter before using Select Event Card.', 'error');
     return;
   }
   if (!window.button2SelectedMatchupIds) window.button2SelectedMatchupIds = {};
@@ -3550,7 +3628,7 @@ function button2GenerateSelectedBatch() {
 
   const selectedIds = Object.keys(window.button2SelectedMatchupIds || {});
   if (!selectedIds.length) {
-    setStatus('b2-status', 'Nothing selected. Pick one or more queue rows before generation.', 'error');
+    setStatus('b2-status', 'Select fights to generate PDFs before running generation.', 'error');
     return;
   }
 
@@ -3574,6 +3652,7 @@ function button2GenerateSelectedBatch() {
         if (!matchupId) return;
         window.button2GenerationByMatchupId[matchupId] = row;
       });
+      button2RenderGenerationResultPanel(data);
       button2RenderQueueTable();
 
       const outputPaths = Array.isArray(data.output_paths) ? data.output_paths : [];
@@ -3586,7 +3665,7 @@ function button2GenerateSelectedBatch() {
       const pathHtml = outputPaths.length
         ? '<br>output_paths:<br>' + outputPaths.map(p => escapeHtml(String(p))).join('<br>')
         : '';
-      setStatus('b2-status', 'Batch generation completed. ' + summary + pathHtml, result.ok ? 'ok' : 'error');
+      setStatus('b2-status', 'Generate selected PDFs completed. ' + summary + pathHtml + '<br>No delivery performed.', result.ok ? 'ok' : 'error');
     })
     .catch(() => {
       setStatus('b2-status', 'Batch generation request failed. No delivery performed.', 'error');
@@ -3601,6 +3680,7 @@ function handleButton2Click() {
 document.addEventListener('DOMContentLoaded', () => {
   button2RenderEventFilter();
   button2RenderQueueTable();
+  button2RenderGenerationResultPanel({ generated_count: 0, failed_count: 0, skipped_count: 0, results: [] });
 });
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────
