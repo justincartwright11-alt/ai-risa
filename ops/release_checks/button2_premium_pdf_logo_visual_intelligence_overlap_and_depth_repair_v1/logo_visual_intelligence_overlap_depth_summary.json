@@ -1,0 +1,97 @@
+{
+  "slice": "button2-premium-pdf-logo-visual-intelligence-overlap-and-depth-repair-v1",
+  "timestamp_utc": "2026-05-19T00:01:38.017960+00:00",
+  "results": [
+    {
+      "name": "Alex Pereira vs Jiri Prochazka",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\pdfs\\alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_02_executive_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_04_fighter_radar.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_05_tactical_edge_table.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_07_round_control_graph.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_13_source_traceability.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\alex_pereira_vs_jiri_prochazka_ufc_300_14_disclaimer.png"
+      ],
+      "scan": {
+        "cover_no_premium_cover_label": true,
+        "logo_brand_markers_present": true,
+        "source_heading_clean": true,
+        "required_visual_markers_present": true,
+        "forbidden_generic_placeholders_absent": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    },
+    {
+      "name": "Rico Verhoeven vs Tariq Osaro",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\pdfs\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_02_executive_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_04_fighter_radar.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_05_tactical_edge_table.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_07_round_control_graph.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_13_source_traceability.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\rico_verhoeven_vs_tariq_osaro_glory_100_14_disclaimer.png"
+      ],
+      "scan": {
+        "cover_no_premium_cover_label": true,
+        "logo_brand_markers_present": true,
+        "source_heading_clean": true,
+        "required_visual_markers_present": true,
+        "forbidden_generic_placeholders_absent": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    },
+    {
+      "name": "Anthony Joshua vs Daniel Dubois",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\pdfs\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 14,
+      "png_paths": [
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_01_cover.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_02_executive_dashboard.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_04_fighter_radar.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_05_tactical_edge_table.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_07_round_control_graph.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_13_source_traceability.png",
+        "ops\\release_checks\\button2_premium_pdf_logo_visual_intelligence_overlap_and_depth_repair_v1\\visual_proof\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_14_disclaimer.png"
+      ],
+      "scan": {
+        "cover_no_premium_cover_label": true,
+        "logo_brand_markers_present": true,
+        "source_heading_clean": true,
+        "required_visual_markers_present": true,
+        "forbidden_generic_placeholders_absent": true
+      },
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      }
+    }
+  ],
+  "all_page_count_ge_14": true,
+  "all_logo_markers_present": true,
+  "all_required_visual_markers_present": true,
+  "all_forbidden_placeholders_absent": true
+}

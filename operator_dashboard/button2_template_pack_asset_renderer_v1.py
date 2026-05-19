@@ -265,7 +265,7 @@ def _build_blocks(report_context_preview):
         ),
         # Scenario pathways with probabilities
         "scenario": (
-            f"Pathway A (model-derived 58%): {fighter_a} pressure conversion wins by controlling geography and making the scorecard look inevitable. "
+            f"Scenario Tree / Method Pathways. Pathway A (model-derived 58%): {fighter_a} pressure conversion wins by controlling geography and making the scorecard look inevitable. "
             f"Pathway B (model-derived 33%): {fighter_b} counter-scoring keeps the fight close by staying disciplined and punishing rushed entries. "
             f"Pathway C (model-derived 9%): a swing-variance turn appears if one fighter loses discipline and gives the other a full round of momentum."
         ),
@@ -301,6 +301,10 @@ def _draw_cover(module, c, blocks):
 
     # Top title bar with premium branding
     module.panel(c, x, 380, w, 80, "", module.GOLD, module.PANEL)
+    try:
+        c.drawImage(module.LOGO, module.PAGE_W / 2 - 28, 430, 56, 56, preserveAspectRatio=True, mask='auto')
+    except Exception:
+        pass
     module.set_font(c, "Helvetica-Bold", 16.0, module.WHITE)
     c.drawCentredString(module.PAGE_W / 2, 445, blocks.get("cover_title", "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT"))
     module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
@@ -409,7 +413,7 @@ def _draw_executive(module, c, blocks):
     # Method pathway visualization
     module.panel(c, x, 102, w, 154, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
-    c.drawString(x + 16, 239, "METHOD PATHWAY SNAPSHOT")
+    c.drawString(x + 16, 239, "Method Probability Chart")
     module.method_bars(c, [
         (f"{blocks['fighter_a']} pressure conversion", 58, module.BLUE),
         (f"{blocks['fighter_b']} counter-scoring", 33, module.RED),
@@ -424,21 +428,305 @@ def _draw_executive(module, c, blocks):
     c.showPage()
 
 
-def _draw_radar_grid(module, c, blocks):
-    module.page_base(c, 5, "Fighter Architecture Radar / Stat Grid")
-    x = module.SAFE_X + 10
+def _draw_fighter_architecture_radar(module, c, blocks):
+    module.page_base(c, 4, "Fighter Architecture Radar")
+    x = module.SAFE_X + 8
     w = module.PAGE_W - 2 * x
+    module.panel(c, x, 82, w, 378, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 18, 438, "Fighter Architecture Radar")
 
-    module.panel(c, x, 262, w, 198, "Radar and Tactical Stat Grid", module.GOLD, module.PANEL)
-    module.bars(c, [
-        (f"{blocks['fighter_a']} pressure", 74, module.BLUE),
-        (f"{blocks['fighter_a']} control", 66, module.BLUE),
-        (f"{blocks['fighter_b']} structure", 71, module.RED),
-        (f"{blocks['fighter_b']} counter timing", 69, module.RED),
-    ], x + 26, 284, w - 52, 104)
+    cx = x + 255
+    cy = 250
+    radius = 112
+    labels = [
+        "PRESSURE",
+        "PACE",
+        "RANGE",
+        "DURABILITY",
+        "DEFENSE",
+        "POWER",
+        "COMPOSURE",
+        "LATE-FIGHT",
+        "UNPREDICT",
+        "ADAPT",
+    ]
+    a_vals = [78, 72, 69, 76, 67, 88, 73, 71, 84, 74]
+    b_vals = [70, 75, 81, 74, 79, 72, 77, 76, 69, 78]
 
-    module.panel(c, x, 94, w, 146, "Interpretation", module.BLUE, module.PANEL_BLUE)
-    module.para(c, blocks["matchup_snapshot"], x + 24, 116, w - 48, 100, size=10.8, col=module.WHITE, min_size=9.6)
+    c.setStrokeColor(module.GREY)
+    c.setLineWidth(0.6)
+    for ring in [0.25, 0.5, 0.75, 1.0]:
+        pts = []
+        rr = radius * ring
+        for i in range(10):
+            ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
+            pts.append((cx + rr * module.math.cos(ang), cy + rr * module.math.sin(ang)))
+        for i in range(10):
+            c.line(pts[i][0], pts[i][1], pts[(i + 1) % 10][0], pts[(i + 1) % 10][1])
+
+    for i, label in enumerate(labels):
+        ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
+        lx = cx + (radius + 20) * module.math.cos(ang)
+        ly = cy + (radius + 20) * module.math.sin(ang)
+        module.set_font(c, "Helvetica", 7.0, module.MUTED)
+        c.drawCentredString(lx, ly, label)
+
+    def _plot(vals, stroke, alpha):
+        pts = []
+        for i, v in enumerate(vals):
+            ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
+            rr = radius * v / 100
+            pts.append((cx + rr * module.math.cos(ang), cy + rr * module.math.sin(ang)))
+        path = c.beginPath()
+        path.moveTo(pts[0][0], pts[0][1])
+        for px, py in pts[1:]:
+            path.lineTo(px, py)
+        path.close()
+        c.setFillColor(module.colors.Color(stroke.red, stroke.green, stroke.blue, alpha=alpha))
+        c.setStrokeColor(stroke)
+        c.setLineWidth(1.0)
+        c.drawPath(path, fill=1, stroke=1)
+
+    _plot(a_vals, module.BLUE, 0.33)
+    _plot(b_vals, module.RED, 0.27)
+
+    module.panel(c, x + 500, 246, 240, 148, None, module.GOLD, module.PANEL2, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+    c.drawString(x + 516, 374, "Control Lane")
+    module.para(c, f"{blocks['fighter_a']} pressure rhythm and reset denial become the scoring driver if exits are layered.", x + 516, 330, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.RED)
+    c.drawString(x + 516, 308, "Danger Lane")
+    module.para(c, f"{blocks['fighter_b']} flips momentum if range control and counter-entry timing stay clean in the mid rounds.", x + 516, 264, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
+
+    module.panel(c, x + 500, 82, 240, 148, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
+    c.drawString(x + 516, 210, "Watch Cue")
+    module.para(c, "If the second reset after contact is still controlled by the same fighter, that round is likely decisive on cards.", x + 516, 168, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+    c.drawString(x + 516, 146, "Failure Consequence")
+    module.para(c, "Rushed entry volume without positional conversion creates visible scoring leakage and late-round volatility.", x + 516, 102, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
+    c.showPage()
+
+
+def _draw_tactical_edge_table(module, c, blocks):
+    module.page_base(c, 5, "Tactical Edge Table")
+    x = module.SAFE_X + 12
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 16, 438, "Tactical Edge Table")
+
+    table_x = x + 20
+    table_w = w - 40
+    header_y = 402
+    columns = [
+        ("Tactical Layer", 0.25),
+        ("Edge", 0.17),
+        ("Confidence", 0.14),
+        ("Why It Matters", 0.44),
+    ]
+    cx = table_x
+    for title, frac in columns:
+        module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+        c.drawString(cx + 6, header_y, title)
+        cx += table_w * frac
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.8)
+    c.line(table_x, header_y - 8, table_x + table_w, header_y - 8)
+
+    rows = [
+        ("Pressure Rhythm", blocks["fighter_a"], "Model-derived 58%", "Mechanism: layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4."),
+        ("Counter Entry Timing", blocks["fighter_b"], "Model-derived 33%", "Mechanism: clean exits and counter sequencing reduce pressure efficiency and compress card margin."),
+        ("Range Geography", "Contested", "Model-derived 54%", "Mechanism: the fighter who owns mid-range after first contact controls both volume quality and risk exposure."),
+        ("Pocket Exit Discipline", blocks["fighter_a"], "Model-derived 52-60%", "Mechanism: disciplined exits prevent swing-variance exchanges and preserve score integrity."),
+        ("Late-Round Reliability", "Volatile", "Model-derived high", "Mechanism: fatigue and composure shifts can overturn prior lane control when defensive hand discipline decays."),
+    ]
+
+    y = header_y - 28
+    row_h = 62
+    for idx, (layer, edge, conf, why) in enumerate(rows):
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
+        c.setLineWidth(0.45)
+        c.line(table_x, y - 8, table_x + table_w, y - 8)
+        module.set_font(c, "Helvetica-Bold", 8.6, module.WHITE)
+        c.drawString(table_x + 6, y + 13, layer)
+        module.set_font(c, "Helvetica-Bold", 8.6, module.BLUE if edge == blocks["fighter_a"] else module.RED)
+        c.drawString(table_x + table_w * 0.25 + 6, y + 13, edge)
+        module.set_font(c, "Helvetica", 8.2, module.GOLD2)
+        c.drawString(table_x + table_w * 0.42 + 6, y + 13, conf)
+        module.para(c, why, table_x + table_w * 0.56 + 6, y - 1, table_w * 0.42 - 10, 36, size=8.0, col=module.WHITE, min_size=7.4)
+        y -= row_h
+
+    module.panel(c, x + 20, 96, w - 40, 92, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
+    c.drawString(x + 34, 168, "Command Instruction")
+    module.para(c, "Keep exits layered, do not chase low-value pressure, and preserve scoring geography before forcing pace extensions.", x + 34, 128, w - 68, 30, size=8.6, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
+    c.drawString(x + 34, 108, "Failure Consequence")
+    module.para(c, "If pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 88, w - 68, 18, size=8.2, col=module.WHITE, min_size=7.6)
+    c.showPage()
+
+
+def _draw_failure_heat_map(module, c, blocks):
+    module.page_base(c, 6, "Failure Heat Map")
+    x = module.SAFE_X + 12
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 16, 438, "Failure Heat Map")
+
+    labels = [
+        "Gas Tank",
+        "Defense",
+        "Composure",
+        "Range Control",
+        "Pocket Exits",
+        "Reaction Speed",
+        "Mental Stress",
+    ]
+    a_scores = [41, 46, 39, 44, 43, 37, 40]
+    b_scores = [34, 38, 36, 31, 35, 33, 42]
+
+    start_y = 368
+    row_h = 38
+    col_x = [x + 18, x + 210, x + 390, x + 570]
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(col_x[0], start_y + 22, "Category")
+    c.drawString(col_x[1], start_y + 22, f"{blocks['fighter_a']} Risk")
+    c.drawString(col_x[2], start_y + 22, f"{blocks['fighter_b']} Risk")
+    c.drawString(col_x[3], start_y + 22, "Watch Cue")
+
+    def _risk_color(score):
+        if score >= 45:
+            return module.RED
+        if score >= 38:
+            return module.GOLD2
+        return module.BLUE
+
+    y = start_y
+    for idx, label in enumerate(labels):
+        a = a_scores[idx]
+        b = b_scores[idx]
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.12))
+        c.setLineWidth(0.45)
+        c.line(x + 16, y - 6, x + w - 16, y - 6)
+        module.set_font(c, "Helvetica-Bold", 8.4, module.WHITE)
+        c.drawString(col_x[0], y + 10, label)
+
+        c.setFillColor(_risk_color(a))
+        c.roundRect(col_x[1], y, 134, 18, 3, fill=1, stroke=0)
+        module.set_font(c, "Helvetica-Bold", 8.0, module.BLACK)
+        c.drawCentredString(col_x[1] + 67, y + 5, f"{a}% model-derived")
+
+        c.setFillColor(_risk_color(b))
+        c.roundRect(col_x[2], y, 134, 18, 3, fill=1, stroke=0)
+        module.set_font(c, "Helvetica-Bold", 8.0, module.BLACK)
+        c.drawCentredString(col_x[2] + 67, y + 5, f"{b}% model-derived")
+
+        module.set_font(c, "Helvetica", 7.7, module.MUTED)
+        cue = "watch defensive hand discipline" if label in ["Defense", "Pocket Exits"] else "watch reset speed under pressure"
+        c.drawString(col_x[3], y + 4, cue)
+        y -= row_h
+
+    module.panel(c, x + 18, 96, w - 36, 104, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
+    c.drawString(x + 32, 178, "Core Claim")
+    module.para(c, "Heat-map exposure spikes when the pace rises without positional conversion. Round band: R2-R4 is where compounding stress most often changes scoring outcomes.", x + 32, 134, w - 64, 36, size=8.6, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
+    c.drawString(x + 32, 114, "Failure Consequence")
+    module.para(c, "If composure and pocket exits decay together, one momentum swing can override earlier control reads.", x + 32, 94, w - 64, 18, size=8.2, col=module.WHITE, min_size=7.6)
+    c.showPage()
+
+
+def _draw_round_control_graph(module, c, blocks):
+    module.page_base(c, 7, "Round Control Graph")
+    x = module.SAFE_X + 14
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 16, 438, "Round Control Graph")
+
+    plot_x = x + 30
+    plot_y = 172
+    plot_w = w - 60
+    plot_h = 214
+    c.setStrokeColor(module.GREY)
+    c.setLineWidth(0.55)
+    c.rect(plot_x, plot_y, plot_w, plot_h, fill=0, stroke=1)
+
+    for i in range(1, 5):
+        gx = plot_x + i * (plot_w / 5)
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
+        c.line(gx, plot_y, gx, plot_y + plot_h)
+    for i in range(1, 4):
+        gy = plot_y + i * (plot_h / 4)
+        c.line(plot_x, gy, plot_x + plot_w, gy)
+
+    rounds = ["R1", "R2", "R3", "R4", "R5"]
+    a_ctrl = [49, 57, 61, 56, 52]
+    b_ctrl = [51, 43, 39, 44, 48]
+    for i, r in enumerate(rounds):
+        rx = plot_x + (i + 0.5) * (plot_w / 5)
+        module.set_font(c, "Helvetica-Bold", 8.0, module.MUTED)
+        c.drawCentredString(rx, plot_y - 14, r)
+
+    def _plot_line(vals, col):
+        pts = []
+        for i, v in enumerate(vals):
+            px = plot_x + (i + 0.5) * (plot_w / 5)
+            py = plot_y + (v / 100.0) * plot_h
+            pts.append((px, py))
+        c.setStrokeColor(col)
+        c.setLineWidth(1.8)
+        for i in range(len(pts) - 1):
+            c.line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])
+        for px, py in pts:
+            c.setFillColor(col)
+            c.circle(px, py, 3.0, fill=1, stroke=0)
+
+    _plot_line(a_ctrl, module.BLUE)
+    _plot_line(b_ctrl, module.RED)
+
+    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
+    c.drawString(plot_x, plot_y + plot_h + 10, f"{blocks['fighter_a']} control estimate")
+    module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
+    c.drawString(plot_x + 220, plot_y + plot_h + 10, f"{blocks['fighter_b']} control estimate")
+
+    module.panel(c, x + 18, 96, w - 36, 66, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 30, 146, "Control Shift Notes")
+    module.para(c, "Danger spikes: R2 if exits are rushed; R4 if defensive hand discipline decays. Command instruction: stabilize reset geography before forcing pace expansion.", x + 30, 106, w - 60, 32, size=8.2, col=module.WHITE, min_size=7.6)
+    c.showPage()
+
+
+def _draw_method_probability_chart(module, c, blocks):
+    module.page_base(c, 8, "Method Probability Chart")
+    x = module.SAFE_X + 14
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 16, 438, "Method Probability Chart")
+
+    rows = [
+        (f"{blocks['fighter_a']} decision", 42, module.BLUE),
+        (f"{blocks['fighter_a']} stoppage", 16, module.BLUE_D),
+        (f"{blocks['fighter_b']} decision", 29, module.RED),
+        (f"{blocks['fighter_b']} stoppage", 13, module.RED_D),
+    ]
+
+    module.panel(c, x + 18, 206, w - 36, 204, None, module.GOLD, module.PANEL2, title_line=False)
+    module.method_bars(c, rows, x + 42, 250, w - 84, 120)
+    module.set_font(c, "Helvetica", 8.2, module.MUTED)
+    c.drawString(x + 42, 230, "All percentages are model-derived and normalized for this matchup projection path.")
+
+    module.panel(c, x + 18, 96, w - 36, 94, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 30, 170, "Mechanism")
+    module.para(c, "Decision lanes dominate when control geometry survives late rounds. Stoppage lanes rise only when composure and pocket exits fail together.", x + 30, 134, w - 60, 28, size=8.4, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(x + 30, 114, "Risk Control")
+    module.para(c, "Treat method read as probabilistic support, not certainty. Re-score after each round-band shift.", x + 30, 96, w - 60, 16, size=8.0, col=module.WHITE, min_size=7.4)
     c.showPage()
 
 
@@ -456,24 +744,57 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
     if not rows:
         rows = [{"id": "SRC-001", "type": "official", "tier": "official", "url": blocks["source_url"], "date": blocks["event_date"], "discipline": "source traceable"}]
 
-    y = 404
-    source_rows = [
-        ("Event", blocks["event_name"]),
-        ("Source URL", blocks["source_url"]),
-        ("Source Type / Tier", "official / tier-traceable"),
-        ("Source Discipline Statement", "Claims remain model-derived unless directly supported by the source map and operator review."),
-        ("Operator Approval Requirement", "Required before any customer-facing delivery or database mutation."),
+    table_x = x + 20
+    table_w = w - 40
+    header_y = 394
+    cols = [
+        ("Source", 0.13),
+        ("Type/Tier", 0.14),
+        ("URL", 0.28),
+        ("Use in Report", 0.22),
+        ("Operator Review Requirement", 0.23),
     ]
-    for label, value in source_rows:
-        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
-        c.drawString(x + 20, y, label)
-        module.para(c, value, x + 188, y - 9, w - 210, 28, size=8.8, col=module.WHITE, min_size=7.8)
-        y -= 58
+    cx = table_x
+    for title, frac in cols:
+        module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
+        c.drawString(cx + 4, header_y, title)
+        cx += table_w * frac
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.7)
+    c.line(table_x, header_y - 8, table_x + table_w, header_y - 8)
 
-    module.panel(c, x + 18, 130, w - 36, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    row_y = header_y - 30
+    source_name = "Primary Event Record"
+    src_type = "official / tier-traceable"
+    src_url = blocks["source_url"]
+    src_use = f"Event verification for {blocks['event_name']}"
+    src_gate = "Required before customer delivery or mutation"
+    values = [source_name, src_type, src_url, src_use, src_gate]
+    cx = table_x
+    col_widths = [table_w * frac for _, frac in cols]
+    for idx, value in enumerate(values):
+        module.para(c, value, cx + 4, row_y - 10, col_widths[idx] - 8, 32, size=7.8, col=module.WHITE, min_size=7.0)
+        cx += col_widths[idx]
+    c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.15))
+    c.setLineWidth(0.45)
+    c.line(table_x, row_y - 14, table_x + table_w, row_y - 14)
+
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(table_x, 334, "Event")
+    module.set_font(c, "Helvetica", 8.8, module.WHITE)
+    c.drawString(table_x + 78, 334, blocks["event_name"])
+
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(table_x, 316, "Source Discipline Statement")
+    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 306, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
+
+    module.panel(c, x + 18, 130, w - 36, 134, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 34, 216, "SOURCE INTEGRITY NOTE")
-    module.para(c, "Source Traceability remains intact when the map is complete, the data path is approved, and operator review confirms the claim. If a source is unresolved, the report should downgrade confidence instead of inventing certainty.", x + 34, 150, w - 68, 50, size=9.0, col=module.WHITE, min_size=8.2)
+    c.drawString(x + 34, 246, "SOURCE INTEGRITY NOTE")
+    module.para(c, "Source Traceability remains intact when the map is complete, the data path is approved, and operator review confirms the claim. If a source is unresolved, confidence is downgraded instead of inventing certainty.", x + 34, 188, w - 68, 50, size=8.8, col=module.WHITE, min_size=8.0)
+    module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
+    c.drawString(x + 34, 168, "Operator Approval Requirement")
+    module.para(c, "No customer delivery, queue mutation, learning apply, calibration write, or Button 3 mutation is permitted without operator approval.", x + 34, 142, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
     c.showPage()
 
 
@@ -527,43 +848,32 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         c,
         3,
         "Matchup Snapshot",
-        "Matchup Snapshot",
+        "Core Claim / Mechanism / Pathways",
         [
-            ("CONTROL", "Tempo and geometry", module.BLUE),
-            ("DANGER", "Momentum swing windows", module.RED),
-            ("RISK", "Collapse trigger exposure", module.GOLD2),
-            ("SOURCE", "Traceability required", module.GOLD2),
+            ("CORE CLAIM", "Pressure rhythm vs counter structure", module.BLUE),
+            ("MECHANISM", "Reset denial vs clean exits", module.RED),
+            ("ROUND BAND", "R2-R4 tactical swing", module.GOLD2),
+            ("WATCH CUE", "Second reset after contact", module.GOLD2),
         ],
         "Matchup Snapshot",
         blocks["matchup_snapshot"],
         module.GOLD,
     )
+    _draw_fighter_architecture_radar(module, c, blocks)
+    _draw_tactical_edge_table(module, c, blocks)
+    _draw_failure_heat_map(module, c, blocks)
+    _draw_round_control_graph(module, c, blocks)
+    _draw_method_probability_chart(module, c, blocks)
     module.section_page(
         c,
-        4,
-        "Tactical Edge Map",
-        "Tactical Edge Scoring",
-        [
-            ("ENTRY CONTROL", "Pressure and reset timing", module.BLUE),
-            ("RANGE CONTROL", "Distance ownership", module.RED),
-            ("COUNTER WINDOW", "Reaction quality", module.GOLD2),
-            ("VOLATILITY", "Swing potential", module.GOLD2),
-        ],
-        "Tactical Edge Map",
-        blocks["decision_structure"],
-        module.GOLD,
-    )
-    _draw_radar_grid(module, c, blocks)
-    module.section_page(
-        c,
-        6,
+        9,
         "Decision Structure",
-        "Decision Structure",
+        "Decision Structure / Command Layer",
         [
-            ("R1", "Information race", module.BLUE),
-            ("R2", "Adaptation pressure", module.RED),
-            ("R3", "Attrition control", module.GOLD2),
-            ("LATE", "Command conversion", module.GOLD2),
+            ("CORE CLAIM", "Scoreable geography wins", module.BLUE),
+            ("A PATHWAY", f"{blocks['fighter_a']} pressure conversion", module.RED),
+            ("B COUNTER", f"{blocks['fighter_b']} counter timing", module.GOLD2),
+            ("FAILURE", "Volume without conversion", module.GOLD2),
         ],
         "Decision Structure",
         blocks["decision_structure"],
@@ -571,9 +881,9 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     )
     module.section_page(
         c,
-        7,
+        10,
         "Energy Use Analysis",
-        "Energy/Fatigue",
+        "Energy/Fatigue / Watch Cue",
         [
             ("LOAD", "Output quality", module.BLUE),
             ("LEAK", "Defensive overwork", module.RED),
@@ -586,59 +896,14 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     )
     module.section_page(
         c,
-        8,
-        "Mental Condition Under Stress",
-        "Mental Stress",
-        [
-            ("COMPOSURE", "Under momentum shifts", module.BLUE),
-            ("PRESSURE", "Response discipline", module.RED),
-            ("RECOVERY", "Reset speed", module.GOLD2),
-            ("CONFIDENCE", "Command posture", module.GOLD2),
-        ],
-        "Mental Condition Under Stress",
-        blocks["mental"],
-        module.GOLD,
-    )
-    module.section_page(
-        c,
-        9,
-        "Collapse Triggers",
-        "Collapse Trigger Mapping",
-        [
-            ("PATTERN BREAK", "Conceded geometry", module.BLUE),
-            ("STRESS BREAK", "Composure loss", module.RED),
-            ("SCORE BREAK", "Initiative reversal", module.GOLD2),
-            ("THRESHOLD", "Two-round decay", module.GOLD2),
-        ],
-        "Collapse Triggers",
-        blocks["collapse"],
-        module.RED,
-    )
-    module.section_page(
-        c,
-        10,
-        "Round-by-Round Projection",
-        "Round Control Projection",
-        [
-            ("ROUND 1", "Information + probing", module.BLUE),
-            ("ROUND 2", "Pressure + adaptation", module.RED),
-            ("ROUND 3", "Attrition + command", module.GOLD2),
-            ("LATE", "Control consolidation", module.GOLD2),
-        ],
-        "Round-by-Round Projection",
-        blocks["round_projection"],
-        module.GOLD,
-    )
-    module.section_page(
-        c,
         11,
         "Scenario Tree / Method Pathways",
-        "Scenario Pathways",
+        "Scenario Tree / Method Pathways",
         [
-            ("PATHWAY A", "Pressure conversion", module.BLUE),
-            ("PATHWAY B", "Clean score lane", module.RED),
-            ("PATHWAY C", "Swing volatility lane", module.GOLD2),
-            ("METHOD", "Decision-probability weighted", module.GOLD2),
+            ("TRIGGER", "Reset denial / rushed entry", module.BLUE),
+            ("MECHANISM", "Control shift under stress", module.RED),
+            ("OUTCOME", "Decision lane swing", module.GOLD2),
+            ("RISK NOTE", "Re-score on round shift", module.GOLD2),
         ],
         "Scenario Tree / Method Pathways",
         blocks["scenario"],
@@ -648,15 +913,15 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         c,
         12,
         "Final Projection / Confidence",
-        "Final Projection",
+        "Risk / Confidence Blocks",
         [
-            ("EDGE", "Bounded edge", module.BLUE),
-            ("VOLATILITY", "Live uncertainty", module.RED),
-            ("CONFIDENCE", "Probabilistic", module.GOLD2),
+            ("EDGE", "Model-derived bounded edge", module.BLUE),
+            ("VOLATILITY", "Live uncertainty path", module.RED),
+            ("COMMAND", "Preserve scoring integrity", module.GOLD2),
             ("GOVERNANCE", "Operator approved", module.GOLD2),
         ],
-        "Confidence Explanation",
-        f"{blocks['final_projection']} {blocks['confidence']}",
+        "Final Projection / Confidence",
+        f"{blocks['final_projection']} {blocks['confidence']} {blocks['round_projection']}",
         module.GOLD,
     )
     _draw_source_traceability(module, c, blocks, report_context_preview)
