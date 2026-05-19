@@ -1,0 +1,109 @@
+{
+  "slice": "three-button-paid-pilot-runtime-go-no-go-v1",
+  "type": "runtime_evidence_only",
+  "verdict": "GO",
+  "baseline": {
+    "button2_repair_commit": "1cd6917",
+    "button2_repair_tag": "button2-real-queue-multiselect-and-bulk-pdf-generation-repair-v1",
+    "button2_usability_commit": "14a1350",
+    "button2_usability_tag": "button2-real-queue-bulk-generation-operator-usability-polish-v1"
+  },
+  "runtime": {
+    "port": 5050,
+    "dashboard_url": "http://127.0.0.1:5050/",
+    "button2_pdf_output_root": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports",
+    "clean_start": true
+  },
+  "tests": [
+    {
+      "command": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pytest operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py -q",
+      "result": "pass",
+      "details": "16 passed"
+    },
+    {
+      "command": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pytest operator_dashboard/test_button2_real_queue_bulk_generation_operator_usability_polish_v1.py -q",
+      "result": "pass",
+      "details": "10 passed"
+    },
+    {
+      "command": "C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe -m pytest operator_dashboard/test_button1_to_button2_readonly_dossier_handoff_api_smoke_v1.py -q",
+      "result": "pass",
+      "details": "2 passed"
+    }
+  ],
+  "button1": {
+    "panel_visible": true,
+    "source_backed_surface_visible": true,
+    "status_summary": "preview/write-closed runtime proof visible",
+    "queue_mutation_performed": false
+  },
+  "button2": {
+    "queue_rows_loaded": 6,
+    "queue_has_source_backed": true,
+    "single_run": {
+      "requested": 1,
+      "generated": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "multi_run": {
+      "requested": 3,
+      "generated": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "select_all_ready_summary": "total_rows_loaded=6 | selected_rows=6 | ready_selected=6 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=3 | failed_or_skipped_last_run=0",
+    "generated_output_paths": [
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T101243Z_4c5e96745953.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T101243Z_93cdf4353935.pdf",
+      "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\zebaztian_kadestam_vs_john_kavanagh_one_169_premium_20260519T101243Z_6f72e7812807.pdf"
+    ],
+    "open_pdf_checks": [
+      {
+        "url": "http://127.0.0.1:5050/api/button2/generated-report/open?filename=sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T101243Z_4746026d6af3.pdf",
+        "status": 200,
+        "content_type": "application/pdf"
+      },
+      {
+        "url": "http://127.0.0.1:5050/api/button2/generated-report/open?filename=ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T101243Z_93cdf4353935.pdf",
+        "status": 200,
+        "content_type": "application/pdf"
+      }
+    ]
+  },
+  "pdf_text_proof": {
+    "extracted_from": 2,
+    "pdf1_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T101243Z_4c5e96745953.pdf",
+    "pdf2_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T101243Z_93cdf4353935.pdf",
+    "pdf1_contains_selected_matchup": true,
+    "pdf2_contains_selected_matchup": true,
+    "texts_differ": true,
+    "page_counts": [24, 24]
+  },
+  "button3": {
+    "panel_visible": true,
+    "preview_only_run": true,
+    "status": "Local AI preview ready; gate required yes",
+    "preview_language": "no apply, no learning, no calibration, no queue mutation, no external delivery/API"
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "operator_usability": {
+    "three_main_buttons_visible": true,
+    "button2_queue_controls_visible": true,
+    "generate_selected_pdfs_visible": true,
+    "open_pdf_links_visible": true,
+    "failed_skipped_reason_surface_visible": true,
+    "no_new_debug_clutter_added": true
+  },
+  "blockers": [],
+  "non_blocking_caveats": [
+    "Runtime preflight still reports WeasyPrint import warning in this environment, but required generation/open/text proof succeeded with configured output root."
+  ]
+}
