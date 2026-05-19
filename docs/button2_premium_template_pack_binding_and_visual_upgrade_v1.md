@@ -15,7 +15,7 @@ Bind Button 2 selected/batch generation to the premium template-pack renderer pa
 
 ## Root Cause
 1. Batch generation allowed `_generate_button2_fallback_pdf` when premium render failed, which could produce a plain report that still contained selected payload text.
-2. Selected-matchup generation path metadata could still resolve to a direct renderer profile; this made premium-route guarantees ambiguous for live proof and diagnostics.
+2. A stale/orphan Flask process remained bound to port 5050 during validation and served outdated renderer behavior, producing misleading plain visuals despite updated code.
 3. Template path resolution only used a single root/env path and did not explicitly search all approved fallback locations in priority order.
 
 ## Renderer/Template Binding Changes
@@ -60,10 +60,10 @@ Also supported explicit env override (`BUTTON2_TEMPLATE_PACK_ROOT`) when provide
 6. Extract text and render visual proof pages 1, 2, 5, 15, 23
 
 ### Generated Proof PDF
-- `reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114638Z_b6a854b6067e.pdf`
+- `reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T120305Z_0048f9040650.pdf`
 
 ### Additional Runtime Proof (guarded selected route)
-- `reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114917Z_2c37fdb1fce6.pdf`
+- `reports/api_generate_check_c.pdf`
 
 ### Visual Artifacts
 - `ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/proof/new_generated_contact_sheet_pages_1_2_5_15_23.png`
@@ -109,4 +109,4 @@ Verified false in generation responses:
 - `operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py`
 
 ## Final Verdict
-Button 2 premium template-pack binding is hardened for live selected/batch queue generation, plain fallback acceptance is closed, payload binding is preserved, and governance flags remain locked false.
+Button 2 premium template-pack binding is hardened for live selected/batch queue generation, plain fallback acceptance is closed, payload binding is preserved, governance flags remain locked false, and the final live 5050 proof now visually renders the dark premium template-pack style.

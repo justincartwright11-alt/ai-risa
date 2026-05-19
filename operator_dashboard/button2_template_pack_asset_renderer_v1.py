@@ -1554,6 +1554,51 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     except Exception as e:
         raise TemplatePackRenderError(f"Failed to load template pack image assets: {str(e)}") from e
 
+    # Force a consistent premium dark base layer for every page so rendered output
+    # cannot drift into plain/light fallback visuals when external templates vary.
+    def _premium_page_base(c, no, title, water=True):
+        black = getattr(module, "BLACK", getattr(module.colors, "black", None))
+        gold = getattr(module, "GOLD", getattr(module.colors, "gold", None))
+        gold2 = getattr(module, "GOLD2", gold)
+        muted = getattr(module, "MUTED", getattr(module.colors, "lightgrey", None))
+        page_w = float(getattr(module, "PAGE_W", 842.0))
+        page_h = float(getattr(module, "PAGE_H", 595.0))
+
+        c.setFillColor(black)
+        c.rect(0, 0, page_w, page_h, fill=1, stroke=0)
+
+        if water:
+            try:
+                wm = getattr(module, "WATER", None)
+                if wm is not None:
+                    wm_w = page_w * 0.56
+                    wm_h = page_h * 0.78
+                    c.drawImage(
+                        wm,
+                        (page_w - wm_w) / 2,
+                        (page_h - wm_h) / 2,
+                        wm_w,
+                        wm_h,
+                        preserveAspectRatio=True,
+                        mask="auto",
+                    )
+            except Exception:
+                pass
+
+        c.setStrokeColor(gold)
+        c.setLineWidth(1.0)
+        c.rect(16, 16, page_w - 32, page_h - 32, fill=0, stroke=1)
+        c.setLineWidth(0.6)
+        c.line(28, page_h - 58, page_w - 28, page_h - 58)
+        c.line(28, 44, page_w - 28, 44)
+
+        module.set_font(c, "Helvetica-Bold", 9.2, gold2)
+        c.drawString(32, page_h - 46, str(title or "PREMIUM FIGHT INTELLIGENCE REPORT").upper())
+        module.set_font(c, "Helvetica", 7.2, muted)
+        c.drawRightString(page_w - 32, 30, f"PAGE {no:02d}")
+
+    module.page_base = _premium_page_base
+
     module.command_footer = lambda c, x, y, w: _customer_command_footer(module, c, x, y, w)
 
     blocks = _build_blocks(report_context_preview)

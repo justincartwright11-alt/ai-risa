@@ -1,38 +1,46 @@
-PREMIUM FIGHT
-INTELLIGENCE REPORT
-THE INTELLIGENCE BENEATH THE VIOLENCE
-PEREIRA
-Alex Pereira
-VS
-PROCHAZKA
-Jiri Prochazka
-UFC 300 | 2026-07-12 | CUSTOMER READY
-Report ID: ARISA-ALEX_PEREIRA_JIRI_PR-001 | Confidence: 60% | Generated: May 19, 2026 21:46
-AI-RISA | COMBAT INTELLIGENCE | OPERATOR APPROVED | SOURCE TRACEABLE
+AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT
 PAGE 01
+PREMIUM FIGHT INTELLIGENCE REPORT
+THE INTELLIGENCE BENEATH THE VIOLENCE
+FIGHTER A
+Alex Pereira
+AI-RISA matchup subject | operator-approved
+VS
+Decision | Full Distance
+FIGHTER B
+Jiri Prochazka
+AI-RISA matchup subject | opponent profile
+UFC 300 | 2026-07-12 | CUSTOMER READY
+Report ID: alex_pereira_jiri_prochazka_ufc_300 | Confidence: 55.0% | Generated: 2026-05-19 12:03 UTC
+PREMIUM FIGHT INTELLIGENCE REPORT
+Alex Pereira enters with the clearest control lane if the fight stays at a pressure-to-reset cadence. The operating thesis is simple: deny Jiri Prochazka clean geography, win the first
+re-entry after every break, and make late-round reads expensive. If Jiri Prochazka turns the fight into clean, countable exchanges, the edge compresses quickly.
+Source Traceable | Operator Approved
+Generated: 2026-05-19 12:03 UTC
+AI-RISA BRAND MARK
 
+
+EXECUTIVE COMMAND DASHBOARD
+PAGE 02
 EXECUTIVE COMMAND DASHBOARD
 PREMIUM FIGHT INTELLIGENCE DOSSIER
 HEADLINE PREDICTION
 Pereira
-Decision | Full Distance
 CONFIDENCE
-60%
-Moderate edge
+55%
 VOLATILITY
-42%
-Live swing risk
+High (model-derived)
 EXECUTIVE SUMMARY
-Pereira owns disruption. Prochazka owns structure. First rhythm controls the thesis.
+Executive Summary: Alex Pereira is favored
+because he owns the cleaner route to making the
+fight look the way he wants.
 CONTROL ZONE - PEREIRA
-Pressure bursts
-Momentum theft
+Pressure rhythm / reset denial Momentum theft
 DANGER ZONE - PROCHAZKA
-Clean range
-Disciplined counters
-COLLAPSE TRIGGER !
-Pereira loses force if chaos stops working.
-Prochazka breaks if chaos snowballs.
+Geography loss / rushed entry Disciplined counters
+COLLAPSE TRIGGER
+! Collapse Trigger (Alex Pereira pressure side): entries still arrive but
+stop producing controlled exits.
 FIGHT CONTROL INTELLIGENCE STRIP
 CONTROL THESIS
 Instability vs structure
@@ -42,203 +50,510 @@ WATCH CUE
 Does Prochazka reset clean?
 COMMAND RULE
 Break decision structure
+ROUND CONTROL PROJECTION
+R1
+INFO
+R2
+PRESS
+R3
+ATTRITION
 METHOD PROBABILITY
 Pereira decision
-60%
+55%
 Prochazka decision
-40%
+45%
 Stoppage upset lane
-22%
+24%
+Clean control lane
+53%
 RISK CONTROL
 NO CERTAINTY
-Probabilistic edge.
-Not a guarantee.
-PAGE 02
+Probabilistic edge. Not a guarantee.
+
 
 HEADLINE PROJECTION
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Pereira is projected to win by decision over full distance at 60.0% confidence.
-The edge is real, not wide. His strongest route is to make the bout unstable,
-reactive, and emotionally uncomfortable. Prochazka remains live if he keeps the
-fight clean, measured, and technically repeatable.
 PAGE 03
+Headline Projection
+Ares parity headline lane
+MAIN NARRATIVE
+Alex Pereira enters with the clearest control lane if the fight stays at a pressure-to-reset cadence. The operating thesis is simple: deny Jiri Prochazka clean geography, win the
+first re-entry after every break, and make late-round reads expensive. If Jiri Prochazka turns the fight into clean, countable exchanges, the edge compresses quickly.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 MATCHUP SNAPSHOT
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Pereira vs Prochazka is a contest between pressure rhythm and counter
-structure. Control lane: Pereira should force layered entries, crowd the reset
-window, and score before the exit is free. Danger lane: Prochazka can flip the
-fight if the entries get rushed, the hands decay defensively, or the output is
-not converted into position. Command read: keep exits layered, do not chase
-low-value pressure, and make every exchange pay for itself.
 PAGE 04
+Matchup Snapshot
+Primary matchup intelligence snapshot
+MAIN NARRATIVE
+Alex Pereira vs Jiri Prochazka is a contest between pressure rhythm and counter structure. Control lane: Alex Pereira should force layered entries, crowd the reset window,
+and score before the exit is free. Danger lane: Jiri Prochazka can flip the fight if the entries get rushed, the hands decay defensively, or the output is not converted into
+position. Command read: keep exits layered, do not chase low-value pressure, and make every exchange pay for itself.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 FIGHTER ARCHITECTURE RADAR
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Pereira builds pressure through rhythm disruption and forced defensive cycling.
-Prochazka builds offense through clean technical execution and structured
-counter timing. The radar divergence is clear: instability vs discipline,
-volume vs accuracy, momentum vs decision.
-PAGE 05
+PAGE 04
+Fighter Architecture Radar
+Fighter Overview | Tale of the Tape
+PRESSURE
+PACE
+RANGE
+DURABILITY
+DEFENSE
+POWER
+COMPOSURE
+LATE-FIGHT
+UNPREDICT
+ADAPT
+Control Lane
+Alex Pereira pressure rhythm and reset denial become
+the scoring driver if exits are layered.
+Danger Lane
+Jiri Prochazka flips momentum if range control and
+counter-entry timing stay clean in the mid rounds.
+Watch Cue
+If the second reset after contact is still controlled by
+the same fighter, that round is likely decisive on cards.
+Failure Consequence
+Rushed entry volume without positional conversion
+creates visible scoring leakage and late-round volatility.
+Primary Control Read
+10-pillar radar read by tactical lane and round-band stress.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 TACTICAL EDGE MAP
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Tactical edge mapping shows Pereira is strongest when Prochazka is forced to
-react rather than initiate. The high-control areas for Pereira are crowded
-middle distance with denied exits. The high-control areas for Prochazka are
-clean, spaced range with countable exchanges.
 PAGE 06
+Tactical Edge Map
+Tactical Edge Table
+Tactical Layer
+Edge
+Confidence
+Why It Matters
+Watch Cue
+Pressure Rhythm
+Fighter A
+Model-derived 58%
+Layered pressure plus reset denial creates repeatable scoreable
+Watch if exits are forced twice in one
+Counter Entry Timing
+Fighter B
+Model-derived 33%
+Clean exits and counter sequencing reduce pressure efficiency and
+Watch delayed counters after reset feints.
+Range Geography
+Contested
+Model-derived 54%
+Who owns mid-range after first contact controls volume quality and
+Watch center-line denial after contact.
+Pocket Exit Discipline
+Fighter A
+Model-derived 52-60%
+Disciplined exits prevent swing-variance exchanges and preserve
+Watch defensive hand return on exits.
+Late-Round Reliability
+Volatile
+Model-derived high
+Fatigue and composure shifts can overturn prior lane control when
+Watch R4-R5 composure under pace
+Command Instruction
+Keep exits layered, do not chase low-value pressure, and preserve scoring geography before forcing pace extensions.
+Failure Consequence
+If pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.
+Primary Control Read
+Table rows map tactical layers directly to confidence, mechanism, and watch cues.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 DECISION STRUCTURE
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Decision structure: the judge-friendly route belongs to the fighter who owns
-scoring geography without overcommitting. Pereira needs pressure rhythm, reset
-denial, and angle closure that prevents clean counters. Prochazka needs
-disciplined counter-entry timing, ring awareness, and enough repeatable output
-to keep the scorecard narrow.
 PAGE 07
+Decision Structure
+Decision Structure / Command Layer
+MAIN NARRATIVE
+Decision structure: the judge-friendly route belongs to the fighter who owns scoring geography without overcommitting. Alex Pereira needs pressure rhythm, reset denial, and
+angle closure that prevents clean counters. Jiri Prochazka needs disciplined counter-entry timing, ring awareness, and enough repeatable output to keep the scorecard
+narrow. Watch cue: if Jiri Prochazka is forced to defend twice in the same sequence, Alex Pereira is likely dictating the round. Failure consequence: a high-volume but
+low-conversion round becomes a point loss instead of a control round.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 ENERGY USE ANALYSIS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Energy profile: Pereira spends energy in pressure bursts and must convert those
-bursts into position, not just activity. Prochazka spends more economically
-when the fight stays readable, but the cost rises quickly if the resets
-disappear. Watch cue: repeated forced exits or defensive hand decay will tax
-the slower processor first.
 PAGE 08
+Energy Use Analysis
+Energy/Fatigue / Watch Cue
+MAIN NARRATIVE
+Energy profile: Alex Pereira spends energy in pressure bursts and must convert those bursts into position, not just activity. Jiri Prochazka spends more economically when the
+fight stays readable, but the cost rises quickly if the resets disappear. Watch cue: repeated forced exits or defensive hand decay will tax the slower processor first. Failure
+consequence: style starts to degrade before cardio visibly fails.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 FATIGUE FAILURE POINTS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Fatigue failure points: Pereira risks output collapse when pressure bursts are
-not converted into position. Prochazka risks late timing delays if repeated
-resets become defensive-only cycles. Warning: cumulative defensive hand decay
-is a leading indicator for momentum loss.
 PAGE 09
+Fatigue Failure Points
+Failure Heat Map | Body Risk Heat Map / Anatomical Risk Map
+Anatomical Risk Map
+Watch Cue
+Monitor defensive hand decay and delayed
+reset speed in R2-R4. These are
+model-derived trigger lanes.
+Interpretation
+Red/blue split indicates comparative vulnerability
+by zone for Alex Pereira and Jiri Prochazka.
+Values remain model-derived unless
+source-confirmed.
+Category
+Alex Pereira Risk
+Jiri Prochazka Risk
+Watch Cue
+Gas Tank
+41% model-derived
+34% model-derived
+watch reset speed under
+Defense
+46% model-derived
+38% model-derived
+watch defensive hand
+Composure
+39% model-derived
+36% model-derived
+watch reset speed under
+Range Control
+44% model-derived
+31% model-derived
+watch reset speed under
+Pocket Exits
+43% model-derived
+35% model-derived
+watch defensive hand
+Reaction Speed
+37% model-derived
+33% model-derived
+watch reset speed under
+Mental Stress
+40% model-derived
+42% model-derived
+watch reset speed under
+Body Risk Heat Map Interpretation
+Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. In this matchup, exposure spikes when Alex
+Pereira forces pace without positional conversion or Jiri Prochazka loses reset timing. Control Window: R2-R4 is the inflection lane.
+Failure Consequence
+If composure and pocket exits decay together, one momentum swing can override earlier control reads.
+Primary Control Read
+Heat map column and risk table align with fight-specific stress cues.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 MENTAL CONDITION UNDER STRESS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Mental layer: Pereira is strongest when the fight feels unstable, because
-disruption amplifies his confidence. Prochazka is strongest when the fight
-stays orderly, because clean decision-making is part of his value. Watch cue:
-the first visible hesitation after a momentum swing usually predicts the next
-scored sequence.
 PAGE 10
+Mental Condition Under Stress
+Mental response and composure
+MAIN NARRATIVE
+Mental layer: Alex Pereira is strongest when the fight feels unstable, because disruption amplifies his confidence. Jiri Prochazka is strongest when the fight stays orderly,
+because clean decision-making is part of his value. Command instruction: if the rhythm breaks, reset immediately instead of forcing the next exchange. Watch cue: the first
+visible hesitation after a momentum swing usually predicts the next scored sequence.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 COLLAPSE TRIGGERS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Collapse trigger map: Pereira risks a downturn when pressure stops moving
-Prochazka and becomes empty volume. Prochazka risks a downturn when early
-defensive costs accumulate and the counter window becomes late or predictable.
-Watch cue: after two consecutive rounds of lost geography or broken timing, the
-scorecard typically moves faster than visible fatigue indicators.
 PAGE 11
+Collapse Triggers
+Failure cascade map
+MAIN NARRATIVE
+Collapse trigger map: Alex Pereira risks a downturn when pressure stops moving Jiri Prochazka and becomes empty volume. Jiri Prochazka risks a downturn when early
+defensive costs accumulate and the counter window becomes late or predictable. Failure consequence: after two consecutive rounds of lost geography or broken timing, the
+scorecard can move faster than the physical fatigue is obvious.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 DECEPTION AND UNPREDICTABILITY
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Deception and unpredictability: Pereira benefits from disruptive cadence shifts
-that hide true entry timing. Prochazka benefits from false-rhythm counters that
-bait rushed pressure before punishing exit lines. Guidance: deception value
-rises after one successful sequence repetition is observed by the opponent.
 PAGE 12
+Deception and Unpredictability
+Rhythm deception and hidden lane control
+MAIN NARRATIVE
+Deception and Unpredictability: Alex Pereira benefits from disruptive cadence shifts that hide true entry timing. Jiri Prochazka benefits from false-rhythm counters that bait
+rushed pressure before punishing exit lines. Model-derived guidance: deception value rises after one successful sequence repetition is observed by the opponent.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 RANGE / GEOGRAPHY CONTROL
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Range and geography control: the decisive lane is who controls geometry after
-first contact. Pereira wants crowded middle distance with denied exits.
-Prochazka wants clean lane geometry and countable exchanges. Watch cue: when
-geography is surrendered twice in a row, scoring authority typically changes
-hands.
 PAGE 13
+Range / Geography Control
+Control lane ownership by distance
+MAIN NARRATIVE
+Range / Geography Control: the decisive lane is who controls geography after first contact. Alex Pereira wants crowded middle distance with denied exits; Jiri Prochazka
+wants clean lane geometry and countable exchanges. Failure consequence: when geography is surrendered twice in a row, scoring authority usually changes hands.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 ROUND-BY-ROUND CONTROL PROJECTION
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Round-by-round projection: R1 is an information and spacing test. R2 is the
-first real pressure read. R3 through the late rounds should reward the fighter
-who is still making the other man reset under threat. Critical cue: do not
-chase damage if the lane is not there; preserve scoring integrity and output
-efficiency.
 PAGE 14
+Round-by-Round Control Projection
+Round Control Graph
+R1
+R2
+R3
+R4
+R5
+Alex Pereira control estimate
+Jiri Prochazka control estimate
+Control Shift Notes
+Control Window Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography
+before forcing pace expansion.
+Primary Control Read
+Graph lane-to-lane momentum shifts are interpreted with command and risk controls.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 SCENARIO TREE / METHOD PATHWAYS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Scenario tree and method pathways. Pathway A (58%): Pereira pressure conversion
-wins by controlling geography. Pathway B (33%): Prochazka counter-scoring keeps
-the fight close by staying disciplined. Pathway C (9%): a swing-variance turn
-appears if one fighter loses discipline and gives the other a full round of
-momentum.
 PAGE 15
+Scenario Tree / Method Pathways
+Scenario Tree / Method Pathways
+MAIN NARRATIVE
+Scenario Tree / Method Pathways. Pathway A (model-derived 58%): Alex Pereira pressure conversion wins by controlling geography and making the scorecard look
+inevitable. Pathway B (model-derived 33%): Jiri Prochazka counter-scoring keeps the fight close by staying disciplined and punishing rushed entries. Pathway C
+(model-derived 9%): a swing-variance turn appears if one fighter loses discipline and gives the other a full round of momentum.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 SCORECARD SCENARIO
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Scorecard scenario: 48-47 primary lane when control geography holds. 47-48
-upset lane when counter timing remains clean across middle rounds. 47-47
-volatility lane if one late momentum swing overrides early control. The
-baseline is tight; any strong late-round shift can override early advantage.
 PAGE 16
+Scorecard Scenario
+Projection / model-derived score pathways
+Path
+Likely Card
+Driver
+Volatility
+Primary lane
+48-47
+Pressure conversion + reset denial
+Medium
+Counter lane
+47-48
+Clean exits + punished entries
+High
+Swing lane
+47-47
+Late momentum reversal
+Very high
+Scorecard Commentary
+Scorecard Scenario (model-derived): 48-47 primary lane when control geography holds, 47-48 upset lane when counter timing remains clean across the middle rounds, and 47-47
+volatility lane if one late momentum swing overrides early control.
+Primary Control Read
+Score pathways connect mechanism, volatility, and round-band controls.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 STOPPAGE WINDOWS
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Stoppage windows: early window is opportunistic only. Mid-fight window appears
-if defensive hands decay under sustained pressure. Late window opens when
-composure plus pocket exits fail together. Stoppage probability remains low
-unless one fighter's adaptation completely fails.
 PAGE 17
+Stoppage Windows
+Method Probability Chart
+ Alex Pereira decision
+42%
+Alex Pereira stoppage
+16%
+Jiri Prochazka decision
+29%
+Jiri Prochazka stoppage
+13%
+All percentages are model-derived and normalized for this matchup projection path.
+Mechanism
+Decision lanes dominate when control geometry survives late rounds. Stoppage lanes rise only when composure and pocket exits fail together.
+Risk Control
+Treat method read as probabilistic support, not certainty. Re-score after each round-band shift.
+Primary Control Read
+Method lanes and finish windows are tied to mechanism and risk-control triggers.
+Risk Trigger
+If pressure output rises without position conversion, card authority can drift quickly.
+Counter Risk
+Jiri Prochazka gains leverage when exits are clean and entries are rushed or unlayered.
+Corner Command
+Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.
+
 
 RISK WARNINGS AND EXPOSURE DISCIPLINE
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Risk warnings and exposure discipline: do not convert a bounded edge into
-certainty. Do not force output without conversion. Downgrade confidence
-immediately when unresolved source or round-shift cues appear. This report is
-probabilistic intelligence, not a guarantee or financial advice.
 PAGE 18
+Risk Warnings and Exposure Discipline
+Risk control and exposure governance
+MAIN NARRATIVE
+Risk Warnings and Exposure Discipline: do not convert a bounded edge into certainty, do not force output without conversion, and downgrade confidence immediately when
+unresolved source or round-shift cues appear.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 BETTING MARKET INTELLIGENCE
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Betting market intelligence: market lane supports a narrow favorite profile
-with high volatility tax. Use only as comparative intelligence against tactical
-pathways. This is projection-based guidance and comparative context, not
-financial advice or outcome guarantees.
 PAGE 19
+Betting Market Intelligence
+Market context (projection/model-derived)
+MAIN NARRATIVE
+Betting Market Intelligence (projection/model-derived): market lane supports a narrow favorite profile with high volatility tax. Use only as comparative intelligence against
+tactical pathways; this is not financial advice or guaranteed outcome guidance.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 COACH / CORNER NOTES
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Coach and corner notes: keep Pereira on layered entry discipline and reset
-denial cues. If Prochazka starts winning clean geography, reduce chase volume
-and re-establish scoring integrity before pace escalation. Monitor defensive
-hand decay as an early fatigue indicator; adjust output intensity before the
-card starts to slip.
 PAGE 20
+Coach / Corner Notes
+Corner instruction lane
+MAIN NARRATIVE
+Coach / Corner Notes: keep Alex Pereira on layered entry discipline and reset denial cues; if Jiri Prochazka starts winning clean geography, reduce chase volume and
+re-establish scoring integrity before pace escalation.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 FINAL PROJECTION
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Pereira is the slight projection-based favorite because the control lane is
-more repeatable than the upset path. The edge sits in the 52-60% band, which is
-meaningful but not wide. If Prochazka keeps the fight clean, the gap narrows;
-if Pereira keeps the fight disruptive, the advantage compounds.
 PAGE 21
+Final Projection
+Final projection lane
+MAIN NARRATIVE
+Alex Pereira is the slight projection-based favorite because the control lane is more repeatable than the upset path. The model-derived edge sits in the 52-60% band, which is
+meaningful but not wide. If Jiri Prochazka keeps the fight clean, the gap narrows; if Alex Pereira keeps the fight disruptive, the advantage compounds. Recommendation: treat
+the read as edge plus volatility, not certainty.
+CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 CONFIDENCE EXPLANATION
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Confidence is source-traceable and probabilistic, not guaranteed. The report
-should be read as bounded intelligence with explicit uncertainty controls.
-Control ownership, flip conditions, and corner adjustments are all treated as
-tactical projections, not promises or certainties.
 PAGE 22
+Confidence Explanation
+Confidence framing
+MAIN NARRATIVE
+Confidence is model-derived and source-traceable, not guaranteed. The report should be read as bounded intelligence with explicit uncertainty controls. Control ownership,
+flip conditions, and corner adjustments are all treated as tactical projections, not promises.
+ CONTROL LENS
+Pressure rhythm / reset denial
+DANGER LENS
+Geography loss / rushed entry
+COMMAND READ
+Alex Pereira wins by preserving scoring geography and reset denial; Jiri Prochazka flips with clean counter timing.
+
 
 TRACEABILITY / SOURCE MAP
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Traceability and source map: all projection data is linked to source
-verification chains for UFC 300. Primary source:
-https://www.ufc.com/event/ufc-300. Report ID: ARISA-ALEX_PEREIRA_JIRI_PR-001.
-Each fighter stat, matchup metric, and projection pathway is traceable to
-operator-approved source material.
 PAGE 23
+Traceability / Source Map
+Operator Traceability Appendix
+Source
+Type/Tier
+URL
+Use in Report
+Operator Review Requirement
+Primary Event Record
+official / tier-traceable
+https://www.ufc.com/event/ufc-300
+Event verification for UFC 300
+Required before customer delivery or
+mutation
+Event
+UFC 300
+Report ID
+alex_pereira_jiri_prochazka_ufc_300
+Source Discipline Statement
+Claims remain model-derived unless directly supported by this source map and confirmed through operator review.
+SOURCE INTEGRITY NOTE
+Source Traceability remains intact when the map is complete, the data path is approved, and operator review confirms the claim. If a source is unresolved, confidence is
+downgraded instead of inventing certainty.
+Operator Approval Requirement
+No customer delivery, queue mutation, learning apply, calibration write, or Button 3 mutation is permitted without operator approval.
+
 
 DISCLAIMER / RISK CONTROL
-PREMIUM FIGHT INTELLIGENCE DOSSIER
-Disclaimer and risk control: this report is probabilistic competitive
-intelligence, not financial advice, betting guidance, or outcome guarantees.
-Use for analytical purposes only. All projections carry volatility and model
-uncertainty bands. Operator approval and source traceability are required for
-all customer delivery.
 PAGE 24
+Disclaimer / Risk Control
+This report is customer-facing competitive intelligence, not certainty. It is probabilistic, source-traceable, and intended to support disciplined review
+rather than automatic action.
+Use this report alongside operator judgment, source verification, and context from the broader fight card. If a cue is unresolved, the correct move is to
+downgrade confidence, not to invent clarity.
+WHAT THIS REPORT INCLUDES
+Executive cover design, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk
+framing, and source-map evidence pages.
+No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.

@@ -3,7 +3,7 @@
   "date": "2026-05-19",
   "root_cause": [
     "Batch route allowed fallback PDF generation after premium renderer failures, enabling plain report substitution.",
-    "Selected-matchup premium renderer path reporting could remain ambiguous in live diagnostics.",
+    "A stale/orphan Flask process on port 5050 served outdated renderer behavior during one validation pass.",
     "Template pack root resolution was not explicitly searched across all approved priority locations."
   ],
   "template_path_priority": [
@@ -20,8 +20,10 @@
       "total_rows": 21,
       "ready_count": 21
     },
-    "generated_proof_pdf": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114638Z_b6a854b6067e.pdf",
-    "selected_route_generated_pdf": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T114917Z_2c37fdb1fce6.pdf",
+    "generated_proof_pdf": "reports/alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260519T120305Z_0048f9040650.pdf",
+    "selected_route_generated_pdf": "reports/api_generate_check_c.pdf",
+    "renderer_route_used": "template_pack_asset_renderer",
+    "renderer_profile": "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1",
     "payload_binding": {
       "Alex Pereira": true,
       "Jiri Prochazka": true,
@@ -83,5 +85,5 @@
     "docs/button2_premium_template_pack_binding_and_visual_upgrade_v1.md",
     "ops/release_checks/button2_premium_template_pack_binding_and_visual_upgrade_v1/template_pack_binding_summary.json"
   ],
-  "final_verdict": "Premium template-pack binding and visual quality gating are enforced for Button 2 selected/batch generation; plain fallback acceptance is closed while governance locks remain false."
+  "final_verdict": "Premium template-pack binding and visual quality gating are enforced for Button 2 selected/batch generation; plain fallback acceptance is closed, governance locks remain false, and live proof confirms dark premium visual rendering."
 }
