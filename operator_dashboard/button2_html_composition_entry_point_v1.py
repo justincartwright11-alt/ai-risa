@@ -1892,6 +1892,7 @@ _HTML_TEMPLATE = """\
 
     <section class="report-page page-block-sources" data-page-block-role="sources_calibration_block" data-break-policy="split_by_chunk" data-can-split="true" data-chunk-size="10" data-widow-orphan-rule="no_single_list_item_orphan">
         <h2 class="typography-section-header-l1" data-hierarchy-level="H1">Source Traceability</h2>
+        <h3 class="typography-section-header-l2" data-hierarchy-level="H2">Operator Traceability Appendix</h3>
         <div class="traceability-grid">
             <div class="traceability-card">Source Traceability: citation lineage validated</div>
             <div class="traceability-card">Official + trusted secondary corroboration surfaced</div>

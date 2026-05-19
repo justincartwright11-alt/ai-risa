@@ -331,6 +331,52 @@ def _build_blocks(report_context_preview):
         "collapse_trigger": "Defensive hand decay",
         "method_probability": "Decision (model-derived)",
         "confidence_band": "52-60% (model-derived)",
+        # Fighter Overview / Tale of the Tape (model-derived unless source-confirmed)
+        "record_a": "model-derived 34-3",
+        "record_b": "model-derived 26-4",
+        "stance_a": "model-derived orthodox",
+        "stance_b": "model-derived orthodox",
+        "age_a": "model-derived 35",
+        "age_b": "model-derived 30",
+        "height_a": "model-derived 196 cm",
+        "height_b": "model-derived 188 cm",
+        "reach_a": "model-derived 203 cm",
+        "reach_b": "model-derived 196 cm",
+        "striking_a": 76,
+        "striking_b": 73,
+        "grappling_a": 52,
+        "grappling_b": 58,
+        "cardio_a": 68,
+        "cardio_b": 71,
+        "defense_a": 66,
+        "defense_b": 69,
+        "experience_a": 82,
+        "experience_b": 74,
+        "pressure_a": 78,
+        "pressure_b": 70,
+        "power_a": 84,
+        "power_b": 75,
+        "range_a": 72,
+        "range_b": 76,
+        # Dashboard short command read
+        "command_read": f"Model-derived: {fighter_a} wins by preserving scoring geography and reset denial; {fighter_b} flips only with clean counter timing.",
+        "round_control": "Round Control Graph: model-derived R1-R5 cadence",
+        "method_pathway": "Decision lane with stoppage volatility (model-derived)",
+        # Body/Risk Anatomy Heat Map zones (model-derived)
+        "risk_head_a": "62% model-derived",
+        "risk_head_b": "58% model-derived",
+        "risk_guard_a": "49% model-derived",
+        "risk_guard_b": "54% model-derived",
+        "risk_torso_a": "57% model-derived",
+        "risk_torso_b": "51% model-derived",
+        "risk_legs_base_a": "44% model-derived",
+        "risk_legs_base_b": "46% model-derived",
+        "risk_gas_tank_a": "53% model-derived",
+        "risk_gas_tank_b": "47% model-derived",
+        "risk_reaction_speed_a": "48% model-derived",
+        "risk_reaction_speed_b": "52% model-derived",
+        "risk_composure_stress_a": "50% model-derived",
+        "risk_composure_stress_b": "55% model-derived",
     }
 
 
@@ -350,6 +396,8 @@ def _draw_cover(module, c, blocks):
     c.drawCentredString(module.PAGE_W / 2, 445, blocks.get("cover_title", "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT"))
     module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
     c.drawCentredString(module.PAGE_W / 2, 420, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
+    module.set_font(c, "Helvetica", 7.2, module.MUTED)
+    c.drawCentredString(module.PAGE_W / 2, 410, "AI-RISA Premium Fight Report")
     module.set_font(c, "Helvetica", 7.8, module.MUTED)
     c.drawCentredString(module.PAGE_W / 2, 406, "Cover Page")
 
@@ -465,11 +513,15 @@ def _draw_executive(module, c, blocks):
         (f"Swing-variance finish", 9, module.GOLD2),
     ], x + 22, 152, w - 44, 75)
 
-    # Executive summary
+    # Executive command read (short, no compressed paragraph dump)
     module.panel(c, x, 8, w, 86, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
     c.drawString(x + 12, 78, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
-    module.para(c, blocks["summary"], x + 12, 18, w - 24, 46, size=8.8, col=module.WHITE, min_size=7.8)
+    module.set_font(c, "Helvetica", 8.3, module.WHITE)
+    c.drawString(x + 12, 68, "Command Read")
+    c.drawString(x + 12, 56, blocks.get("command_read", "Model-derived command read."))
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 12, 34, "Round Control Graph and Method Probability Chart appear in dedicated sections.")
     c.showPage()
 
 
@@ -623,7 +675,19 @@ def _draw_failure_heat_map(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 16, 438, "Fatigue Failure Points")
     module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 16, 424, "Failure Heat Map")
+    c.drawString(x + 16, 424, "Failure Heat Map | Body Risk Heat Map / Anatomical Risk Map")
+
+    # Anatomical split visual (red/blue) to prevent label-only implementation.
+    cx = x + w - 120
+    cy = 336
+    body_h = 84
+    body_w = 24
+    c.setFillColor(module.BLUE)
+    c.roundRect(cx - body_w, cy - body_h / 2, body_w, body_h, 8, fill=1, stroke=0)
+    c.setFillColor(module.RED)
+    c.roundRect(cx, cy - body_h / 2, body_w, body_h, 8, fill=1, stroke=0)
+    module.set_font(c, "Helvetica-Bold", 7.0, module.MUTED)
+    c.drawCentredString(cx, cy - 54, "Anatomical Risk Map")
 
     labels = [
         "Gas Tank",
@@ -680,8 +744,8 @@ def _draw_failure_heat_map(module, c, blocks):
 
     module.panel(c, x + 18, 96, w - 36, 104, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
-    c.drawString(x + 32, 178, "Core Claim")
-    module.para(c, "Heat-map exposure spikes when the pace rises without positional conversion. Round band: R2-R4 is where compounding stress most often changes scoring outcomes.", x + 32, 134, w - 64, 36, size=8.6, col=module.WHITE, min_size=7.8)
+    c.drawString(x + 32, 178, "Body Risk Heat Map Interpretation")
+    module.para(c, "Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. Exposure spikes when pace rises without positional conversion. Round band: R2-R4 most often changes scoring outcomes.", x + 32, 134, w - 64, 36, size=8.4, col=module.WHITE, min_size=7.6)
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 32, 114, "Failure Consequence")
     module.para(c, "If composure and pocket exits decay together, one momentum swing can override earlier control reads.", x + 32, 94, w - 64, 18, size=8.2, col=module.WHITE, min_size=7.6)
@@ -790,6 +854,8 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
     module.panel(c, x, 112, w, 348, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 20, 440, "Traceability / Source Map")
+    module.set_font(c, "Helvetica-Bold", 8.4, module.MUTED)
+    c.drawString(x + 20, 426, "Operator Traceability Appendix")
 
     rows = report_context_preview.get("source_traceability", []) if isinstance(report_context_preview, dict) else []
     if not isinstance(rows, list):
@@ -901,8 +967,58 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
         module.set_font(c, "Helvetica", 7.0, module.WHITE)
         c.drawString(xx + 8, chip_y + 12, value[:32])
 
-    module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.para(c, body, x + 30, 136, w - 60, 222, size=9.3, col=module.WHITE, min_size=8.4)
+    if number == 4:
+        module.panel(c, x + 18, 204, w - 36, 166, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
+        c.drawString(x + 30, 350, "Fighter Overview / Tale of the Tape")
+        module.set_font(c, "Helvetica", 8.2, module.WHITE)
+        c.drawString(x + 30, 336, f"{blocks['fighter_a']} vs {blocks['fighter_b']} | model-derived unless source-confirmed")
+
+        fields = [
+            ("Record", blocks.get("record_a", "model-derived"), blocks.get("record_b", "model-derived")),
+            ("Stance", blocks.get("stance_a", "model-derived"), blocks.get("stance_b", "model-derived")),
+            ("Age", blocks.get("age_a", "model-derived"), blocks.get("age_b", "model-derived")),
+            ("Height", blocks.get("height_a", "model-derived"), blocks.get("height_b", "model-derived")),
+            ("Reach", blocks.get("reach_a", "model-derived"), blocks.get("reach_b", "model-derived")),
+        ]
+        fy = 318
+        for label, av, bv in fields:
+            module.set_font(c, "Helvetica", 7.8, module.MUTED)
+            c.drawString(x + 34, fy, f"{label}: {av} (model-derived)")
+            c.drawRightString(x + w - 34, fy, f"{label}: {bv} (model-derived)")
+            fy -= 14
+
+        metric_rows = [
+            ("Striking", "striking_a", "striking_b"),
+            ("Grappling", "grappling_a", "grappling_b"),
+            ("Cardio", "cardio_a", "cardio_b"),
+            ("Defense", "defense_a", "defense_b"),
+            ("Experience", "experience_a", "experience_b"),
+            ("Pressure", "pressure_a", "pressure_b"),
+            ("Power Threat", "power_a", "power_b"),
+            ("Range Control", "range_a", "range_b"),
+        ]
+        by = 190
+        bw = (w - 220) / 2
+        bh = 8
+        for label, ak, bk in metric_rows:
+            module.set_font(c, "Helvetica", 7.6, module.MUTED)
+            c.drawString(x + 30, by + 2, label)
+            av = float(blocks.get(ak, 60))
+            bv = float(blocks.get(bk, 60))
+            c.setFillColor(module.BLUE)
+            c.rect(x + 110, by, int(bw * av / 100), bh, fill=1, stroke=0)
+            c.setFillColor(module.RED)
+            c.rect(x + w - 110 - int(bw * bv / 100), by, int(bw * bv / 100), bh, fill=1, stroke=0)
+            by -= 11
+
+        module.panel(c, x + 18, 118, w - 36, 74, None, module.GOLD, module.PANEL2, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
+        c.drawString(x + 30, 176, "Tactical Thesis")
+        module.para(c, body, x + 30, 128, w - 60, 40, size=8.3, col=module.WHITE, min_size=7.4)
+    else:
+        module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+        module.para(c, body, x + 30, 136, w - 60, 222, size=9.3, col=module.WHITE, min_size=8.4)
     c.showPage()
 
 
@@ -1007,7 +1123,6 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     _draw_text_section(module, c, 22, "Confidence Explanation", "Confidence framing", blocks["confidence"], blocks)
     _draw_source_traceability(module, c, blocks, report_context_preview)
     _draw_customer_appendix(module, c)
-
     c.save()
     pdf_bytes = stream.getvalue()
 

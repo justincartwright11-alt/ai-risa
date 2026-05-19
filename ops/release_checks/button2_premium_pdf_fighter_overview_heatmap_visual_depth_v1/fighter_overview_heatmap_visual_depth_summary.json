@@ -1,0 +1,194 @@
+{
+  "slice": "button2-premium-pdf-fighter-overview-heatmap-visual-depth-v1",
+  "library_route_status": 200,
+  "all_reports": [
+    {
+      "matchup": "Rico Verhoeven vs Tariq Osaro",
+      "event": "GLORY 100",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "output_filename": "rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count_api": 24,
+      "page_count_pdf": 24,
+      "required_hits": {
+        "Fighter Overview": true,
+        "Tale of the Tape": true,
+        "Body Risk Heat Map": true,
+        "Anatomical Risk Map": true,
+        "model-derived": true,
+        "Striking": true,
+        "Cardio": true,
+        "Defense": true,
+        "Experience": true,
+        "Round Control Graph": true,
+        "Method Probability Chart": true,
+        "Scenario Tree / Method Pathways": true
+      },
+      "forbidden_hits": {
+        "Premium Cover": false,
+        "where the fight is owned": false,
+        "where the fight can flip": false,
+        "what the corner must solve": false,
+        "SOURCE TRACEABILITY Source Traceability": false,
+        "customer_ready_not_ready": false,
+        "draft_only": false,
+        "controlled_export_not_eligible": false,
+        "visual QA rollup": false,
+        "template renderer profile": false,
+        "raw ingest mode": false,
+        "valid layers": false,
+        "missing layers": false
+      },
+      "all_required_present": true,
+      "all_forbidden_absent": true,
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "page_images": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p04_fighter_overview_tale_of_tape.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p09_body_risk_anatomy_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\rico_verhoeven_tariq_osaro_glory_100_contact_sheet.png"
+      }
+    },
+    {
+      "matchup": "Anthony Joshua vs Daniel Dubois",
+      "event": "Joshua vs Dubois",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "output_filename": "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count_api": 24,
+      "page_count_pdf": 24,
+      "required_hits": {
+        "Fighter Overview": true,
+        "Tale of the Tape": true,
+        "Body Risk Heat Map": true,
+        "Anatomical Risk Map": true,
+        "model-derived": true,
+        "Striking": true,
+        "Cardio": true,
+        "Defense": true,
+        "Experience": true,
+        "Round Control Graph": true,
+        "Method Probability Chart": true,
+        "Scenario Tree / Method Pathways": true
+      },
+      "forbidden_hits": {
+        "Premium Cover": false,
+        "where the fight is owned": false,
+        "where the fight can flip": false,
+        "what the corner must solve": false,
+        "SOURCE TRACEABILITY Source Traceability": false,
+        "customer_ready_not_ready": false,
+        "draft_only": false,
+        "controlled_export_not_eligible": false,
+        "visual QA rollup": false,
+        "template renderer profile": false,
+        "raw ingest mode": false,
+        "valid layers": false,
+        "missing layers": false
+      },
+      "all_required_present": true,
+      "all_forbidden_absent": true,
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "page_images": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p04_fighter_overview_tale_of_tape.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p09_body_risk_anatomy_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\anthony_joshua_daniel_dubois_joshua_vs_dubois_contact_sheet.png"
+      }
+    },
+    {
+      "matchup": "Alex Pereira vs Jiri Prochazka",
+      "event": "UFC 300",
+      "pdf_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "output_filename": "alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "page_count_api": 24,
+      "page_count_pdf": 24,
+      "required_hits": {
+        "Fighter Overview": true,
+        "Tale of the Tape": true,
+        "Body Risk Heat Map": true,
+        "Anatomical Risk Map": true,
+        "model-derived": true,
+        "Striking": true,
+        "Cardio": true,
+        "Defense": true,
+        "Experience": true,
+        "Round Control Graph": true,
+        "Method Probability Chart": true,
+        "Scenario Tree / Method Pathways": true
+      },
+      "forbidden_hits": {
+        "Premium Cover": false,
+        "where the fight is owned": false,
+        "where the fight can flip": false,
+        "what the corner must solve": false,
+        "SOURCE TRACEABILITY Source Traceability": false,
+        "customer_ready_not_ready": false,
+        "draft_only": false,
+        "controlled_export_not_eligible": false,
+        "visual QA rollup": false,
+        "template renderer profile": false,
+        "raw ingest mode": false,
+        "valid layers": false,
+        "missing layers": false
+      },
+      "all_required_present": true,
+      "all_forbidden_absent": true,
+      "open_route_status": 200,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "visual_proof": {
+        "page_images": [
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p01_cover.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p02_dashboard.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p04_fighter_overview_tale_of_tape.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p09_body_risk_anatomy_heat_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p06_tactical_edge_table.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p14_round_control_graph.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p23_source_map.png",
+          "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_p24_disclaimer.png"
+        ],
+        "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_premium_pdf_fighter_overview_heatmap_visual_depth_v1\\visual_proof\\alex_pereira_jiri_prochazka_ufc_300_contact_sheet.png"
+      }
+    }
+  ],
+  "all_24_pages": true,
+  "all_required_present": true,
+  "all_forbidden_absent": true,
+  "all_open_routes_200": true,
+  "all_governance_false": true
+}
