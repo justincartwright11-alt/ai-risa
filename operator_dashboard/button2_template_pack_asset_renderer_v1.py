@@ -3,6 +3,7 @@ import html
 import importlib.util
 import io
 import os
+import re
 from pathlib import Path
 
 
@@ -156,6 +157,9 @@ def _build_blocks(report_context_preview):
     event_name = _clean_text(selected.get("event_name"), "Premium Event")
     event_date = _clean_text(selected.get("event_date"), "n/a")
     source_url = _clean_text(selected.get("source_url"), "n/a")
+    report_id = re.sub(r"[^a-z0-9]+", "_", f"{fighter_a}_{fighter_b}_{event_name}".lower()).strip("_")
+    if not report_id:
+        report_id = "selected_matchup_report"
 
     handoff_summary_raw = _clean_text(report_context_preview.get("handoff_summary_preview"), "No summary provided.")
     blocked_markers = [
@@ -203,7 +207,7 @@ def _build_blocks(report_context_preview):
     dashboard_summary = (
         f"{fighter_a} owns the pressure lane when resets stay denied and geometry remains crowded. "
         f"{fighter_b} can flip the fight only if the lane stays clean, the counters stay layered, and the exit discipline holds. "
-        f"Command read: keep scoreable moments, avoid low-value pressure, and preserve the fight's scoring geography. "
+        f"Command Read: keep scoreable moments, avoid low-value pressure, and preserve the fight's scoring geography. "
         f"Round-control projection: R1 establishes the read, R2 tests adaptation, and the late rounds reward the fighter who still owns the reset after contact."
     )
 
@@ -214,6 +218,7 @@ def _build_blocks(report_context_preview):
         "event_name": event_name,
         "event_date": event_date,
         "source_url": source_url,
+        "report_id": report_id,
         "summary": dashboard_summary,
         "source_summary": handoff_summary,
         # Cover tagline
@@ -281,6 +286,42 @@ def _build_blocks(report_context_preview):
             "Confidence is model-derived and source-traceable, not guaranteed. The report should be read as bounded intelligence with explicit uncertainty controls. "
             "Control ownership, flip conditions, and corner adjustments are all treated as tactical projections, not promises."
         ),
+        "fatigue_failure_points": (
+            f"Fatigue Failure Points (Failure Heat Map): {fighter_a} risks output collapse when pressure bursts are not converted into position, "
+            f"while {fighter_b} risks late timing delays if repeated resets become defensive-only cycles. "
+            "Model-derived warning: cumulative defensive hand decay is a leading indicator for momentum loss."
+        ),
+        "deception_unpredictability": (
+            f"Deception and Unpredictability: {fighter_a} benefits from disruptive cadence shifts that hide true entry timing. "
+            f"{fighter_b} benefits from false-rhythm counters that bait rushed pressure before punishing exit lines. "
+            "Model-derived guidance: deception value rises after one successful sequence repetition is observed by the opponent."
+        ),
+        "range_geography_control": (
+            f"Range / Geography Control: the decisive lane is who controls geography after first contact. "
+            f"{fighter_a} wants crowded middle distance with denied exits; {fighter_b} wants clean lane geometry and countable exchanges. "
+            "Failure consequence: when geography is surrendered twice in a row, scoring authority usually changes hands."
+        ),
+        "scorecard_scenario": (
+            "Scorecard Scenario (model-derived): 48-47 primary lane when control geography holds, "
+            "47-48 upset lane when counter timing remains clean across the middle rounds, "
+            "and 47-47 volatility lane if one late momentum swing overrides early control."
+        ),
+        "stoppage_windows": (
+            "Stoppage Windows (model-derived): early window is opportunistic only, mid-fight window appears if defensive hands decay under sustained pressure, "
+            "and late window opens when composure plus pocket exits fail together."
+        ),
+        "risk_warnings": (
+            "Risk Warnings and Exposure Discipline: do not convert a bounded edge into certainty, "
+            "do not force output without conversion, and downgrade confidence immediately when unresolved source or round-shift cues appear."
+        ),
+        "betting_market_intelligence": (
+            "Betting Market Intelligence (projection/model-derived): market lane supports a narrow favorite profile with high volatility tax. "
+            "Use only as comparative intelligence against tactical pathways; this is not financial advice or guaranteed outcome guidance."
+        ),
+        "coach_corner_notes": (
+            f"Coach / Corner Notes: keep {fighter_a} on layered entry discipline and reset denial cues; "
+            f"if {fighter_b} starts winning clean geography, reduce chase volume and re-establish scoring integrity before pace escalation."
+        ),
         # Additional metrics for dashboard
         "projected_edge": f"{fighter_a} (model-derived edge)",
         "edge_percent": "54% (model-derived)",
@@ -309,6 +350,8 @@ def _draw_cover(module, c, blocks):
     c.drawCentredString(module.PAGE_W / 2, 445, blocks.get("cover_title", "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT"))
     module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
     c.drawCentredString(module.PAGE_W / 2, 420, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawCentredString(module.PAGE_W / 2, 406, "Cover Page")
 
     # Fighter A block
     module.panel(c, x, 280, (w // 3) - 8, 80, None, module.BLUE, module.PANEL, title_line=False)
@@ -373,12 +416,14 @@ def _draw_cover(module, c, blocks):
 
 def _draw_executive(module, c, blocks):
     """Enhanced executive dashboard with more meaningful data panels."""
-    module.page_base(c, 2, "Executive Command Dashboard")
+    module.page_base(c, 2, "Fight Intelligence Dashboard")
     x = module.SAFE_X + 8
     w = module.PAGE_W - 2 * x
 
     module.set_font(c, "Helvetica-Bold", 10.8, module.GOLD2)
-    c.drawString(x + 2, 452, "Executive Command Dashboard")
+    c.drawString(x + 2, 452, "Fight Intelligence Dashboard")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 2, 440, "Executive Command Dashboard")
 
     # Top dashboard row - 4 key stat cards
     card_width = (w - 20) // 4
@@ -510,12 +555,14 @@ def _draw_fighter_architecture_radar(module, c, blocks):
 
 
 def _draw_tactical_edge_table(module, c, blocks):
-    module.page_base(c, 5, "Tactical Edge Table")
+    module.page_base(c, 6, "Tactical Edge Map")
     x = module.SAFE_X + 12
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Tactical Edge Table")
+    c.drawString(x + 16, 438, "Tactical Edge Map")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 16, 424, "Tactical Edge Table")
 
     table_x = x + 20
     table_w = w - 40
@@ -569,12 +616,14 @@ def _draw_tactical_edge_table(module, c, blocks):
 
 
 def _draw_failure_heat_map(module, c, blocks):
-    module.page_base(c, 6, "Failure Heat Map")
+    module.page_base(c, 9, "Fatigue Failure Points")
     x = module.SAFE_X + 12
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Failure Heat Map")
+    c.drawString(x + 16, 438, "Fatigue Failure Points")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 16, 424, "Failure Heat Map")
 
     labels = [
         "Gas Tank",
@@ -640,12 +689,14 @@ def _draw_failure_heat_map(module, c, blocks):
 
 
 def _draw_round_control_graph(module, c, blocks):
-    module.page_base(c, 7, "Round Control Graph")
+    module.page_base(c, 14, "Round-by-Round Control Projection")
     x = module.SAFE_X + 14
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Round Control Graph")
+    c.drawString(x + 16, 438, "Round-by-Round Control Projection")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 16, 424, "Round Control Graph")
 
     plot_x = x + 30
     plot_y = 172
@@ -701,12 +752,14 @@ def _draw_round_control_graph(module, c, blocks):
 
 
 def _draw_method_probability_chart(module, c, blocks):
-    module.page_base(c, 8, "Method Probability Chart")
+    module.page_base(c, 17, "Stoppage Windows")
     x = module.SAFE_X + 14
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Method Probability Chart")
+    c.drawString(x + 16, 438, "Stoppage Windows")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 16, 424, "Method Probability Chart")
 
     rows = [
         (f"{blocks['fighter_a']} decision", 42, module.BLUE),
@@ -731,7 +784,7 @@ def _draw_method_probability_chart(module, c, blocks):
 
 
 def _draw_source_traceability(module, c, blocks, report_context_preview):
-    module.page_base(c, 13, "Traceability / Source Map")
+    module.page_base(c, 23, "Traceability / Source Map")
     x = module.SAFE_X + 24
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 112, w, 348, None, module.GOLD, module.PANEL, title_line=False)
@@ -785,8 +838,13 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
     c.drawString(table_x + 78, 334, blocks["event_name"])
 
     module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 316, "Source Discipline Statement")
-    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 306, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
+    c.drawString(table_x, 320, "Report ID")
+    module.set_font(c, "Helvetica", 8.8, module.WHITE)
+    c.drawString(table_x + 78, 320, blocks.get("report_id", "selected_matchup_report"))
+
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(table_x, 302, "Source Discipline Statement")
+    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 292, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
 
     module.panel(c, x + 18, 130, w - 36, 134, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
@@ -799,7 +857,7 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
 
 
 def _draw_customer_appendix(module, c):
-    module.page_base(c, 14, "Disclaimer / Risk Control")
+    module.page_base(c, 24, "Disclaimer / Risk Control")
     x = module.SAFE_X + 30
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 262, w, 194, None, module.GOLD, module.PANEL, title_line=False)
@@ -813,6 +871,89 @@ def _draw_customer_appendix(module, c):
     c.drawString(x + 24, 224, "WHAT THIS REPORT INCLUDES")
     module.para(c, "Premium cover, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and Source Traceability / source map pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
     module.para(c, "No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.", x + 24, 116, w - 48, 26, size=9.4, col=module.MUTED, min_size=8.5)
+    c.showPage()
+
+
+def _draw_text_section(module, c, number, title, subtitle, body, blocks):
+    module.page_base(c, number, title)
+    x = module.SAFE_X + 18
+    w = module.PAGE_W - 2 * x
+
+    module.panel(c, x, 96, w, 364, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 18, 438, title)
+    module.set_font(c, "Helvetica", 8.0, module.MUTED)
+    c.drawString(x + 18, 424, subtitle)
+
+    chips = [
+        ("CORE CLAIM", f"{blocks['fighter_a']} vs {blocks['fighter_b']}", module.BLUE),
+        ("MECHANISM", "Model-derived tactical lane", module.RED),
+        ("RISK", "Bounded confidence with volatility", module.GOLD2),
+        ("GOVERNANCE", "Operator-approved generation only", module.GOLD2),
+    ]
+    chip_y = 390
+    chip_w = (w - 50) / 4
+    for idx, (label, value, col) in enumerate(chips):
+        xx = x + 18 + idx * (chip_w + 6)
+        module.panel(c, xx, chip_y, chip_w, 40, None, col, module.SOFT, r=5, lw=0.8, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 7.0, col)
+        c.drawString(xx + 8, chip_y + 26, label)
+        module.set_font(c, "Helvetica", 7.0, module.WHITE)
+        c.drawString(xx + 8, chip_y + 12, value[:32])
+
+    module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.para(c, body, x + 30, 136, w - 60, 222, size=9.3, col=module.WHITE, min_size=8.4)
+    c.showPage()
+
+
+def _draw_scorecard_scenario(module, c, blocks):
+    module.page_base(c, 16, "Scorecard Scenario")
+    x = module.SAFE_X + 18
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 96, w, 364, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 18, 438, "Scorecard Scenario")
+    module.set_font(c, "Helvetica", 8.0, module.MUTED)
+    c.drawString(x + 18, 424, "Projection / model-derived score pathways")
+
+    headers = ["Path", "Likely Card", "Driver", "Volatility"]
+    rows = [
+        ("Primary lane", "48-47", "Pressure conversion + reset denial", "Medium"),
+        ("Counter lane", "47-48", "Clean exits + punished entries", "High"),
+        ("Swing lane", "47-47", "Late momentum reversal", "Very high"),
+    ]
+    tx = x + 24
+    tw = w - 48
+    y = 388
+    cw = [0.22, 0.16, 0.40, 0.22]
+    cx = tx
+    for i, h in enumerate(headers):
+        module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+        c.drawString(cx + 4, y, h)
+        cx += tw * cw[i]
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.8)
+    c.line(tx, y - 8, tx + tw, y - 8)
+
+    ry = y - 34
+    for path, card, driver, vol in rows:
+        module.set_font(c, "Helvetica-Bold", 8.3, module.WHITE)
+        c.drawString(tx + 4, ry + 12, path)
+        module.set_font(c, "Helvetica-Bold", 8.3, module.BLUE)
+        c.drawString(tx + tw * cw[0] + 4, ry + 12, card)
+        module.set_font(c, "Helvetica", 8.1, module.WHITE)
+        c.drawString(tx + tw * (cw[0] + cw[1]) + 4, ry + 12, driver)
+        module.set_font(c, "Helvetica", 8.1, module.GOLD2)
+        c.drawString(tx + tw * (cw[0] + cw[1] + cw[2]) + 4, ry + 12, vol)
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.12))
+        c.setLineWidth(0.45)
+        c.line(tx, ry - 4, tx + tw, ry - 4)
+        ry -= 56
+
+    module.panel(c, x + 20, 112, w - 40, 116, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
+    c.drawString(x + 32, 206, "Scorecard Commentary")
+    module.para(c, blocks.get("scorecard_scenario", ""), x + 32, 146, w - 64, 48, size=8.6, col=module.WHITE, min_size=7.8)
     c.showPage()
 
 
@@ -844,86 +985,26 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
 
     _draw_cover(module, c, blocks)
     _draw_executive(module, c, blocks)
-    module.section_page(
-        c,
-        3,
-        "Matchup Snapshot",
-        "Core Claim / Mechanism / Pathways",
-        [
-            ("CORE CLAIM", "Pressure rhythm vs counter structure", module.BLUE),
-            ("MECHANISM", "Reset denial vs clean exits", module.RED),
-            ("ROUND BAND", "R2-R4 tactical swing", module.GOLD2),
-            ("WATCH CUE", "Second reset after contact", module.GOLD2),
-        ],
-        "Matchup Snapshot",
-        blocks["matchup_snapshot"],
-        module.GOLD,
-    )
+    _draw_text_section(module, c, 3, "Headline Projection", "Ares parity headline lane", blocks["headline"], blocks)
+    _draw_text_section(module, c, 4, "Matchup Snapshot", "Core Claim / Mechanism / Pathways", blocks["matchup_snapshot"], blocks)
     _draw_fighter_architecture_radar(module, c, blocks)
     _draw_tactical_edge_table(module, c, blocks)
+    _draw_text_section(module, c, 7, "Decision Structure", "Decision Structure / Command Layer", blocks["decision_structure"], blocks)
+    _draw_text_section(module, c, 8, "Energy Use Analysis", "Energy/Fatigue / Watch Cue", blocks["energy"], blocks)
     _draw_failure_heat_map(module, c, blocks)
+    _draw_text_section(module, c, 10, "Mental Condition Under Stress", "Mental response and composure", blocks["mental"], blocks)
+    _draw_text_section(module, c, 11, "Collapse Triggers", "Failure cascade map", blocks["collapse"], blocks)
+    _draw_text_section(module, c, 12, "Deception and Unpredictability", "Rhythm deception and hidden lane control", blocks["deception_unpredictability"], blocks)
+    _draw_text_section(module, c, 13, "Range / Geography Control", "Control lane ownership by distance", blocks["range_geography_control"], blocks)
     _draw_round_control_graph(module, c, blocks)
+    _draw_text_section(module, c, 15, "Scenario Tree / Method Pathways", "Scenario Tree / Method Pathways", blocks["scenario"], blocks)
+    _draw_scorecard_scenario(module, c, blocks)
     _draw_method_probability_chart(module, c, blocks)
-    module.section_page(
-        c,
-        9,
-        "Decision Structure",
-        "Decision Structure / Command Layer",
-        [
-            ("CORE CLAIM", "Scoreable geography wins", module.BLUE),
-            ("A PATHWAY", f"{blocks['fighter_a']} pressure conversion", module.RED),
-            ("B COUNTER", f"{blocks['fighter_b']} counter timing", module.GOLD2),
-            ("FAILURE", "Volume without conversion", module.GOLD2),
-        ],
-        "Decision Structure",
-        blocks["decision_structure"],
-        module.GOLD,
-    )
-    module.section_page(
-        c,
-        10,
-        "Energy Use Analysis",
-        "Energy/Fatigue / Watch Cue",
-        [
-            ("LOAD", "Output quality", module.BLUE),
-            ("LEAK", "Defensive overwork", module.RED),
-            ("PACE", "Round sustainability", module.GOLD2),
-            ("BREAK", "Late-round decay", module.GOLD2),
-        ],
-        "Energy Use Analysis",
-        blocks["energy"],
-        module.GOLD,
-    )
-    module.section_page(
-        c,
-        11,
-        "Scenario Tree / Method Pathways",
-        "Scenario Tree / Method Pathways",
-        [
-            ("TRIGGER", "Reset denial / rushed entry", module.BLUE),
-            ("MECHANISM", "Control shift under stress", module.RED),
-            ("OUTCOME", "Decision lane swing", module.GOLD2),
-            ("RISK NOTE", "Re-score on round shift", module.GOLD2),
-        ],
-        "Scenario Tree / Method Pathways",
-        blocks["scenario"],
-        module.GOLD,
-    )
-    module.section_page(
-        c,
-        12,
-        "Final Projection / Confidence",
-        "Risk / Confidence Blocks",
-        [
-            ("EDGE", "Model-derived bounded edge", module.BLUE),
-            ("VOLATILITY", "Live uncertainty path", module.RED),
-            ("COMMAND", "Preserve scoring integrity", module.GOLD2),
-            ("GOVERNANCE", "Operator approved", module.GOLD2),
-        ],
-        "Final Projection / Confidence",
-        f"{blocks['final_projection']} {blocks['confidence']} {blocks['round_projection']}",
-        module.GOLD,
-    )
+    _draw_text_section(module, c, 18, "Risk Warnings and Exposure Discipline", "Risk control and exposure governance", blocks["risk_warnings"], blocks)
+    _draw_text_section(module, c, 19, "Betting Market Intelligence", "Market context (projection/model-derived)", blocks["betting_market_intelligence"], blocks)
+    _draw_text_section(module, c, 20, "Coach / Corner Notes", "Corner instruction lane", blocks["coach_corner_notes"], blocks)
+    _draw_text_section(module, c, 21, "Final Projection", "Final projection lane", blocks["final_projection"], blocks)
+    _draw_text_section(module, c, 22, "Confidence Explanation", "Confidence framing", blocks["confidence"], blocks)
     _draw_source_traceability(module, c, blocks, report_context_preview)
     _draw_customer_appendix(module, c)
 
@@ -942,5 +1023,5 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
             "sample_zip": assets["pack_zip_sample"],
         },
         "renderer_profile": "premium_template_pack_v29_asset_backed_v1",
-        "page_count": 14,
+        "page_count": 24,
     }

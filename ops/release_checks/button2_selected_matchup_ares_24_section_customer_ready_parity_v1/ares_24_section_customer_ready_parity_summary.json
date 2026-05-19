@@ -1,0 +1,133 @@
+{
+  "slice": "button2-selected-matchup-ares-24-section-customer-ready-parity-v1",
+  "runtime": {
+    "mode": "local_flask_test_client",
+    "route": "/api/button2/selected-matchup/generate-guarded-v1"
+  },
+  "results": [
+    {
+      "name": "Alex Pereira vs Jiri Prochazka",
+      "pdf_path": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/pdfs/alex_pereira_vs_jiri_prochazka_ufc_300_premium.pdf",
+      "page_count": 24,
+      "all_24_sections_present": true,
+      "missing_sections": [],
+      "forbidden_clean": true,
+      "forbidden_found": [],
+      "cover_marker": true,
+      "tagline_marker": true,
+      "source_traceability_present": true,
+      "disclaimer_present": true,
+      "dashboard_link_present": true,
+      "library_listable_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "metadata": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified"
+      },
+      "visual_proof_pages": [
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_cover.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_dashboard.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_fighter_architecture_radar.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_tactical_edge_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_scorecard_scenario.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_coach_corner_notes.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_source_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/alex_pereira_vs_jiri_prochazka_ufc_300_disclaimer.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/contact_sheets/alex_pereira_vs_jiri_prochazka_ufc_300_contact_sheet.png"
+    },
+    {
+      "name": "Rico Verhoeven vs Tariq Osaro",
+      "pdf_path": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/pdfs/rico_verhoeven_vs_tariq_osaro_glory_100_premium.pdf",
+      "page_count": 24,
+      "all_24_sections_present": true,
+      "missing_sections": [],
+      "forbidden_clean": true,
+      "forbidden_found": [],
+      "cover_marker": true,
+      "tagline_marker": true,
+      "source_traceability_present": true,
+      "disclaimer_present": true,
+      "dashboard_link_present": true,
+      "library_listable_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "metadata": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified"
+      },
+      "visual_proof_pages": [
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_cover.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_dashboard.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_fighter_architecture_radar.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_tactical_edge_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_scorecard_scenario.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_coach_corner_notes.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_source_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/rico_verhoeven_vs_tariq_osaro_glory_100_disclaimer.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/contact_sheets/rico_verhoeven_vs_tariq_osaro_glory_100_contact_sheet.png"
+    },
+    {
+      "name": "Anthony Joshua vs Daniel Dubois",
+      "pdf_path": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/pdfs/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium.pdf",
+      "page_count": 24,
+      "all_24_sections_present": true,
+      "missing_sections": [],
+      "forbidden_clean": true,
+      "forbidden_found": [],
+      "cover_marker": true,
+      "tagline_marker": true,
+      "source_traceability_present": true,
+      "disclaimer_present": true,
+      "dashboard_link_present": true,
+      "library_listable_filename": true,
+      "governance": {
+        "delivery_performed": false,
+        "external_api_delivery_performed": false,
+        "queue_write_performed": false,
+        "learning_apply_performed": false,
+        "calibration_write_performed": false,
+        "button3_mutation_performed": false
+      },
+      "metadata": {
+        "customer_approved": true,
+        "customer_ready_gates_passed": true,
+        "report_status": "customer_ready",
+        "report_quality_status": "customer_ready_verified"
+      },
+      "visual_proof_pages": [
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_cover.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_dashboard.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_fighter_architecture_radar.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_tactical_edge_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_scorecard_scenario.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_coach_corner_notes.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_source_map.png",
+        "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/visual_proof/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_disclaimer.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_selected_matchup_ares_24_section_customer_ready_parity_v1/contact_sheets/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_contact_sheet.png"
+    }
+  ],
+  "all_reports_24_plus_pages": true,
+  "all_reports_all_sections_present": true,
+  "all_reports_forbidden_clean": true,
+  "all_governance_flags_false": true
+}

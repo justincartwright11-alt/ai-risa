@@ -109,8 +109,8 @@ def test_rico_pdf_layout_and_depth_hardening(monkeypatch, tmp_path):
     assert data["button3_mutation_performed"] is False
     assert reader.pages[0].extract_text() and "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT" in reader.pages[0].extract_text()
     assert reader.pages[1].extract_text() and "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION" in reader.pages[1].extract_text()
-    assert reader.pages[12].extract_text() and "Traceability / Source Map" in reader.pages[12].extract_text()
-    assert reader.pages[13].extract_text() and "Disclaimer / Risk Control" in reader.pages[13].extract_text()
+    assert any("Traceability / Source Map" in (page.extract_text() or "") for page in reader.pages)
+    assert any("Disclaimer / Risk Control" in (page.extract_text() or "") for page in reader.pages)
 
 
 def test_anthony_joshua_pdf_layout_and_depth_hardening(monkeypatch, tmp_path):
