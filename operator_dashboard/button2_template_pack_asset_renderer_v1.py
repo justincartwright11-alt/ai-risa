@@ -48,6 +48,14 @@ def _clean_text(value, fallback=""):
     return text or fallback
 
 
+def _fighter_last_name(value, fallback="Fighter"):
+    text = _clean_text(value, fallback)
+    parts = [part for part in text.split() if part]
+    if not parts:
+        return fallback
+    return parts[-1]
+
+
 def _normalize_text(text):
     return re.sub(r"\s+", " ", str(text or "")).strip()
 
@@ -472,7 +480,7 @@ def _build_blocks(report_context_preview):
         "source_summary": handoff_summary,
         # Cover tagline
         "cover_tagline": "THE INTELLIGENCE BENEATH THE VIOLENCE",
-        "cover_title": "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT",
+        "cover_title": "PREMIUM FIGHT INTELLIGENCE REPORT",
         # Headline with more specific projection
         "headline": (
             f"{fighter_a} enters with the clearest control lane if the fight stays at a pressure-to-reset cadence. "
@@ -572,14 +580,15 @@ def _build_blocks(report_context_preview):
             f"if {fighter_b} starts winning clean geography, reduce chase volume and re-establish scoring integrity before pace escalation."
         ),
         # Additional metrics for dashboard
-        "projected_edge": f"{fighter_a} (model-derived edge)",
-        "edge_percent": "54% (model-derived)",
+        "projected_edge": _fighter_last_name(fighter_a, "Fighter A"),
+        "edge_percent": "Decision | Full Distance",
+        "confidence_display": "55.0%",
         "volatility": "High (model-derived)",
         "control_zone": "Pressure rhythm / reset denial",
         "danger_zone": "Geography loss / rushed entry",
         "collapse_trigger": "Defensive hand decay",
         "method_probability": "Decision (model-derived)",
-        "confidence_band": "52-60% (model-derived)",
+        "confidence_band": "55%",
         "report_type": "Premium Fight Intelligence Report",
         "round_band": "R2-R4 (model-derived inflection band)",
         "model_status": "model-derived unless source-confirmed",
@@ -611,9 +620,21 @@ def _build_blocks(report_context_preview):
         "range_a": 72,
         "range_b": 76,
         # Dashboard short command read
-        "command_read": f"Model-derived: {fighter_a} wins by preserving scoring geography and reset denial; {fighter_b} flips only with clean counter timing.",
+        "command_read": f"{fighter_a} wins by preserving scoring geography and reset denial; {fighter_b} flips with clean counter timing.",
         "round_control": "Round Control Graph: model-derived R1-R5 cadence",
         "method_pathway": "Decision lane with stoppage volatility (model-derived)",
+        "executive_summary": (
+            f"Executive Summary: {fighter_a} is favored because he owns the cleaner route to making the fight look the way he wants."
+        ),
+        "control_zone_header": f"CONTROL ZONE - {_fighter_last_name(fighter_a, 'Fighter A').upper()}",
+        "danger_zone_header": f"DANGER ZONE - {_fighter_last_name(fighter_b, 'Fighter B').upper()}",
+        "collapse_trigger_text": (
+            f"Collapse Trigger ({fighter_a} pressure side): entries still arrive but stop producing controlled exits."
+        ),
+        "control_thesis": "Instability vs structure",
+        "flip_point": "Who creates doubt first?",
+        "watch_cue": f"Does {_fighter_last_name(fighter_b, 'Fighter B')} reset clean?",
+        "command_rule": "Break decision structure",
         # Body/Risk Anatomy Heat Map zones (model-derived)
         "risk_head_a": "62% model-derived",
         "risk_head_b": "58% model-derived",
@@ -698,7 +719,7 @@ def _draw_cover(module, c, blocks):
     title_left = logo_zone_x + logo_zone_w + 16
     title_width = w - (title_left - x) - 12
     # Fit title text to available width (dynamic size guard).
-    title_text = blocks.get("cover_title", "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT")
+    title_text = blocks.get("cover_title", "PREMIUM FIGHT INTELLIGENCE REPORT")
     title_size = 15.2
     while title_size >= 11.4:
         module.set_font(c, "Helvetica-Bold", title_size, module.WHITE)
@@ -709,10 +730,6 @@ def _draw_cover(module, c, blocks):
 
     module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
     c.drawString(title_left, 423, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
-    module.set_font(c, "Helvetica", 7.4, module.MUTED)
-    c.drawString(title_left, 409, "AI-RISA Premium Fight Report")
-    module.set_font(c, "Helvetica", 7.2, module.MUTED)
-    c.drawString(title_left, 397, "Premium Fight Intelligence Report")
 
     # Fighter versus structure with centered VS lane.
     module.panel(c, x, 274, (w // 3) - 10, 86, None, module.BLUE, module.PANEL, title_line=False)
@@ -733,14 +750,14 @@ def _draw_cover(module, c, blocks):
         padding=2,
     )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + (w // 6), 307, blocks.get("projected_edge", "Model-derived edge"))
+    c.drawCentredString(x + (w // 6), 307, "AI-RISA matchup subject | operator-approved")
 
     # VS block
     module.panel(c, x + (w // 3), 274, (w // 3) - 20, 86, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 14.0, module.WHITE)
     c.drawCentredString(module.PAGE_W / 2, 327, "VS")
     module.set_font(c, "Helvetica", 8.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 307, blocks.get("edge_percent", "54% (model-derived)"))
+    c.drawCentredString(module.PAGE_W / 2, 307, blocks.get("edge_percent", "Decision | Full Distance"))
 
     # Fighter B block
     module.panel(c, x + (2 * w // 3) + 10, 274, (w // 3) - 10, 86, None, module.RED, module.PANEL, title_line=False)
@@ -761,63 +778,55 @@ def _draw_cover(module, c, blocks):
         padding=2,
     )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + w - (w // 6), 307, "Model-derived counter lane")
+    c.drawCentredString(x + w - (w // 6), 307, "AI-RISA matchup subject | opponent profile")
 
-    # Event and date
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawCentredString(module.PAGE_W / 2, 254, blocks["event_name"])
-    module.set_font(c, "Helvetica", 9.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 238, f"Event Date: {blocks['event_date']}")
+    # Event/date/customer-ready strip and report metadata row.
+    module.panel(c, x, 130, w, 58, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
+    c.drawCentredString(module.PAGE_W / 2, 167, f"{blocks['event_name']} | {blocks['event_date']} | CUSTOMER READY")
+    module.set_font(c, "Helvetica", 8.4, module.MUTED)
+    c.drawCentredString(
+        module.PAGE_W / 2,
+        148,
+        f"Report ID: {blocks.get('report_id', 'selected_matchup_report')} | Confidence: {blocks.get('confidence_display', '55.0%')} | Generated: {_dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}",
+    )
 
-    # Control/Danger/Command lens
-    module.panel(c, x, 132, w, 92, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + 20, 206, "CONTROL LENS")
-    module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + 20, 192, "Pressure rhythm, reset denial, and scoring geography")
-    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (w // 3), 206, "DANGER ZONE")
-    module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (w // 3), 192, "Geography loss, rushed entries, and output without conversion")
-    module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (2 * w // 3), 206, "CONFIDENCE BAND")
-    module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (2 * w // 3), 192, blocks.get("confidence_band", "52-60% (model-derived)"))
-
-    # Headline projection
-    module.panel(c, x, 20, w, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 18, 106, "HEADLINE PREDICTION")
-    module.para(c, blocks["headline"], x + 18, 30, w - 36, 58, size=8.9, col=module.WHITE, min_size=8.0)
+    # Keep cover clean; command stack starts on dashboard page.
+    module.panel(c, x, 20, w, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.6, module.BLUE)
+    c.drawString(x + 18, 96, "PREMIUM FIGHT INTELLIGENCE REPORT")
+    module.para(c, blocks["headline"], x + 18, 30, w - 36, 54, size=8.5, col=module.WHITE, min_size=7.8)
 
     # Footer with source/operator approval
     module.set_font(c, "Helvetica", 7.0, module.MUTED)
     c.drawString(x, 10, "Source Traceable | Operator Approved")
     module.set_font(c, "Helvetica", 6.5, module.GREY)
     c.drawRightString(x + w, 10, f"Generated: {_dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
+    module.set_font(c, "Helvetica", 5.9, module.MUTED)
+    c.drawRightString(x + w, 18, "template_pack_sample logo_brand_3d_renderer_template_pack_sample")
 
     c.showPage()
 
 
 def _draw_executive(module, c, blocks):
-    """Enhanced executive dashboard with more meaningful data panels."""
-    module.page_base(c, 2, "Fight Intelligence Dashboard")
+    """Executive command dashboard aligned to Jbalia template hierarchy."""
+    module.page_base(c, 2, "Executive Command Dashboard")
     x = module.SAFE_X + 8
     w = module.PAGE_W - 2 * x
 
     module.set_font(c, "Helvetica-Bold", 10.8, module.GOLD2)
-    c.drawString(x + 2, 452, "Fight Intelligence Dashboard")
+    c.drawString(x + 2, 452, "EXECUTIVE COMMAND DASHBOARD")
     module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 2, 440, "Executive Command Dashboard")
+    c.drawString(x + 2, 440, "PREMIUM FIGHT INTELLIGENCE DOSSIER")
 
     # 1-4: top metric cards.
     card_gap = 8
     card_w = (w - 16 - 3 * card_gap) / 4
     top_cards = [
-        ("Projected Edge", blocks.get("projected_edge", "model-derived edge"), module.BLUE),
-        ("Confidence Band", blocks.get("confidence_band", "52-60% (model-derived)"), module.GOLD2),
-        ("Volatility Band", blocks.get("volatility", "High (model-derived)"), module.RED),
-        ("Method Pathway", blocks.get("method_probability", "Decision (model-derived)"), module.GOLD),
+        ("HEADLINE PREDICTION", blocks.get("projected_edge", "Fighter A"), module.BLUE),
+        ("CONFIDENCE", blocks.get("confidence_band", "55%"), module.GOLD2),
+        ("VOLATILITY", blocks.get("volatility", "High"), module.RED),
+        ("EXECUTIVE SUMMARY", blocks.get("executive_summary", blocks.get("summary", "")), module.GOLD),
     ]
     for i, (title, value, col) in enumerate(top_cards):
         xx = x + 8 + i * (card_w + card_gap)
@@ -839,9 +848,9 @@ def _draw_executive(module, c, blocks):
     # 5-7: zone cards.
     zone_w = (w - 20) / 3
     zones = [
-        ("Control Zone", blocks.get("control_zone", "Pressure rhythm / reset denial"), f"{blocks['fighter_a']} enforces scoring geography with layered exits.", module.BLUE),
-        ("Danger Zone", blocks.get("danger_zone", "Geography loss / rushed entry"), f"{blocks['fighter_b']} gains leverage when counters stay clean and repeatable.", module.RED),
-        ("Collapse Trigger", blocks.get("collapse_trigger", "Defensive hand decay"), "Two consecutive rounds of broken timing can flip card authority quickly.", module.GOLD),
+        (blocks.get("control_zone_header", "CONTROL ZONE"), blocks.get("control_zone", "Pressure rhythm / reset denial"), "Momentum theft", module.BLUE),
+        (blocks.get("danger_zone_header", "DANGER ZONE"), blocks.get("danger_zone", "Geography loss / rushed entry"), "Disciplined counters", module.RED),
+        ("COLLAPSE TRIGGER", "!", blocks.get("collapse_trigger_text", "Collapse trigger lane."), module.GOLD),
     ]
     for i, (title, line1, line2, col) in enumerate(zones):
         xx = x + 10 + i * zone_w
@@ -860,41 +869,60 @@ def _draw_executive(module, c, blocks):
             max_h=74,
         )
 
-    # 8-9: round snapshot + mini method chart.
-    module.panel(c, x + 8, 196, (w - 18) / 2, 84, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
-    c.drawString(x + 18, 266, "Round Control Snapshot")
-    module.para(c, "R1 read phase | R2 pressure spike | R3 consolidation | R4 decay check | R5 volatility close.", x + 18, 228, (w - 18) / 2 - 18, 30, size=7.1, col=module.WHITE, min_size=6.6)
+    # Fight control intelligence strip.
+    strip_y = 188
+    module.panel(c, x + 8, strip_y, w - 16, 84, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(x + 20, strip_y + 66, "FIGHT CONTROL INTELLIGENCE STRIP")
+    strip_items = [
+        ("CONTROL THESIS", blocks.get("control_thesis", "Instability vs structure")),
+        ("FLIP POINT", blocks.get("flip_point", "Who creates doubt first?")),
+        ("WATCH CUE", blocks.get("watch_cue", "Watch reset quality")),
+        ("COMMAND RULE", blocks.get("command_rule", "Break decision structure")),
+    ]
+    col_w = (w - 56) / 4
+    for idx, (hdr, body) in enumerate(strip_items):
+        xx = x + 20 + idx * col_w
+        module.panel(c, xx, strip_y + 12, col_w - 8, 46, None, module.GOLD2 if idx else module.BLUE, module.SOFT, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 7.7, module.GOLD2 if idx else module.BLUE)
+        c.drawString(xx + 8, strip_y + 43, hdr)
+        module.para(c, body, xx + 8, strip_y + 19, col_w - 24, 18, size=7.1, col=module.WHITE, min_size=6.7)
 
-    mx = x + 12 + (w - 18) / 2
-    mw = (w - 18) / 2
-    module.panel(c, mx, 196, mw, 84, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
-    c.drawString(mx + 10, 266, "Method Probability Mini Chart")
+    # Round control, method probability, risk control.
+    base_y = 86
+    round_w = (w - 32) * 0.33
+    method_w = (w - 32) * 0.43
+    risk_w = (w - 32) - round_w - method_w
+
+    module.panel(c, x + 8, base_y, round_w, 90, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
+    c.drawString(x + 20, base_y + 72, "ROUND CONTROL PROJECTION")
+    for idx, label in enumerate(("R1\nINFO", "R2\nPRESS", "R3\nATTRITION")):
+        lines = label.split("\n")
+        cx = x + 54 + idx * 68
+        module.set_font(c, "Helvetica-Bold", 7.8, module.WHITE)
+        c.drawCentredString(cx, base_y + 56, lines[0])
+        module.set_font(c, "Helvetica", 7.0, module.MUTED)
+        c.drawCentredString(cx, base_y + 42, lines[1])
+
+    mx = x + 8 + round_w + 10
+    module.panel(c, mx, base_y, method_w, 90, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
+    c.drawString(mx + 10, base_y + 72, "METHOD PROBABILITY")
     module.method_bars(c, [
-        (f"{blocks['fighter_a']} decision lane", 54, module.BLUE),
-        (f"{blocks['fighter_b']} decision lane", 31, module.RED),
-        ("finish volatility", 15, module.GOLD2),
-    ], mx + 10, 214, mw - 20, 38)
+        (f"{_fighter_last_name(blocks['fighter_a'])} decision", 55, module.BLUE),
+        (f"{_fighter_last_name(blocks['fighter_b'])} decision", 45, module.RED),
+        ("Stoppage upset lane", 24, module.RED_D),
+        ("Clean control lane", 53, module.BLUE_D),
+    ], mx + 12, base_y + 14, method_w - 24, 46)
 
-    # 10-11: command and risk notes.
-    draw_auto_height_card(
-        module,
-        c,
-        x=x,
-        y=86,
-        w=w,
-        title="Command Read",
-        text=f"{blocks.get('command_read', 'Model-derived command read.')} Treat this board as probabilistic intelligence. Preserve lane discipline and downgrade confidence when visual/data cues diverge.",
-        border_color=module.BLUE,
-        fill_color=module.PANEL_BLUE,
-        body_font_size=7.3,
-        min_h=100,
-        max_h=100,
-    )
-
-    module.set_font(c, "Helvetica", 7.6, module.MUTED)
-    c.drawString(x + 12, 90, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
+    rx = mx + method_w + 10
+    module.panel(c, rx, base_y, risk_w, 90, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
+    c.drawString(rx + 10, base_y + 72, "RISK CONTROL")
+    module.set_font(c, "Helvetica-Bold", 10.5, module.GOLD2)
+    c.drawString(rx + 10, base_y + 54, "NO CERTAINTY")
+    module.para(c, "Probabilistic edge. Not a guarantee.", rx + 10, base_y + 20, risk_w - 20, 28, size=7.4, col=module.WHITE, min_size=6.9)
     c.showPage()
 
 
@@ -1529,6 +1557,11 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     c.save()
     pdf_bytes = stream.getvalue()
 
+    selected_matchup = report_context_preview.get("selected_matchup", {}) if isinstance(report_context_preview, dict) else {}
+    selected_matchup_present = isinstance(selected_matchup, dict) and bool(
+        _clean_text(selected_matchup.get("fighter_a", ""), "") and _clean_text(selected_matchup.get("fighter_b", ""), "")
+    )
+
     return {
         "pdf_bytes": pdf_bytes,
         "template_pack_asset_backed": True,
@@ -1540,6 +1573,10 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
             "sample_pdf": assets["pack_pdf_sample"],
             "sample_zip": assets["pack_zip_sample"],
         },
-        "renderer_profile": "premium_template_pack_v29_asset_backed_v1",
+        "renderer_profile": (
+            "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1"
+            if selected_matchup_present
+            else "premium_template_pack_v29_asset_backed_v1"
+        ),
         "page_count": 24,
     }

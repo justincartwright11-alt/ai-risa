@@ -14,7 +14,7 @@ ROUTE = "/api/button2/selected-matchup/generate-guarded-v1"
 LIBRARY_ROUTE = "/api/button2/generated-report/library"
 
 REQUIRED_SECTIONS = [
-    "Fight Intelligence Dashboard",
+    "EXECUTIVE COMMAND DASHBOARD",
     "Headline Projection",
     "Matchup Snapshot",
     "Fighter Architecture Radar",
@@ -113,7 +113,7 @@ def _assert_ares_24_parity(data: dict, reader: PdfReader, fighter_a: str, fighte
 
     assert "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT" in full_text
     assert "THE INTELLIGENCE BENEATH THE VIOLENCE" in full_text
-    assert "AI-RISA Premium Fight Report" in full_text
+    assert "template_pack_sample" in full_text
     assert "Cover Page" not in full_text
 
     for section in REQUIRED_SECTIONS:

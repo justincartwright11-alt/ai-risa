@@ -21,7 +21,7 @@ SUMMARY_JSON = Path(
 
 REQUIRED_SECTIONS = [
     "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT",
-    "Fight Intelligence Dashboard",
+    "EXECUTIVE COMMAND DASHBOARD",
     "Headline Projection",
     "Matchup Snapshot",
     "Fighter Architecture Radar",

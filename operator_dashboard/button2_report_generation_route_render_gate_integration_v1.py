@@ -267,7 +267,7 @@ def generate_button2_report_render_gate_integration(request_data):
     )
 
     if selected_matchup_generation:
-        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_selected_matchup_enforced"
+        report_context_preview["template_renderer_profile"] = "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1"
         template_pack_root = str(report_context_preview.get("template_pack_root", "")).strip()
         if not template_pack_root:
             report_context_preview["template_pack_root"] = DEFAULT_TEMPLATE_PACK_ROOT
@@ -300,7 +300,12 @@ def generate_button2_report_render_gate_integration(request_data):
                 }
             template_render_meta.update({
                 "premium_template_render_used": True,
-                "renderer_profile": str(render_result.get("renderer_profile", "premium_template_pack_v29_asset_backed_v1")),
+                "renderer_profile": str(
+                    render_result.get(
+                        "renderer_profile",
+                        "premium_template_pack_v29_selected_matchup_jbalia_hard_bind_v1" if selected_matchup_generation else "premium_template_pack_v29_asset_backed_v1",
+                    )
+                ),
                 "template_pack_root": str(render_result.get("template_pack_root", template_render_meta["template_pack_root"])),
                 "template_pack_available": True,
                 "template_pack_asset_backed": bool(render_result.get("template_pack_asset_backed", False)),

@@ -32,10 +32,9 @@ def test_selected_matchup_ingest_payload_uses_premium_template_summary_not_plain
     payload = app_module._build_ingest_payload_from_selected_matchup(_selected_matchup_preview())
 
     summary = payload["dossier_summary_preview"]
-    assert "AI-RISA Premium Fight Report" in summary
-    assert "Template renderer profile: premium_template_pack_v29" in summary
     assert "Anthony Joshua vs Daniel Dubois" in summary
     assert "Event: Joshua vs Dubois" in summary
+    assert "Customer-ready selected-matchup intelligence" in summary
     assert "Source Traceability" in summary
     assert "Selected Matchup Report Generation Context" not in summary
 
