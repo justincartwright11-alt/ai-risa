@@ -331,6 +331,9 @@ def _build_blocks(report_context_preview):
         "collapse_trigger": "Defensive hand decay",
         "method_probability": "Decision (model-derived)",
         "confidence_band": "52-60% (model-derived)",
+        "report_type": "Premium Fight Intelligence Report",
+        "round_band": "R2-R4 (model-derived inflection band)",
+        "model_status": "model-derived unless source-confirmed",
         # Fighter Overview / Tale of the Tape (model-derived unless source-confirmed)
         "record_a": "model-derived 34-3",
         "record_b": "model-derived 26-4",
@@ -380,25 +383,67 @@ def _build_blocks(report_context_preview):
     }
 
 
+def _depth_rows(title, body, blocks):
+    fighter_a = blocks.get("fighter_a", "Fighter A")
+    fighter_b = blocks.get("fighter_b", "Fighter B")
+    compact_body = re.sub(r"\s+", " ", str(body or "")).strip()
+    compact_body = compact_body[:210] + "..." if len(compact_body) > 210 else compact_body
+    return [
+        ("Tactical Thesis", compact_body or f"{fighter_a} has the projection lane when reset control remains disciplined."),
+        ("Mechanism", f"Model-derived mechanism: {fighter_a} pressure geometry versus {fighter_b} clean counter timing."),
+        ("Fighter A Pathway", f"{fighter_a} scores by winning first re-entry and forcing defensive resets under pressure."),
+        ("Fighter B Counter-Pathway", f"{fighter_b} flips momentum through layered counters, clean exits, and reduced forced exchanges."),
+        ("Watch Cue", "Watch reset speed after first contact and defensive hand integrity under pace spikes."),
+        ("Command Instruction", "Preserve scoring geography before pace expansion; avoid low-value pressure volume."),
+        ("Failure Consequence", "If position conversion drops while output rises, scorecard authority drifts quickly."),
+        ("Round Band", blocks.get("round_band", "R2-R4 (model-derived inflection band)")),
+        ("Visual/Data Read", "Visual signal and narrative are aligned to the same model-derived control and risk pathways."),
+        ("Buyer Meaning / Coach Meaning", "Buyer: edge is probabilistic with volatility. Coach: prioritize lane discipline over forced pace."),
+    ]
+
+
+def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
+    rows = _depth_rows(title, body, blocks)
+    left_w = (w - 18) / 2
+    right_x = x + left_w + 18
+    card_h = 76
+
+    module.panel(c, x, y, left_w, card_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.panel(c, right_x, y, left_w, card_h, None, module.RED, module.PANEL, title_line=False)
+
+    ly = y + card_h - 14
+    ry = y + card_h - 14
+    for idx, (label, text) in enumerate(rows[:5]):
+        module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
+        c.drawString(x + 8, ly, label)
+        module.para(c, text, x + 68, ly - 8, left_w - 76, 12, size=6.6, col=module.WHITE, min_size=6.2)
+        ly -= 14
+    for label, text in rows[5:]:
+        module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
+        c.drawString(right_x + 8, ry, label)
+        module.para(c, text, right_x + 118, ry - 8, left_w - 126, 12, size=6.6, col=module.WHITE, min_size=6.2)
+        ry -= 14
+
+
 def _draw_cover(module, c, blocks):
     """Premium cover design matching Ares reference standard."""
     module.page_base(c, 1, "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT")
     x = module.SAFE_X + 10
     w = module.PAGE_W - 2 * x
 
-    # Header with reserved left logo zone to eliminate logo/title overlap.
-    module.panel(c, x, 376, w, 88, "", module.GOLD, module.PANEL)
+    # Premium header: logo reserve + clear type hierarchy.
+    module.panel(c, x, 366, w, 98, "", module.GOLD, module.PANEL)
     logo_zone_x = x + 12
-    logo_zone_y = 386
-    logo_zone_w = 80
-    logo_zone_h = 70
+    logo_zone_y = 378
+    logo_zone_w = 84
+    logo_zone_h = 78
     module.panel(c, logo_zone_x, logo_zone_y, logo_zone_w, logo_zone_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     try:
         c.drawImage(module.LOGO, logo_zone_x + 12, logo_zone_y + 8, 56, 56, preserveAspectRatio=True, mask='auto')
     except Exception:
         pass
 
-    title_left = logo_zone_x + logo_zone_w + 14
+    title_left = logo_zone_x + logo_zone_w + 16
     title_width = w - (title_left - x) - 12
     # Fit title text to available width (dynamic size guard).
     title_text = blocks.get("cover_title", "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT")
@@ -408,64 +453,66 @@ def _draw_cover(module, c, blocks):
         if c.stringWidth(title_text, "Helvetica-Bold", title_size) <= title_width:
             break
         title_size -= 0.6
-    c.drawString(title_left, 440, title_text)
+    c.drawString(title_left, 442, title_text)
 
     module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
-    c.drawString(title_left, 421, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
+    c.drawString(title_left, 423, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
     module.set_font(c, "Helvetica", 7.4, module.MUTED)
-    c.drawString(title_left, 407, "AI-RISA Premium Fight Report")
+    c.drawString(title_left, 409, "AI-RISA Premium Fight Report")
+    module.set_font(c, "Helvetica", 7.2, module.MUTED)
+    c.drawString(title_left, 397, f"Report Type: {blocks.get('report_type', 'Premium Fight Intelligence Report')}")
 
-    # Fighter A block
-    module.panel(c, x, 280, (w // 3) - 8, 80, None, module.BLUE, module.PANEL, title_line=False)
+    # Fighter versus structure with centered VS lane.
+    module.panel(c, x, 274, (w // 3) - 10, 86, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
-    c.drawString(x + 12, 348, "FIGHTER A")
+    c.drawString(x + 12, 350, "FIGHTER A")
     module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
-    c.drawCentredString(x + (w // 6), 326, blocks["fighter_a"])
+    c.drawCentredString(x + (w // 6), 328, blocks["fighter_a"])
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + (w // 6), 305, blocks.get("projected_edge", "Model-derived edge"))
+    c.drawCentredString(x + (w // 6), 307, blocks.get("projected_edge", "Model-derived edge"))
 
     # VS block
-    module.panel(c, x + (w // 3), 280, (w // 3) - 16, 80, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, x + (w // 3), 274, (w // 3) - 20, 86, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 14.0, module.WHITE)
-    c.drawCentredString(module.PAGE_W / 2, 325, "VS")
+    c.drawCentredString(module.PAGE_W / 2, 327, "VS")
     module.set_font(c, "Helvetica", 8.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 305, blocks.get("edge_percent", "54% (model-derived)"))
+    c.drawCentredString(module.PAGE_W / 2, 307, blocks.get("edge_percent", "54% (model-derived)"))
 
     # Fighter B block
-    module.panel(c, x + (2 * w // 3) + 8, 280, (w // 3) - 8, 80, None, module.RED, module.PANEL, title_line=False)
+    module.panel(c, x + (2 * w // 3) + 10, 274, (w // 3) - 10, 86, None, module.RED, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
-    c.drawRightString(x + w - 12, 348, "FIGHTER B")
+    c.drawRightString(x + w - 14, 350, "FIGHTER B")
     module.set_font(c, "Helvetica-Bold", 13.0, module.WHITE)
-    c.drawCentredString(x + w - (w // 6), 325, blocks["fighter_b"])
+    c.drawCentredString(x + w - (w // 6), 327, blocks["fighter_b"])
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + w - (w // 6), 305, "Model-derived counter lane")
+    c.drawCentredString(x + w - (w // 6), 307, "Model-derived counter lane")
 
     # Event and date
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawCentredString(module.PAGE_W / 2, 260, blocks["event_name"])
+    c.drawCentredString(module.PAGE_W / 2, 254, blocks["event_name"])
     module.set_font(c, "Helvetica", 9.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 243, f"Event Date: {blocks['event_date']}")
+    c.drawCentredString(module.PAGE_W / 2, 238, f"Event Date: {blocks['event_date']}")
 
     # Control/Danger/Command lens
-    module.panel(c, x, 140, w, 85, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, x, 132, w, 92, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + 20, 208, "CONTROL LENS")
+    c.drawString(x + 20, 206, "CONTROL LENS")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + 20, 195, f"Pressure rhythm, reset denial, and scoring geography")
+    c.drawString(x + 20, 192, "Pressure rhythm, reset denial, and scoring geography")
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (w // 3), 208, "DANGER ZONE")
+    c.drawString(x + (w // 3), 206, "DANGER ZONE")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (w // 3), 195, f"Geography loss, rushed entries, and output without conversion")
+    c.drawString(x + (w // 3), 192, "Geography loss, rushed entries, and output without conversion")
     module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
-    c.drawString(x + (2 * w // 3), 208, "CONFIDENCE")
+    c.drawString(x + (2 * w // 3), 206, "CONFIDENCE BAND")
     module.set_font(c, "Helvetica", 7.5, module.WHITE)
-    c.drawString(x + (2 * w // 3), 195, blocks.get("confidence_band", "52-60% (model-derived)"))
+    c.drawString(x + (2 * w // 3), 192, blocks.get("confidence_band", "52-60% (model-derived)"))
 
     # Headline projection
-    module.panel(c, x, 20, w, 108, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.panel(c, x, 20, w, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 18, 114, "HEADLINE PROJECTION")
-    module.para(c, blocks["headline"], x + 18, 30, w - 36, 64, size=9.7, col=module.WHITE, min_size=8.6)
+    c.drawString(x + 18, 106, "HEADLINE PROJECTION")
+    module.para(c, blocks["headline"], x + 18, 30, w - 36, 58, size=8.9, col=module.WHITE, min_size=8.0)
 
     # Footer with source/operator approval
     module.set_font(c, "Helvetica", 7.0, module.MUTED)
@@ -487,65 +534,65 @@ def _draw_executive(module, c, blocks):
     module.set_font(c, "Helvetica", 7.8, module.MUTED)
     c.drawString(x + 2, 440, "Executive Command Dashboard")
 
-    # Top dashboard row - 4 wrapped cards with fixed inner padding.
+    # 1-4: top metric cards.
     card_gap = 8
-    card_width = (w - 16 - 3 * card_gap) / 4
-    card_x0 = x + 8
+    card_w = (w - 16 - 3 * card_gap) / 4
     top_cards = [
         ("Projected Edge", blocks.get("projected_edge", "model-derived edge"), module.BLUE),
-        ("Confidence", blocks.get("confidence_band", "52-60% (model-derived)"), module.GOLD2),
-        ("Volatility", blocks.get("volatility", "High (model-derived)"), module.RED),
-        ("Method", blocks.get("method_probability", "Decision (model-derived)"), module.GOLD),
+        ("Confidence Band", blocks.get("confidence_band", "52-60% (model-derived)"), module.GOLD2),
+        ("Volatility Band", blocks.get("volatility", "High (model-derived)"), module.RED),
+        ("Method Pathway", blocks.get("method_probability", "Decision (model-derived)"), module.GOLD),
     ]
     for i, (title, value, col) in enumerate(top_cards):
-        xx = card_x0 + i * (card_width + card_gap)
-        module.panel(c, xx, 364, card_width, 74, None, col, module.PANEL, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 8.7, module.WHITE)
-        c.drawString(xx + 8, 420, title)
-        module.para(c, str(value), xx + 8, 378, card_width - 16, 34, size=7.8, col=module.WHITE, min_size=7.0)
+        xx = x + 8 + i * (card_w + card_gap)
+        module.panel(c, xx, 374, card_w, 64, None, col, module.PANEL, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.2, module.WHITE)
+        c.drawString(xx + 8, 422, title)
+        module.para(c, str(value), xx + 8, 384, card_w - 16, 30, size=7.2, col=module.WHITE, min_size=6.8)
 
-    # Second row - control/danger/collapse zones with wrapped copy.
-    zone_width = (w - 20) // 3
-    module.panel(c, x + 10, 276, zone_width - 4, 82, None, module.BLUE, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawString(x + 22, 345, "CONTROL ZONE")
-    c.drawCentredString(x + 10 + (zone_width - 4) // 2, 326, blocks.get("control_zone", "Pressure rhythm / reset denial"))
-    module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    module.para(c, f"{blocks['fighter_a']} keeps scoring geography under threat and denies clean exits.", x + 20, 289, zone_width - 24, 34, size=7.0, col=module.WHITE, min_size=6.6, align='center')
+    # 5-7: zone cards.
+    zone_w = (w - 20) / 3
+    zones = [
+        ("Control Zone", blocks.get("control_zone", "Pressure rhythm / reset denial"), f"{blocks['fighter_a']} enforces scoring geography with layered exits.", module.BLUE),
+        ("Danger Zone", blocks.get("danger_zone", "Geography loss / rushed entry"), f"{blocks['fighter_b']} gains leverage when counters stay clean and repeatable.", module.RED),
+        ("Collapse Trigger", blocks.get("collapse_trigger", "Defensive hand decay"), "Two consecutive rounds of broken timing can flip card authority quickly.", module.GOLD),
+    ]
+    for i, (title, line1, line2, col) in enumerate(zones):
+        xx = x + 10 + i * zone_w
+        module.panel(c, xx, 290, zone_w - 6, 74, None, col, module.PANEL, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.2, module.WHITE)
+        c.drawString(xx + 8, 348, title)
+        module.para(c, line1, xx + 8, 324, zone_w - 22, 20, size=7.0, col=module.WHITE, min_size=6.6)
+        module.para(c, line2, xx + 8, 302, zone_w - 22, 18, size=6.8, col=module.MUTED, min_size=6.4)
 
-    module.panel(c, x + zone_width + 16, 276, zone_width - 4, 82, None, module.RED, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawString(x + zone_width + 28, 345, "DANGER ZONE")
-    c.drawCentredString(x + zone_width + 16 + (zone_width - 4) // 2, 326, blocks.get("danger_zone", "Geography loss / rushed entry"))
-    module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    module.para(c, f"{blocks['fighter_b']} can flip the fight if the counters stay layered and the exit discipline holds.", x + zone_width + 28, 289, zone_width - 24, 34, size=7.0, col=module.WHITE, min_size=6.6, align='center')
+    # 8-9: round snapshot + mini method chart.
+    module.panel(c, x + 8, 196, (w - 18) / 2, 84, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
+    c.drawString(x + 18, 266, "Round Control Snapshot")
+    module.para(c, "R1 read phase | R2 pressure spike | R3 consolidation | R4 decay check | R5 volatility close.", x + 18, 228, (w - 18) / 2 - 18, 30, size=7.1, col=module.WHITE, min_size=6.6)
 
-    module.panel(c, x + 2*zone_width + 22, 276, zone_width - 4, 82, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.WHITE)
-    c.drawString(x + 2*zone_width + 34, 345, "COLLAPSE TRIGGER")
-    c.drawCentredString(x + 2*zone_width + 22 + (zone_width - 4) // 2, 326, blocks.get("collapse_trigger", "Defensive hand decay"))
-    module.set_font(c, "Helvetica", 7.5, module.GOLD2)
-    module.para(c, "Two consecutive rounds of lost geography or broken timing can move the scorecard faster than fatigue looks visible.", x + 2*zone_width + 34, 289, zone_width - 24, 34, size=7.0, col=module.WHITE, min_size=6.6, align='center')
-
-    # Method pathway visualization
-    module.panel(c, x, 108, w, 146, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
-    c.drawString(x + 16, 239, "Method Probability Chart")
+    mx = x + 12 + (w - 18) / 2
+    mw = (w - 18) / 2
+    module.panel(c, mx, 196, mw, 84, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
+    c.drawString(mx + 10, 266, "Method Probability Mini Chart")
     module.method_bars(c, [
-        (f"{blocks['fighter_a']} pressure conversion", 58, module.BLUE),
-        (f"{blocks['fighter_b']} counter-scoring", 33, module.RED),
-        (f"Swing-variance finish", 9, module.GOLD2),
-    ], x + 22, 150, w - 44, 70)
+        (f"{blocks['fighter_a']} decision lane", 54, module.BLUE),
+        (f"{blocks['fighter_b']} decision lane", 31, module.RED),
+        ("finish volatility", 15, module.GOLD2),
+    ], mx + 10, 214, mw - 20, 38)
 
-    # Executive command read (short, no compressed paragraph dump)
-    module.panel(c, x, 10, w, 92, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 12, 84, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
-    module.set_font(c, "Helvetica", 8.3, module.WHITE)
-    c.drawString(x + 12, 72, "Command Read")
-    module.para(c, blocks.get("command_read", "Model-derived command read."), x + 12, 46, w - 24, 20, size=8.0, col=module.WHITE, min_size=7.2)
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 12, 26, "Round Control Graph and Method Probability Chart appear in dedicated sections.")
+    # 10-11: command and risk notes.
+    module.panel(c, x, 86, w, 100, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 8.6, module.BLUE)
+    c.drawString(x + 12, 170, "Command Read")
+    module.para(c, blocks.get("command_read", "Model-derived command read."), x + 12, 144, w - 24, 20, size=7.6, col=module.WHITE, min_size=7.0)
+    module.set_font(c, "Helvetica-Bold", 8.2, module.GOLD2)
+    c.drawString(x + 12, 124, "Risk Control Note")
+    module.para(c, "Treat this board as probabilistic intelligence. Preserve lane discipline and downgrade confidence when visual/data cues diverge.", x + 12, 98, w - 24, 22, size=7.2, col=module.WHITE, min_size=6.8)
+
+    module.set_font(c, "Helvetica", 7.6, module.MUTED)
+    c.drawString(x + 12, 90, "EXECUTIVE SUMMARY / ROUND-CONTROL PROJECTION")
     c.showPage()
 
 
@@ -627,6 +674,7 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
     c.drawString(x + 516, 146, "Failure Consequence")
     module.para(c, "Rushed entry volume without positional conversion creates visible scoring leakage and late-round volatility.", x + 516, 102, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
+    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Fighter Architecture Radar", "10-pillar radar read by tactical lane and round-band stress.", blocks)
     c.showPage()
 
 
@@ -643,8 +691,8 @@ def _draw_tactical_edge_table(module, c, blocks):
     table_x = x + 20
     table_w = w - 40
     header_y = 404
-    col_w = [0.24 * table_w, 0.14 * table_w, 0.17 * table_w, 0.45 * table_w]
-    headers = ["Tactical Layer", "Edge", "Confidence", "Why It Matters"]
+    col_w = [0.19 * table_w, 0.13 * table_w, 0.14 * table_w, 0.33 * table_w, 0.21 * table_w]
+    headers = ["Tactical Layer", "Edge", "Confidence", "Why It Matters", "Watch Cue"]
     cx = table_x
     for i, title in enumerate(headers):
         module.set_font(c, "Helvetica-Bold", 8.7, module.GOLD2)
@@ -655,17 +703,17 @@ def _draw_tactical_edge_table(module, c, blocks):
     c.line(table_x, header_y - 8, table_x + table_w, header_y - 8)
 
     rows = [
-        ("Pressure Rhythm", blocks["fighter_a"], "Model-derived 58%", "Mechanism: layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4."),
-        ("Counter Entry Timing", blocks["fighter_b"], "Model-derived 33%", "Mechanism: clean exits and counter sequencing reduce pressure efficiency and compress card margin."),
-        ("Range Geography", "Contested", "Model-derived 54%", "Mechanism: the fighter who owns mid-range after first contact controls both volume quality and risk exposure."),
-        ("Pocket Exit Discipline", blocks["fighter_a"], "Model-derived 52-60%", "Mechanism: disciplined exits prevent swing-variance exchanges and preserve score integrity."),
-        ("Late-Round Reliability", "Volatile", "Model-derived high", "Mechanism: fatigue and composure shifts can overturn prior lane control when defensive hand discipline decays."),
+        ("Pressure Rhythm", blocks["fighter_a"], "Model-derived 58%", "Layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4.", "Watch if exits are forced twice in one sequence."),
+        ("Counter Entry Timing", blocks["fighter_b"], "Model-derived 33%", "Clean exits and counter sequencing reduce pressure efficiency and compress card margin.", "Watch delayed counters after reset feints."),
+        ("Range Geography", "Contested", "Model-derived 54%", "Who owns mid-range after first contact controls volume quality and risk exposure.", "Watch center-line denial after contact."),
+        ("Pocket Exit Discipline", blocks["fighter_a"], "Model-derived 52-60%", "Disciplined exits prevent swing-variance exchanges and preserve score integrity.", "Watch defensive hand return on exits."),
+        ("Late-Round Reliability", "Volatile", "Model-derived high", "Fatigue and composure shifts can overturn prior lane control when discipline decays.", "Watch R4-R5 composure under pace spikes."),
     ]
 
     y = header_y - 16
-    for layer, edge, conf, why in rows:
-        est_lines = max(2, min(5, int(len(why) / 44) + 1))
-        row_h = 22 + est_lines * 10
+    for layer, edge, conf, why, cue in rows:
+        est_lines = max(2, min(5, int((len(why) + len(cue)) / 56) + 1))
+        row_h = 24 + est_lines * 10
         c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
         c.setLineWidth(0.45)
         c.line(table_x, y - row_h + 4, table_x + table_w, y - row_h + 4)
@@ -676,7 +724,9 @@ def _draw_tactical_edge_table(module, c, blocks):
         module.para(c, edge, table_x + col_w[0] + 5, y - 16, col_w[1] - 10, row_h - 8, size=8.0, col=module.BLUE if edge == blocks["fighter_a"] else module.RED, min_size=7.0)
         module.set_font(c, "Helvetica", 8.0, module.GOLD2)
         module.para(c, conf, table_x + col_w[0] + col_w[1] + 5, y - 16, col_w[2] - 10, row_h - 8, size=7.8, col=module.GOLD2, min_size=7.0)
-        module.para(c, why, table_x + col_w[0] + col_w[1] + col_w[2] + 5, y - 16, col_w[3] - 10, row_h - 8, size=7.7, col=module.WHITE, min_size=7.0)
+        base_x = table_x + col_w[0] + col_w[1] + col_w[2]
+        module.para(c, why, base_x + 5, y - 16, col_w[3] - 10, row_h - 8, size=7.6, col=module.WHITE, min_size=7.0)
+        module.para(c, cue, base_x + col_w[3] + 5, y - 16, col_w[4] - 10, row_h - 8, size=7.4, col=module.MUTED, min_size=6.8)
         y -= row_h
 
     module.panel(c, x + 20, 92, w - 40, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
@@ -686,6 +736,7 @@ def _draw_tactical_edge_table(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 34, 108, "Failure Consequence")
     module.para(c, "If pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 86, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
+    _draw_depth_footer(module, c, x + 20, 8, w - 40, "Tactical Edge Map", "Table rows map tactical layers directly to confidence, mechanism, and watch cues.", blocks)
     c.showPage()
 
 
@@ -720,7 +771,7 @@ def _draw_failure_heat_map(module, c, blocks):
     module.para(c, "Monitor defensive hand decay and delayed reset speed in R2-R4. These are model-derived trigger lanes.", right_x + 20, 266, 164, 34, size=7.8, col=module.WHITE, min_size=7.0)
     module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
     c.drawString(right_x + 20, 244, "Interpretation")
-    module.para(c, "Red/blue split indicates comparative vulnerability by zone. Values remain model-derived unless source-confirmed.", right_x + 20, 204, 164, 34, size=7.6, col=module.WHITE, min_size=7.0)
+    module.para(c, f"Red/blue split indicates comparative vulnerability by zone for {blocks['fighter_a']} and {blocks['fighter_b']}. Values remain model-derived unless source-confirmed.", right_x + 20, 204, 164, 40, size=7.2, col=module.WHITE, min_size=6.8)
 
     labels = [
         "Gas Tank",
@@ -778,10 +829,11 @@ def _draw_failure_heat_map(module, c, blocks):
     module.panel(c, x + 18, 92, left_w - 8, 108, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
     c.drawString(x + 32, 178, "Body Risk Heat Map Interpretation")
-    module.para(c, "Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. Exposure spikes when pace rises without positional conversion. Round Band: R2-R4 most often changes scoring outcomes.", x + 32, 132, left_w - 34, 40, size=7.9, col=module.WHITE, min_size=7.0)
+    module.para(c, f"Body Risk Heat Map and Anatomical Risk Map are model-derived unless source-confirmed. In this matchup, exposure spikes when {blocks['fighter_a']} forces pace without positional conversion or {blocks['fighter_b']} loses reset timing. Round Band: R2-R4 is the inflection lane.", x + 32, 128, left_w - 34, 46, size=7.5, col=module.WHITE, min_size=6.8)
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 32, 114, "Failure Consequence")
     module.para(c, "If composure and pocket exits decay together, one momentum swing can override earlier control reads.", x + 32, 90, left_w - 34, 20, size=7.8, col=module.WHITE, min_size=7.0)
+    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Fatigue Failure Points", "Heat map column and risk table align with fight-specific stress cues.", blocks)
     c.showPage()
 
 
@@ -845,6 +897,7 @@ def _draw_round_control_graph(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
     c.drawString(x + 30, 146, "Control Shift Notes")
     module.para(c, "Round Band Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.", x + 30, 106, w - 60, 50, size=7.9, col=module.WHITE, min_size=7.0)
+    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Round-by-Round Control Projection", "Graph lane-to-lane momentum shifts are interpreted with command and risk controls.", blocks)
     c.showPage()
 
 
@@ -877,6 +930,7 @@ def _draw_method_probability_chart(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
     c.drawString(x + 30, 114, "Risk Control")
     module.para(c, "Treat method read as probabilistic support, not certainty. Re-score after each round-band shift.", x + 30, 96, w - 60, 16, size=8.0, col=module.WHITE, min_size=7.4)
+    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Stoppage Windows", "Method lanes and finish windows are tied to mechanism and risk-control triggers.", blocks)
     c.showPage()
 
 
@@ -985,10 +1039,10 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
     c.drawString(x + 18, 424, subtitle)
 
     chips = [
-        ("CORE CLAIM", f"{blocks['fighter_a']} vs {blocks['fighter_b']}", module.BLUE),
-        ("MECHANISM", "Model-derived tactical lane", module.RED),
-        ("RISK", "Bounded confidence with volatility", module.GOLD2),
-        ("GOVERNANCE", "Operator-approved generation only", module.GOLD2),
+        ("SECTION LENS", title, module.BLUE),
+        ("MODEL STATUS", blocks.get("model_status", "model-derived unless source-confirmed"), module.RED),
+        ("ROUND BAND", blocks.get("round_band", "R2-R4"), module.GOLD2),
+        ("REPORT TYPE", blocks.get("report_type", "Premium Fight Intelligence Report"), module.GOLD2),
     ]
     chip_y = 390
     chip_w = (w - 50) / 4
@@ -997,15 +1051,23 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
         module.panel(c, xx, chip_y, chip_w, 40, None, col, module.SOFT, r=5, lw=0.8, title_line=False)
         module.set_font(c, "Helvetica-Bold", 7.0, col)
         c.drawString(xx + 8, chip_y + 26, label)
-        module.set_font(c, "Helvetica", 7.0, module.WHITE)
-        c.drawString(xx + 8, chip_y + 12, value[:32])
+        module.set_font(c, "Helvetica", 6.9, module.WHITE)
+        module.para(c, str(value), xx + 8, chip_y + 8, chip_w - 16, 14, size=6.6, col=module.WHITE, min_size=6.2)
 
     if number == 4:
-        module.panel(c, x + 18, 220, w - 36, 150, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+        module.panel(c, x + 18, 216, w - 36, 154, None, module.BLUE, module.PANEL_BLUE, title_line=False)
         module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
         c.drawString(x + 30, 350, "Fighter Overview / Tale of the Tape")
         module.set_font(c, "Helvetica", 8.2, module.WHITE)
         c.drawString(x + 30, 336, f"{blocks['fighter_a']} vs {blocks['fighter_b']} | model-derived unless source-confirmed")
+
+        module.panel(c, x + 24, 286, 212, 38, None, module.BLUE, module.PANEL, title_line=False)
+        module.panel(c, x + (w / 2) - 36, 286, 72, 38, None, module.GOLD, module.PANEL, title_line=False)
+        module.panel(c, x + w - 236, 286, 212, 38, None, module.RED, module.PANEL, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.0, module.WHITE)
+        c.drawCentredString(x + 130, 309, f"{blocks['fighter_a']} BLOCK")
+        c.drawCentredString(x + w / 2, 309, "VS")
+        c.drawCentredString(x + w - 130, 309, f"{blocks['fighter_b']} BLOCK")
 
         fields = [
             ("Record", blocks.get("record_a", "model-derived"), blocks.get("record_b", "model-derived")),
@@ -1031,8 +1093,8 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
             ("Power Threat", "power_a", "power_b"),
             ("Range Control", "range_a", "range_b"),
         ]
-        by = 244
-        bw = (w - 260) / 2
+        by = 238
+        bw = (w - 286) / 2
         bh = 8
         for label, ak, bk in metric_rows:
             module.set_font(c, "Helvetica", 7.6, module.MUTED)
@@ -1040,60 +1102,31 @@ def _draw_text_section(module, c, number, title, subtitle, body, blocks):
             av = float(blocks.get(ak, 60))
             bv = float(blocks.get(bk, 60))
             c.setFillColor(module.BLUE)
-            c.rect(x + 130, by, int(bw * av / 100), bh, fill=1, stroke=0)
+            c.rect(x + 146, by, int(bw * av / 100), bh, fill=1, stroke=0)
             c.setFillColor(module.RED)
-            c.rect(x + w - 130 - int(bw * bv / 100), by, int(bw * bv / 100), bh, fill=1, stroke=0)
+            c.rect(x + w - 146 - int(bw * bv / 100), by, int(bw * bv / 100), bh, fill=1, stroke=0)
             by -= 9
 
-        module.panel(c, x + 18, 118, w - 36, 94, None, module.GOLD, module.PANEL2, title_line=False)
+        module.panel(c, x + 18, 106, w - 36, 106, None, module.GOLD, module.PANEL2, title_line=False)
         module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
-        c.drawString(x + 30, 176, "Tactical Thesis")
-        module.para(c, body, x + 30, 142, w - 60, 28, size=7.8, col=module.WHITE, min_size=7.0)
+        c.drawString(x + 30, 190, "Tactical Thesis")
+        module.para(c, body, x + 30, 158, w - 60, 26, size=7.5, col=module.WHITE, min_size=6.8)
         module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 30, 130, "Mechanism")
+        c.drawString(x + 30, 146, "Mechanism")
         module.set_font(c, "Helvetica", 7.3, module.WHITE)
-        c.drawString(x + 98, 130, "Model-derived pacing and geometry disruption")
+        c.drawString(x + 98, 146, "Model-derived pacing and geometry disruption")
         module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 30, 118, "Fighter A Pathway")
+        c.drawString(x + 30, 132, "Fighter A Pathway")
         module.set_font(c, "Helvetica", 7.3, module.WHITE)
-        c.drawString(x + 124, 118, f"{blocks['fighter_a']} wins reset and re-entry lane")
+        c.drawString(x + 124, 132, f"{blocks['fighter_a']} wins reset and re-entry lane")
+        module.set_font(c, "Helvetica-Bold", 7.8, module.RED)
+        c.drawString(x + 30, 118, "Interpretation")
+        module.set_font(c, "Helvetica", 7.3, module.WHITE)
+        module.para(c, f"Comparison bars indicate {blocks['fighter_a']} pressure/power edge versus {blocks['fighter_b']} range/defense counters. Buyer Meaning: edge plus volatility. Coach Meaning: own first re-entry.", x + 92, 110, w - 108, 20, size=7.0, col=module.WHITE, min_size=6.6)
     else:
         module.panel(c, x + 18, 118, w - 36, 252, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-        module.para(c, body, x + 30, 204, w - 60, 154, size=8.7, col=module.WHITE, min_size=7.6)
-
-        # Deep-section standard cards.
-        module.panel(c, x + 26, 126, (w - 64) / 2, 68, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-        module.panel(c, x + 34 + (w - 64) / 2, 126, (w - 64) / 2, 68, None, module.RED, module.PANEL, title_line=False)
-
-        module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 34, 180, "Tactical Thesis")
-        module.set_font(c, "Helvetica", 7.2, module.WHITE)
-        module.para(c, "Mechanism: model-derived lane control under pressure and reset timing.", x + 34, 164, (w - 76) / 2, 16, size=7.0, col=module.WHITE, min_size=6.8)
-        module.set_font(c, "Helvetica-Bold", 7.8, module.BLUE)
-        c.drawString(x + 34, 150, "Fighter A Pathway")
-        module.set_font(c, "Helvetica", 7.2, module.WHITE)
-        c.drawString(x + 114, 150, f"{blocks['fighter_a']} controls first re-entry")
-
-        right_x = x + 42 + (w - 64) / 2
-        module.set_font(c, "Helvetica-Bold", 7.8, module.RED)
-        c.drawString(right_x, 180, "Fighter B Counter-Pathway")
-        module.set_font(c, "Helvetica", 7.2, module.WHITE)
-        module.para(c, f"{blocks['fighter_b']} flips momentum with clean exits and layered counters.", right_x, 164, (w - 76) / 2, 16, size=7.0, col=module.WHITE, min_size=6.8)
-        module.set_font(c, "Helvetica-Bold", 7.8, module.GOLD2)
-        c.drawString(right_x, 150, "Watch Cue")
-        module.set_font(c, "Helvetica", 7.2, module.WHITE)
-        c.drawString(right_x + 52, 150, "reset speed decay in R2-R4")
-
-        module.panel(c, x + 26, 102, w - 52, 20, None, module.GOLD, module.PANEL2, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 7.5, module.GOLD2)
-        c.drawString(x + 34, 109, "Command Instruction")
-        module.set_font(c, "Helvetica", 7.1, module.WHITE)
-        c.drawString(x + 122, 109, "Preserve scoring geography before pace expansion | Failure Consequence: scorecard drift")
-
-        module.set_font(c, "Helvetica-Bold", 7.5, module.GOLD2)
-        c.drawString(x + w - 180, 109, "Round Band")
-        module.set_font(c, "Helvetica", 7.1, module.WHITE)
-        c.drawString(x + w - 126, 109, "R2-R4")
+        module.para(c, body, x + 30, 236, w - 60, 122, size=8.4, col=module.WHITE, min_size=7.2)
+        _draw_depth_footer(module, c, x + 24, 116, w - 48, title, body, blocks)
     c.showPage()
 
 
@@ -1141,10 +1174,11 @@ def _draw_scorecard_scenario(module, c, blocks):
         c.line(tx, ry - 4, tx + tw, ry - 4)
         ry -= 56
 
-    module.panel(c, x + 20, 112, w - 40, 116, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.panel(c, x + 20, 122, w - 40, 106, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
     c.drawString(x + 32, 206, "Scorecard Commentary")
-    module.para(c, blocks.get("scorecard_scenario", ""), x + 32, 146, w - 64, 48, size=8.6, col=module.WHITE, min_size=7.8)
+    module.para(c, blocks.get("scorecard_scenario", ""), x + 32, 150, w - 64, 42, size=8.2, col=module.WHITE, min_size=7.2)
+    _draw_depth_footer(module, c, x + 20, 8, w - 40, "Scorecard Scenario", "Score pathways connect mechanism, volatility, and round-band controls.", blocks)
     c.showPage()
 
 
