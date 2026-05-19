@@ -869,7 +869,7 @@ def _draw_customer_appendix(module, c):
     module.panel(c, x, 98, w, 146, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
     c.drawString(x + 24, 224, "WHAT THIS REPORT INCLUDES")
-    module.para(c, "Premium cover, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and Source Traceability / source map pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
+    module.para(c, "Executive cover design, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and Source Traceability / source map pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
     module.para(c, "No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.", x + 24, 116, w - 48, 26, size=9.4, col=module.MUTED, min_size=8.5)
     c.showPage()
 

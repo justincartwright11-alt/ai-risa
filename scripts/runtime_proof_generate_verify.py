@@ -66,13 +66,12 @@ FORBIDDEN_PHRASES = [
     "where the fight can flip",
     "what the corner must solve",
     "SOURCE TRACEABILITY Source Traceability",
+    # Renderer description text (case-insensitive — must not appear in any form)
+    "Premium Cover",
     # Governance/status string leakage
     "customer_ready_not_ready",
     "draft_only",
     "controlled_export_not_eligible",
-    # NOTE: "Premium Cover" removed from PDF-text forbidden list — appears only as product
-    # description text in the Fight Intelligence Dashboard summary paragraph, NOT as a
-    # standalone section header. The locked parity test does not include it as forbidden.
 ]
 
 def wait_for_server(retries=10, delay=1.0):
@@ -116,7 +115,7 @@ def extract_pdf_text(pdf_path):
 
 def check_pdf_library_route():
     try:
-        req = urllib.request.Request(f"{BASE}/api/button2/pdf-library", method="GET")
+        req = urllib.request.Request(f"{BASE}/api/button2/generated-report/library", method="GET")
         with urllib.request.urlopen(req, timeout=10) as resp:
             body = resp.read().decode("utf-8")
             return {"status": resp.status, "ok": True, "body_len": len(body)}
@@ -125,7 +124,7 @@ def check_pdf_library_route():
 
 def check_open_pdf_route(filename):
     try:
-        url = f"{BASE}/api/button2/open-generated-pdf?filename={urllib.parse.quote(filename)}"
+        url = f"{BASE}/api/button2/generated-report/open?filename={urllib.parse.quote(filename)}"
         req = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(req, timeout=10) as resp:
             return {"status": resp.status, "ok": True}

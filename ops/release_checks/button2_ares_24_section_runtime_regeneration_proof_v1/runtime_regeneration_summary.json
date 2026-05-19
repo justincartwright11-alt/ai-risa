@@ -110,15 +110,23 @@
       "where the fight can flip",
       "what the corner must solve",
       "SOURCE TRACEABILITY Source Traceability",
+      "Premium Cover",
       "customer_ready_not_ready",
       "draft_only",
       "controlled_export_not_eligible"
     ],
-    "note_on_premium_cover": "'Premium Cover' appears only in the Fight Intelligence Dashboard summary description paragraph ('Premium cover, executive dashboard panels...') as product description text — NOT as a standalone section placeholder header. The locked parity test does not list it as forbidden. Not counted as a forbidden phrase."
+    "premium_cover_fix": "Renderer line 872 phrase changed from 'Premium cover, executive dashboard panels...' to 'Executive cover design, executive dashboard panels...' — 'Premium Cover/cover' no longer appears anywhere in generated PDFs.",
+    "all_forbidden_clean_confirmed": true
   },
   "pdf_library_route": {
-    "endpoint": "/api/button2/pdf-library",
-    "result": "HTTP 404 — route not present in current app.py; open_pdf route also returns 404 which is expected (no registered handler). PDF generation and file output are confirmed via file system path."
+    "endpoint": "/api/button2/generated-report/library",
+    "result": "HTTP 200 — route live, body_len=3112",
+    "note": "Previous run used wrong endpoint path /api/button2/pdf-library (404). Correct path is /api/button2/generated-report/library."
+  },
+  "open_pdf_route": {
+    "endpoint": "/api/button2/generated-report/open?filename=...",
+    "result": "HTTP 200 for all 3 generated PDFs",
+    "note": "Previous run used wrong endpoint path /api/button2/open-generated-pdf (404). Correct path is /api/button2/generated-report/open."
   },
   "parity_tests": {
     "test_file": "operator_dashboard/test_button2_selected_matchup_ares_24_section_customer_ready_parity_v1.py",
@@ -132,6 +140,9 @@
     "all_24_plus_pages": true,
     "all_sections_present": true,
     "all_forbidden_clean": true,
+    "premium_cover_absent": true,
+    "pdf_library_http_200": true,
+    "open_pdf_http_200": true,
     "all_governance_flags_correct": true,
     "all_parity_tests_pass": true
   }
