@@ -1,0 +1,52 @@
+{
+  "slice": "button2-premium-template-pack-batch-telemetry-and-failclosed-v1",
+  "date": "2026-05-19",
+  "route": "/api/button2/generate-selected-batch",
+  "objective": "Add per-row renderer telemetry and strict fail-closed customer-ready gating for Button 2 batch PDF generation.",
+  "telemetry_fields": [
+    "renderer_route_used",
+    "renderer_profile",
+    "template_pack_root",
+    "template_pack_asset_backed",
+    "premium_template_confirmed",
+    "customer_ready",
+    "visual_gate_status",
+    "content_gate_passed"
+  ],
+  "fail_closed_rules": [
+    "Non-premium or fallback-like output is rejected before customer-ready acceptance.",
+    "Explicit generation errors are propagated (example: template_pack_unavailable).",
+    "Rows failing strict PDF quality checks are rejected with pdf_quality_gate_failed."
+  ],
+  "strict_quality_gate_checks": [
+    "selected_fighter_and_event_presence",
+    "selected_source_url_or_domain_presence",
+    "page_count_equals_24",
+    "output_path_under_configured_root",
+    "premium_marker_presence",
+    "stale_template_name_pair_rejection"
+  ],
+  "stale_pair_examples": [
+    "bahram rajabzadeh : donovan wisse",
+    "anthony joshua : daniel dubois"
+  ],
+  "test_run": {
+    "command": "python -m pytest operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py",
+    "result": "10 passed"
+  },
+  "files_changed": [
+    "operator_dashboard/app.py",
+    "operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py",
+    "docs/button2_premium_template_pack_batch_telemetry_and_failclosed_v1.md",
+    "ops/release_checks/button2_premium_template_pack_batch_telemetry_and_failclosed_v1/template_pack_batch_telemetry_summary.json"
+  ],
+  "governance_flags_expected_false": [
+    "delivery_performed",
+    "external_api_delivery_performed",
+    "queue_write_performed",
+    "learning_apply_performed",
+    "calibration_write_performed",
+    "button3_mutation_performed"
+  ],
+  "final_verdict": "Batch generation now has row-level premium renderer telemetry and strict fail-closed customer-ready gating with passing targeted tests."
+}

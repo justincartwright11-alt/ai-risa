@@ -34,6 +34,7 @@ def client(tmp_path, monkeypatch):
             "report_ready_status": "ready_for_button2_generation",
             "customer_ready_possible": True,
             "blocked_reason": "",
+            "selected_for_button2": True,
         },
         {
             "matchup_id": "ufc_300_islam_makhachev_vs_dustin_poirier",
@@ -52,6 +53,7 @@ def client(tmp_path, monkeypatch):
             "report_ready_status": "ready_for_button2_generation",
             "customer_ready_possible": True,
             "blocked_reason": "",
+            "selected_for_button2": True,
         },
     ]
 
