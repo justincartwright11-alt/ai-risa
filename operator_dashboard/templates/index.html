@@ -793,7 +793,7 @@
     </div>
 
     <div id="b2-queued-matchups-panel" class="b2-queued-matchups-panel" style="overflow-x:auto;">
-      <h4>Queued Matchups (Select One) - Real Queue</h4>
+      <h4>Selectable Queue Rows - Real Queue</h4>
       <table id="b2-queue-table" style="width:100%;border-collapse:collapse;font-size:0.76rem;">
         <thead>
           <tr style="text-align:left;color:#c9aa71;border-bottom:1px solid #2a2d3e;">
@@ -3510,14 +3510,46 @@ function button2RenderQueueTable() {
   const selectedIds = window.button2SelectedMatchupIds || {};
   const generated = window.button2GenerationByMatchupId || {};
 
+  function button2ResolveRowStatus(genResult, rowIsReady) {
+    if (genResult && genResult.ok === true) {
+      return 'Generated';
+    }
+
+    if (!genResult) {
+      return rowIsReady ? '-' : 'Not Ready';
+    }
+
+    const errorCode = String(genResult.error || '').trim().toLowerCase();
+    const reasonText = String(genResult.reason || '').trim().toLowerCase();
+
+    if (
+      errorCode === 'row_not_ready' ||
+      errorCode === 'not_ready_for_button2' ||
+      reasonText.indexOf('not_ready:') === 0 ||
+      reasonText.indexOf('not ready') >= 0
+    ) {
+      return 'Not Ready';
+    }
+
+    if (
+      errorCode === 'not_source_backed' ||
+      errorCode === 'preview_build_failed' ||
+      reasonText.indexOf('blocked') >= 0 ||
+      reasonText.indexOf('manual_review') >= 0 ||
+      reasonText.indexOf('source-backed') >= 0
+    ) {
+      return 'Skipped';
+    }
+
+    return 'Failed';
+  }
+
   const html = rows.map(row => {
     const matchupId = String(row.matchup_id || '').trim();
     const checked = selectedIds[matchupId] ? ' checked' : '';
     const ready = button2ReadinessIsReady(row);
     const gen = generated[matchupId] || null;
-    const generatedStatus = gen
-      ? (gen.ok ? 'PDF generated' : (String(gen.error || '').toLowerCase().indexOf('skip') >= 0 ? 'Skipped' : 'Failed'))
-      : (ready ? 'Ready' : 'Not ready');
+    const generatedStatus = button2ResolveRowStatus(gen, ready);
     const outputPath = gen && gen.output_path ? String(gen.output_path) : '-';
     const openUrl = gen && gen.open_url ? String(gen.open_url) : '';
     const openLink = openUrl ? '<a href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">Open PDF</a>' : '-';

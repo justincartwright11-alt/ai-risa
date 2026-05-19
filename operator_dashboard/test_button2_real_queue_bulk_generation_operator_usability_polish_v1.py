@@ -63,8 +63,10 @@ def test_button2_ui_shows_generation_result_panel(client):
 def test_button2_ui_shows_row_level_generated_status(client):
     html = _html(client)
     assert "Row Status" in html
-    assert "PDF generated" in html
-    assert "Not ready" in html
+    assert "Generated" in html
+    assert "Skipped" in html
+    assert "Failed" in html
+    assert "Not Ready" in html
     assert "Blocked" in html
 
 

@@ -14,7 +14,7 @@ Polish the Button 2 operator workflow on top of the locked real-queue bulk-gener
 - Added a source-of-truth note stating the server queue is canonical and browser localStorage is not used for seeding.
 - Expanded the summary strip to show total loaded rows, selected rows, ready/blocked counts, event-selected count, and last-run generation totals.
 - Added a dedicated generation result panel with explicit governance wording.
-- Polished row-level wording to show `Ready`, `Blocked`, `PDF generated`, `Not ready`, and `Open PDF`.
+- Polished row-level wording to show explicit operator-facing states: `Generated`, `Skipped`, `Failed`, and `Not Ready`, while preserving readiness and blocked columns.
 - Kept the visible control label `Select Event Card` while preserving the legacy exact string `Select Full Event Card` in the button title for baseline test compatibility.
 
 ## Validation
@@ -23,7 +23,7 @@ Polish the Button 2 operator workflow on top of the locked real-queue bulk-gener
 - Live localhost:5050 proof on the real dashboard runtime:
   - Open Button 2 and refresh the canonical queue.
   - Generate one selected ready row and confirm one output path.
-  - Generate two selected ready rows and confirm two output paths.
+  - Generate multiple selected ready rows and confirm multiple output paths.
   - Use Select All Ready and confirm the selected count updates.
   - Confirm the governance message remains visible.
   - Confirm a generated `Open PDF` link resolves through the safe open route with HTTP 200 and `application/pdf`.

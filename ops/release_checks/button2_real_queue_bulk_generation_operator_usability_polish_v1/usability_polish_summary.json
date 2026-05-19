@@ -5,56 +5,61 @@
   "tests": {
     "usability_suite": {
       "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe -m pytest operator_dashboard/test_button2_real_queue_bulk_generation_operator_usability_polish_v1.py -q",
-      "result": "pass"
+      "result": "pass",
+      "details": "10 passed"
     },
     "locked_baseline_suite": {
       "command": "C:\\Users\\jusin\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe -m pytest operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py -q",
-      "result": "pass"
+      "result": "pass",
+      "details": "16 passed"
     }
   },
   "live_proof": {
     "url": "http://127.0.0.1:5050/",
-    "button2_queue_refresh": {
-      "rows_loaded": 6,
-      "source_of_truth_note_visible": true
+    "server_start": {
+      "port": 5050,
+      "stale_port_killed": true,
+      "button2_pdf_output_root": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports"
     },
     "single_selection_run": {
       "selected_rows": 1,
       "status": "Generate selected PDFs completed. requested=1 | generated=1 | failed=0 | skipped=0",
       "summary": "total_rows_loaded=6 | selected_rows=1 | ready_selected=1 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=1 | failed_or_skipped_last_run=0",
       "output_paths": [
-        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T094642Z_7c650e46fec9.pdf"
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T100032Z_5433ca41d2d6.pdf"
       ]
     },
     "multi_selection_run": {
-      "selected_rows": 2,
-      "status": "Generate selected PDFs completed. requested=2 | generated=2 | failed=0 | skipped=0",
-      "summary": "total_rows_loaded=6 | selected_rows=6 | ready_selected=6 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=2 | failed_or_skipped_last_run=0",
+      "selected_rows": 3,
+      "status": "Generate selected PDFs completed. requested=3 | generated=3 | failed=0 | skipped=0",
+      "summary": "total_rows_loaded=6 | selected_rows=3 | ready_selected=3 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=3 | failed_or_skipped_last_run=0",
       "output_paths": [
-        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T094706Z_4380c053d040.pdf",
-        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T094706Z_b7a78e207c94.pdf"
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T100040Z_95c182fb612d.pdf",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ryan_curtis_vs_adam_borics_bellator_298_premium_20260519T100040Z_ece2818c401e.pdf",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\zebaztian_kadestam_vs_john_kavanagh_one_169_premium_20260519T100040Z_719f3d685012.pdf"
       ],
-      "generation_result_panel": "generated_count=2 | failed_count=0 | skipped_count=0"
+      "generation_result_panel": "generated_count=3 | failed_count=0 | skipped_count=0"
     },
     "select_all_ready": {
       "checked_rows": 6,
-      "summary": "total_rows_loaded=6 | selected_rows=6 | ready_selected=6 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=2 | failed_or_skipped_last_run=0"
+      "summary": "total_rows_loaded=6 | selected_rows=6 | ready_selected=6 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=3 | failed_or_skipped_last_run=0"
     },
     "governance_visibility": {
       "message": "No delivery performed. Governance flags remain false.",
       "visible": true
     },
     "safe_open_route": {
-      "href": "/api/button2/generated-report/open?filename=sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T094706Z_4380c053d040.pdf",
+      "href": "/api/button2/generated-report/open?filename=sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T100040Z_95c182fb612d.pdf",
       "http_status": 200,
       "content_type": "application/pdf",
-      "content_disposition": "inline; filename=sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T094706Z_4380c053d040.pdf",
+      "content_disposition": "inline; filename=sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260519T100040Z_95c182fb612d.pdf",
       "body_size": 23486
     }
   },
   "notes": [
     "Visible operator label remains 'Select Event Card'.",
     "Legacy locked-baseline HTML assertion for 'Select Full Event Card' is preserved via the control title attribute.",
-    "Runtime preflight still reports WeasyPrint render readiness as import_error:OSError, but guarded live generation succeeded through the real Button 2 route in this proof run."
+    "Open PDF safe route validated through HTTP request against current 5050 runtime.",
+    "WeasyPrint runtime preflight still reports import_error:OSError in this environment, but real Button 2 generation succeeded with configured output root."
   ]
 }
