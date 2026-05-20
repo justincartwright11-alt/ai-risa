@@ -1,0 +1,104 @@
+{
+  "slice": "button2-v29-template-visual-defect-polish-v1",
+  "baseline": {
+    "commit": "5d3f9bd",
+    "tag": "button2-v29-template-sample-data-bleed-repair-v1"
+  },
+  "status": "PASS",
+  "verdict": "PASS - approved for controlled manual delivery",
+  "defect_reproduction": {
+    "reference_pdf": "reports/bo_nickal_vs_cody_brundage_ufc_300_premium_20260520T005949Z_cd9397d11bc9.pdf",
+    "pages_checked": [1, 6, 14, 15, 16, 17, 23, 24],
+    "issues_found": [
+      "Page 23 source-map text overlap around REPORT ID and SOURCE URL rows.",
+      "Bottom Risk Trigger/Corner Command cards on pages 6/16/17 were too close to footer rail.",
+      "Cover logo could render as a hard tile when fallback logo asset was used."
+    ],
+    "repro_contact_sheet": "ops/release_checks/button2_v29_template_visual_defect_polish_v1/bo_nickal_vs_cody_brundage_defect_repro_before_contact_sheet.png"
+  },
+  "root_cause": [
+    "Logo candidate order preferred legacy logo before blended assets.",
+    "Depth footer used dense bottom-card packing without a strict footer safe-zone contract.",
+    "Source-map rows used fixed vertical spacing and non-wrapped values for long REPORT ID / SOURCE URL content.",
+    "Customer-ready gate had no renderer layout-safety metadata contract for visual defects."
+  ],
+  "files_changed": [
+    "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "operator_dashboard/app.py",
+    "operator_dashboard/test_button2_v29_template_visual_defect_polish_v1.py"
+  ],
+  "tests": {
+    "py_compile": "pass",
+    "suites": [
+      {
+        "command": "python -m pytest operator_dashboard/test_button2_v29_template_visual_defect_polish_v1.py -q",
+        "result": "12 passed"
+      },
+      {
+        "command": "python -m pytest operator_dashboard/test_button2_v29_template_sample_data_bleed_repair_v1.py -q",
+        "result": "11 passed"
+      },
+      {
+        "command": "python -m pytest operator_dashboard/test_button2_v29_template_layout_parity_rebuild_v1.py -q",
+        "result": "15 passed"
+      },
+      {
+        "command": "python -m pytest operator_dashboard/test_button2_premium_template_pack_binding_and_visual_upgrade_v1.py -q",
+        "result": "10 passed"
+      },
+      {
+        "command": "python -m pytest operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py -q",
+        "result": "16 passed"
+      }
+    ]
+  },
+  "live_5050_proof": {
+    "generation_mode": "in-process Flask route invocation for /api/button2/generate-selected-batch with BUTTON2_PDF_OUTPUT_ROOT set to workspace reports",
+    "batch": {
+      "ok": true,
+      "generated_count": 2,
+      "failed_count": 0,
+      "skipped_count": 0
+    },
+    "generated_pdfs": [
+      "reports/bo_nickal_vs_cody_brundage_ufc_300_premium_20260520T015112Z_97374ea2ebaa.pdf",
+      "reports/sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260520T015114Z_3122aefa7e9a.pdf"
+    ],
+    "contact_sheets": [
+      "ops/release_checks/button2_v29_template_visual_defect_polish_v1/bo_nickal_vs_cody_brundage_visual_defect_polish_contact_sheet.png",
+      "ops/release_checks/button2_v29_template_visual_defect_polish_v1/sean_strickland_vs_dricus_du_plessis_visual_defect_polish_contact_sheet.png"
+    ]
+  },
+  "acceptance_matrix": {
+    "bo_nickal_vs_cody_brundage": {
+      "page_1_cover_logo_blend_and_correct_fighters_event": "PASS",
+      "page_6_footer_safe_zone_no_collision": "PASS",
+      "page_14_round_control_readable": "PASS",
+      "page_15_scenario_tree_readable": "PASS",
+      "page_16_footer_safe_zone_no_collision": "PASS",
+      "page_17_footer_safe_zone_no_collision": "PASS",
+      "page_23_source_map_no_overlap_and_rows_clear": "PASS",
+      "page_24_disclaimer_risk_control_present": "PASS"
+    },
+    "sean_strickland_vs_dricus_du_plessis": {
+      "page_1_cover_logo_blend_and_correct_fighters_event": "PASS",
+      "page_6_footer_safe_zone_no_collision": "PASS",
+      "page_14_round_control_readable": "PASS",
+      "page_15_scenario_tree_readable": "PASS",
+      "page_16_footer_safe_zone_no_collision": "PASS",
+      "page_17_footer_safe_zone_no_collision": "PASS",
+      "page_23_source_map_no_overlap_and_rows_clear": "PASS",
+      "page_24_disclaimer_risk_control_present": "PASS"
+    }
+  },
+  "governance_proof": {
+    "button1_queue_mutation": false,
+    "button3_mutation": false,
+    "event_source_binding_gate_preserved": true,
+    "sample_bleed_gate_preserved": true,
+    "premium_telemetry_fail_closed_preserved": true,
+    "customer_ready_only_when_visual_checks_pass": true,
+    "visual_gate_status_when_passed": "premium_template_confirmed",
+    "visual_gate_status_when_layout_safety_fails": "v29_visual_defect_failed"
+  }
+}

@@ -109,12 +109,34 @@ _BUTTON2_REQUIRED_V29_LAYOUT_MARKERS = [
     "intelligence report",
     "the intelligence beneath the violence",
     "02 | executive command dashboard",
+    "control zone",
+    "danger zone",
+    "collapse trigger",
+    "fight control intelligence strip",
+    "round control projection",
+    "method probability",
+    "risk control",
     "05 | fighter architecture radar",
     "page 05",
+    "fatigue failure points",
+    "failure rail",
+    "signal",
+    "late risk",
     "14 | round-by-round control projection",
     "15 | scenario tree / method pathways",
     "23 | traceability / source map",
+    "source chain",
+    "fight id",
+    "event date",
+    "sport",
+    "promotion",
+    "report id",
+    "source discipline statement",
     "24 | disclaimer / risk control",
+    "no guarantee",
+    "no financial advice",
+    "combat risk",
+    "never over-wager",
 ]
 
 _BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS = [
@@ -334,6 +356,8 @@ def _pdf_quality_gate_status(strict_gate_violations, text_scan):
     violations = [str(value) for value in (strict_gate_violations or [])]
     if any(value.startswith("template_sample_bleed_present:") for value in violations):
         return "v29_template_sample_bleed_failed"
+    if any(value.startswith("visual_defect_") for value in violations):
+        return "v29_visual_defect_failed"
     if any(value.startswith("v29_layout_") for value in violations):
         return "v29_template_layout_parity_failed"
     if isinstance(text_scan, dict) and text_scan.get("any_forbidden_found"):
@@ -355,7 +379,7 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     return fighters_present and event_present
 
 
-def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count):
+def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, renderer_layout_safety=None):
     violations = []
     text_lower = str(pdf_text or "").lower()
 
@@ -446,6 +470,24 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     for marker in _BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS:
         if marker in text_lower:
             violations.append(f"v29_layout_plain_fallback_marker_present:{marker}")
+
+    if isinstance(renderer_layout_safety, dict) and renderer_layout_safety:
+        if renderer_layout_safety.get("logo_black_tile_risk"):
+            violations.append("visual_defect_logo_black_tile_risk")
+        if not bool(renderer_layout_safety.get("logo_blend_ok", False)):
+            violations.append("visual_defect_logo_blend_failed")
+
+        footer_pages = renderer_layout_safety.get("footer_safe_zone_pages", {})
+        for page_key in ("6", "16", "17"):
+            page_info = footer_pages.get(page_key, {}) if isinstance(footer_pages, dict) else {}
+            if not bool(page_info.get("safe", False)):
+                violations.append(f"visual_defect_footer_safe_zone_failed:page_{page_key}")
+
+        source_map = renderer_layout_safety.get("source_map", {})
+        if not bool(source_map.get("rows_separated", False)):
+            violations.append("visual_defect_source_map_rows_overlap")
+        if not bool(source_map.get("source_url_statement_separated", False)):
+            violations.append("visual_defect_source_map_url_statement_overlap")
 
     return len(violations) == 0, violations
 
@@ -2311,6 +2353,7 @@ def button2_generate_selected_batch_v1():
         renderer_profile = result.get("renderer_profile")
         template_pack_root = result.get("template_pack_root")
         template_pack_asset_backed = bool(result.get("template_pack_asset_backed", False))
+        renderer_layout_safety = result.get("layout_safety") if isinstance(result.get("layout_safety"), dict) else None
         has_renderer_metadata = bool(renderer_route_used) or bool(renderer_profile) or ("template_pack_asset_backed" in result)
 
         # Premium template confirmation logic
@@ -2355,6 +2398,7 @@ def button2_generate_selected_batch_v1():
             result,
             generated_pdf_text,
             extracted_page_count,
+            renderer_layout_safety,
         )
 
         if text_scan.get("any_forbidden_found") or not strict_gate_passed:
@@ -2388,6 +2432,7 @@ def button2_generate_selected_batch_v1():
                 "strict_quality_gate_passed": strict_gate_passed,
                 "strict_quality_gate_violations": strict_gate_violations,
                 "text_scan_forbidden_markers": text_scan,
+                "layout_safety": renderer_layout_safety or {},
             })
             failed_count += 1
             continue
@@ -2413,6 +2458,7 @@ def button2_generate_selected_batch_v1():
             "premium_template_confirmed": bool(premium_template_confirmed),
             "customer_ready": bool(premium_template_confirmed),
             "visual_gate_status": "premium_template_confirmed" if premium_template_confirmed else "telemetry_unavailable",
+            "layout_safety": renderer_layout_safety or {},
         })
         if output_path:
             output_paths.append(output_path)

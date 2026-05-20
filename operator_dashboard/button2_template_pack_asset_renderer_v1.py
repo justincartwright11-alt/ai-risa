@@ -6,6 +6,8 @@ import os
 import re
 from pathlib import Path
 
+from PIL import Image
+
 
 DEFAULT_TEMPLATE_PACK_ROOT = r"C:\ai_risa_next_dashboard_polish\ops\prf_reports\template_pack_sample"
 REQUIRED_MODULE = "ai_risa_report_template_v29_bar_alignment_fix.py"
@@ -15,8 +17,9 @@ _PACKAGED_TEMPLATE_PACK_CANDIDATES = [
     "assets",
 ]
 _REQUIRED_LOGO_CANDIDATES = [
-    "AI-RISA Logo.png",
     "ai_risa_logo_clean_blend.png",
+    "ai_risa_logo_watermark_blend.png",
+    "AI-RISA Logo.png",
 ]
 _WATERMARK_CANDIDATES = [
     "ai_risa_logo_watermark_blend.png",
@@ -92,6 +95,51 @@ def _clean_text(value, fallback=""):
         return fallback
     text = html.unescape(str(value)).strip()
     return text or fallback
+
+
+def _prepare_logo_image_reader(module, logo_path):
+    """Prefer alpha-safe logo rendering and avoid hard black-tile draws."""
+    logo_basename = os.path.basename(str(logo_path or "")).lower()
+    fallback_risk = logo_basename == "ai-risa logo.png"
+    try:
+        with Image.open(logo_path) as im:
+            rgba = im.convert("RGBA")
+            alpha = rgba.getchannel("A")
+            alpha_bbox = alpha.getbbox()
+            logo_blend_ok = alpha_bbox is not None
+
+            if alpha_bbox is None:
+                # Convert near-black background to transparency for legacy logo assets.
+                pixels = list(rgba.getdata())
+                converted = []
+                for r, g, b, a in pixels:
+                    if r <= 20 and g <= 20 and b <= 20:
+                        converted.append((r, g, b, 0))
+                    else:
+                        converted.append((r, g, b, max(a, 230)))
+                rgba.putdata(converted)
+                alpha_bbox = rgba.getchannel("A").getbbox()
+                logo_blend_ok = alpha_bbox is not None
+
+            if alpha_bbox:
+                rgba = rgba.crop(alpha_bbox)
+
+            stream = io.BytesIO()
+            rgba.save(stream, format="PNG")
+            stream.seek(0)
+            return {
+                "image_reader": module.ImageReader(stream),
+                "logo_blend_ok": bool(logo_blend_ok),
+                "logo_black_tile_risk": bool(fallback_risk and not logo_blend_ok),
+                "logo_asset": logo_path,
+            }
+    except Exception:
+        return {
+            "image_reader": module.ImageReader(logo_path),
+            "logo_blend_ok": False,
+            "logo_black_tile_risk": bool(fallback_risk),
+            "logo_asset": logo_path,
+        }
 
 
 def _fighter_last_name(value, fallback="Fighter"):
@@ -488,6 +536,9 @@ def _build_blocks(report_context_preview):
     report_id = re.sub(r"[^a-z0-9]+", "_", f"{fighter_a}_{fighter_b}_{event_name}".lower()).strip("_")
     if not report_id:
         report_id = "selected_matchup_report"
+    fight_id = re.sub(r"[^a-z0-9]+", "_", f"{fighter_a}_{fighter_b}".lower()).strip("_")
+    if not fight_id:
+        fight_id = "selected_matchup"
 
     handoff_summary_raw = _clean_text(report_context_preview.get("handoff_summary_preview"), "No summary provided.")
     blocked_markers = [
@@ -550,6 +601,7 @@ def _build_blocks(report_context_preview):
         "promotion": promotion,
         "source_url": source_url,
         "report_id": report_id,
+        "fight_id": fight_id,
         "summary": dashboard_summary,
         "source_summary": handoff_summary,
         # Cover tagline
@@ -727,364 +779,309 @@ def _build_blocks(report_context_preview):
     }
 
 
-def _draw_depth_footer(module, c, x, y, w, title, body, blocks):
+def _draw_depth_footer(module, c, x, y, w, title, body, blocks, *, page_number=None, layout_safety=None):
     fighter_a = blocks.get("fighter_a", "Fighter A")
     fighter_b = blocks.get("fighter_b", "Fighter B")
+    footer_safe_zone_y = module.FOOTER_Y + 16
+    card_y = max(y, footer_safe_zone_y + 2)
+    card_h = 20
+    gap = 12
+    card_w = (w - gap) / 2
+
+    # Compact summary line above the bottom strip to preserve v29 depth cues.
+    summary_y = card_y + card_h + 6
+    module.panel(c, x, summary_y, w, 18, None, module.GOLD, module.PANEL2, r=5, lw=0.8, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 7.9, module.GOLD2)
+    c.drawString(x + 8, summary_y + 7, title.upper())
+    module.set_font(c, "Helvetica", 7.0, module.MUTED)
     compact_body = re.sub(r"\s+", " ", str(body or "")).strip()
-    compact_body = compact_body[:210] + "..." if len(compact_body) > 210 else compact_body
+    compact_body = compact_body[:118] + "..." if len(compact_body) > 118 else compact_body
+    c.drawRightString(x + w - 8, summary_y + 7, compact_body)
 
-    draw_two_column_safe_layout(
-        module,
-        c,
-        x=x,
-        y_top=y,
-        w=w,
-        column_gap=12,
-        left_items=[
-            (
-                "Primary Control Read",
-                compact_body or f"{fighter_a} keeps edge by winning first re-entry and preserving scoring geography.",
-                module.BLUE,
-                module.PANEL_BLUE,
-            ),
-            (
-                "Risk Trigger",
-                "If pressure output rises without position conversion, card authority can drift quickly.",
-                module.RED,
-                module.PANEL,
-            ),
-        ],
-        right_items=[
-            (
-                "Counter Risk",
-                f"{fighter_b} gains leverage when exits are clean and entries are rushed or unlayered.",
-                module.RED,
-                module.PANEL,
-            ),
-            (
-                "Corner Command",
-                "Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.",
-                module.GOLD2,
-                module.PANEL,
-            ),
-        ],
-        footer_reserved=8,
-    )
+    left_x = x
+    right_x = x + card_w + gap
+    module.panel(c, left_x, card_y, card_w, card_h, None, module.RED, module.PANEL, r=5, lw=0.9, title_line=False)
+    module.panel(c, right_x, card_y, card_w, card_h, None, module.GOLD2, module.PANEL, r=5, lw=0.9, title_line=False)
+
+    module.set_font(c, "Helvetica-Bold", 7.2, module.RED)
+    c.drawString(left_x + 8, card_y + 12, "Risk Trigger")
+    module.set_font(c, "Helvetica", 6.6, module.WHITE)
+    c.drawString(left_x + 8, card_y + 4, f"If pressure output rises without position conversion, card authority can drift quickly.")
+
+    module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
+    c.drawString(right_x + 8, card_y + 12, "Corner Command")
+    module.set_font(c, "Helvetica", 6.6, module.WHITE)
+    c.drawString(right_x + 8, card_y + 4, "Preserve lane discipline, keep resets controlled, and avoid low-value chase volume.")
+
+    if isinstance(layout_safety, dict) and page_number is not None:
+        footer_pages = layout_safety.setdefault("footer_safe_zone_pages", {})
+        page_key = str(page_number)
+        min_card_y = card_y
+        footer_pages[page_key] = {
+            "safe": bool(min_card_y >= footer_safe_zone_y),
+            "card_min_y": float(min_card_y),
+            "safe_zone_y": float(footer_safe_zone_y),
+        }
 
 
-def _draw_cover(module, c, blocks):
-    """Premium cover design matching Ares reference standard."""
-    module.page_base(c, 1, "AI-RISA PREMIUM FIGHT INTELLIGENCE REPORT")
-    x = module.SAFE_X + 10
-    w = module.PAGE_W - 2 * x
+def _draw_cover(module, c, blocks, *, layout_safety=None):
+    # v29 parity cover: centered logo/title stack, two fighter cards, VS lane, event band.
+    c.setFillColor(module.BLACK)
+    c.rect(0, 0, module.PAGE_W, module.PAGE_H, fill=1, stroke=0)
+    module.grid(c)
+    module.vector_watermark(c)
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(1.25)
+    c.rect(28, 40, module.PAGE_W - 56, module.PAGE_H - 76, fill=0, stroke=1)
+    if getattr(module, "LOGO", None):
+        c.drawImage(module.LOGO, module.PAGE_W / 2 - 45, module.PAGE_H - 106, 90, 90, preserveAspectRatio=True, mask="auto")
+    if isinstance(layout_safety, dict):
+        layout_safety["cover_logo_drawn"] = bool(getattr(module, "LOGO", None))
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.9)
+    c.line(70, module.PAGE_H - 91, module.PAGE_W / 2 - 70, module.PAGE_H - 91)
+    c.line(module.PAGE_W / 2 + 70, module.PAGE_H - 91, module.PAGE_W - 70, module.PAGE_H - 91)
+    module.set_font(c, "Helvetica-Bold", 16.5, module.WHITE)
+    c.drawCentredString(module.PAGE_W / 2, 360, "PREMIUM FIGHT")
+    module.set_font(c, "Helvetica-Bold", 35.0, module.WHITE)
+    c.drawCentredString(module.PAGE_W / 2, 326, "INTELLIGENCE REPORT")
+    module.set_font(c, "Helvetica-Bold", 12.0, module.GOLD2)
+    c.drawCentredString(module.PAGE_W / 2, 298, "THE INTELLIGENCE BENEATH THE VIOLENCE")
 
-    # Premium header: logo reserve + clear type hierarchy.
-    module.panel(c, x, 366, w, 98, "", module.GOLD, module.PANEL)
-    logo_zone_x = x + 12
-    logo_zone_y = 378
-    logo_zone_w = 84
-    logo_zone_h = 78
-    module.panel(c, logo_zone_x, logo_zone_y, logo_zone_w, logo_zone_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    try:
-        c.drawImage(module.LOGO, logo_zone_x + 12, logo_zone_y + 8, 56, 56, preserveAspectRatio=True, mask='auto')
-    except Exception:
-        pass
+    def _name_lines(name):
+        parts = [p for p in str(name or "").strip().split() if p]
+        if not parts:
+            return ("FIGHTER", "A")
+        if len(parts) == 1:
+            return (parts[0].upper(), "")
+        return (" ".join(parts[:-1]).upper(), parts[-1].upper())
 
-    title_left = logo_zone_x + logo_zone_w + 16
-    title_width = w - (title_left - x) - 12
-    # Fit title text to available width (dynamic size guard).
-    title_text = blocks.get("cover_title", "PREMIUM FIGHT INTELLIGENCE REPORT")
-    title_size = 15.2
-    while title_size >= 11.4:
-        module.set_font(c, "Helvetica-Bold", title_size, module.WHITE)
-        if c.stringWidth(title_text, "Helvetica-Bold", title_size) <= title_width:
-            break
-        title_size -= 0.6
-    c.drawString(title_left, 442, title_text)
+    y = 171
+    card_w = 300
+    card_h = 92
+    module.panel(c, 66, y, card_w, card_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.target(c, 99, y + 46, 29, module.BLUE)
+    a_top, a_bottom = _name_lines(blocks.get("fighter_a"))
+    module.set_font(c, "Helvetica-Bold", 16.5, module.BLUE)
+    c.drawString(142, y + 55, a_top)
+    if a_bottom:
+        c.drawString(142, y + 35, a_bottom)
+    module.para(c, blocks.get("fighter_a_style", "Model-derived pressure striker | Orthodox"), 142, y + 14, 190, 15, size=9.5, col=module.MUTED, min_size=8.6)
 
-    module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
-    c.drawString(title_left, 423, blocks.get("cover_tagline", "THE INTELLIGENCE BENEATH THE VIOLENCE"))
+    module.set_font(c, "Helvetica-Bold", 35, module.GOLD2)
+    c.drawCentredString(module.PAGE_W / 2, y + 36, "VS")
 
-    # Fighter versus structure with centered VS lane.
-    module.panel(c, x, 274, (w // 3) - 10, 86, None, module.BLUE, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
-    c.drawString(x + 12, 350, "FIGHTER A")
-    module.set_font(c, "Helvetica-Bold", 12.0, module.WHITE)
-    draw_wrapped_text_box(
-        module,
-        c,
-        blocks["fighter_a"],
-        x + 10,
-        314,
-        (w // 3) - 30,
-        28,
-        font_name="Helvetica-Bold",
-        font_size=12.0,
-        color=module.WHITE,
-        padding=2,
-    )
-    module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + (w // 6), 307, "AI-RISA matchup subject | operator-approved")
-    module.set_font(c, "Helvetica", 7.2, module.MUTED)
-    module.para(c, blocks.get("fighter_a_style", "Model-derived pressure striker | Orthodox"), x + 12, 286, (w // 3) - 34, 16, size=7.2, col=module.MUTED, min_size=6.4)
+    module.panel(c, module.PAGE_W - 66 - card_w, y, card_w, card_h, None, module.RED, module.PANEL_RED, title_line=False)
+    module.target(c, module.PAGE_W - 99, y + 46, 29, module.RED)
+    b_top, b_bottom = _name_lines(blocks.get("fighter_b"))
+    module.set_font(c, "Helvetica-Bold", 16.5, module.RED)
+    c.drawRightString(module.PAGE_W - 142, y + 55, b_top)
+    if b_bottom:
+        c.drawRightString(module.PAGE_W - 142, y + 35, b_bottom)
+    module.para(c, blocks.get("fighter_b_style", "Model-derived counter striker | Orthodox"), module.PAGE_W - 332, y + 14, 190, 15, size=9.5, col=module.MUTED, min_size=8.6, align="right")
 
-    # VS block
-    module.panel(c, x + (w // 3), 274, (w // 3) - 20, 86, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 14.0, module.WHITE)
-    c.drawCentredString(module.PAGE_W / 2, 327, "VS")
-    module.set_font(c, "Helvetica", 8.0, module.MUTED)
-    c.drawCentredString(module.PAGE_W / 2, 307, blocks.get("edge_percent", "Decision | Full Distance"))
-
-    # Fighter B block
-    module.panel(c, x + (2 * w // 3) + 10, 274, (w // 3) - 10, 86, None, module.RED, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
-    c.drawRightString(x + w - 14, 350, "FIGHTER B")
-    module.set_font(c, "Helvetica-Bold", 12.0, module.WHITE)
-    draw_wrapped_text_box(
-        module,
-        c,
-        blocks["fighter_b"],
-        x + (2 * w // 3) + 20,
-        314,
-        (w // 3) - 30,
-        28,
-        font_name="Helvetica-Bold",
-        font_size=12.0,
-        color=module.WHITE,
-        padding=2,
-    )
-    module.set_font(c, "Helvetica", 8.0, module.GOLD2)
-    c.drawCentredString(x + w - (w // 6), 307, "AI-RISA matchup subject | opponent profile")
-    module.set_font(c, "Helvetica", 7.2, module.MUTED)
-    module.para(c, blocks.get("fighter_b_style", "Model-derived counter striker | Orthodox"), x + (2 * w // 3) + 22, 286, (w // 3) - 34, 16, size=7.2, col=module.MUTED, min_size=6.4)
-
-    # Event/date/customer-ready strip and report metadata row.
-    module.panel(c, x, 130, w, 58, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
-    c.drawCentredString(module.PAGE_W / 2, 167, f"{blocks['event_name']} | {blocks['event_date']} | CUSTOMER READY")
-    module.set_font(c, "Helvetica", 8.4, module.MUTED)
+    meta_y = 85
+    module.panel(c, 76, meta_y, module.PAGE_W - 152, 62, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
+    c.drawCentredString(module.PAGE_W / 2, meta_y + 39, f"{blocks['event_name']} | {blocks['event_date']} | CUSTOMER READY")
+    module.set_font(c, "Helvetica", 9.0, module.MUTED)
     c.drawCentredString(
         module.PAGE_W / 2,
-        148,
-        f"Report ID: {blocks.get('report_id', 'selected_matchup_report')} | Confidence: {blocks.get('confidence_display', '55.0%')} | Generated: {_dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}",
+        meta_y + 19,
+        f"Report ID: {blocks['report_id']} | Confidence: {blocks.get('confidence_display', '55.0%')} | Generated: {module.DATA.get('generated', '')}",
     )
+    module.set_font(c, "Helvetica", 8.2, module.MUTED)
+    c.drawCentredString(module.PAGE_W / 2, meta_y + 7, f"{blocks['fighter_a']} vs {blocks['fighter_b']}")
 
-    # Keep cover clean; command stack starts on dashboard page.
-    module.panel(c, x, 20, w, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.6, module.BLUE)
-    c.drawString(x + 18, 96, "PREMIUM FIGHT INTELLIGENCE REPORT")
-    module.para(c, blocks["headline"], x + 18, 30, w - 36, 54, size=8.5, col=module.WHITE, min_size=7.8)
-
-    # Footer with source/operator approval
-    module.set_font(c, "Helvetica", 7.0, module.MUTED)
-    c.drawString(x, 10, "Source Traceable | Operator Approved")
-    module.set_font(c, "Helvetica", 6.5, module.GREY)
-    c.drawRightString(x + w, 10, f"Generated: {_dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
-    module.set_font(c, "Helvetica", 5.9, module.MUTED)
-    c.drawRightString(x + w, 18, "AI-RISA BRAND MARK")
-
+    c.setStrokeColor(module.GOLD)
+    c.line(module.SAFE_X, module.FOOTER_Y + 12, module.PAGE_W - module.SAFE_X, module.FOOTER_Y + 12)
+    module.set_font(c, "Helvetica-Bold", 7.2, module.GOLD2)
+    c.drawString(module.SAFE_X + 6, module.FOOTER_Y + 3, "AI-RISA | COMBAT INTELLIGENCE | OPERATOR APPROVED | SOURCE TRACEABLE")
+    c.drawRightString(module.PAGE_W - module.SAFE_X - 6, module.FOOTER_Y + 3, "PAGE 01")
     c.showPage()
 
 
 def _draw_executive(module, c, blocks):
-    """Executive command dashboard aligned to Jbalia template hierarchy."""
+    # v29 parity executive dashboard layout with dynamic selected fighters.
     module.page_base(c, 2, "Executive Command Dashboard")
-    x = module.SAFE_X + 8
+    x = module.SAFE_X + 4
     w = module.PAGE_W - 2 * x
+    a_short = _fighter_last_name(blocks.get("fighter_a", "Fighter A"), "Fighter A")
+    b_short = _fighter_last_name(blocks.get("fighter_b", "Fighter B"), "Fighter B")
 
-    module.set_font(c, "Helvetica-Bold", 10.8, module.GOLD2)
-    c.drawString(x + 2, 452, "EXECUTIVE COMMAND DASHBOARD")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 2, 440, "PREMIUM FIGHT INTELLIGENCE DOSSIER")
+    top = 360
+    gap = 14
+    h = 88
+    pred_w = 172
+    kpi_w = 136
+    summary_w = w - pred_w - 2 * kpi_w - 3 * gap
+    module.stat_card(c, x, top, pred_w, h, "Headline Prediction", a_short, module.BLUE, "Decision | Full Distance")
+    module.stat_card(c, x + pred_w + gap, top, kpi_w, h, "Confidence", blocks.get("confidence_band", "55%"), module.GOLD2, "Moderate edge")
+    module.stat_card(c, x + pred_w + kpi_w + 2 * gap, top, kpi_w, h, "Volatility", blocks.get("volatility", "42%"), module.RED, "Live swing risk")
+    sx = x + pred_w + 2 * kpi_w + 3 * gap
+    module.panel(c, sx, top, summary_w, h, "Executive Summary", module.GOLD, module.PANEL, title_line=False)
+    module.para(c, blocks.get("summary", ""), sx + 14, top + 16, summary_w - 28, 46, size=10.0, col=module.WHITE, min_size=8.8)
 
-    # 1-4: top metric cards.
-    card_gap = 8
-    card_w = (w - 16 - 3 * card_gap) / 4
-    top_cards = [
-        ("HEADLINE PREDICTION", blocks.get("projected_edge", "Fighter A"), module.BLUE),
-        ("CONFIDENCE", blocks.get("confidence_band", "55%"), module.GOLD2),
-        ("VOLATILITY", blocks.get("volatility", "High"), module.RED),
-        ("EXECUTIVE SUMMARY", blocks.get("executive_summary", blocks.get("summary", "")), module.GOLD),
+    y2 = 236
+    colw = (w - 2 * 18) / 3
+    module.panel(c, x, y2, colw, 112, f"Control Zone - {a_short}", module.BLUE, module.PANEL_BLUE)
+    module.bullets(c, ["Pressure bursts", "Momentum theft", "Emotional discomfort"], x + 20, y2 + 30, colw - 88, 62, module.BLUE, 9.4)
+    module.target(c, x + colw - 40, y2 + 55, 17, module.BLUE)
+    module.panel(c, x + colw + 18, y2, colw, 112, f"Danger Zone - {b_short}", module.RED, module.PANEL_RED)
+    module.bullets(c, ["Clean range", "Disciplined counters", "Measured scoring"], x + colw + 38, y2 + 30, colw - 88, 62, module.RED, 9.4)
+    module.target(c, x + 2 * colw + 18 - 40, y2 + 55, 17, module.RED)
+    module.panel(c, x + 2 * (colw + 18), y2, colw, 112, "Collapse Trigger", module.RED, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 34, module.RED)
+    c.drawString(x + 2 * (colw + 18) + 22, y2 + 43, "!")
+    module.para(c, blocks.get("collapse", ""), x + 2 * (colw + 18) + 70, y2 + 28, colw - 96, 52, size=9.0, col=module.WHITE, min_size=8.0)
+
+    y3 = 148
+    module.panel(c, x, y3, w, 76, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
+    c.drawString(x + 14, y3 + 55, "FIGHT CONTROL INTELLIGENCE STRIP")
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.65)
+    c.line(x + 14, y3 + 48, x + w - 14, y3 + 50)
+    strip = [
+        ("CONTROL THESIS", "Instability vs structure", module.BLUE),
+        ("FLIP POINT", "Who creates doubt first?", module.GOLD2),
+        ("WATCH CUE", f"Does {b_short} reset clean?", module.GOLD2),
+        ("COMMAND RULE", "Break decision structure", module.GOLD2),
     ]
-    for i, (title, value, col) in enumerate(top_cards):
-        xx = x + 8 + i * (card_w + card_gap)
-        draw_auto_height_card(
-            module,
-            c,
-            x=xx,
-            y=374,
-            w=card_w,
-            title=title,
-            text=str(value),
-            border_color=col,
-            fill_color=module.PANEL,
-            body_font_size=7.2,
-            min_h=64,
-            max_h=64,
-        )
+    gap_s = 12
+    cw = (w - 30 - gap_s * 3) / 4
+    for i, (t, v, col) in enumerate(strip):
+        xx = x + 15 + i * (cw + gap_s)
+        module.panel(c, xx, y3 + 9, cw, 35, None, col, module.SOFT, r=5, title_line=False)
+        module.set_font(c, "Helvetica-Bold", 8.7, col)
+        c.drawString(xx + 9, y3 + 31, t)
+        module.para(c, v, xx + 9, y3 + 12, cw - 18, 14, size=8.0, col=module.WHITE, min_size=7.2)
 
-    # 5-7: zone cards.
-    zone_w = (w - 20) / 3
-    zones = [
-        (blocks.get("control_zone_header", "CONTROL ZONE"), blocks.get("control_zone", "Pressure rhythm / reset denial"), "Momentum theft", module.BLUE),
-        (blocks.get("danger_zone_header", "DANGER ZONE"), blocks.get("danger_zone", "Geography loss / rushed entry"), "Disciplined counters", module.RED),
-        ("COLLAPSE TRIGGER", "!", blocks.get("collapse_trigger_text", "Collapse trigger lane."), module.GOLD),
-    ]
-    for i, (title, line1, line2, col) in enumerate(zones):
-        xx = x + 10 + i * zone_w
-        draw_auto_height_card(
-            module,
-            c,
-            x=xx,
-            y=290,
-            w=zone_w - 6,
-            title=title,
-            text=f"{line1} {line2}",
-            border_color=col,
-            fill_color=module.PANEL,
-            body_font_size=6.9,
-            min_h=74,
-            max_h=74,
-        )
-
-    # Fight control intelligence strip.
-    strip_y = 188
-    module.panel(c, x + 8, strip_y, w - 16, 84, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(x + 20, strip_y + 66, "FIGHT CONTROL INTELLIGENCE STRIP")
-    strip_items = [
-        ("CONTROL THESIS", blocks.get("control_thesis", "Instability vs structure")),
-        ("FLIP POINT", blocks.get("flip_point", "Who creates doubt first?")),
-        ("WATCH CUE", blocks.get("watch_cue", "Watch reset quality")),
-        ("COMMAND RULE", blocks.get("command_rule", "Break decision structure")),
-    ]
-    col_w = (w - 56) / 4
-    for idx, (hdr, body) in enumerate(strip_items):
-        xx = x + 20 + idx * col_w
-        module.panel(c, xx, strip_y + 12, col_w - 8, 46, None, module.GOLD2 if idx else module.BLUE, module.SOFT, title_line=False)
-        module.set_font(c, "Helvetica-Bold", 7.7, module.GOLD2 if idx else module.BLUE)
-        c.drawString(xx + 8, strip_y + 43, hdr)
-        module.para(c, body, xx + 8, strip_y + 19, col_w - 24, 18, size=7.1, col=module.WHITE, min_size=6.7)
-
-    # Round control, method probability, risk control.
-    base_y = 86
-    round_w = (w - 32) * 0.33
-    method_w = (w - 32) * 0.43
-    risk_w = (w - 32) - round_w - method_w
-
-    module.panel(c, x + 8, base_y, round_w, 90, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
-    c.drawString(x + 20, base_y + 72, "ROUND CONTROL PROJECTION")
-    for idx, label in enumerate(("R1\nINFO", "R2\nPRESS", "R3\nATTRITION")):
-        lines = label.split("\n")
-        cx = x + 54 + idx * 68
-        module.set_font(c, "Helvetica-Bold", 7.8, module.WHITE)
-        c.drawCentredString(cx, base_y + 56, lines[0])
-        module.set_font(c, "Helvetica", 7.0, module.MUTED)
-        c.drawCentredString(cx, base_y + 42, lines[1])
-
-    mx = x + 8 + round_w + 10
-    module.panel(c, mx, base_y, method_w, 90, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
-    c.drawString(mx + 10, base_y + 72, "METHOD PROBABILITY")
+    y4 = 70
+    round_w = 248
+    prob_w = 350
+    risk_w = w - round_w - prob_w - 36
+    module.panel(c, x, y4, round_w, 84, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
+    c.drawString(x + 14, y4 + 62, "ROUND CONTROL PROJECTION")
+    rounds = [("R1", "INFO", module.MUTED), ("R2", "PRESS", module.BLUE), ("R3", "ATTRITION", module.RED)]
+    for i, (r, lab, col) in enumerate(rounds):
+        cx = x + 50 + i * 72
+        cy = y4 + 31
+        module.set_font(c, "Helvetica-Bold", 8.5, module.WHITE)
+        c.drawCentredString(cx, y4 + 53, r)
+        module.target(c, cx, cy, 10.5, col)
+        module.set_font(c, "Helvetica-Bold", 7.0, col)
+        c.drawCentredString(cx, y4 + 13, lab)
+    px = x + round_w + 18
+    module.panel(c, px, y4, prob_w, 84, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
+    c.drawString(px + 14, y4 + 62, "METHOD PROBABILITY")
     module.method_bars(c, [
-        (f"{_fighter_last_name(blocks['fighter_a'])} decision", 55, module.BLUE),
-        (f"{_fighter_last_name(blocks['fighter_b'])} decision", 45, module.RED),
-        ("Stoppage upset lane", 24, module.RED_D),
-        ("Clean control lane", 53, module.BLUE_D),
-    ], mx + 12, base_y + 14, method_w - 24, 46)
-
-    rx = mx + method_w + 10
-    module.panel(c, rx, base_y, risk_w, 90, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.6, module.GOLD2)
-    c.drawString(rx + 10, base_y + 72, "RISK CONTROL")
-    module.set_font(c, "Helvetica-Bold", 10.5, module.GOLD2)
-    c.drawString(rx + 10, base_y + 54, "NO CERTAINTY")
-    module.para(c, "Probabilistic edge. Not a guarantee.", rx + 10, base_y + 20, risk_w - 20, 28, size=7.4, col=module.WHITE, min_size=6.9)
+        (f"{a_short} decision", 55, module.BLUE),
+        (f"{b_short} decision", 45, module.RED),
+        ("Stoppage upset lane", 22, module.RED),
+        ("Clean control lane", 38, module.BLUE),
+    ], px + 18, y4 + 8, prob_w - 36, 44)
+    rx = px + prob_w + 18
+    module.panel(c, rx, y4, risk_w, 84, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
+    c.drawString(rx + 14, y4 + 62, "RISK CONTROL")
+    module.set_font(c, "Helvetica-Bold", 12.0, module.GOLD2)
+    c.drawString(rx + 14, y4 + 42, "NO CERTAINTY")
+    module.para(c, "Probabilistic edge. Not a guarantee.", rx + 14, y4 + 13, risk_w - 28, 26, size=8.0, col=module.WHITE, min_size=7.4)
     c.showPage()
 
 
 def _draw_fighter_architecture_radar(module, c, blocks):
+    # v29 parity radar with PAGE 05 marker and right-side read panels.
     module.page_base(c, 5, "Fighter Architecture Radar")
     x = module.SAFE_X + 8
-    w = module.PAGE_W - 2 * x
-    module.panel(c, x, 82, w, 378, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 18, 438, f"Fighter Architecture Radar | {blocks['fighter_a']} vs {blocks['fighter_b']}")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 18, 424, f"Fighter Overview | Tale of the Tape | {blocks['fighter_a']} / {blocks['fighter_b']}")
+    y = 72
+    w_left = 548
+    h = 390
+    a_short = _fighter_last_name(blocks.get("fighter_a", "Fighter A"), "Fighter A")
+    b_short = _fighter_last_name(blocks.get("fighter_b", "Fighter B"), "Fighter B")
+    module.panel(c, x, y, w_left, h, "10-Pillar Fighter Architecture Radar", module.GOLD, module.PANEL)
+    module.set_font(c, "Helvetica-Bold", 8.0, module.GOLD2)
+    c.drawString(x + 26, y + h - 34, "PAGE 05")
+    module.set_font(c, "Helvetica", 9.6, module.WHITE)
+    c.setFillColor(module.BLUE)
+    c.rect(x + 26, y + h - 54, 9, 9, fill=1, stroke=0)
+    module.set_font(c, "Helvetica", 9.4, module.WHITE)
+    c.drawString(x + 40, y + h - 53, a_short)
+    c.setFillColor(module.RED)
+    c.rect(x + 151, y + h - 54, 9, 9, fill=1, stroke=0)
+    module.set_font(c, "Helvetica", 9.4, module.WHITE)
+    c.drawString(x + 165, y + h - 53, b_short)
 
-    cx = x + 255
-    cy = 250
-    radius = 112
-    labels = [
-        "PRESSURE",
-        "PACE",
-        "RANGE",
-        "DURABILITY",
-        "DEFENSE",
-        "POWER",
-        "COMPOSURE",
-        "LATE-FIGHT",
-        "UNPREDICT",
-        "ADAPT",
-    ]
-    a_vals = [78, 72, 69, 76, 67, 88, 73, 71, 84, 74]
-    b_vals = [70, 75, 81, 74, 79, 72, 77, 76, 69, 78]
-
-    c.setStrokeColor(module.GREY)
-    c.setLineWidth(0.6)
-    for ring in [0.25, 0.5, 0.75, 1.0]:
+    labels = ["PRESSURE", "PACE", "RANGE", "DEFENSE", "DURABILITY", "COMPOSURE", "ADAPT", "POWER", "UNPREDICT", "LATE"]
+    a_vals = [86, 74, 66, 62, 72, 70, 64, 91, 82, 69]
+    b_vals = [72, 77, 83, 75, 70, 76, 61, 66, 70, 80]
+    cx = x + 282
+    cy = y + 250
+    R = 72
+    c.setStrokeColor(module.colors.Color(0.8, 0.8, 0.8, alpha=0.18))
+    c.setLineWidth(0.75)
+    for rr in [R * 0.25, R * 0.5, R * 0.75, R]:
         pts = []
-        rr = radius * ring
         for i in range(10):
-            ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
+            ang = module.math.pi / 2 - i * 2 * module.math.pi / 10
             pts.append((cx + rr * module.math.cos(ang), cy + rr * module.math.sin(ang)))
         for i in range(10):
-            c.line(pts[i][0], pts[i][1], pts[(i + 1) % 10][0], pts[(i + 1) % 10][1])
-
-    for i, label in enumerate(labels):
-        ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
-        lx = cx + (radius + 20) * module.math.cos(ang)
-        ly = cy + (radius + 20) * module.math.sin(ang)
+            c.line(*pts[i], *pts[(i + 1) % 10])
+    for i, lab in enumerate(labels):
+        ang = module.math.pi / 2 - i * 2 * module.math.pi / 10
+        lx = cx + (R + 25) * module.math.cos(ang)
+        ly = cy + (R + 25) * module.math.sin(ang)
         module.set_font(c, "Helvetica", 7.0, module.MUTED)
-        c.drawCentredString(lx, ly, label)
+        c.drawCentredString(lx, ly, lab)
 
-    def _plot(vals, stroke, alpha):
+    def _poly(vals, col, alpha):
         pts = []
         for i, v in enumerate(vals):
-            ang = 1.57079632679 - i * (2 * 3.14159265359 / 10)
-            rr = radius * v / 100
+            rr = R * v / 100
+            ang = module.math.pi / 2 - i * 2 * module.math.pi / 10
             pts.append((cx + rr * module.math.cos(ang), cy + rr * module.math.sin(ang)))
-        path = c.beginPath()
-        path.moveTo(pts[0][0], pts[0][1])
-        for px, py in pts[1:]:
-            path.lineTo(px, py)
-        path.close()
-        c.setFillColor(module.colors.Color(stroke.red, stroke.green, stroke.blue, alpha=alpha))
-        c.setStrokeColor(stroke)
+        c.setFillColor(module.colors.Color(col.red, col.green, col.blue, alpha=alpha))
+        c.setStrokeColor(col)
         c.setLineWidth(1.0)
+        path = c.beginPath()
+        path.moveTo(*pts[0])
+        for pt in pts[1:]:
+            path.lineTo(*pt)
+        path.close()
         c.drawPath(path, fill=1, stroke=1)
 
-    _plot(a_vals, module.BLUE, 0.33)
-    _plot(b_vals, module.RED, 0.27)
+    _poly(b_vals, module.RED, 0.30)
+    _poly(a_vals, module.BLUE, 0.36)
+    module.bars(c, [
+        (f"{a_short} Pressure", 86, module.BLUE),
+        (f"{a_short} Power", 91, module.BLUE),
+        (f"{b_short} Structure", 84, module.RED),
+        (f"{b_short} Range", 83, module.RED),
+    ], x + 34, y + 24, w_left - 68, 100)
 
-    module.panel(c, x + 500, 246, 240, 148, None, module.GOLD, module.PANEL2, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
-    c.drawString(x + 516, 374, f"{blocks['fighter_a']} Control Lane")
-    module.para(c, f"{blocks['fighter_a']} pressure rhythm and reset denial become the scoring driver if exits are layered.", x + 516, 330, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
-    module.set_font(c, "Helvetica-Bold", 9.2, module.RED)
-    c.drawString(x + 516, 308, f"{blocks['fighter_b']} Danger Lane")
-    module.para(c, f"{blocks['fighter_b']} flips momentum if range control and counter-entry timing stay clean in the mid rounds.", x + 516, 264, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
-
-    module.panel(c, x + 500, 82, 240, 148, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
-    c.drawString(x + 516, 210, "Watch Cue")
-    module.para(c, "If the second reset after contact is still controlled by the same fighter, that round is likely decisive on cards.", x + 516, 168, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
-    module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
-    c.drawString(x + 516, 146, "Failure Consequence")
-    module.para(c, "Rushed entry volume without positional conversion creates visible scoring leakage and late-round volatility.", x + 516, 102, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
-    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Fighter Architecture Radar", "10-pillar radar read by tactical lane and round-band stress.", blocks)
+    rx = x + w_left + 24
+    rw = module.PAGE_W - module.SAFE_X - rx
+    module.panel(c, rx, y + 268, rw, 122, "Architecture Read", module.GOLD, module.PANEL)
+    module.para(c, blocks.get("matchup_snapshot", ""), rx + 18, y + 292, rw - 36, 66, size=9.2, col=module.WHITE, min_size=8.4)
+    module.panel(c, rx, y + 142, rw, 100, "Customer Meaning", module.BLUE, module.PANEL)
+    module.para(c, "Instability versus structure. The fighter who forces his preferred rules controls the bout.", rx + 18, y + 168, rw - 36, 44, size=9.2, col=module.WHITE, min_size=8.4)
+    module.panel(c, rx, y, rw, 112, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
+    c.drawString(rx + 18, y + 90, "OPERATOR USE")
+    c.setStrokeColor(module.GOLD)
+    c.setLineWidth(0.55)
+    c.line(rx + 18, y + 80, rx + rw - 18, y + 80)
+    rows = [("CONTROL", "Dictates rhythm", module.BLUE), ("DANGER", "Creates chaos", module.RED), ("FLIP", "Entry cost", module.GOLD2)]
+    yy = y + 61
+    for label, val, col in rows:
+        module.set_font(c, "Helvetica-Bold", 8.8, col)
+        c.drawString(rx + 18, yy, label)
+        module.set_font(c, "Helvetica", 8.8, module.WHITE)
+        c.drawString(rx + 102, yy, val)
+        yy -= 24
     c.showPage()
 
 
@@ -1148,66 +1145,48 @@ def _draw_tactical_edge_table(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 34, 108, "Failure Consequence")
     module.para(c, f"If {blocks['fighter_a']} pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 86, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
-    _draw_depth_footer(module, c, x + 20, 8, w - 40, "Tactical Edge Map", "Table rows map tactical layers directly to confidence, mechanism, and watch cues.", blocks)
+    _draw_depth_footer(module, c, x + 20, 22, w - 40, "Tactical Edge Map", "Table rows map tactical layers directly to confidence, mechanism, and watch cues.", blocks, page_number=6, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
 
 def _draw_scenario_tree(module, c, blocks):
+    # v29 parity scenario-tree nodes and branch flow.
     module.page_base(c, 15, "Scenario Tree / Method Pathways")
-    x = module.SAFE_X + 14
+    x = module.SAFE_X + 28
+    y = 78
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Scenario Tree / Method Pathways")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 16, 424, f"Opening technical range battle | {blocks['fighter_a']} vs {blocks['fighter_b']}")
+    h = 378
+    module.panel(c, x, y, w, h, "Scenario Tree / Method Pathways", module.GOLD, module.PANEL)
 
-    top_x = x + 28
-    top_y = 350
-    node_w = w - 56
-    module.panel(c, top_x, top_y, node_w, 44, None, module.GOLD2, module.PANEL2, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
-    c.drawCentredString(top_x + node_w / 2, top_y + 24, "OPENING TECHNICAL RANGE BATTLE")
-    module.para(c, f"{blocks['fighter_a']} tries to create pressure geometry while {blocks['fighter_b']} tries to keep the fight readable and countable.", top_x + 16, top_y + 6, node_w - 32, 14, size=7.5, col=module.WHITE, min_size=6.8, align='center')
+    def _node(cx, cy, ww, hh, text, accent, fill=None):
+        if fill is None:
+            fill = module.PANEL2 if accent != module.RED else module.PANEL_RED
+        c.setFillColor(fill)
+        c.setStrokeColor(accent)
+        c.setLineWidth(1.0)
+        c.roundRect(cx - ww / 2, cy - hh / 2, ww, hh, 6, fill=1, stroke=1)
+        module.para(c, text, cx - ww / 2 + 12, cy - hh / 2 + 8, ww - 24, hh - 16, size=9.2, col=module.WHITE, min_size=8.2, align="center")
 
-    left_x = x + 40
-    right_x = x + w - 320
-    mid_y = 266
-    module.panel(c, left_x, mid_y, 270, 52, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
-    c.drawString(left_x + 14, mid_y + 29, blocks["fighter_a"].upper())
-    module.para(c, "Pressure conversion, layered entries, and momentum theft become the story if geometry stays crowded.", left_x + 14, mid_y + 8, 242, 20, size=7.4, col=module.WHITE, min_size=6.7)
+    def _conn(x1, y1, x2, y2):
+        c.setStrokeColor(module.GOLD)
+        c.setLineWidth(0.8)
+        c.line(x1, y1, x2, y2)
 
-    module.panel(c, right_x, mid_y, 270, 52, None, module.RED, module.PANEL_RED, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
-    c.drawRightString(right_x + 256, mid_y + 29, blocks["fighter_b"].upper())
-    module.para(c, "Counter structure, clean exits, and ring awareness keep the fight in a scoreable lane.", right_x + 14, mid_y + 8, 242, 20, size=7.4, col=module.WHITE, min_size=6.7)
-
-    c.setStrokeColor(module.GOLD2)
-    c.setLineWidth(1.0)
-    c.line(top_x + node_w / 2, top_y, left_x + 135, mid_y + 52)
-    c.line(top_x + node_w / 2, top_y, right_x + 135, mid_y + 52)
-
-    bottom_x = x + 28
-    bottom_y = 126
-    module.panel(c, bottom_x, bottom_y, node_w, 86, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
-    c.drawString(bottom_x + 14, bottom_y + 60, "SWING SCENARIO: DANGER MOMENTS VERSUS CLEAN STRETCHES")
-    module.para(c, f"If {blocks['fighter_a']} breaks the structure early, the fight becomes nonlinear. If {blocks['fighter_b']} keeps the exchange clean, the scorecard stays close and technical.", bottom_x + 14, bottom_y + 18, node_w - 28, 34, size=7.6, col=module.WHITE, min_size=6.8)
-    c.setStrokeColor(module.GOLD2)
-    c.line(left_x + 135, mid_y, bottom_x + node_w / 2, bottom_y + 86)
-    c.line(right_x + 135, mid_y, bottom_x + node_w / 2, bottom_y + 86)
-
-    _draw_depth_footer(
-        module,
-        c,
-        x + 18,
-        8,
-        w - 36,
-        "Scenario Tree / Method Pathways",
-        f"{blocks['fighter_a']} and {blocks['fighter_b']} branch through control, counter, and swing-variance method pathways.",
-        blocks,
-    )
+    cx = x + w / 2
+    _node(cx, y + h - 56, 230, 42, "Opening technical range battle", module.GOLD)
+    _node(cx, y + h - 126, 276, 42, "Who controls the fight's operating rules?", module.GOLD2)
+    _conn(cx, y + h - 77, cx, y + h - 105)
+    lx = x + 190
+    rx = x + w - 190
+    _node(lx, y + h - 205, 280, 56, f"{blocks['fighter_a']} branch", module.BLUE, module.PANEL_BLUE)
+    _node(rx, y + h - 205, 280, 56, f"{blocks['fighter_b']} branch", module.RED, module.PANEL_RED)
+    _conn(cx, y + h - 147, lx, y + h - 177)
+    _conn(cx, y + h - 147, rx, y + h - 177)
+    _node(lx, y + h - 292, 280, 56, "Pressure, momentum theft, emotional discomfort, damage swings", module.BLUE, module.PANEL_BLUE)
+    _node(rx, y + h - 292, 280, 56, "Spacing, counters, disciplined exits, repeatable round-winning", module.RED, module.PANEL_RED)
+    _conn(lx, y + h - 233, lx, y + h - 264)
+    _conn(rx, y + h - 233, rx, y + h - 264)
+    _node(cx, y + 53, 420, 46, "Swing scenario: danger moments versus clean stretches", module.GOLD2)
     c.showPage()
 
 
@@ -1316,81 +1295,33 @@ def _draw_failure_heat_map(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 32, 114, "Failure Consequence")
     module.para(c, "If composure and pocket exits decay together, one momentum swing can override earlier control reads.", x + 32, 90, left_w - 34, 20, size=7.8, col=module.WHITE, min_size=7.0)
-    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Fatigue Failure Points", "Heat map column and risk table align with fight-specific stress cues.", blocks)
+    _draw_depth_footer(module, c, x + 18, 22, w - 36, "Fatigue Failure Points", "Heat map column and risk table align with fight-specific stress cues.", blocks, page_number=9, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
 
 def _draw_round_control_graph(module, c, blocks):
+    # v29 parity round-control page with three outlook cards.
     module.page_base(c, 14, "Round-by-Round Control Projection")
-    x = module.SAFE_X + 14
+    x = module.SAFE_X + 36
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 16, 438, "Round-by-Round Control Projection")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 16, 424, "Round Control Graph")
-
-    plot_x = x + 26
-    plot_y = 192
-    plot_w = w - 52
-    plot_h = 178
-    c.setStrokeColor(module.GREY)
-    c.setLineWidth(0.55)
-    c.rect(plot_x, plot_y, plot_w, plot_h, fill=0, stroke=1)
-
-    for i in range(1, 5):
-        gx = plot_x + i * (plot_w / 5)
-        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
-        c.line(gx, plot_y, gx, plot_y + plot_h)
-    for i in range(1, 4):
-        gy = plot_y + i * (plot_h / 4)
-        c.line(plot_x, gy, plot_x + plot_w, gy)
-
-    rounds = ["R1", "R2", "R3", "R4", "R5"]
-    a_ctrl = [49, 57, 61, 56, 52]
-    b_ctrl = [51, 43, 39, 44, 48]
-    for i, r in enumerate(rounds):
-        rx = plot_x + (i + 0.5) * (plot_w / 5)
-        module.set_font(c, "Helvetica-Bold", 8.0, module.MUTED)
-        c.drawCentredString(rx, plot_y - 16, r)
-
-    def _plot_line(vals, col):
-        pts = []
-        for i, v in enumerate(vals):
-            px = plot_x + (i + 0.5) * (plot_w / 5)
-            py = plot_y + (v / 100.0) * plot_h
-            pts.append((px, py))
+    module.panel(c, x, 94, w, 372, "Round-by-Round Outlook", module.GOLD, module.PANEL)
+    cards = [
+        ("R1", "INFO / RHYTHM TEST", f"{blocks['fighter_b']} establishes distance and information. {blocks['fighter_a']} tests reactions and makes clean reads uncomfortable.", module.MUTED),
+        ("R2", "PRIMARY PRESSURE TEST", "The operating mode becomes visible. If hesitation appears, pressure becomes meaningful. If the lane stays clean, scoring rhythm strengthens.", module.BLUE),
+        ("R3", "DECISION STRESS POINT", "Attrition and composure decide it. Pressure either defines the fight or loses efficiency under late-round stress.", module.RED),
+    ]
+    cy = 352
+    for r, title, desc, col in cards:
+        c.setFillColor(module.PANEL2)
         c.setStrokeColor(col)
-        c.setLineWidth(1.8)
-        for i in range(len(pts) - 1):
-            c.line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])
-        for px, py in pts:
-            c.setFillColor(col)
-            c.circle(px, py, 3.0, fill=1, stroke=0)
-
-    _plot_line(a_ctrl, module.BLUE)
-    _plot_line(b_ctrl, module.RED)
-
-    module.set_font(c, "Helvetica-Bold", 8.4, module.BLUE)
-    c.drawString(plot_x, plot_y + plot_h + 10, f"{blocks['fighter_a']} control estimate")
-    module.set_font(c, "Helvetica-Bold", 8.4, module.RED)
-    c.drawString(plot_x + 220, plot_y + plot_h + 10, f"{blocks['fighter_b']} control estimate")
-
-    draw_auto_height_card(
-        module,
-        c,
-        x=x + 18,
-        y=96,
-        w=w - 36,
-        title="Control Shift Notes",
-        text="Control Window Detail: R1 read phase, R2 pressure spike risk, R3 geometry consolidation, R4 defensive decay check, R5 volatility resolution. Command Instruction: stabilize reset geography before forcing pace expansion.",
-        border_color=module.BLUE,
-        fill_color=module.PANEL_BLUE,
-        body_font_size=7.8,
-        min_h=84,
-        max_h=84,
-    )
-    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Round-by-Round Control Projection", "Graph lane-to-lane momentum shifts are interpreted with command and risk controls.", blocks)
+        c.setLineWidth(1.0)
+        c.roundRect(x + 35, cy - 52, w - 70, 64, 7, fill=1, stroke=1)
+        module.set_font(c, "Helvetica-Bold", 17, col)
+        c.drawString(x + 55, cy - 17, r)
+        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+        c.drawString(x + 105, cy - 12, title)
+        module.para(c, desc, x + 105, cy - 39, w - 150, 26, size=8.8, col=module.WHITE, min_size=7.8)
+        cy -= 96
     c.showPage()
 
 
@@ -1423,146 +1354,128 @@ def _draw_method_probability_chart(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
     c.drawString(x + 30, 114, "Risk Control")
     module.para(c, "Treat method read as probabilistic support, not certainty. Re-score after each round-band shift.", x + 30, 96, w - 60, 16, size=8.0, col=module.WHITE, min_size=7.4)
-    _draw_depth_footer(module, c, x + 18, 8, w - 36, "Stoppage Windows", "Method lanes and finish windows are tied to mechanism and risk-control triggers.", blocks)
+    _draw_depth_footer(module, c, x + 18, 22, w - 36, "Stoppage Windows", "Method lanes and finish windows are tied to mechanism and risk-control triggers.", blocks, page_number=17, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
 
 def _draw_source_traceability(module, c, blocks, report_context_preview):
+    # v29 parity source map with SOURCE CHAIN and required metadata rows.
     module.page_base(c, 23, "Traceability / Source Map")
-    x = module.SAFE_X + 24
+    x = module.SAFE_X + 50
+    y = 126
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 112, w, 348, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 20, 440, "Traceability / Source Map")
-    module.set_font(c, "Helvetica-Bold", 8.4, module.MUTED)
-    c.drawString(x + 20, 426, "Operator Traceability Appendix")
-
-    rows = report_context_preview.get("source_traceability", []) if isinstance(report_context_preview, dict) else []
-    if not isinstance(rows, list):
-        rows = []
-    if not rows:
-        rows = [{"id": "SRC-001", "type": "official", "tier": "official", "url": blocks["source_url"], "date": blocks["event_date"], "discipline": "source traceable"}]
-
-    table_x = x + 20
-    table_w = w - 40
-    header_y = 394
-    cols = [
-        ("Source", 0.13),
-        ("Type/Tier", 0.14),
-        ("URL", 0.28),
-        ("Use in Report", 0.22),
-        ("Operator Review Requirement", 0.23),
+    h = 330
+    module.panel(c, x, y, w, h, "Source Chain", module.GOLD, module.PANEL)
+    rows = [
+        ("EVENT", blocks.get("event_name", "Premium Event")),
+        ("FIGHT ID", blocks.get("fight_id", "selected_matchup")),
+        ("EVENT DATE", blocks.get("event_date", "n/a")),
+        ("SPORT", module.DATA.get("sport", "MMA")),
+        ("PROMOTION", blocks.get("promotion", "UFC")),
+        ("REPORT ID", blocks.get("report_id", "selected_matchup_report")),
+        ("SOURCE URL", blocks.get("source_url", "n/a")),
     ]
-    cx = table_x
-    for title, frac in cols:
-        module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
-        c.drawString(cx + 4, header_y, title)
-        cx += table_w * frac
-    c.setStrokeColor(module.GOLD)
-    c.setLineWidth(0.7)
-    c.line(table_x, header_y - 8, table_x + table_w, header_y - 8)
+    yy = y + h - 70
+    label_x = x + 28
+    value_x = x + 160
+    value_w = w - 188
+    row_geometry = []
+    for lab, val in rows:
+        value_text = _normalize_text(val)
+        # Allow long report ids and URLs to wrap safely inside their own row.
+        value_lines = _wrap_text_to_width(c, value_text, "Helvetica", 8.6, value_w)
+        if not value_lines:
+            value_lines = ["n/a"]
+        if lab in {"REPORT ID", "SOURCE URL"}:
+            value_lines = value_lines[:3]
+        row_h = max(18, int(len(value_lines) * 9.2 + 4))
 
-    row_y = header_y - 30
-    source_name = "Primary Event Record"
-    src_type = "official / tier-traceable"
-    src_url = blocks["source_url"]
-    src_use = f"Event verification for {blocks['event_name']}"
-    src_gate = "Required before customer delivery or mutation"
-    values = [source_name, src_type, src_url, src_use, src_gate]
-    cx = table_x
-    col_widths = [table_w * frac for _, frac in cols]
-    for idx, value in enumerate(values):
-        draw_wrapped_text_box(
-            module,
-            c,
-            value,
-            cx + 2,
-            row_y - 18,
-            col_widths[idx] - 4,
-            42,
-            font_name="Helvetica",
-            font_size=7.6,
-            color=module.WHITE,
-            padding=2,
-        )
-        cx += col_widths[idx]
-    c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.15))
-    c.setLineWidth(0.45)
-    c.line(table_x, row_y - 14, table_x + table_w, row_y - 14)
+        module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+        c.drawString(label_x, yy, lab)
+        module.set_font(c, "Helvetica", 8.6, module.WHITE)
+        text_y = yy
+        for line in value_lines:
+            c.drawString(value_x, text_y, line)
+            text_y -= 9.2
 
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 334, "Event")
-    module.set_font(c, "Helvetica", 8.8, module.WHITE)
-    c.drawString(table_x + 78, 334, blocks["event_name"])
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.10))
+        c.setLineWidth(0.45)
+        c.line(label_x, yy - row_h + 2, x + w - 28, yy - row_h + 2)
+        row_geometry.append({
+            "label": lab,
+            "top_y": float(yy),
+            "bottom_y": float(yy - row_h),
+            "line_count": len(value_lines),
+        })
+        yy -= row_h + 4
 
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 320, "Event Date")
-    module.set_font(c, "Helvetica", 8.8, module.WHITE)
-    c.drawString(table_x + 78, 320, blocks["event_date"])
+    statement_y = y + 34
+    statement_h = max(42, int(yy - statement_y - 6))
+    statement_h = min(statement_h, 68)
+    module.para(
+        c,
+        "Production exports should attach or reference official event-card data, fighter profile records, matchup ledger rows, odds snapshots, and report-generation metadata.",
+        x + 28,
+        statement_y + 22,
+        w - 56,
+        max(20, statement_h - 18),
+        size=8.0,
+        col=module.WHITE,
+        min_size=7.4,
+    )
+    module.para(
+        c,
+        "Source discipline statement: customer-ready status is blocked if required source references are unavailable, unresolved, or unverified.",
+        x + 28,
+        statement_y + 6,
+        w - 56,
+        14,
+        size=7.6,
+        col=module.WHITE,
+        min_size=7.1,
+    )
 
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 306, "Promotion")
-    module.set_font(c, "Helvetica", 8.8, module.WHITE)
-    c.drawString(table_x + 78, 306, blocks.get("promotion", "UFC"))
-
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 292, "Report ID")
-    module.set_font(c, "Helvetica", 8.8, module.WHITE)
-    c.drawString(table_x + 78, 292, blocks.get("report_id", "selected_matchup_report"))
-
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 274, "Source Discipline Statement")
-    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 264, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
-
-    module.panel(c, x + 18, 128, w - 36, 136, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 34, 246, "SOURCE INTEGRITY NOTE")
-    module.para(c, "Source Traceability remains intact when the map is complete, the data path is approved, and operator review confirms the claim. If a source is unresolved, confidence is downgraded instead of inventing certainty.", x + 34, 186, w - 68, 52, size=8.4, col=module.WHITE, min_size=7.6)
-    module.set_font(c, "Helvetica-Bold", 8.4, module.GOLD2)
-    c.drawString(x + 34, 168, "Operator Approval Requirement")
-    module.para(c, "No customer delivery, queue mutation, learning apply, calibration write, or Button 3 mutation is permitted without operator approval.", x + 34, 140, w - 68, 24, size=7.8, col=module.WHITE, min_size=7.0)
+    layout_safety = blocks.get("_layout_safety") if isinstance(blocks, dict) else None
+    if isinstance(layout_safety, dict):
+        source_safe = True
+        for idx in range(1, len(row_geometry)):
+            if row_geometry[idx - 1]["bottom_y"] <= row_geometry[idx]["top_y"]:
+                source_safe = False
+                break
+        source_statement_top = statement_y + statement_h
+        source_safe = source_safe and bool(row_geometry) and (row_geometry[-1]["bottom_y"] > source_statement_top + 2)
+        layout_safety["source_map"] = {
+            "rows": row_geometry,
+            "statement_top_y": float(source_statement_top),
+            "statement_box_y": float(statement_y),
+            "rows_separated": bool(source_safe),
+            "report_id_wrapped": any(r["label"] == "REPORT ID" and r["line_count"] > 1 for r in row_geometry),
+            "source_url_wrapped": any(r["label"] == "SOURCE URL" and r["line_count"] > 1 for r in row_geometry),
+            "source_url_statement_separated": bool(row_geometry) and (row_geometry[-1]["bottom_y"] > source_statement_top + 2),
+        }
     c.showPage()
 
 
 def _draw_customer_appendix(module, c):
+    # v29 parity disclaimer page with four risk-rail cards.
     module.page_base(c, 24, "Disclaimer / Risk Control")
-    x = module.SAFE_X + 30
+    x = module.SAFE_X + 40
     w = module.PAGE_W - 2 * x
-    module.panel(c, x, 258, w, 198, None, module.GOLD, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
-    c.drawString(x + 24, 432, "Disclaimer / Risk Control")
-    draw_wrapped_text_box(
-        module,
+    module.metric_rail(
         c,
-        "This report is customer-facing competitive intelligence, not certainty. It is probabilistic, source-traceable, and intended to support disciplined review rather than automatic action.",
-        x + 20,
-        340,
-        w - 40,
-        76,
-        font_name="Helvetica",
-        font_size=9.8,
-        color=module.WHITE,
-        padding=4,
+        [
+            ("NO GUARANTEE", "All predictions are probabilistic", module.GOLD2),
+            ("NO FINANCIAL ADVICE", "Market reads require discipline", module.GOLD2),
+            ("COMBAT RISK", "Combat sports are volatile", module.RED),
+            ("NEVER OVER-WAGER", "Risk control beats action", module.BLUE),
+        ],
+        x,
+        354,
+        w,
+        82,
     )
-    draw_wrapped_text_box(
-        module,
-        c,
-        "Use this report alongside operator judgment, source verification, and context from the broader fight card. If a cue is unresolved, the correct move is to downgrade confidence, not to invent clarity.",
-        x + 20,
-        284,
-        w - 40,
-        54,
-        font_name="Helvetica",
-        font_size=9.2,
-        color=module.WHITE,
-        padding=4,
-    )
-
-    module.panel(c, x, 98, w, 146, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
-    c.drawString(x + 24, 224, "WHAT THIS REPORT INCLUDES")
-    module.para(c, "Executive cover design, executive dashboard panels, Radar and Tactical stat pages, Scenario pathway analysis, Round-control Projection, risk framing, and source-map evidence pages.", x + 24, 154, w - 48, 46, size=10.0, col=module.WHITE, min_size=9.0)
-    module.para(c, "No automated delivery is implied. No external API delivery. No queue mutation. No learning or calibration changes without operator approval.", x + 24, 116, w - 48, 26, size=9.4, col=module.MUTED, min_size=8.5)
+    module.panel(c, x, 164, w, 150, "Risk Control Standard", module.GOLD, module.PANEL)
+    module.para(c, module.TEXT.get("disclaimer", ""), x + 28, 204, w - 56, 58, size=12.0, col=module.WHITE, min_size=10.8)
     c.showPage()
 
 
@@ -1647,7 +1560,7 @@ def _draw_scorecard_scenario(module, c, blocks):
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
     c.drawString(x + 32, 206, "Scorecard Commentary")
     module.para(c, blocks.get("scorecard_scenario", ""), x + 32, 150, w - 64, 42, size=8.2, col=module.WHITE, min_size=7.2)
-    _draw_depth_footer(module, c, x + 20, 8, w - 40, "Scorecard Scenario", "Score pathways connect mechanism, volatility, and round-band controls.", blocks)
+    _draw_depth_footer(module, c, x + 20, 22, w - 40, "Scorecard Scenario", "Score pathways connect mechanism, volatility, and round-band controls.", blocks, page_number=16, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
 
@@ -1656,14 +1569,25 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     module = _load_template_module(assets["module_path"])
 
     # Bind template pack image assets so watermark/branding comes from pack files.
+    layout_safety = {
+        "footer_safe_zone_pages": {},
+    }
+
     try:
         image_reader = module.ImageReader
-        module.LOGO = image_reader(assets["logo_path"])
+        logo_info = _prepare_logo_image_reader(module, assets["logo_path"])
+        module.LOGO = logo_info["image_reader"]
         module.WATER = image_reader(assets["watermark_path"])
+        layout_safety.update({
+            "logo_asset": logo_info.get("logo_asset"),
+            "logo_blend_ok": bool(logo_info.get("logo_blend_ok", False)),
+            "logo_black_tile_risk": bool(logo_info.get("logo_black_tile_risk", False)),
+        })
     except Exception as e:
         raise TemplatePackRenderError(f"Failed to load template pack image assets: {str(e)}") from e
 
     blocks = _build_blocks(report_context_preview)
+    blocks["_layout_safety"] = layout_safety
 
     # Bind selected-matchup values into the canonical v29 template data contract.
     if not isinstance(getattr(module, "DATA", None), dict):
@@ -1718,7 +1642,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     c = module.canvas.Canvas(stream, pagesize=module.landscape(module.A4))
 
     # Render with the dynamic v29 layout helpers so selected-matchup content stays bound.
-    _draw_cover(module, c, blocks)
+    _draw_cover(module, c, blocks, layout_safety=layout_safety)
     _draw_executive(module, c, blocks)
     module.section_page(
         c,
@@ -1946,6 +1870,19 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         _clean_text(selected_matchup.get("fighter_a", ""), "") and _clean_text(selected_matchup.get("fighter_b", ""), "")
     )
 
+    footer_pages = layout_safety.get("footer_safe_zone_pages", {}) if isinstance(layout_safety, dict) else {}
+    footer_safe = all(bool(info.get("safe")) for info in footer_pages.values()) if footer_pages else False
+    source_map = layout_safety.get("source_map", {}) if isinstance(layout_safety, dict) else {}
+    source_safe = bool(source_map.get("rows_separated", False)) and bool(source_map.get("source_url_statement_separated", False))
+    layout_safety["footer_safe_zone_all_passed"] = bool(footer_safe)
+    layout_safety["source_map_layout_safe"] = bool(source_safe)
+    layout_safety["visual_layout_safe"] = bool(
+        layout_safety.get("logo_blend_ok", False)
+        and not layout_safety.get("logo_black_tile_risk", False)
+        and footer_safe
+        and source_safe
+    )
+
     return {
         "pdf_bytes": pdf_bytes,
         "template_pack_asset_backed": True,
@@ -1963,4 +1900,5 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
             else "premium_template_pack_v29_asset_backed_v1"
         ),
         "page_count": 24,
+        "layout_safety": layout_safety,
     }
