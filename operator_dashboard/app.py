@@ -401,6 +401,19 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
 
 def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, renderer_layout_safety=None):
     violations = []
+    # v4 fit/flow gate: block if any new fit/flow marker is missing or False
+    fit_flow_markers = [
+        "page_2_strip_collision_passed",
+        "page_5_operator_use_fit_passed",
+        "page_6_table_density_passed",
+        "page_14_round_fit_passed",
+        "page_16_scorecard_fit_passed",
+        "page_17_stoppage_fit_passed",
+    ]
+    if isinstance(renderer_layout_safety, dict):
+        for marker in fit_flow_markers:
+            if not bool(renderer_layout_safety.get(marker, False)):
+                violations.append(f"fit_flow_failed:{marker}")
     text_lower = str(pdf_text or "").lower()
 
     fighter_a = str(selected_preview.get("fighter_a", "")).strip().lower()

@@ -1,0 +1,41 @@
+[
+  {
+    "slug": "dalton_smith_vs_jose_zepeda",
+    "status_code": 400,
+    "ok": false,
+    "renderer_route_used": null,
+    "template_pack_asset_backed": null,
+    "premium_template_confirmed": null,
+    "customer_ready": null,
+    "visual_gate_status": null,
+    "layout_safety_keys": [],
+    "output_path": null,
+    "page_count": null
+  },
+  {
+    "slug": "ben_whittaker_vs_willy_hutchinson",
+    "status_code": 400,
+    "ok": false,
+    "renderer_route_used": null,
+    "template_pack_asset_backed": null,
+    "premium_template_confirmed": null,
+    "customer_ready": null,
+    "visual_gate_status": null,
+    "layout_safety_keys": [],
+    "output_path": null,
+    "page_count": null
+  },
+  {
+    "slug": "ryan_curtis_vs_adam_borics",
+    "status_code": 400,
+    "ok": false,
+    "renderer_route_used": null,
+    "template_pack_asset_backed": null,
+    "premium_template_confirmed": null,
+    "customer_ready": null,
+    "visual_gate_status": null,
+    "layout_safety_keys": [],
+    "output_path": null,
+    "page_count": null
+  }
+]
