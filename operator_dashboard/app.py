@@ -356,6 +356,8 @@ def _pdf_quality_gate_status(strict_gate_violations, text_scan):
     violations = [str(value) for value in (strict_gate_violations or [])]
     if any(value.startswith("template_sample_bleed_present:") for value in violations):
         return "v29_template_sample_bleed_failed"
+    if any(value.startswith("readability_") for value in violations):
+        return "v29_readability_overlap_failed"
     if any(value.startswith("visual_defect_") for value in violations):
         return "v29_visual_defect_failed"
     if any(value.startswith("v29_layout_") for value in violations):
@@ -472,6 +474,18 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
             violations.append(f"v29_layout_plain_fallback_marker_present:{marker}")
 
     if isinstance(renderer_layout_safety, dict) and renderer_layout_safety:
+        if not bool(renderer_layout_safety.get("readable_min_font_passed", True)):
+            violations.append("readability_min_font_not_met")
+        if not bool(renderer_layout_safety.get("footer_safe_zone_passed", True)):
+            violations.append("readability_footer_safe_zone_not_met")
+        if not bool(renderer_layout_safety.get("tactical_edge_overlap_passed", True)):
+            violations.append("readability_tactical_edge_overlap_not_met")
+        if not bool(renderer_layout_safety.get("round_outlook_centered_passed", True)):
+            violations.append("readability_round_outlook_not_centered")
+        if not bool(renderer_layout_safety.get("scorecard_readability_passed", True)):
+            violations.append("readability_scorecard_scenario_not_readable")
+        if not bool(renderer_layout_safety.get("stoppage_readability_passed", True)):
+            violations.append("readability_stoppage_windows_not_readable")
         if renderer_layout_safety.get("logo_black_tile_risk"):
             violations.append("visual_defect_logo_black_tile_risk")
         if not bool(renderer_layout_safety.get("logo_blend_ok", False)):

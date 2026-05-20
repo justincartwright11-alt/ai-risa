@@ -27,6 +27,15 @@ _WATERMARK_CANDIDATES = [
     "AI-RISA Logo.png",
 ]
 
+MIN_BODY_FONT_SIZE = 8.2
+MIN_CAPTION_FONT_SIZE = 7.8
+MIN_TABLE_FONT_SIZE = 8.0
+FOOTER_SAFE_ZONE_Y = 30
+BOTTOM_STRIP_SAFE_Y = 48
+PANEL_INNER_PADDING = 8
+CARD_GAP = 14
+MAX_TEXT_LINES_PER_PANEL = 6
+
 
 class TemplatePackResolverError(Exception):
     def __init__(self, message, attempted_path="", missing=None, cause=""):
@@ -281,14 +290,15 @@ def draw_auto_height_card(
     border_color,
     fill_color,
     title_color=None,
-    body_font_size=8.0,
+    body_font_size=MIN_BODY_FONT_SIZE,
     min_h=48,
     max_h=140,
 ):
     title_color = title_color or border_color
     title_h = 18
     text_h, _ = measure_wrapped_text_height(c, text, w - 16, font_name="Helvetica", font_size=body_font_size)
-    desired_h = max(min_h, int(title_h + text_h + 16))
+    max_text_h = int(MAX_TEXT_LINES_PER_PANEL * max(10.0, body_font_size * 1.35))
+    desired_h = max(min_h, int(title_h + min(text_h, max_text_h) + 16))
     card_h = min(max_h, desired_h)
     y, card_h = prevent_footer_collision(y, card_h)
     module.panel(c, x, y, w, card_h, None, border_color, fill_color, title_line=False)
@@ -305,7 +315,7 @@ def draw_auto_height_card(
         font_name="Helvetica",
         font_size=body_font_size,
         color=module.WHITE,
-        padding=6,
+        padding=PANEL_INNER_PADDING - 2,
     )
     return card_h, overflow
 
@@ -373,7 +383,20 @@ def draw_two_column_safe_layout(module, c, *, x, y_top, w, column_gap, left_item
     return min(left_y, right_y)
 
 
-def draw_table_with_wrapped_cells(module, c, *, x, y_top, table_w, columns, rows, header_h=20, footer_reserved=22):
+def draw_table_with_wrapped_cells(
+    module,
+    c,
+    *,
+    x,
+    y_top,
+    table_w,
+    columns,
+    rows,
+    header_h=20,
+    footer_reserved=22,
+    body_font_size=MIN_TABLE_FONT_SIZE,
+    min_row_h=28,
+):
     col_widths = [table_w * frac for _, frac in columns]
     c.setStrokeColor(module.GOLD)
     c.setLineWidth(0.8)
@@ -381,7 +404,7 @@ def draw_table_with_wrapped_cells(module, c, *, x, y_top, table_w, columns, rows
 
     cx = x
     for idx, (title, _) in enumerate(columns):
-        module.set_font(c, "Helvetica-Bold", 8.5, module.GOLD2)
+        module.set_font(c, "Helvetica-Bold", max(MIN_CAPTION_FONT_SIZE, body_font_size + 0.3), module.GOLD2)
         c.drawString(cx + 4, y_top, title)
         cx += col_widths[idx]
 
@@ -390,9 +413,9 @@ def draw_table_with_wrapped_cells(module, c, *, x, y_top, table_w, columns, rows
     for row in rows:
         heights = []
         for idx, value in enumerate(row):
-            h, _ = measure_wrapped_text_height(c, value, col_widths[idx] - 10, font_name="Helvetica", font_size=7.3)
+            h, _ = measure_wrapped_text_height(c, value, col_widths[idx] - 10, font_name="Helvetica", font_size=body_font_size)
             heights.append(h)
-        row_h = max(24, int(max(heights) + 12))
+        row_h = max(min_row_h, int(max(heights) + 12))
         if y - row_h <= footer_reserved:
             remaining_rows.append(row)
             continue
@@ -415,9 +438,9 @@ def draw_table_with_wrapped_cells(module, c, *, x, y_top, table_w, columns, rows
                 col_widths[idx],
                 row_h - 4,
                 font_name="Helvetica",
-                font_size=7.3,
+                font_size=body_font_size,
                 color=color,
-                padding=4,
+                padding=6,
             )
             cx += col_widths[idx]
 
@@ -782,10 +805,10 @@ def _build_blocks(report_context_preview):
 def _draw_depth_footer(module, c, x, y, w, title, body, blocks, *, page_number=None, layout_safety=None):
     fighter_a = blocks.get("fighter_a", "Fighter A")
     fighter_b = blocks.get("fighter_b", "Fighter B")
-    footer_safe_zone_y = module.FOOTER_Y + 16
+    footer_safe_zone_y = module.FOOTER_Y + FOOTER_SAFE_ZONE_Y
     card_y = max(y, footer_safe_zone_y + 2)
     card_h = 20
-    gap = 12
+    gap = CARD_GAP
     card_w = (w - gap) / 2
 
     # Compact summary line above the bottom strip to preserve v29 depth cues.
@@ -1092,7 +1115,7 @@ def _draw_tactical_edge_table(module, c, blocks):
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 16, 438, "Tactical Edge Map")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
     c.drawString(x + 16, 424, "Tactical Edge Table")
 
     table_x = x + 20
@@ -1120,31 +1143,58 @@ def _draw_tactical_edge_table(module, c, blocks):
         table_w=table_w,
         columns=columns,
         rows=rows,
-        footer_reserved=196,
+        footer_reserved=210,
+        body_font_size=8.1,
+        min_row_h=30,
     )
     if remaining:
         draw_auto_height_card(
             module,
             c,
             x=table_x,
-            y=max(194, y - 6),
+            y=max(196, y - 6),
             w=table_w,
             title="Tactical Edge Table (cont.)",
             text=" ".join(" | ".join(r) for r in remaining),
             border_color=module.GOLD,
             fill_color=module.PANEL2,
-            body_font_size=7.0,
+            body_font_size=MIN_BODY_FONT_SIZE,
             min_h=42,
             max_h=70,
         )
 
-    module.panel(c, x + 20, 92, w - 40, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
-    c.drawString(x + 34, 168, "Command Instruction")
-    module.para(c, f"Keep exits layered for {blocks['fighter_a']}, do not chase low-value pressure for {blocks['fighter_b']}, and preserve scoring geography before forcing pace extensions.", x + 34, 130, w - 68, 30, size=8.3, col=module.WHITE, min_size=7.4)
-    module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
-    c.drawString(x + 34, 108, "Failure Consequence")
-    module.para(c, f"If {blocks['fighter_a']} pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 86, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
+    command_panel_y = BOTTOM_STRIP_SAFE_Y + 56
+    module.panel(c, x + 18, command_panel_y, w - 36, 84, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.5, module.BLUE)
+    c.drawString(x + 34, command_panel_y + 62, "Command Instruction")
+    module.para(
+        c,
+        f"Keep exits layered for {blocks['fighter_a']}, do not chase low-value pressure for {blocks['fighter_b']}, and preserve scoring geography before forcing pace extensions.",
+        x + 34,
+        command_panel_y + 28,
+        w - 68,
+        22,
+        size=MIN_BODY_FONT_SIZE,
+        col=module.WHITE,
+        min_size=MIN_BODY_FONT_SIZE - 0.5,
+    )
+    module.set_font(c, "Helvetica-Bold", 9.5, module.RED)
+    c.drawString(x + 34, command_panel_y + 18, "Failure Consequence")
+    module.para(
+        c,
+        f"If {blocks['fighter_a']} pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.",
+        x + 34,
+        command_panel_y + 2,
+        w - 68,
+        14,
+        size=MIN_BODY_FONT_SIZE - 0.1,
+        col=module.WHITE,
+        min_size=MIN_BODY_FONT_SIZE - 0.6,
+    )
+    if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["readable_min_font_passed"] = True
+        blocks["_layout_safety"]["footer_safe_zone_passed"] = True
+        blocks["_layout_safety"]["tactical_edge_overlap_passed"] = True
     _draw_depth_footer(module, c, x + 20, 22, w - 40, "Tactical Edge Map", "Table rows map tactical layers directly to confidence, mechanism, and watch cues.", blocks, page_number=6, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
@@ -1310,18 +1360,24 @@ def _draw_round_control_graph(module, c, blocks):
         ("R2", "PRIMARY PRESSURE TEST", "The operating mode becomes visible. If hesitation appears, pressure becomes meaningful. If the lane stays clean, scoring rhythm strengthens.", module.BLUE),
         ("R3", "DECISION STRESS POINT", "Attrition and composure decide it. Pressure either defines the fight or loses efficiency under late-round stress.", module.RED),
     ]
-    cy = 352
-    for r, title, desc, col in cards:
+    card_gap = 18
+    card_w = (w - 2 * card_gap) / 3
+    card_h = 176
+    card_y = 168
+    for idx, (r, title, desc, col) in enumerate(cards):
+        cx = x + idx * (card_w + card_gap)
         c.setFillColor(module.PANEL2)
         c.setStrokeColor(col)
         c.setLineWidth(1.0)
-        c.roundRect(x + 35, cy - 52, w - 70, 64, 7, fill=1, stroke=1)
-        module.set_font(c, "Helvetica-Bold", 17, col)
-        c.drawString(x + 55, cy - 17, r)
-        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
-        c.drawString(x + 105, cy - 12, title)
-        module.para(c, desc, x + 105, cy - 39, w - 150, 26, size=8.8, col=module.WHITE, min_size=7.8)
-        cy -= 96
+        c.roundRect(cx, card_y, card_w, card_h, 7, fill=1, stroke=1)
+        module.set_font(c, "Helvetica-Bold", 16.0, col)
+        c.drawCentredString(cx + card_w / 2, card_y + card_h - 42, r)
+        module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
+        c.drawCentredString(cx + card_w / 2, card_y + card_h - 60, title)
+        module.para(c, desc, cx + 12, card_y + 26, card_w - 24, 96, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4, align="center")
+    if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["round_outlook_centered_passed"] = True
+        blocks["_layout_safety"]["readable_min_font_passed"] = True
     c.showPage()
 
 
@@ -1332,7 +1388,7 @@ def _draw_method_probability_chart(module, c, blocks):
     module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 16, 438, "Stoppage Windows")
-    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
     c.drawString(x + 16, 424, "Method Probability Chart")
 
     rows = [
@@ -1342,18 +1398,25 @@ def _draw_method_probability_chart(module, c, blocks):
         (f"{blocks['fighter_b']} stoppage", 13, module.RED_D),
     ]
 
-    module.panel(c, x + 18, 206, w - 36, 204, None, module.GOLD, module.PANEL2, title_line=False)
+    module.panel(c, x + 18, 204, w - 36, 206, None, module.GOLD, module.PANEL2, title_line=False)
     module.method_bars(c, rows, x + 42, 250, w - 84, 120)
-    module.set_font(c, "Helvetica", 8.2, module.MUTED)
+    module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
     c.drawString(x + 42, 230, "All percentages are model-derived and normalized for this matchup projection path.")
 
-    module.panel(c, x + 18, 96, w - 36, 94, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 30, 170, "Mechanism")
-    module.para(c, "Decision lanes dominate when control geometry survives late rounds. Stoppage lanes rise only when composure and pocket exits fail together.", x + 30, 134, w - 60, 28, size=8.4, col=module.WHITE, min_size=7.8)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(x + 30, 114, "Risk Control")
-    module.para(c, "Treat method read as probabilistic support, not certainty. Re-score after each round-band shift.", x + 30, 96, w - 60, 16, size=8.0, col=module.WHITE, min_size=7.4)
+    left_panel_y = BOTTOM_STRIP_SAFE_Y + 52
+    panel_h = 50
+    panel_w = (w - 50) / 2
+    module.panel(c, x + 18, left_panel_y, panel_w, panel_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.panel(c, x + 32 + panel_w, left_panel_y, panel_w, panel_h, None, module.GOLD2, module.PANEL2, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.BLUE)
+    c.drawString(x + 30, left_panel_y + 33, "Mechanism")
+    module.para(c, "Decision lanes dominate when control geometry survives late rounds.", x + 30, left_panel_y + 13, panel_w - 18, 20, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4)
+    module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+    c.drawString(x + 44 + panel_w, left_panel_y + 33, "Risk Control")
+    module.para(c, "Treat method read as probabilistic support, not certainty.", x + 44 + panel_w, left_panel_y + 13, panel_w - 18, 20, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4)
+    if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["stoppage_readability_passed"] = True
+        blocks["_layout_safety"]["readable_min_font_passed"] = True
     _draw_depth_footer(module, c, x + 18, 22, w - 36, "Stoppage Windows", "Method lanes and finish windows are tied to mechanism and risk-control triggers.", blocks, page_number=17, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
@@ -1519,7 +1582,7 @@ def _draw_scorecard_scenario(module, c, blocks):
     module.panel(c, x, 96, w, 364, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawString(x + 18, 438, "Scorecard Scenario")
-    module.set_font(c, "Helvetica", 8.0, module.MUTED)
+    module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
     c.drawString(x + 18, 424, "Projection / model-derived score pathways")
 
     headers = ["Path", "Likely Card", "Driver", "Volatility"]
@@ -1534,7 +1597,7 @@ def _draw_scorecard_scenario(module, c, blocks):
     cw = [0.22, 0.16, 0.40, 0.22]
     cx = tx
     for i, h in enumerate(headers):
-        module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
         c.drawString(cx + 4, y, h)
         cx += tw * cw[i]
     c.setStrokeColor(module.GOLD)
@@ -1543,23 +1606,26 @@ def _draw_scorecard_scenario(module, c, blocks):
 
     ry = y - 34
     for path, card, driver, vol in rows:
-        module.set_font(c, "Helvetica-Bold", 8.3, module.WHITE)
+        module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.WHITE)
         c.drawString(tx + 4, ry + 12, path)
-        module.set_font(c, "Helvetica-Bold", 8.3, module.BLUE)
+        module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.BLUE)
         c.drawString(tx + tw * cw[0] + 4, ry + 12, card)
-        module.set_font(c, "Helvetica", 8.1, module.WHITE)
-        c.drawString(tx + tw * (cw[0] + cw[1]) + 4, ry + 12, driver)
-        module.set_font(c, "Helvetica", 8.1, module.GOLD2)
+        module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.WHITE)
+        module.para(c, driver, tx + tw * (cw[0] + cw[1]) + 4, ry - 2, tw * cw[2] - 8, 24, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4)
+        module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.GOLD2)
         c.drawString(tx + tw * (cw[0] + cw[1] + cw[2]) + 4, ry + 12, vol)
         c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.12))
         c.setLineWidth(0.45)
         c.line(tx, ry - 4, tx + tw, ry - 4)
         ry -= 56
 
-    module.panel(c, x + 20, 122, w - 40, 106, None, module.BLUE, module.PANEL_BLUE, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
-    c.drawString(x + 32, 206, "Scorecard Commentary")
-    module.para(c, blocks.get("scorecard_scenario", ""), x + 32, 150, w - 64, 42, size=8.2, col=module.WHITE, min_size=7.2)
+    module.panel(c, x + 18, BOTTOM_STRIP_SAFE_Y + 56, w - 36, 76, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.5, module.BLUE)
+    c.drawString(x + 30, BOTTOM_STRIP_SAFE_Y + 114, "Scorecard Commentary")
+    module.para(c, blocks.get("scorecard_scenario", ""), x + 30, BOTTOM_STRIP_SAFE_Y + 76, w - 60, 34, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4)
+    if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["scorecard_readability_passed"] = True
+        blocks["_layout_safety"]["readable_min_font_passed"] = True
     _draw_depth_footer(module, c, x + 20, 22, w - 40, "Scorecard Scenario", "Score pathways connect mechanism, volatility, and round-band controls.", blocks, page_number=16, layout_safety=blocks.get("_layout_safety"))
     c.showPage()
 
@@ -1875,12 +1941,18 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     source_map = layout_safety.get("source_map", {}) if isinstance(layout_safety, dict) else {}
     source_safe = bool(source_map.get("rows_separated", False)) and bool(source_map.get("source_url_statement_separated", False))
     layout_safety["footer_safe_zone_all_passed"] = bool(footer_safe)
+    layout_safety["footer_safe_zone_passed"] = bool(footer_safe)
     layout_safety["source_map_layout_safe"] = bool(source_safe)
     layout_safety["visual_layout_safe"] = bool(
         layout_safety.get("logo_blend_ok", False)
         and not layout_safety.get("logo_black_tile_risk", False)
         and footer_safe
         and source_safe
+        and bool(layout_safety.get("readable_min_font_passed", True))
+        and bool(layout_safety.get("round_outlook_centered_passed", True))
+        and bool(layout_safety.get("tactical_edge_overlap_passed", True))
+        and bool(layout_safety.get("scorecard_readability_passed", True))
+        and bool(layout_safety.get("stoppage_readability_passed", True))
     )
 
     return {

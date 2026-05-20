@@ -36,27 +36,17 @@ def _fake_generator(monkeypatch, tmp_path):
         out_name = payload.get("output_filename_override")
         out_path = Path(tmp_path) / out_name
         out_path.write_bytes(b"%PDF-1.4\n% fake\n")
+        marker_block = "\n".join(app_module._BUTTON2_REQUIRED_PREMIUM_MARKERS)
+        alt_marker_block = "\n".join(f"{a} {b}" for a, b in app_module._BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES)
+        layout_marker_block = "\n".join(app_module._BUTTON2_REQUIRED_V29_LAYOUT_MARKERS)
         text_by_path[str(out_path)] = (
             f"{fighter_a} vs {fighter_b}\n"
             f"Event: {event_name}\n"
             f"Event Date: {event_date}\n"
             f"Source: {source_url}\n"
-            "PREMIUM FIGHT\n"
-            "INTELLIGENCE REPORT\n"
-            "THE INTELLIGENCE BENEATH THE VIOLENCE\n"
-            "02 | EXECUTIVE COMMAND DASHBOARD\n"
-            "05 | FIGHTER ARCHITECTURE RADAR\n"
-            "PAGE 05\n"
-            "14 | ROUND-BY-ROUND CONTROL PROJECTION\n"
-            "15 | SCENARIO TREE / METHOD PATHWAYS\n"
-            "23 | TRACEABILITY / SOURCE MAP\n"
-            "24 | DISCLAIMER / RISK CONTROL\n"
-            "EXECUTIVE COMMAND DASHBOARD\n"
-            "FIGHTER ARCHITECTURE RADAR\n"
-            "TACTICAL EDGE MAP\n"
-            "SCENARIO TREE / METHOD PATHWAYS\n"
-            "TRACEABILITY / SOURCE MAP\n"
-            "DISCLAIMER / RISK CONTROL\n"
+            f"{marker_block}\n"
+            f"{alt_marker_block}\n"
+            f"{layout_marker_block}\n"
         )
         return {
             "ok": True,
@@ -64,6 +54,21 @@ def _fake_generator(monkeypatch, tmp_path):
             "output_path": str(out_path),
             "output_filename": str(out_name),
             "report_id": str(payload.get("fight_id") or "fight_id_missing"),
+            "renderer_route_used": "template_pack_asset_renderer",
+            "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+            "template_pack_asset_backed": True,
+            "layout_safety": {
+                "logo_blend_ok": True,
+                "logo_black_tile_risk": False,
+                "readable_min_font_passed": True,
+                "footer_safe_zone_passed": True,
+                "tactical_edge_overlap_passed": True,
+                "scorecard_readability_passed": True,
+                "stoppage_readability_passed": True,
+                "round_outlook_centered_passed": True,
+                "footer_safe_zone_pages": {"6": {"safe": True}, "16": {"safe": True}, "17": {"safe": True}},
+                "source_map": {"rows_separated": True, "source_url_statement_separated": True},
+            },
             "delivery_performed": False,
             "external_api_delivery_performed": False,
             "queue_write_performed": False,
