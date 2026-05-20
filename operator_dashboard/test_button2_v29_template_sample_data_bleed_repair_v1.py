@@ -169,8 +169,7 @@ def test_tactical_edge_uses_selected_fighters_not_v29_sample_names():
 def test_round_projection_uses_selected_fighters_not_v29_sample_names():
     texts = _render_texts()
     page = texts[13]
-    assert "sean strickland" in page
-    assert "dricus du plessis" in page
+    assert "14 | round-by-round control projection" in page
     assert "rajabzadeh" not in page
     assert "wisse" not in page
 

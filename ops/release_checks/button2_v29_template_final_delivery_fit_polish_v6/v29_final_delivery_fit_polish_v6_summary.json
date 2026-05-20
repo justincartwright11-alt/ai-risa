@@ -1,0 +1,71 @@
+{
+  "slice_name": "button2-v29-template-final-delivery-fit-polish-v6",
+  "baseline_chain": {
+    "delivery_baseline_commit": "3f89a44",
+    "delivery_baseline_tag": "button2-v29-template-final-delivery-fit-scan-repair-v5",
+    "handoff_commit": "93dbb99",
+    "handoff_tag": "final-customer-delivery-handoff-note-v1"
+  },
+  "status": "IMPLEMENTED_VALIDATED_LIVE_PROVEN",
+  "critical_defect": "Final delivery fit defects on pages 2,5,14,16,17 under variable matchup content",
+  "v6_fit_polish_markers": [
+    "page_2_lower_modules_fit_passed",
+    "page_5_customer_operator_fit_passed",
+    "page_14_round_balance_passed",
+    "page_16_scorecard_integration_passed",
+    "page_17_stoppage_rhythm_passed"
+  ],
+  "strict_gate": {
+    "failure_prefix": "final_delivery_fit_polish_failed:<marker>",
+    "failure_status": "v29_final_delivery_fit_polish_failed"
+  },
+  "tests": {
+    "py_compile": "pass",
+    "test_button2_v29_template_final_delivery_fit_polish_v6.py": "14 passed",
+    "test_button2_v29_template_final_fit_and_flow_polish_v4.py": "13 passed",
+    "test_button2_v29_template_dense_page_readability_content_depth_v3.py": "18 passed",
+    "test_button2_v29_template_sample_data_bleed_repair_v1.py": "11 passed",
+    "test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py": "16 passed"
+  },
+  "before_proof": {
+    "pdf": "reports/max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T092602Z_12dba2e9ebcc.pdf",
+    "summary": "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/before/before_defect_scan_summary.json",
+    "contact_sheet": "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/before/max_holloway_vs_justin_gaethje_v6_before_defect_scan_contact_sheet.png"
+  },
+  "live_proof": {
+    "runtime": "http://127.0.0.1:5050",
+    "batch_id": "ff4fe9d92ed54a5188d7e29bfdf8ffa4",
+    "generated_count": 4,
+    "failed_count": 0,
+    "matchups": [
+      "ufc_300_max_holloway_vs_justin_gaethje",
+      "joshua_vs_dubois_ben_whittaker_vs_willy_hutchinson",
+      "joshua_vs_dubois_dalton_smith_vs_jose_zepeda",
+      "bellator_298_ryan_curtis_adam_borics"
+    ],
+    "required_pages": [2, 5, 6, 14, 16, 17, 23],
+    "all_customer_ready": true,
+    "all_visual_gate_status_premium_template_confirmed": true,
+    "all_renderer_route_template_pack_asset_renderer": true,
+    "summary": "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/after/live_v6_proof_summary.json"
+  },
+  "proof_pdfs": [
+    "reports/max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T093827Z_1239d9690322.pdf",
+    "reports/ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T093829Z_ce6d3cd760fc.pdf",
+    "reports/dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T093831Z_36716ec48c59.pdf",
+    "reports/ryan_curtis_vs_adam_borics_bellator_298_premium_20260520T093833Z_185ab0be2d16.pdf"
+  ],
+  "after_contact_sheets": [
+    "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/after/max_holloway_vs_justin_gaethje_required_pages_contact_sheet.png",
+    "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/after/ben_whittaker_vs_willy_hutchinson_required_pages_contact_sheet.png",
+    "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/after/dalton_smith_vs_jose_zepeda_required_pages_contact_sheet.png",
+    "ops/release_checks/button2_v29_template_final_delivery_fit_polish_v6/proof/after/ryan_curtis_vs_adam_borics_required_pages_contact_sheet.png"
+  ],
+  "quality_checks": {
+    "operator_note_absent": true,
+    "generic_lens_placeholder_absent": true,
+    "sample_bleed_absent": true,
+    "event_source_report_binding_present": true
+  },
+  "final_delivery_verdict": "PASS"
+}

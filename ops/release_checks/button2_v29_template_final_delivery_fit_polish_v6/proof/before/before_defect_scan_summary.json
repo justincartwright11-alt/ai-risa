@@ -1,0 +1,54 @@
+{
+  "slice": "button2-v29-template-final-delivery-fit-polish-v6",
+  "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T092602Z_12dba2e9ebcc.pdf",
+  "page_count": 24,
+  "pages_rendered": [
+    2,
+    5,
+    14,
+    16,
+    17,
+    23
+  ],
+  "page_pngs": [
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p02.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p05.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p14.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p16.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p17.png",
+    "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_p23.png"
+  ],
+  "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_polish_v6\\proof\\before\\max_holloway_vs_justin_gaethje_v6_before_defect_scan_contact_sheet.png",
+  "observed_defects": [
+    {
+      "page": 2,
+      "defect": "Round Control Projection clipped/crowded; R3 ATTRITION fit tight; Method Probability and Risk Control compressed.",
+      "likely_function": "_draw_executive"
+    },
+    {
+      "page": 5,
+      "defect": "Customer Meaning text collides with divider rhythm; right-side panels too tight for dynamic text.",
+      "likely_function": "_draw_fighter_architecture_radar"
+    },
+    {
+      "page": 14,
+      "defect": "Round outlook card group still needs centering/balance consistency across matchup lengths.",
+      "likely_function": "_draw_round_control_graph"
+    },
+    {
+      "page": 16,
+      "defect": "Scorecard table appears sparse and commentary panel feels detached.",
+      "likely_function": "_draw_scorecard_scenario"
+    },
+    {
+      "page": 17,
+      "defect": "Stoppage chart/panels readable but vertical rhythm and panel balance need polish.",
+      "likely_function": "_draw_method_probability_chart"
+    }
+  ],
+  "text_checks": {
+    "contains_operator_note": false,
+    "contains_report_id": true,
+    "contains_source_url": true
+  }
+}

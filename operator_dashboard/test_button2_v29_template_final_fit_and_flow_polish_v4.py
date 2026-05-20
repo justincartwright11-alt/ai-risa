@@ -258,7 +258,7 @@ def test_page_5_operator_use_rows_stay_inside_panel_bounds():
     module, canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
     assert blocks["_layout_safety"].get("page_5_operator_use_fit_passed") is True
 
-    operator_panels = [p for p in module.panel_calls if abs(p["y"] - 72.0) < 0.01 and abs(p["h"] - 112.0) < 0.01]
+    operator_panels = [p for p in module.panel_calls if abs(p["y"] - 72.0) < 0.01 and abs(p["h"] - 126.0) < 0.01]
     assert len(operator_panels) == 1
     op_panel = operator_panels[0]
 
@@ -296,7 +296,7 @@ def test_page_14_round_cards_are_centered_and_balanced():
     assert blocks["_layout_safety"].get("page_14_round_fit_passed") is True
     assert blocks["_layout_safety"].get("round_outlook_centered_passed") is True
 
-    cards = [r for r in canvas.round_rect_calls if abs(r["y"] - 186.0) < 0.01 and abs(r["h"] - 152.0) < 0.01]
+    cards = [r for r in canvas.round_rect_calls if abs(r["y"] - 182.0) < 0.01 and abs(r["h"] - 156.0) < 0.01]
     assert len(cards) == 3
 
     cards = sorted(cards, key=lambda r: r["x"])
@@ -313,7 +313,7 @@ def test_page_16_scorecard_commentary_aligns_with_commentary_panel():
     assert safety.get("page_16_scorecard_fit_passed") is True
     assert safety.get("scorecard_readability_passed") is True
 
-    commentary_panels = [p for p in module.panel_calls if abs(p["y"] - 94.0) < 0.01 and abs(p["h"] - 76.0) < 0.01]
+    commentary_panels = [p for p in module.panel_calls if abs(p["y"] - 178.0) < 0.01 and abs(p["h"] - 88.0) < 0.01]
     assert len(commentary_panels) == 1
     panel = commentary_panels[0]
 
@@ -334,14 +334,14 @@ def test_page_17_stoppage_panels_are_balanced():
     assert safety.get("page_17_stoppage_fit_passed") is True
     assert safety.get("stoppage_readability_passed") is True
 
-    lower_panels = [p for p in module.panel_calls if abs(p["y"] - 88.0) < 0.01 and abs(p["h"] - 76.0) < 0.01]
+    lower_panels = [p for p in module.panel_calls if abs(p["y"] - 92.0) < 0.01 and abs(p["h"] - 82.0) < 0.01]
     assert len(lower_panels) == 2
     lower_panels = sorted(lower_panels, key=lambda p: p["x"])
 
     left, right = lower_panels
     gap = right["x"] - (left["x"] + left["w"])
     assert pytest.approx(left["w"], abs=0.01) == right["w"]
-    assert pytest.approx(gap, abs=0.01) == 12.0
+    assert pytest.approx(gap, abs=0.01) == 18.0
 
 
 def test_gate_metadata_reports_fit_flow_pass_and_fail_states():
