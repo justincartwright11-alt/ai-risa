@@ -1,0 +1,110 @@
+{
+  "slice": "button2-v29-template-dense-page-readability-content-depth-v3",
+  "baseline": {
+    "commit": "e9735dd",
+    "tag": "button2-v29-template-readability-overlap-hardening-v2"
+  },
+  "root_causes": [
+    {
+      "category": "dense_page_scaffold_and_placeholder_leakage",
+      "owning_files": [
+        "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+        "operator_dashboard/app.py"
+      ],
+      "repairs": [
+        "removed customer-visible scaffold-note panels from dense pages",
+        "deepened page 2 control/danger/command lens copy",
+        "blocked generic lens placeholder phrases fail-closed in the strict gate"
+      ]
+    },
+    {
+      "category": "live_selected_matchup_binding_bleed",
+      "owning_files": [
+        "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+        "operator_dashboard/button2_dossier_handoff_report_context_preview.py"
+      ],
+      "repairs": [
+        "replaced remaining hardcoded Austin Williams/Walsh dense-page strings with selected-matchup bindings",
+        "preserved promotion in the report-context preview handoff path",
+        "inferred sport from promotion/source_url so page 23 no longer falls back to MMA/UFC"
+      ]
+    }
+  ],
+  "files_changed": [
+    "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "operator_dashboard/app.py",
+    "operator_dashboard/button2_dossier_handoff_report_context_preview.py",
+    "operator_dashboard/test_button2_v29_template_dense_page_readability_content_depth_v3.py",
+    "operator_dashboard/test_button2_v29_template_visual_defect_polish_v1.py",
+    "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/render_live_dense_page_proof_v3.py",
+    "docs/button2_v29_template_dense_page_readability_content_depth_v3.md"
+  ],
+  "required_matrix": [
+    {
+      "command": "python -m py_compile operator_dashboard/button2_template_pack_asset_renderer_v1.py operator_dashboard/app.py",
+      "result": "pass"
+    },
+    {
+      "command": "python -m pytest operator_dashboard/test_button2_v29_template_dense_page_readability_content_depth_v3.py -q",
+      "result": "18 passed"
+    },
+    {
+      "command": "python -m pytest operator_dashboard/test_button2_v29_template_readability_overlap_hardening_v2.py -q",
+      "result": "3 passed"
+    },
+    {
+      "command": "python -m pytest operator_dashboard/test_button2_v29_template_visual_defect_polish_v1.py -q",
+      "result": "12 passed"
+    },
+    {
+      "command": "python -m pytest operator_dashboard/test_button2_v29_template_sample_data_bleed_repair_v1.py -q",
+      "result": "11 passed"
+    },
+    {
+      "command": "python -m pytest operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py -q",
+      "result": "16 passed"
+    }
+  ],
+  "live_proof": {
+    "route": "http://127.0.0.1:5050/api/button2/generate-selected-batch",
+    "page_set": [2, 6, 14, 16, 17, 23],
+    "summary_path": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/live_proof_summary.json",
+    "cases": [
+      {
+        "slug": "callum_walsh_vs_austin_williams",
+        "customer_ready": true,
+        "visual_gate_status": "premium_template_confirmed",
+        "operator_note_hits": [],
+        "generic_lens_hits": [],
+        "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_dense_page_contact_sheet.png",
+        "output_path": "reports/callum_walsh_vs_austin_williams_joshua_vs_dubois_premium_20260520T043439Z_f3574083526a.pdf"
+      },
+      {
+        "slug": "ben_whittaker_vs_willy_hutchinson",
+        "customer_ready": true,
+        "visual_gate_status": "premium_template_confirmed",
+        "operator_note_hits": [],
+        "generic_lens_hits": [],
+        "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_dense_page_contact_sheet.png",
+        "output_path": "reports/ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T043442Z_76d7c6deafb5.pdf"
+      },
+      {
+        "slug": "ryan_curtis_vs_adam_borics",
+        "customer_ready": true,
+        "visual_gate_status": "premium_template_confirmed",
+        "operator_note_hits": [],
+        "generic_lens_hits": [],
+        "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_dense_page_contact_sheet.png",
+        "output_path": "reports/ryan_curtis_vs_adam_borics_bellator_298_premium_20260520T043445Z_7ec037184afb.pdf"
+      }
+    ]
+  },
+  "governance": {
+    "button1_queue_approval_preserved": true,
+    "button2_operator_approval_preserved": true,
+    "button2_bulk_generation_contract_preserved": true,
+    "button3_writes_preserved_false": true,
+    "fail_closed_customer_ready_preserved": true
+  },
+  "verdict": "PASS - dense-page readability/content-depth v3 cleared matrix and live 5050 proof"
+}

@@ -83,6 +83,7 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
     selected_source_url = _safe_text(selected_matchup.get("source_url", ""), "")
     selected_event_name = _safe_text(selected_matchup.get("event_name", ""), "Unknown Event")
     selected_event_date = _safe_text(selected_matchup.get("event_date", ""), "n/a")
+    selected_promotion = _safe_text(selected_matchup.get("promotion", ""), "")
     selected_fighter_a = _safe_text(selected_matchup.get("fighter_a", ""), "Unknown Fighter A")
     selected_fighter_b = _safe_text(selected_matchup.get("fighter_b", ""), "Unknown Fighter B")
 
@@ -157,7 +158,9 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
             "fighter_b": selected_fighter_b,
             "event_name": selected_event_name,
             "event_date": selected_event_date,
+            "promotion": selected_promotion,
             "source_url": selected_source_url,
+            "source_type": source_type_value,
         },
         "handoff_summary_preview": handoff_summary_preview,
         # --- Metadata markers (all preview/unavailable/not_certified) ---

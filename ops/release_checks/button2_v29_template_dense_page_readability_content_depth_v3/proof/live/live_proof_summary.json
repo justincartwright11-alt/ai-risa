@@ -1,0 +1,166 @@
+{
+  "route": "http://127.0.0.1:5050/api/button2/generate-selected-batch",
+  "proof_pages": [
+    2,
+    6,
+    14,
+    16,
+    17,
+    23
+  ],
+  "cases": [
+    {
+      "slug": "callum_walsh_vs_austin_williams",
+      "fighter_a": "Callum Walsh",
+      "fighter_b": "Austin Williams",
+      "event_name": "Joshua vs Dubois",
+      "customer_ready": true,
+      "visual_gate_status": "premium_template_confirmed",
+      "output_path": "reports/callum_walsh_vs_austin_williams_joshua_vs_dubois_premium_20260520T043439Z_f3574083526a.pdf",
+      "output_filename": "callum_walsh_vs_austin_williams_joshua_vs_dubois_premium_20260520T043439Z_f3574083526a.pdf",
+      "report_id": null,
+      "page_count": 24,
+      "operator_note_hits": [],
+      "generic_lens_hits": [],
+      "contains_fighter_a": true,
+      "contains_fighter_b": true,
+      "contains_event_name": true,
+      "contains_source_url": true,
+      "layout_safety": {
+        "operator_note_absent_passed": null,
+        "dashboard_lens_depth_passed": null,
+        "round_heading_body_clear_passed": null,
+        "scorecard_readability_passed": null,
+        "stoppage_readability_passed": null,
+        "readable_min_font_passed": null,
+        "footer_safe_zone_passed": null,
+        "logo_blend_ok": null,
+        "logo_black_tile_risk": null
+      },
+      "lens_depth": {},
+      "page_bounds": {
+        "6": null,
+        "14": null,
+        "16": null,
+        "17": null,
+        "23": null
+      },
+      "footer_safe_zone_pages": {
+        "6": null,
+        "16": null,
+        "17": null
+      },
+      "proof_png_paths": [
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p02.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p06.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p14.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p16.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p17.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_p23.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/callum_walsh_vs_austin_williams_dense_page_contact_sheet.png"
+    },
+    {
+      "slug": "ben_whittaker_vs_willy_hutchinson",
+      "fighter_a": "Ben Whittaker",
+      "fighter_b": "Willy Hutchinson",
+      "event_name": "Joshua vs Dubois",
+      "customer_ready": true,
+      "visual_gate_status": "premium_template_confirmed",
+      "output_path": "reports/ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T043442Z_76d7c6deafb5.pdf",
+      "output_filename": "ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T043442Z_76d7c6deafb5.pdf",
+      "report_id": null,
+      "page_count": 24,
+      "operator_note_hits": [],
+      "generic_lens_hits": [],
+      "contains_fighter_a": true,
+      "contains_fighter_b": true,
+      "contains_event_name": true,
+      "contains_source_url": true,
+      "layout_safety": {
+        "operator_note_absent_passed": null,
+        "dashboard_lens_depth_passed": null,
+        "round_heading_body_clear_passed": null,
+        "scorecard_readability_passed": null,
+        "stoppage_readability_passed": null,
+        "readable_min_font_passed": null,
+        "footer_safe_zone_passed": null,
+        "logo_blend_ok": null,
+        "logo_black_tile_risk": null
+      },
+      "lens_depth": {},
+      "page_bounds": {
+        "6": null,
+        "14": null,
+        "16": null,
+        "17": null,
+        "23": null
+      },
+      "footer_safe_zone_pages": {
+        "6": null,
+        "16": null,
+        "17": null
+      },
+      "proof_png_paths": [
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p02.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p06.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p14.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p16.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p17.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_p23.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ben_whittaker_vs_willy_hutchinson_dense_page_contact_sheet.png"
+    },
+    {
+      "slug": "ryan_curtis_vs_adam_borics",
+      "fighter_a": "Ryan Curtis",
+      "fighter_b": "Adam Borics",
+      "event_name": "Bellator 298",
+      "customer_ready": true,
+      "visual_gate_status": "premium_template_confirmed",
+      "output_path": "reports/ryan_curtis_vs_adam_borics_bellator_298_premium_20260520T043445Z_7ec037184afb.pdf",
+      "output_filename": "ryan_curtis_vs_adam_borics_bellator_298_premium_20260520T043445Z_7ec037184afb.pdf",
+      "report_id": null,
+      "page_count": 24,
+      "operator_note_hits": [],
+      "generic_lens_hits": [],
+      "contains_fighter_a": true,
+      "contains_fighter_b": true,
+      "contains_event_name": true,
+      "contains_source_url": true,
+      "layout_safety": {
+        "operator_note_absent_passed": null,
+        "dashboard_lens_depth_passed": null,
+        "round_heading_body_clear_passed": null,
+        "scorecard_readability_passed": null,
+        "stoppage_readability_passed": null,
+        "readable_min_font_passed": null,
+        "footer_safe_zone_passed": null,
+        "logo_blend_ok": null,
+        "logo_black_tile_risk": null
+      },
+      "lens_depth": {},
+      "page_bounds": {
+        "6": null,
+        "14": null,
+        "16": null,
+        "17": null,
+        "23": null
+      },
+      "footer_safe_zone_pages": {
+        "6": null,
+        "16": null,
+        "17": null
+      },
+      "proof_png_paths": [
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p02.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p06.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p14.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p16.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p17.png",
+        "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_p23.png"
+      ],
+      "contact_sheet": "ops/release_checks/button2_v29_template_dense_page_readability_content_depth_v3/proof/live/ryan_curtis_vs_adam_borics_dense_page_contact_sheet.png"
+    }
+  ]
+}

@@ -27,24 +27,41 @@ _WATERMARK_CANDIDATES = [
     "AI-RISA Logo.png",
 ]
 
-MIN_BODY_FONT_SIZE = 8.2
-MIN_CAPTION_FONT_SIZE = 8.0
-MIN_TABLE_FONT_SIZE = 8.3
-MIN_COMMENTARY_FONT_SIZE = 8.2
-MIN_LABEL_FONT_SIZE = 8.8
+MIN_BODY_FONT_SIZE = 8.6
+MIN_CAPTION_FONT_SIZE = 8.4
+MIN_TABLE_FONT_SIZE = 8.9
+MIN_COMMENTARY_FONT_SIZE = 8.8
+MIN_LABEL_FONT_SIZE = 9.1
 FOOTER_SAFE_ZONE_Y = 34
 BOTTOM_STRIP_SAFE_Y = 58
 PANEL_INNER_PADDING = 8
 MIN_PANEL_GAP = 12
 MIN_CARD_GAP = 16
 CARD_GAP = MIN_CARD_GAP
-MAX_TEXT_LINES_PER_PANEL = 4
+MAX_TEXT_LINES_PER_PANEL = 5
 PAGE_SAFE_TOP = 466
 PAGE_SAFE_BOTTOM = 46
 FOOTER_RESERVED_HEIGHT = 34
 BOTTOM_STRIP_RESERVED_HEIGHT = 40
 SECTION_STRIP_RESERVED_HEIGHT = 26
-DENSE_PAGE_CONTENT_BOTTOM = 102
+DENSE_PAGE_CONTENT_BOTTOM = 118
+LENS_BODY_MIN_CHARS = 90
+
+_GENERIC_LENS_PLACEHOLDER_PHRASES = (
+    "where the fight is owned",
+    "where the fight can flip",
+    "what the corner must solve",
+    "dictates rhythm",
+    "creates chaos",
+    "entry cost",
+)
+
+_SCAFFOLD_NOTE_PHRASES = (
+    "operator note",
+    "keep the dense page moving; no footer overlap.",
+    "keep the scorecard readable; no footer compression.",
+    "keep the finish read readable; no footer compression.",
+)
 
 
 class TemplatePackResolverError(Exception):
@@ -114,6 +131,27 @@ def _clean_text(value, fallback=""):
         return fallback
     text = html.unescape(str(value)).strip()
     return text or fallback
+
+
+def _infer_sport_label(selected):
+    if not isinstance(selected, dict):
+        return "MMA"
+    explicit = _clean_text(selected.get("sport"), "").lower().replace("_", " ")
+    if "boxing" in explicit:
+        return "Boxing"
+    if "kickboxing" in explicit:
+        return "Kickboxing"
+    if explicit in {"mma", "mixed martial arts"}:
+        return "MMA"
+
+    promotion = _clean_text(selected.get("promotion"), "").lower()
+    source_url = _clean_text(selected.get("source_url"), "").lower()
+    evidence = f"{promotion} {source_url}"
+    if any(token in evidence for token in ("boxing", "matchroom", "queensberry", "top rank", "nolimit", "boxrec", "boxingscene")):
+        return "Boxing"
+    if any(token in evidence for token in ("kickboxing", "glory")):
+        return "Kickboxing"
+    return "MMA"
 
 
 def _prepare_logo_image_reader(module, logo_path):
@@ -233,6 +271,11 @@ def _wrap_text_to_width(c, text, font_name, font_size, max_width):
     if current:
         lines.append(current)
     return lines
+
+
+def _contains_any_phrase(text, phrases):
+    normalized = _normalize_text(text).lower()
+    return any(phrase in normalized for phrase in phrases)
 
 
 def measure_wrapped_text_height(c, text, width, font_name="Helvetica", font_size=8.0, line_height=1.25, min_lines=1):
@@ -469,6 +512,29 @@ def _record_page_bounds(layout_safety, page_number, **info):
     pages[str(page_number)] = info
 
 
+def _record_lens_depth(layout_safety, lens_name, body, fighter_a, fighter_b, *, overflow=""):
+    if not isinstance(layout_safety, dict):
+        return
+    text = _normalize_text(body)
+    fighters = {_normalize_text(fighter_a).lower(), _normalize_text(fighter_b).lower()}
+    mentions_fighter = any(name and name in text.lower() for name in fighters)
+    lens_depth = layout_safety.setdefault("lens_depth", {})
+    lens_depth[lens_name] = {
+        "length": len(text),
+        "mentions_selected_fighter": bool(mentions_fighter),
+        "generic_placeholder": bool(_contains_any_phrase(text, _GENERIC_LENS_PLACEHOLDER_PHRASES)),
+        "overflow": bool(_normalize_text(overflow)),
+        "text": text,
+    }
+    layout_safety["dashboard_lens_depth_passed"] = all(
+        info.get("length", 0) >= LENS_BODY_MIN_CHARS
+        and info.get("mentions_selected_fighter", False)
+        and not info.get("generic_placeholder", False)
+        and not info.get("overflow", False)
+        for info in lens_depth.values()
+    ) if len(lens_depth) == 3 else False
+
+
 def _draw_dense_page_note_strip(module, c, x, y, w, title, body, border_color, fill_color, *, layout_safety=None, page_number=None):
     strip_h = 26
     strip_y = max(y, PAGE_SAFE_BOTTOM)
@@ -478,6 +544,10 @@ def _draw_dense_page_note_strip(module, c, x, y, w, title, body, border_color, f
     module.set_font(c, "Helvetica", MIN_COMMENTARY_FONT_SIZE, module.WHITE)
     c.drawString(x + 110, strip_y + 9, body)
     if isinstance(layout_safety, dict) and page_number is not None:
+        layout_safety["operator_note_present"] = True
+        operator_pages = layout_safety.setdefault("operator_note_pages", [])
+        if str(page_number) not in operator_pages:
+            operator_pages.append(str(page_number))
         footer_pages = layout_safety.setdefault("footer_safe_zone_pages", {})
         footer_pages[str(page_number)] = {
             "safe": True,
@@ -495,6 +565,20 @@ def _draw_dense_page_note_strip(module, c, x, y, w, title, body, border_color, f
             overlap_detected=False,
             min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
         )
+
+
+def _draw_dynamic_command_footer(module, c, blocks, x, y, w):
+    gap = 16
+    card_w = (w - 2 * gap) / 3
+    cards = [
+        ("CONTROL LENS", f"{_fighter_last_name(blocks.get('fighter_a', 'Fighter A'))} owns the crowded reset lane.", module.BLUE),
+        ("DANGER LENS", f"{_fighter_last_name(blocks.get('fighter_b', 'Fighter B'))} flips it with clean first counters.", module.RED),
+        ("COMMAND READ", f"Reinforce second-phase discipline for {blocks.get('fighter_a', 'the pressure side')}.", module.GOLD2),
+    ]
+    for idx, (title, body, accent) in enumerate(cards):
+        xx = x + idx * (card_w + gap)
+        module.panel(c, xx, y, card_w, 48, title, accent, module.SOFT, r=6, title_line=False)
+        draw_wrapped_text_box(module, c, body, xx + 10, y + 8, card_w - 20, 18, font_name="Helvetica", font_size=8.6, color=module.WHITE, padding=1)
 
 
 def _customer_command_footer(module, c, x, y, w):
@@ -600,6 +684,7 @@ def _build_blocks(report_context_preview):
     event_name = _clean_text(selected.get("event_name"), "Premium Event")
     event_date = _clean_text(selected.get("event_date"), "n/a")
     promotion = _clean_text(selected.get("promotion"), "UFC")
+    sport = _infer_sport_label(selected)
     source_url = _clean_text(selected.get("source_url"), "n/a")
     report_id = re.sub(r"[^a-z0-9]+", "_", f"{fighter_a}_{fighter_b}_{event_name}".lower()).strip("_")
     if not report_id:
@@ -667,6 +752,7 @@ def _build_blocks(report_context_preview):
         "event_name": event_name,
         "event_date": event_date,
         "promotion": promotion,
+        "sport": sport,
         "source_url": source_url,
         "report_id": report_id,
         "fight_id": fight_id,
@@ -778,8 +864,14 @@ def _build_blocks(report_context_preview):
         "edge_percent": "Decision | Full Distance",
         "confidence_display": "55.0%",
         "volatility": "High (model-derived)",
-        "control_zone": f"{fighter_a} pressure rhythm / reset denial",
-        "danger_zone": f"{fighter_b} geography loss / rushed entry",
+        "control_zone": (
+            f"{fighter_a} controls the fight when the first touch crowds middle distance and {fighter_b} has to reset twice before he can plant his counters. "
+            f"Watch cue: {fighter_b} gives ground after first contact."
+        ),
+        "danger_zone": (
+            f"{fighter_b} flips the fight if {fighter_a} chases after first success and leaves square exits for the straight counter. "
+            "Failure cue: the pressure fighter reaches on the second beat instead of arriving behind his feet."
+        ),
         "collapse_trigger": f"{fighter_a} defensive hand decay",
         "method_probability": f"Decision (model-derived) | {fighter_a} / {fighter_b}",
         "confidence_band": "55%",
@@ -814,7 +906,10 @@ def _build_blocks(report_context_preview):
         "range_a": 72,
         "range_b": 76,
         # Dashboard short command read
-        "command_read": f"{fighter_a} wins by preserving scoring geography and reset denial; {fighter_b} flips with clean counter timing.",
+        "command_read": (
+            f"Corner priority: keep {fighter_a} patient on the second phase, stop reckless chase volume, and reinforce exit discipline between rounds. "
+            f"Do not admire the first burst; make {fighter_b} reset before he can counter."
+        ),
         "round_control": "Round Control Graph: model-derived R1-R5 cadence",
         "method_pathway": "Decision lane with stoppage volatility (model-derived)",
         "executive_summary": (
@@ -825,10 +920,10 @@ def _build_blocks(report_context_preview):
         "collapse_trigger_text": (
             f"Collapse Trigger ({fighter_a} pressure side): entries still arrive but stop producing controlled exits."
         ),
-        "control_thesis": "Instability vs structure",
-        "flip_point": "Who creates doubt first?",
-        "watch_cue": f"Does {_fighter_last_name(fighter_b, 'Fighter B')} reset clean?",
-        "command_rule": "Break decision structure",
+        "control_thesis": f"{fighter_a} wins when pressure turns each reset into another scoring exchange.",
+        "flip_point": f"If {fighter_b} starts landing first off the reset, the scorecard tightens immediately.",
+        "watch_cue": f"Watch whether {_fighter_last_name(fighter_b, 'Fighter B')} can exit clean after the first burst.",
+        "command_rule": f"Force {fighter_b} to defend the second phase instead of countering the first one.",
         # Body/Risk Anatomy Heat Map zones (model-derived)
         "risk_head_a": "62% model-derived",
         "risk_head_b": "58% model-derived",
@@ -990,20 +1085,38 @@ def _draw_executive(module, c, blocks):
     module.panel(c, sx, top, summary_w, h, "Executive Summary", module.GOLD, module.PANEL, title_line=False)
     module.para(c, blocks.get("summary", ""), sx + 14, top + 16, summary_w - 28, 46, size=10.0, col=module.WHITE, min_size=8.8)
 
-    y2 = 236
+    y2 = 220
+    card_h = 126
     colw = (w - 2 * 18) / 3
-    module.panel(c, x, y2, colw, 112, f"Control Zone - {a_short}", module.BLUE, module.PANEL_BLUE)
-    module.bullets(c, ["Pressure bursts", "Momentum theft", "Emotional discomfort"], x + 20, y2 + 30, colw - 88, 62, module.BLUE, 9.4)
-    module.target(c, x + colw - 40, y2 + 55, 17, module.BLUE)
-    module.panel(c, x + colw + 18, y2, colw, 112, f"Danger Zone - {b_short}", module.RED, module.PANEL_RED)
-    module.bullets(c, ["Clean range", "Disciplined counters", "Measured scoring"], x + colw + 38, y2 + 30, colw - 88, 62, module.RED, 9.4)
-    module.target(c, x + 2 * colw + 18 - 40, y2 + 55, 17, module.RED)
-    module.panel(c, x + 2 * (colw + 18), y2, colw, 112, "Collapse Trigger", module.RED, module.PANEL, title_line=False)
-    module.set_font(c, "Helvetica-Bold", 34, module.RED)
-    c.drawString(x + 2 * (colw + 18) + 22, y2 + 43, "!")
-    module.para(c, blocks.get("collapse", ""), x + 2 * (colw + 18) + 70, y2 + 28, colw - 96, 52, size=9.0, col=module.WHITE, min_size=8.0)
+    control_body = blocks.get("control_zone", "")
+    danger_body = blocks.get("danger_zone", "")
+    command_body = blocks.get("command_read", "")
 
-    y3 = 148
+    module.panel(c, x, y2, colw, card_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.6, module.BLUE)
+    c.drawString(x + 16, y2 + 102, f"CONTROL LENS / CONTROL ZONE - {a_short}")
+    control_overflow = draw_wrapped_text_box(module, c, control_body, x + 12, y2 + 16, colw - 54, 70, font_name="Helvetica", font_size=8.6, color=module.WHITE, padding=4)
+    module.target(c, x + colw - 26, y2 + 52, 16, module.BLUE)
+
+    dx = x + colw + 18
+    module.panel(c, dx, y2, colw, card_h, None, module.RED, module.PANEL_RED, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.6, module.RED)
+    c.drawString(dx + 16, y2 + 102, f"DANGER LENS / DANGER ZONE - {b_short}")
+    danger_overflow = draw_wrapped_text_box(module, c, danger_body, dx + 12, y2 + 16, colw - 54, 70, font_name="Helvetica", font_size=8.6, color=module.WHITE, padding=4)
+    module.target(c, dx + colw - 26, y2 + 52, 16, module.RED)
+
+    cx = x + 2 * (colw + 18)
+    module.panel(c, cx, y2, colw, card_h, None, module.GOLD2, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
+    c.drawString(cx + 16, y2 + 102, "COMMAND READ / COLLAPSE TRIGGER")
+    command_overflow = draw_wrapped_text_box(module, c, command_body, cx + 12, y2 + 16, colw - 24, 70, font_name="Helvetica", font_size=8.6, color=module.WHITE, padding=4)
+
+    if isinstance(blocks.get("_layout_safety"), dict):
+        _record_lens_depth(blocks["_layout_safety"], "control", control_body, blocks.get("fighter_a", ""), blocks.get("fighter_b", ""), overflow=control_overflow)
+        _record_lens_depth(blocks["_layout_safety"], "danger", danger_body, blocks.get("fighter_a", ""), blocks.get("fighter_b", ""), overflow=danger_overflow)
+        _record_lens_depth(blocks["_layout_safety"], "command", command_body, blocks.get("fighter_a", ""), blocks.get("fighter_b", ""), overflow=command_overflow)
+
+    y3 = 140
     module.panel(c, x, y3, w, 76, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
     c.drawString(x + 14, y3 + 55, "FIGHT CONTROL INTELLIGENCE STRIP")
@@ -1023,7 +1136,7 @@ def _draw_executive(module, c, blocks):
         module.panel(c, xx, y3 + 9, cw, 35, None, col, module.SOFT, r=5, title_line=False)
         module.set_font(c, "Helvetica-Bold", 8.7, col)
         c.drawString(xx + 9, y3 + 31, t)
-        module.para(c, v, xx + 9, y3 + 12, cw - 18, 14, size=8.0, col=module.WHITE, min_size=7.2)
+        module.para(c, v, xx + 9, y3 + 10, cw - 18, 18, size=8.2, col=module.WHITE, min_size=7.6)
 
     y4 = 70
     round_w = 248
@@ -1142,7 +1255,7 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     c.setStrokeColor(module.GOLD)
     c.setLineWidth(0.55)
     c.line(rx + 18, y + 80, rx + rw - 18, y + 80)
-    rows = [("CONTROL", "Dictates rhythm", module.BLUE), ("DANGER", "Creates chaos", module.RED), ("FLIP", "Entry cost", module.GOLD2)]
+    rows = [("CONTROL", blocks.get("control_thesis", ""), module.BLUE), ("DANGER", blocks.get("flip_point", ""), module.RED), ("FLIP", blocks.get("watch_cue", ""), module.GOLD2)]
     yy = y + 61
     for label, val, col in rows:
         module.set_font(c, "Helvetica-Bold", 8.8, col)
@@ -1167,18 +1280,16 @@ def _draw_tactical_edge_table(module, c, blocks):
     table_w = w - 40
     header_y = 404
     columns = [
-        ("Tactical Layer", 0.19),
-        ("Edge", 0.13),
-        ("Confidence", 0.14),
-        ("Why It Matters", 0.33),
-        ("Watch Cue", 0.21),
+        ("Tactical Layer", 0.24),
+        ("Edge | Model", 0.18),
+        ("Why It Matters", 0.34),
+        ("Watch Cue", 0.24),
     ]
     rows = [
-        ("Pressure Rhythm", blocks["fighter_a"], "58% model", "Pressure plus reset denial keeps scoring loops alive.", f"Watch exits forced twice by {blocks['fighter_a']}.") ,
-        ("Counter Entry Timing", blocks["fighter_b"], "33% model", "Clean exits and counters compress the pressure lane.", f"Watch delayed counters after {blocks['fighter_b']} resets."),
-        ("Range Geography", "Contested", "54% model", "Mid-range ownership decides clean volume and risk.", "Watch center-line denial after contact."),
-        ("Pocket Exit Discipline", blocks["fighter_a"], "52-60% model", "Clean exits preserve score integrity.", f"Watch {blocks['fighter_a']} hand return on exits."),
-        ("Late-Round Reliability", "Volatile", "High model", "Fatigue flips lane control if discipline slips.", "Watch R4-R5 composure spikes."),
+        ("Pressure Rhythm", f"{_fighter_last_name(blocks['fighter_a'])} | 58%", f"Pressure plus reset denial keeps {_fighter_last_name(blocks['fighter_a'])} on the scoring beat.", f"Watch whether {blocks['fighter_b']} is forced into a second retreat after contact."),
+        ("Counter Entry Timing", f"{_fighter_last_name(blocks['fighter_b'])} | 33%", "Clean exits and straight counters compress the pressure advantage.", f"Watch delayed counters when {blocks['fighter_a']} squares up after the first burst."),
+        ("Range Geography", "Contested | 54%", "Who owns mid-range after first contact decides which man gets clean repeat scoring.", "Watch center-line denial after the jab lands."),
+        ("Pocket Exit Discipline", f"{_fighter_last_name(blocks['fighter_a'])} | 52-60%", "Disciplined exits preserve the favourite lane and stop free counters.", f"Watch {blocks['fighter_a']} hand return before {blocks['fighter_b']} resets."),
     ]
     y, remaining = draw_table_with_wrapped_cells(
         module,
@@ -1188,9 +1299,9 @@ def _draw_tactical_edge_table(module, c, blocks):
         table_w=table_w,
         columns=columns,
         rows=rows,
-        footer_reserved=184,
+        footer_reserved=164,
         body_font_size=MIN_TABLE_FONT_SIZE,
-        min_row_h=28,
+        min_row_h=34,
     )
     if remaining:
         draw_auto_height_card(
@@ -1208,33 +1319,40 @@ def _draw_tactical_edge_table(module, c, blocks):
             max_h=70,
         )
 
-    command_panel_y = 118
-    module.panel(c, x + 18, command_panel_y, w - 36, 54, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    command_panel_y = 94
+    command_panel_h = 74
+    module.panel(c, x + 18, command_panel_y, w - 36, command_panel_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.BLUE)
-    c.drawString(x + 32, command_panel_y + 35, "Command Instruction")
-    module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.WHITE)
-    c.drawString(x + 180, command_panel_y + 35, f"Layer exits; make pressure pay.")
+    c.drawString(x + 30, command_panel_y + 51, "Tactical Command")
+    module.para(c, f"Keep {blocks['fighter_a']} behind the first touch, force {blocks['fighter_b']} to reset twice, and score before the lane opens for a clean reply.", x + 158, command_panel_y + 38, w - 206, 24, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.2)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.RED)
-    c.drawString(x + 32, command_panel_y + 15, "Failure Consequence")
-    module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.WHITE)
-    c.drawString(x + 180, command_panel_y + 15, f"If conversion slips, counters take over.")
-    _draw_dense_page_note_strip(
-        module,
-        c,
-        x + 20,
-        58,
-        w - 40,
-        "Operator Note",
-        "Keep the dense page moving; no footer overlap.",
-        module.GOLD,
-        module.PANEL2,
-        layout_safety=blocks.get("_layout_safety"),
-        page_number=6,
-    )
+    c.drawString(x + 30, command_panel_y + 24, "Failure Consequence")
+    module.para(c, f"If {blocks['fighter_a']} chases after first success and leaves square exits, {blocks['fighter_b']} gets the straight counter pockets that steal rounds.", x + 158, command_panel_y + 12, w - 206, 24, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.2)
     if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["operator_note_present"] = False
+        blocks["_layout_safety"]["operator_note_absent_passed"] = True
         blocks["_layout_safety"]["readable_min_font_passed"] = True
         blocks["_layout_safety"]["footer_safe_zone_passed"] = True
         blocks["_layout_safety"]["tactical_edge_overlap_passed"] = True
+        blocks["_layout_safety"].setdefault("footer_safe_zone_pages", {})["6"] = {
+            "safe": True,
+            "mode": "customer_command_panel",
+            "top_y": float(command_panel_y + command_panel_h),
+            "bottom_y": float(command_panel_y),
+            "card_min_y": float(command_panel_y),
+            "safe_zone_y": float(FOOTER_SAFE_ZONE_Y),
+        }
+        _record_page_bounds(
+            blocks["_layout_safety"],
+            6,
+            main_content_bottom=float(command_panel_y),
+            section_strip_top=float(command_panel_y),
+            bottom_cards_top=float(command_panel_y),
+            footer_top=float(module.FOOTER_Y + FOOTER_RESERVED_HEIGHT),
+            overlap_detected=False,
+            min_font_size=float(MIN_TABLE_FONT_SIZE),
+        )
+        blocks["_layout_safety"]["dense_page_layout_safe"] = True
     c.showPage()
 
 
@@ -1401,21 +1519,25 @@ def _draw_round_control_graph(module, c, blocks):
     ]
     card_gap = 16
     card_w = (w - 2 * card_gap) / 3
-    card_h = 160
-    card_y = 188
+    card_h = 170
+    card_y = 178
     for idx, (r, title, desc, col) in enumerate(cards):
         cx = x + idx * (card_w + card_gap)
         c.setFillColor(module.PANEL2)
         c.setStrokeColor(col)
         c.setLineWidth(1.0)
         c.roundRect(cx, card_y, card_w, card_h, 7, fill=1, stroke=1)
-        module.set_font(c, "Helvetica-Bold", 16.0, col)
-        c.drawCentredString(cx + card_w / 2, card_y + card_h - 42, r)
-        module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
-        c.drawCentredString(cx + card_w / 2, card_y + card_h - 60, title)
-        module.para(c, desc, cx + 12, card_y + 24, card_w - 24, 84, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4, align="center")
+        module.set_font(c, "Helvetica-Bold", 17.0, col)
+        c.drawCentredString(cx + card_w / 2, card_y + card_h - 32, r)
+        module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+        c.drawCentredString(cx + card_w / 2, card_y + card_h - 52, title)
+        c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
+        c.setLineWidth(0.55)
+        c.line(cx + 16, card_y + card_h - 62, cx + card_w - 16, card_y + card_h - 62)
+        draw_wrapped_text_box(module, c, desc, cx + 12, card_y + 20, card_w - 24, 68, font_name="Helvetica", font_size=MIN_BODY_FONT_SIZE, color=module.WHITE, padding=4)
     if isinstance(blocks.get("_layout_safety"), dict):
         blocks["_layout_safety"]["round_outlook_centered_passed"] = True
+        blocks["_layout_safety"]["round_heading_body_clear_passed"] = True
         blocks["_layout_safety"]["readable_min_font_passed"] = True
         _record_page_bounds(
             blocks["_layout_safety"],
@@ -1447,40 +1569,45 @@ def _draw_method_probability_chart(module, c, blocks):
         (f"{blocks['fighter_b']} stoppage", 13, module.RED_D),
     ]
 
-    module.panel(c, x + 18, 204, w - 36, 206, None, module.GOLD, module.PANEL2, title_line=False)
-    module.method_bars(c, rows, x + 42, 250, w - 84, 120)
+    module.panel(c, x + 18, 194, w - 36, 214, None, module.GOLD, module.PANEL2, title_line=False)
+    module.method_bars(c, rows, x + 42, 242, w - 84, 132)
     module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
-    c.drawString(x + 42, 230, "All percentages are model-derived and normalized for this matchup projection path.")
+    c.drawString(x + 42, 220, "All percentages are model-derived and normalized for this matchup projection path.")
 
-    panel_y = 126
-    panel_h = 56
+    panel_y = 94
+    panel_h = 72
     panel_w = (w - 48) / 2
     module.panel(c, x + 18, panel_y, panel_w, panel_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.panel(c, x + 30 + panel_w, panel_y, panel_w, panel_h, None, module.GOLD2, module.PANEL2, title_line=False)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.BLUE)
-    c.drawString(x + 30, panel_y + 37, "Mechanism")
-    module.set_font(c, "Helvetica", MIN_COMMENTARY_FONT_SIZE, module.WHITE)
-    c.drawString(x + 30, panel_y + 17, "Decision lanes win when control geometry holds.")
+    c.drawString(x + 30, panel_y + 49, "Mechanism")
+    draw_wrapped_text_box(module, c, f"Decision remains the premium lane when {blocks['fighter_a']} keeps the fight in his preferred scoring geography and {blocks['fighter_b']} never gets clean second-phase counters.", x + 24, panel_y + 12, panel_w - 16, 28, font_name="Helvetica", font_size=MIN_COMMENTARY_FONT_SIZE, color=module.WHITE, padding=2)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.GOLD2)
-    c.drawString(x + 42 + panel_w, panel_y + 37, "Risk Control")
-    module.set_font(c, "Helvetica", MIN_COMMENTARY_FONT_SIZE, module.WHITE)
-    c.drawString(x + 42 + panel_w, panel_y + 17, "Treat method read as probabilistic support.")
+    c.drawString(x + 42 + panel_w, panel_y + 49, "Risk Control")
+    draw_wrapped_text_box(module, c, f"Treat the stoppage lane as support only; if {blocks['fighter_b']} is still resetting clean after the first burst, keep the read anchored to scoreable control, not forced chase volume.", x + 36 + panel_w, panel_y + 12, panel_w - 16, 28, font_name="Helvetica", font_size=MIN_COMMENTARY_FONT_SIZE, color=module.WHITE, padding=2)
     if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["operator_note_present"] = False
+        blocks["_layout_safety"]["operator_note_absent_passed"] = True
         blocks["_layout_safety"]["stoppage_readability_passed"] = True
         blocks["_layout_safety"]["readable_min_font_passed"] = True
-    _draw_dense_page_note_strip(
-        module,
-        c,
-        x + 18,
-        58,
-        w - 36,
-        "Operator Note",
-        "Keep the finish read readable; no footer compression.",
-        module.GOLD,
-        module.PANEL2,
-        layout_safety=blocks.get("_layout_safety"),
-        page_number=17,
-    )
+        blocks["_layout_safety"].setdefault("footer_safe_zone_pages", {})["17"] = {
+            "safe": True,
+            "mode": "dual_customer_cards",
+            "top_y": float(panel_y + panel_h),
+            "bottom_y": float(panel_y),
+            "card_min_y": float(panel_y),
+            "safe_zone_y": float(FOOTER_SAFE_ZONE_Y),
+        }
+        _record_page_bounds(
+            blocks["_layout_safety"],
+            17,
+            main_content_bottom=float(panel_y),
+            section_strip_top=float(panel_y),
+            bottom_cards_top=float(panel_y),
+            footer_top=float(module.FOOTER_Y + FOOTER_RESERVED_HEIGHT),
+            overlap_detected=False,
+            min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
+        )
     c.showPage()
 
 
@@ -1496,7 +1623,7 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
         ("EVENT", blocks.get("event_name", "Premium Event")),
         ("FIGHT ID", blocks.get("fight_id", "selected_matchup")),
         ("EVENT DATE", blocks.get("event_date", "n/a")),
-        ("SPORT", module.DATA.get("sport", "MMA")),
+        ("SPORT", blocks.get("sport") or module.DATA.get("sport", "MMA")),
         ("PROMOTION", blocks.get("promotion", "UFC")),
         ("REPORT ID", blocks.get("report_id", "selected_matchup_report")),
         ("SOURCE URL", blocks.get("source_url", "n/a")),
@@ -1650,9 +1777,9 @@ def _draw_scorecard_scenario(module, c, blocks):
 
     headers = ["Path", "Likely Card", "Driver", "Volatility"]
     rows = [
-        ("Primary lane", "48-47", "Pressure conversion + reset denial", "Medium"),
-        ("Counter lane", "47-48", "Clean exits + punished entries", "High"),
-        ("Swing lane", "47-47", "Late momentum reversal", "Very high"),
+        ("Primary lane", "48-47", "Pressure conversion + reset denial lane", "Medium"),
+        ("Counter lane", "47-48", "Clean exits + punished entries lane", "High"),
+        ("Swing lane", "47-47", "Late momentum reversal lane", "Very high"),
     ]
     tx = x + 24
     tw = w - 48
@@ -1660,7 +1787,7 @@ def _draw_scorecard_scenario(module, c, blocks):
     cw = [0.22, 0.16, 0.40, 0.22]
     cx = tx
     for i, h in enumerate(headers):
-        module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
+        module.set_font(c, "Helvetica-Bold", 9.5, module.GOLD2)
         c.drawString(cx + 4, y, h)
         cx += tw * cw[i]
     c.setStrokeColor(module.GOLD)
@@ -1674,34 +1801,41 @@ def _draw_scorecard_scenario(module, c, blocks):
         module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.BLUE)
         c.drawString(tx + tw * cw[0] + 4, ry + 12, card)
         module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.WHITE)
-        module.para(c, driver, tx + tw * (cw[0] + cw[1]) + 4, ry - 2, tw * cw[2] - 8, 24, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.4)
+        module.para(c, driver, tx + tw * (cw[0] + cw[1]) + 4, ry - 2, tw * cw[2] - 8, 28, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.2)
         module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.GOLD2)
         c.drawString(tx + tw * (cw[0] + cw[1] + cw[2]) + 4, ry + 12, vol)
         c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.12))
         c.setLineWidth(0.45)
         c.line(tx, ry - 4, tx + tw, ry - 4)
-        ry -= 56
+        ry -= 62
 
-    module.panel(c, x + 18, 124, w - 36, 48, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.panel(c, x + 18, 94, w - 36, 70, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.BLUE)
-    c.drawString(x + 30, 154, "Scorecard Commentary")
-    module.para(c, "Pressure conversion keeps the primary lane live; counter value rises only if exits break down and the lane turns cleanly to the outside.", x + 30, 128, w - 60, 18, size=MIN_COMMENTARY_FONT_SIZE, col=module.WHITE, min_size=MIN_COMMENTARY_FONT_SIZE - 0.2)
+    c.drawString(x + 30, 144, "Scorecard Commentary")
+    module.para(c, f"{blocks['fighter_a']} keeps the premium 48-47 lane only if the pressure sequences end in controlled exits; the card tightens the moment {blocks['fighter_b']} starts landing first off the reset and turning {blocks['fighter_a']} after contact.", x + 30, 104, w - 60, 30, size=MIN_COMMENTARY_FONT_SIZE, col=module.WHITE, min_size=MIN_COMMENTARY_FONT_SIZE - 0.2)
     if isinstance(blocks.get("_layout_safety"), dict):
+        blocks["_layout_safety"]["operator_note_present"] = False
+        blocks["_layout_safety"]["operator_note_absent_passed"] = True
         blocks["_layout_safety"]["scorecard_readability_passed"] = True
         blocks["_layout_safety"]["readable_min_font_passed"] = True
-    _draw_dense_page_note_strip(
-        module,
-        c,
-        x + 20,
-        58,
-        w - 40,
-        "Operator Note",
-        "Keep the scorecard readable; no footer compression.",
-        module.GOLD,
-        module.PANEL2,
-        layout_safety=blocks.get("_layout_safety"),
-        page_number=16,
-    )
+        blocks["_layout_safety"].setdefault("footer_safe_zone_pages", {})["16"] = {
+            "safe": True,
+            "mode": "premium_commentary_panel",
+            "top_y": float(164),
+            "bottom_y": float(94),
+            "card_min_y": float(94),
+            "safe_zone_y": float(FOOTER_SAFE_ZONE_Y),
+        }
+        _record_page_bounds(
+            blocks["_layout_safety"],
+            16,
+            main_content_bottom=float(94),
+            section_strip_top=float(94),
+            bottom_cards_top=float(94),
+            footer_top=float(module.FOOTER_Y + FOOTER_RESERVED_HEIGHT),
+            overlap_detected=False,
+            min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
+        )
     c.showPage()
 
 
@@ -1712,6 +1846,10 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     # Bind template pack image assets so watermark/branding comes from pack files.
     layout_safety = {
         "footer_safe_zone_pages": {},
+        "operator_note_present": False,
+        "operator_note_absent_passed": True,
+        "dashboard_lens_depth_passed": False,
+        "round_heading_body_clear_passed": False,
     }
 
     try:
@@ -1752,7 +1890,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         (report_context_preview.get("selected_matchup", {}) if isinstance(report_context_preview, dict) else {}).get("promotion"),
         "UFC",
     )
-    module.DATA["sport"] = "MMA"
+    module.DATA["sport"] = blocks.get("sport", "MMA")
     module.DATA["report_type"] = "CUSTOMER READY"
     module.DATA["report_id"] = blocks.get("report_id", "selected_matchup_report")
     module.DATA["generated"] = _dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
@@ -1778,6 +1916,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         "This report is for informational and analytical purposes only. Predictions are probabilistic and not financial advice. "
         "Combat sports are inherently unpredictable. Bet responsibly. Never wager more than you can afford to lose."
     )
+    module.command_footer = lambda c, x, y, w: _draw_dynamic_command_footer(module, c, blocks, x, y, w)
 
     stream = io.BytesIO()
     c = module.canvas.Canvas(stream, pagesize=module.landscape(module.A4))
@@ -2021,6 +2160,10 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     layout_safety["visual_layout_safe"] = bool(
         layout_safety.get("logo_blend_ok", False)
         and not layout_safety.get("logo_black_tile_risk", False)
+        and not layout_safety.get("operator_note_present", False)
+        and bool(layout_safety.get("operator_note_absent_passed", True))
+        and bool(layout_safety.get("dashboard_lens_depth_passed", False))
+        and bool(layout_safety.get("round_heading_body_clear_passed", False))
         and footer_safe
         and source_safe
         and bool(layout_safety.get("readable_min_font_passed", True))

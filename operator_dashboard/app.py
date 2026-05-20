@@ -144,6 +144,22 @@ _BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS = [
     "ares parity",
 ]
 
+_BUTTON2_DENSE_PAGE_SCAFFOLD_MARKERS = [
+    "operator note",
+    "keep the dense page moving; no footer overlap.",
+    "keep the scorecard readable; no footer compression.",
+    "keep the finish read readable; no footer compression.",
+]
+
+_BUTTON2_GENERIC_LENS_PLACEHOLDERS = [
+    "where the fight is owned",
+    "where the fight can flip",
+    "what the corner must solve",
+    "dictates rhythm",
+    "creates chaos",
+    "entry cost",
+]
+
 
 def _is_source_backed_candidate_row(row):
     if not isinstance(row, dict):
@@ -356,6 +372,8 @@ def _pdf_quality_gate_status(strict_gate_violations, text_scan):
     violations = [str(value) for value in (strict_gate_violations or [])]
     if any(value.startswith("template_sample_bleed_present:") for value in violations):
         return "v29_template_sample_bleed_failed"
+    if any(value.startswith("dense_page_") for value in violations):
+        return "v29_dense_page_readability_failed"
     if any(value.startswith("readability_") for value in violations):
         return "v29_readability_overlap_failed"
     if any(value.startswith("visual_defect_") for value in violations):
@@ -473,7 +491,23 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         if marker in text_lower:
             violations.append(f"v29_layout_plain_fallback_marker_present:{marker}")
 
+    for marker in _BUTTON2_DENSE_PAGE_SCAFFOLD_MARKERS:
+        if marker in text_lower:
+            violations.append(f"dense_page_scaffold_note_present:{marker}")
+
+    for marker in _BUTTON2_GENERIC_LENS_PLACEHOLDERS:
+        if marker in text_lower:
+            violations.append(f"dense_page_generic_lens_placeholder_present:{marker}")
+
     if isinstance(renderer_layout_safety, dict) and renderer_layout_safety:
+        if bool(renderer_layout_safety.get("operator_note_present", False)):
+            violations.append("dense_page_operator_note_reported_by_renderer")
+        if not bool(renderer_layout_safety.get("operator_note_absent_passed", True)):
+            violations.append("dense_page_operator_note_absence_not_confirmed")
+        if not bool(renderer_layout_safety.get("dashboard_lens_depth_passed", True)):
+            violations.append("dense_page_dashboard_lens_not_deep_enough")
+        if not bool(renderer_layout_safety.get("round_heading_body_clear_passed", True)):
+            violations.append("dense_page_round_heading_overlap_reported")
         if not bool(renderer_layout_safety.get("readable_min_font_passed", True)):
             violations.append("readability_min_font_not_met")
         if not bool(renderer_layout_safety.get("footer_safe_zone_passed", True)):
@@ -502,6 +536,22 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
                 min_font_size = page_info.get("min_font_size")
                 if isinstance(min_font_size, (int, float)) and min_font_size < 8.0:
                     violations.append(f"visual_defect_page_{page_key}_font_too_small")
+
+        lens_depth = renderer_layout_safety.get("lens_depth", {})
+        if isinstance(lens_depth, dict) and lens_depth:
+            for lens_key in ("control", "danger", "command"):
+                lens_info = lens_depth.get(lens_key, {})
+                if not isinstance(lens_info, dict):
+                    violations.append(f"dense_page_{lens_key}_lens_metadata_missing")
+                    continue
+                if int(lens_info.get("length", 0)) < 90:
+                    violations.append(f"dense_page_{lens_key}_lens_too_short")
+                if not bool(lens_info.get("mentions_selected_fighter", False)):
+                    violations.append(f"dense_page_{lens_key}_lens_missing_selected_fighter")
+                if bool(lens_info.get("generic_placeholder", False)):
+                    violations.append(f"dense_page_{lens_key}_lens_placeholder_copy")
+                if bool(lens_info.get("overflow", False)):
+                    violations.append(f"dense_page_{lens_key}_lens_overflow")
 
         footer_pages = renderer_layout_safety.get("footer_safe_zone_pages", {})
         for page_key in ("6", "16", "17"):
