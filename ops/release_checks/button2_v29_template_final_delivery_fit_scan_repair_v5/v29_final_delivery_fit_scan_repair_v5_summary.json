@@ -1,0 +1,71 @@
+{
+  "slice_name": "button2-v29-template-final-delivery-fit-scan-repair-v5",
+  "baseline": {
+    "commit": "b3a6c36",
+    "tag": "button2-v29-template-final-fit-and-flow-polish-v4"
+  },
+  "status": "IMPLEMENTED_VALIDATED_LIVE_PROVEN",
+  "critical_defect": "Remaining fit-flow defects on pages 2,5,14,16,17 in fresh post-lock outputs",
+  "affected_pages": [2, 5, 14, 16, 17],
+  "new_layout_markers": [
+    "page_2_dashboard_fit_passed",
+    "page_5_side_panel_fit_passed",
+    "page_14_round_outlook_fit_passed",
+    "page_16_scorecard_fit_passed",
+    "page_17_stoppage_fit_passed"
+  ],
+  "gate_failure_status": "v29_final_delivery_fit_failed",
+  "tests": {
+    "py_compile": "pass",
+    "test_button2_v29_template_final_delivery_fit_scan_repair_v5.py": "14 passed",
+    "test_button2_v29_template_final_fit_and_flow_polish_v4.py": "13 passed",
+    "test_button2_v29_template_dense_page_readability_content_depth_v3.py": "18 passed",
+    "test_button2_v29_template_sample_data_bleed_repair_v1.py": "11 passed",
+    "test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py": "16 passed"
+  },
+  "live_proof": {
+    "runtime": "http://127.0.0.1:5050",
+    "batch_id": "2af75692bee1484daf45c41251e897f9",
+    "generated_count": 3,
+    "failed_count": 0,
+    "expected_pages_rendered": [2, 5, 6, 14, 16, 17, 23],
+    "matchups": [
+      "joshua_vs_dubois_dalton_smith_vs_jose_zepeda",
+      "joshua_vs_dubois_ben_whittaker_vs_willy_hutchinson",
+      "bellator_298_ryan_curtis_adam_borics"
+    ],
+    "all_customer_ready": true,
+    "all_visual_gate_status_premium_template_confirmed": true,
+    "all_renderer_route_template_pack_asset_renderer": true
+  },
+  "proof_paths": {
+    "before": {
+      "summary": "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/before/before_defect_scan_summary.json",
+      "contact_sheet": "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/before/ben_whittaker_vs_willy_hutchinson_v5_before_defect_scan_contact_sheet.png"
+    },
+    "after": {
+      "summary": "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/after/live_v5_proof_summary.json",
+      "contact_sheets": [
+        "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/after/ben_whittaker_vs_willy_hutchinson_required_pages_contact_sheet.png",
+        "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/after/dalton_smith_vs_jose_zepeda_required_pages_contact_sheet.png",
+        "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/proof/after/ryan_curtis_vs_adam_borics_required_pages_contact_sheet.png"
+      ]
+    }
+  },
+  "quality_checks": {
+    "operator_note_absent": true,
+    "generic_lens_placeholder_absent": true,
+    "sample_bleed_absent": true,
+    "event_source_report_binding_present": true
+  },
+  "files_changed": [
+    "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "operator_dashboard/app.py",
+    "operator_dashboard/test_button2_v29_template_final_delivery_fit_scan_repair_v5.py",
+    "operator_dashboard/test_button2_v29_template_dense_page_readability_content_depth_v3.py",
+    "operator_dashboard/test_button2_real_queue_multiselect_and_bulk_pdf_generation_repair_v1.py",
+    "docs/button2_v29_template_final_delivery_fit_scan_repair_v5.md",
+    "ops/release_checks/button2_v29_template_final_delivery_fit_scan_repair_v5/v29_final_delivery_fit_scan_repair_v5_summary.json"
+  ],
+  "final_delivery_verdict": "PASS"
+}

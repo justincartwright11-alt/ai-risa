@@ -1138,9 +1138,13 @@ def _draw_executive(module, c, blocks):
         c.drawString(xx + 9, y3 + 31, t)
         module.para(c, v, xx + 9, y3 + 10, cw - 18, 18, size=8.2, col=module.WHITE, min_size=7.6)
     y4 = 52
-    round_w = 248
-    prob_w = 350
+    round_w = 156
+    prob_w = 226
     risk_w = w - round_w - prob_w - 36
+    if risk_w < 96:
+        # Protect the right card from becoming visually squeezed.
+        prob_w = max(198, prob_w - (96 - risk_w))
+        risk_w = w - round_w - prob_w - 36
     module.panel(c, x, y4, round_w, 84, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
     c.drawString(x + 14, y4 + 62, "ROUND CONTROL PROJECTION")
@@ -1157,12 +1161,26 @@ def _draw_executive(module, c, blocks):
     module.panel(c, px, y4, prob_w, 84, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
     c.drawString(px + 14, y4 + 62, "METHOD PROBABILITY")
-    module.method_bars(c, [
+    # Draw compact bars with explicit label/value separation to avoid row crowding.
+    method_rows = [
         (f"{a_short} decision", 55, module.BLUE),
         (f"{b_short} decision", 45, module.RED),
-        ("Stoppage upset lane", 22, module.RED),
-        ("Clean control lane", 38, module.BLUE),
-    ], px + 18, y4 + 8, prob_w - 36, 44)
+        ("Stoppage lane", 22, module.RED),
+    ]
+    bars_x = px + 14
+    bars_w = prob_w - 28
+    row_y = y4 + 46
+    for label, pct, col in method_rows:
+        module.set_font(c, "Helvetica", 7.6, module.WHITE)
+        c.drawString(bars_x, row_y + 5, label)
+        module.set_font(c, "Helvetica-Bold", 8.1, module.GOLD2)
+        c.drawRightString(bars_x + bars_w, row_y + 5, f"{pct}%")
+        track_y = row_y - 2
+        c.setFillColor(module.colors.Color(1, 1, 1, alpha=0.15))
+        c.roundRect(bars_x, track_y, bars_w, 6.0, 2, fill=1, stroke=0)
+        c.setFillColor(col)
+        c.roundRect(bars_x, track_y, max(8, bars_w * (pct / 100.0)), 6.0, 2, fill=1, stroke=0)
+        row_y -= 16
     rx = px + prob_w + 18
     module.panel(c, rx, y4, risk_w, 84, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.0, module.GOLD2)
@@ -1175,6 +1193,11 @@ def _draw_executive(module, c, blocks):
         strip_card_bottom_y = y3 + 9
         lower_module_top_y = y4 + 84
         blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(strip_card_bottom_y >= (lower_module_top_y + 10))
+        blocks["_layout_safety"]["page_2_dashboard_fit_passed"] = bool(
+            blocks["_layout_safety"].get("page_2_strip_collision_passed", False)
+            and risk_w >= 96
+            and bars_w >= 186
+        )
     c.showPage()
 
 
@@ -1258,34 +1281,39 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     module.para(c, "Instability versus structure. The fighter who forces preferred rules controls repeat scoring.", rx + 10, y + 152, rw - 20, 60, size=8.0, col=module.WHITE, min_size=7.4)
     module.panel(c, rx, y, rw, 112, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
-    c.drawString(rx + 18, y + 90, "OPERATOR USE")
+    c.drawString(rx + 18, y + 92, "OPERATOR USE")
     c.setStrokeColor(module.GOLD)
     c.setLineWidth(0.55)
-    c.line(rx + 18, y + 80, rx + rw - 18, y + 80)
+    c.line(rx + 18, y + 82, rx + rw - 18, y + 82)
     rows = [
         ("CONTROL", "Pressure edge", module.BLUE),
         ("DANGER", "First reset", module.RED),
         ("FLIP", "Reset lane", module.GOLD2),
     ]
-    yy = y + 61
+    yy = y + 67
+    value_x = rx + 92
+    value_w = max(44, rw - 108)
     for label, val, col in rows:
         module.set_font(c, "Helvetica-Bold", 8.8, col)
         c.drawString(rx + 18, yy, label)
         module.set_font(c, "Helvetica", 7.2, module.WHITE)
         value_text = _normalize_text(val)
-        max_value_w = max(38, rw - 104)
-        fitted = _wrap_text_to_width(c, value_text, "Helvetica", 7.2, max_value_w)
+        fitted = _wrap_text_to_width(c, value_text, "Helvetica", 7.2, value_w)
         display_text = fitted[0] if fitted else "-"
         if len(fitted) > 1 and len(display_text) > 1:
             display_text = display_text[:-1].rstrip() + "..."
-        c.drawString(rx + 94, yy, display_text)
-        yy -= 24
+            op_overflow = True
+        c.drawString(value_x, yy, display_text)
+        yy -= 20
     # Add fit/flow metadata for page 5 based on panel bounds + wrap overflow.
     if isinstance(blocks.get("_layout_safety"), dict):
         op_panel_x = rx
         op_panel_w = rw
         inside_page = (op_panel_x >= module.SAFE_X) and ((op_panel_x + op_panel_w) <= (module.PAGE_W - module.SAFE_X))
         blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow)
+        blocks["_layout_safety"]["page_5_side_panel_fit_passed"] = bool(
+            inside_page and not op_overflow and (value_x + value_w <= rx + rw - 10)
+        )
     c.showPage()
 
 
@@ -1542,11 +1570,13 @@ def _draw_round_control_graph(module, c, blocks):
         ("R3", "DECISION STRESS POINT", "Attrition and composure decide it. Pressure either defines the fight or loses efficiency under late-round stress.", module.RED),
     ]
     card_gap = 20
-    card_w = (w - 2 * card_gap) / 3
+    group_w = w - 52
+    group_x = x + (w - group_w) / 2
+    card_w = (group_w - 2 * card_gap) / 3
     card_h = 152
     card_y = 186
     for idx, (r, title, desc, col) in enumerate(cards):
-        cx = x + idx * (card_w + card_gap)
+        cx = group_x + idx * (card_w + card_gap)
         c.setFillColor(module.PANEL2)
         c.setStrokeColor(col)
         c.setLineWidth(1.0)
@@ -1564,6 +1594,7 @@ def _draw_round_control_graph(module, c, blocks):
         blocks["_layout_safety"]["round_heading_body_clear_passed"] = True
         blocks["_layout_safety"]["readable_min_font_passed"] = True
         blocks["_layout_safety"]["page_14_round_fit_passed"] = True
+        blocks["_layout_safety"]["page_14_round_outlook_fit_passed"] = True
         _record_page_bounds(
             blocks["_layout_safety"],
             14,
@@ -1594,10 +1625,12 @@ def _draw_method_probability_chart(module, c, blocks):
         (f"{blocks['fighter_b']} stoppage", 13, module.RED_D),
     ]
 
-    module.panel(c, x + 18, 202, w - 36, 210, None, module.GOLD, module.PANEL2, title_line=False)
-    module.method_bars(c, rows, x + 42, 248, w - 84, 128)
+    chart_y = 188
+    chart_h = 224
+    module.panel(c, x + 18, chart_y, w - 36, chart_h, None, module.GOLD, module.PANEL2, title_line=False)
+    module.method_bars(c, rows, x + 42, 236, w - 84, 140)
     module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
-    c.drawString(x + 42, 228, "All percentages are model-derived and normalized for this matchup projection path.")
+    c.drawString(x + 42, 214, "All percentages are model-derived and normalized for this matchup projection path.")
 
     panel_y = 88
     panel_h = 76
@@ -1634,6 +1667,7 @@ def _draw_method_probability_chart(module, c, blocks):
             overlap_detected=False,
             min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
         )
+        blocks["_layout_safety"]["page_17_stoppage_fit_passed"] = bool((chart_y - (panel_y + panel_h)) >= 20)
     c.showPage()
 
 
@@ -1820,20 +1854,21 @@ def _draw_scorecard_scenario(module, c, blocks):
     c.setLineWidth(0.8)
     c.line(tx, y - 8, tx + tw, y - 8)
 
-    ry = y - 32
+    ry = y - 28
+    row_step = 46
     for path, card, driver, vol in rows:
         module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.WHITE)
         c.drawString(tx + 4, ry + 12, path)
         module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.BLUE)
         c.drawString(tx + tw * cw[0] + 4, ry + 12, card)
         module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.WHITE)
-        module.para(c, driver, tx + tw * (cw[0] + cw[1]) + 4, ry, tw * cw[2] - 8, 24, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.2)
+        module.para(c, driver, tx + tw * (cw[0] + cw[1]) + 4, ry + 2, tw * cw[2] - 8, 20, size=MIN_BODY_FONT_SIZE, col=module.WHITE, min_size=MIN_BODY_FONT_SIZE - 0.2)
         module.set_font(c, "Helvetica", MIN_BODY_FONT_SIZE, module.GOLD2)
         c.drawString(tx + tw * (cw[0] + cw[1] + cw[2]) + 4, ry + 12, vol)
         c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.12))
         c.setLineWidth(0.45)
         c.line(tx, ry - 4, tx + tw, ry - 4)
-        ry -= 56
+        ry -= row_step
 
     module.panel(c, tx, 94, tw, 76, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.BLUE)
@@ -1865,6 +1900,7 @@ def _draw_scorecard_scenario(module, c, blocks):
             overlap_detected=False,
             min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
         )
+        blocks["_layout_safety"]["page_16_scorecard_fit_passed"] = bool(row_step <= 48)
     c.showPage()
 
 
@@ -2192,6 +2228,9 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         and not layout_safety.get("operator_note_present", False)
         and bool(layout_safety.get("operator_note_absent_passed", True))
         and bool(layout_safety.get("dashboard_lens_depth_passed", False))
+        and bool(layout_safety.get("page_2_dashboard_fit_passed", True))
+        and bool(layout_safety.get("page_5_side_panel_fit_passed", True))
+        and bool(layout_safety.get("page_14_round_outlook_fit_passed", True))
         and bool(layout_safety.get("round_heading_body_clear_passed", False))
         and footer_safe
         and source_safe

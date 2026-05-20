@@ -1,0 +1,52 @@
+{
+  "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T082839Z_79a0ee5ce113.pdf",
+  "pages": [
+    2,
+    5,
+    14,
+    16,
+    17,
+    23
+  ],
+  "artifacts": [
+    {
+      "page": 2,
+      "label": "dashboard_crowding_zone",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p02.png"
+    },
+    {
+      "page": 5,
+      "label": "radar_sidepanel_text_clip",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p05.png"
+    },
+    {
+      "page": 14,
+      "label": "round_outlook_balance",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p14.png"
+    },
+    {
+      "page": 16,
+      "label": "scorecard_sparse_alignment",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p16.png"
+    },
+    {
+      "page": 17,
+      "label": "stoppage_balance_rhythm",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p17.png"
+    },
+    {
+      "page": 23,
+      "label": "traceability_reference_check",
+      "png": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_before_p23.png"
+    }
+  ],
+  "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_fit_scan_repair_v5\\proof\\before\\ben_whittaker_vs_willy_hutchinson_v5_before_defect_scan_contact_sheet.png",
+  "noted_defects": {
+    "page_2": "Fight control strip and lower modules still visually crowded.",
+    "page_5": "Customer Meaning / Operator Use side panel text clipping-line collision risk.",
+    "page_14": "Round outlook group can be more centered and premium.",
+    "page_16": "Scorecard table appears sparse/uneven; commentary integration weak.",
+    "page_17": "Chart and lower panels need improved vertical rhythm.",
+    "page_23": "Reference traceability page for event/source/report binding stability."
+  }
+}
