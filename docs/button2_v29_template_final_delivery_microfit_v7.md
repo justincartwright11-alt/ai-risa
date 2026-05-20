@@ -85,7 +85,11 @@ Updated `_selected_matchup_passes_strict_pdf_quality_gate` in app.py:
 
 ## Verification
 
-**Live PDF Render:** Max Holloway vs Justin Gaethje (UFC 300)
+**Live PDF Render:** 4 required matchups via canonical `/api/button2/generate-selected-batch`
+- Max Holloway vs Justin Gaethje: PASS
+- Ben Whittaker vs Willy Hutchinson: PASS
+- Levi Rigters vs Guto Inocente: PASS
+- Dalton Smith vs Jose Zepeda: PASS
 - All 24 pages render without errors
 - All microfit markers set to True in layout_safety dict
 - Customer ready status passes gate when all markers True

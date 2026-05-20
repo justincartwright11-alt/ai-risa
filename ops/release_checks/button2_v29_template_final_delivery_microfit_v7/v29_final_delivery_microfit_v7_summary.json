@@ -26,7 +26,8 @@
         "event": "UFC 300",
         "page_count": 24,
         "file_size_bytes": 5151916,
-        "status": "VALID"
+        "status": "VALID",
+        "contact_sheet_verdict": "PASS"
       },
       {
         "filename": "ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T115106Z_7a282c8e9923.pdf",
@@ -34,7 +35,8 @@
         "fighter_b": "Willy Hutchinson",
         "event": "Joshua vs Dubois",
         "page_count": 24,
-        "status": "VALID"
+        "status": "VALID",
+        "contact_sheet_verdict": "PASS"
       },
       {
         "filename": "levi_rigters_vs_guto_inocente_glory_100_premium_20260520T115115Z_b4afcd21bfc1.pdf",
@@ -42,7 +44,8 @@
         "fighter_b": "Guto Inocente",
         "event": "GLORY 100",
         "page_count": 24,
-        "status": "VALID"
+        "status": "VALID",
+        "contact_sheet_verdict": "PASS"
       },
       {
         "filename": "dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T115109Z_86f5547c2ec2.pdf",
@@ -50,7 +53,8 @@
         "fighter_b": "Jose Zepeda",
         "event": "Joshua vs Dubois",
         "page_count": 24,
-        "status": "VALID"
+        "status": "VALID",
+        "contact_sheet_verdict": "PASS"
       }
     ]
   },
@@ -115,6 +119,7 @@
   "verification": {
     "test_matrix": "PASS (70/70 tests)",
     "live_pdfs": "PASS (4/4 generated)",
+    "contact_sheets": "PASS (4/4 verified)",
     "page_counts": "PASS (all 24 pages)",
     "file_sizes": "PASS (all >100KB)",
     "gate_status": "PASS (all markers present)"

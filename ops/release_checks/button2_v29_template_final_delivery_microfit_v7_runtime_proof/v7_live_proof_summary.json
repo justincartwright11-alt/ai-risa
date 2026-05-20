@@ -1,0 +1,144 @@
+{
+  "results": [
+    {
+      "selected_matchup_id": "ufc_300_max_holloway_vs_justin_gaethje",
+      "matchup": "Max Holloway vs Justin Gaethje",
+      "event_name": "UFC 300",
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T130212Z_936ef7605f13.pdf",
+      "images": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_p02_page_2_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_p05_page_5_customer_meaning.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_p16_page_16_scorecard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_p17_page_17_lower_cards.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_p23_page_23_source_map.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\max_holloway_justin_gaethje_ufc_300_contact_sheet.png",
+      "row": {
+        "content_gate_passed": true,
+        "customer_ready": true,
+        "error": "",
+        "event_name": "UFC 300",
+        "fighter_a": "Max Holloway",
+        "fighter_b": "Justin Gaethje",
+        "layout_safety": {},
+        "matchup_id": "ufc_300_max_holloway_vs_justin_gaethje",
+        "ok": true,
+        "open_url": "/api/button2/generated-report/open?filename=max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T130212Z_936ef7605f13.pdf",
+        "output_filename": "max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T130212Z_936ef7605f13.pdf",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\max_holloway_vs_justin_gaethje_ufc_300_premium_20260520T130212Z_936ef7605f13.pdf",
+        "premium_template_confirmed": true,
+        "reason": "",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "template_pack_asset_backed": true,
+        "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+        "visual_gate_status": "premium_template_confirmed"
+      }
+    },
+    {
+      "selected_matchup_id": "joshua_vs_dubois_ben_whittaker_vs_willy_hutchinson",
+      "matchup": "Ben Whittaker vs Willy Hutchinson",
+      "event_name": "Joshua vs Dubois",
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T130215Z_d299b60b645c.pdf",
+      "images": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_p02_page_2_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_p05_page_5_customer_meaning.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_p16_page_16_scorecard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_p17_page_17_lower_cards.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_p23_page_23_source_map.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\ben_whittaker_willy_hutchinson_joshua_vs_dubois_contact_sheet.png",
+      "row": {
+        "content_gate_passed": true,
+        "customer_ready": true,
+        "error": "",
+        "event_name": "Joshua vs Dubois",
+        "fighter_a": "Ben Whittaker",
+        "fighter_b": "Willy Hutchinson",
+        "layout_safety": {},
+        "matchup_id": "joshua_vs_dubois_ben_whittaker_vs_willy_hutchinson",
+        "ok": true,
+        "open_url": "/api/button2/generated-report/open?filename=ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T130215Z_d299b60b645c.pdf",
+        "output_filename": "ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T130215Z_d299b60b645c.pdf",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T130215Z_d299b60b645c.pdf",
+        "premium_template_confirmed": true,
+        "reason": "",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "template_pack_asset_backed": true,
+        "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+        "visual_gate_status": "premium_template_confirmed"
+      }
+    },
+    {
+      "selected_matchup_id": "glory_100_levi_rigters_vs_guto_inocente",
+      "matchup": "Levi Rigters vs Guto Inocente",
+      "event_name": "GLORY 100",
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\levi_rigters_vs_guto_inocente_glory_100_premium_20260520T130218Z_7a6b74f7ba12.pdf",
+      "images": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_p02_page_2_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_p05_page_5_customer_meaning.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_p16_page_16_scorecard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_p17_page_17_lower_cards.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_p23_page_23_source_map.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\levi_rigters_guto_inocente_glory_100_contact_sheet.png",
+      "row": {
+        "content_gate_passed": true,
+        "customer_ready": true,
+        "error": "",
+        "event_name": "GLORY 100",
+        "fighter_a": "Levi Rigters",
+        "fighter_b": "Guto Inocente",
+        "layout_safety": {},
+        "matchup_id": "glory_100_levi_rigters_vs_guto_inocente",
+        "ok": true,
+        "open_url": "/api/button2/generated-report/open?filename=levi_rigters_vs_guto_inocente_glory_100_premium_20260520T130218Z_7a6b74f7ba12.pdf",
+        "output_filename": "levi_rigters_vs_guto_inocente_glory_100_premium_20260520T130218Z_7a6b74f7ba12.pdf",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\levi_rigters_vs_guto_inocente_glory_100_premium_20260520T130218Z_7a6b74f7ba12.pdf",
+        "premium_template_confirmed": true,
+        "reason": "",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "template_pack_asset_backed": true,
+        "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+        "visual_gate_status": "premium_template_confirmed"
+      }
+    },
+    {
+      "selected_matchup_id": "joshua_vs_dubois_dalton_smith_vs_jose_zepeda",
+      "matchup": "Dalton Smith vs Jose Zepeda",
+      "event_name": "Joshua vs Dubois",
+      "pdf": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T130221Z_3f07f0d39ea9.pdf",
+      "images": [
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_p02_page_2_dashboard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_p05_page_5_customer_meaning.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_p16_page_16_scorecard.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_p17_page_17_lower_cards.png",
+        "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_p23_page_23_source_map.png"
+      ],
+      "contact_sheet": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2_v29_template_final_delivery_microfit_v7_runtime_proof\\visual_proof\\dalton_smith_jose_zepeda_joshua_vs_dubois_contact_sheet.png",
+      "row": {
+        "content_gate_passed": true,
+        "customer_ready": true,
+        "error": "",
+        "event_name": "Joshua vs Dubois",
+        "fighter_a": "Dalton Smith",
+        "fighter_b": "Jose Zepeda",
+        "layout_safety": {},
+        "matchup_id": "joshua_vs_dubois_dalton_smith_vs_jose_zepeda",
+        "ok": true,
+        "open_url": "/api/button2/generated-report/open?filename=dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T130221Z_3f07f0d39ea9.pdf",
+        "output_filename": "dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T130221Z_3f07f0d39ea9.pdf",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T130221Z_3f07f0d39ea9.pdf",
+        "premium_template_confirmed": true,
+        "reason": "",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "template_pack_asset_backed": true,
+        "template_pack_root": "C:\\ai_risa_next_dashboard_polish\\ops\\prf_reports\\template_pack_sample",
+        "visual_gate_status": "premium_template_confirmed"
+      }
+    }
+  ]
+}
