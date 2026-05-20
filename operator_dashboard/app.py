@@ -491,6 +491,18 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         if not bool(renderer_layout_safety.get("logo_blend_ok", False)):
             violations.append("visual_defect_logo_blend_failed")
 
+        page_bounds = renderer_layout_safety.get("page_bounds", {})
+        if isinstance(page_bounds, dict):
+            for page_key in ("6", "14", "16", "17"):
+                page_info = page_bounds.get(page_key, {})
+                if not isinstance(page_info, dict):
+                    continue
+                if bool(page_info.get("overlap_detected", False)):
+                    violations.append(f"visual_defect_page_{page_key}_overlap_detected")
+                min_font_size = page_info.get("min_font_size")
+                if isinstance(min_font_size, (int, float)) and min_font_size < 8.0:
+                    violations.append(f"visual_defect_page_{page_key}_font_too_small")
+
         footer_pages = renderer_layout_safety.get("footer_safe_zone_pages", {})
         for page_key in ("6", "16", "17"):
             page_info = footer_pages.get(page_key, {}) if isinstance(footer_pages, dict) else {}
