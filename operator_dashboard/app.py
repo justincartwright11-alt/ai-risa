@@ -370,6 +370,10 @@ def _scan_forbidden_markers(pdf_text):
 
 def _pdf_quality_gate_status(strict_gate_violations, text_scan):
     violations = [str(value) for value in (strict_gate_violations or [])]
+    if any(value.startswith("final_delivery_microfit_failed:") for value in violations):
+        return "v29_final_delivery_microfit_failed"
+    if any(value.startswith("final_delivery_visual_cleanup_failed:") for value in violations):
+        return "v29_final_delivery_visual_cleanup_failed"
     if any(value.startswith("final_delivery_fit_polish_failed:") for value in violations):
         return "v29_final_delivery_fit_polish_failed"
     if any(value.startswith("final_delivery_fit_failed:") for value in violations):
@@ -418,6 +422,16 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         for marker in fit_flow_markers:
             if not bool(renderer_layout_safety.get(marker, False)):
                 violations.append(f"fit_flow_failed:{marker}")
+        legacy_final_delivery_fit_markers = [
+            "page_2_dashboard_fit_passed",
+            "page_5_side_panel_fit_passed",
+            "page_14_round_outlook_fit_passed",
+            "page_16_scorecard_fit_passed",
+            "page_17_stoppage_fit_passed",
+        ]
+        for marker in legacy_final_delivery_fit_markers:
+            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
+                violations.append(f"final_delivery_fit_failed:{marker}")
 
     # v6 final-delivery fit polish gate for customer-safe page geometry.
     final_delivery_fit_markers = [
@@ -429,8 +443,35 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     ]
     if isinstance(renderer_layout_safety, dict):
         for marker in final_delivery_fit_markers:
-            if not bool(renderer_layout_safety.get(marker, False)):
+            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
                 violations.append(f"final_delivery_fit_polish_failed:{marker}")
+    
+    # v7 final-delivery microfit gate: page 2/5/16/17 text-line collision + centering safety.
+    final_delivery_microfit_markers = [
+        "page_2_footer_safe_passed",
+        "page_2_volatility_text_fit_passed",
+        "page_2_round_control_projection_fit_passed",
+        "page_5_customer_meaning_rule_clear_passed",
+        "page_16_scorecard_row_rule_clear_passed",
+        "page_16_commentary_centered_passed",
+        "page_17_lower_cards_centered_passed",
+    ]
+    if isinstance(renderer_layout_safety, dict) and any(marker in renderer_layout_safety for marker in final_delivery_microfit_markers):
+        for marker in final_delivery_microfit_markers:
+            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
+                violations.append(f"final_delivery_microfit_failed:{marker}")
+        final_delivery_visual_cleanup_markers = [
+            "page_2_lower_row_centered_passed",
+            "page_5_side_panel_text_clear_passed",
+            "page_6_tactical_command_centered_passed",
+            "page_14_round_outlook_balanced_passed",
+            "page_16_scorecard_commentary_centered_passed",
+            "page_17_mechanism_risk_centered_passed",
+        ]
+        if any(marker in renderer_layout_safety for marker in final_delivery_visual_cleanup_markers):
+            for marker in final_delivery_visual_cleanup_markers:
+                if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
+                    violations.append(f"final_delivery_visual_cleanup_failed:{marker}")
     text_lower = str(pdf_text or "").lower()
 
     fighter_a = str(selected_preview.get("fighter_a", "")).strip().lower()
@@ -764,6 +805,7 @@ def _build_ingest_payload_from_selected_matchup(selected_preview):
         "template_pack_available": template_pack_available,
         "template_pack_error": template_pack_error,
         "selected_matchup_payload": {
+            "matchup_id": selected.get("matchup_id", ""),
             "fighter_a": selected.get("fighter_a", ""),
             "fighter_b": selected.get("fighter_b", ""),
             "event_name": selected.get("event_name", ""),
