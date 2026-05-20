@@ -102,6 +102,36 @@ def _fighter_last_name(value, fallback="Fighter"):
     return parts[-1]
 
 
+def _style_descriptor_from_selected(selected, fighter_key, fallback_role):
+    if not isinstance(selected, dict):
+        selected = {}
+
+    candidate_keys = [
+        f"{fighter_key}_style",
+        f"style_{fighter_key[-1]}",
+        "a_style" if fighter_key == "fighter_a" else "b_style",
+        f"{fighter_key}_style_descriptor",
+    ]
+    for key in candidate_keys:
+        value = _clean_text(selected.get(key), "")
+        if value:
+            return value
+
+    stance_key_candidates = [
+        f"{fighter_key}_stance",
+        f"stance_{fighter_key[-1]}",
+    ]
+    stance = ""
+    for key in stance_key_candidates:
+        stance = _clean_text(selected.get(key), "")
+        if stance:
+            break
+
+    if stance:
+        return f"Model-derived {fallback_role} | {stance}"
+    return f"Model-derived {fallback_role} | Orthodox"
+
+
 def _normalize_text(text):
     return re.sub(r"\s+", " ", str(text or "")).strip()
 
@@ -449,8 +479,11 @@ def _build_blocks(report_context_preview):
 
     fighter_a = _clean_text(selected.get("fighter_a"), "Fighter A")
     fighter_b = _clean_text(selected.get("fighter_b"), "Fighter B")
+    fighter_a_style = _style_descriptor_from_selected(selected, "fighter_a", "pressure striker")
+    fighter_b_style = _style_descriptor_from_selected(selected, "fighter_b", "counter striker")
     event_name = _clean_text(selected.get("event_name"), "Premium Event")
     event_date = _clean_text(selected.get("event_date"), "n/a")
+    promotion = _clean_text(selected.get("promotion"), "UFC")
     source_url = _clean_text(selected.get("source_url"), "n/a")
     report_id = re.sub(r"[^a-z0-9]+", "_", f"{fighter_a}_{fighter_b}_{event_name}".lower()).strip("_")
     if not report_id:
@@ -510,8 +543,11 @@ def _build_blocks(report_context_preview):
     return {
         "fighter_a": fighter_a,
         "fighter_b": fighter_b,
+        "fighter_a_style": fighter_a_style,
+        "fighter_b_style": fighter_b_style,
         "event_name": event_name,
         "event_date": event_date,
+        "promotion": promotion,
         "source_url": source_url,
         "report_id": report_id,
         "summary": dashboard_summary,
@@ -618,14 +654,14 @@ def _build_blocks(report_context_preview):
             f"if {fighter_b} starts winning clean geography, reduce chase volume and re-establish scoring integrity before pace escalation."
         ),
         # Additional metrics for dashboard
-        "projected_edge": _fighter_last_name(fighter_a, "Fighter A"),
+        "projected_edge": f"{fighter_a} over {fighter_b}",
         "edge_percent": "Decision | Full Distance",
         "confidence_display": "55.0%",
         "volatility": "High (model-derived)",
-        "control_zone": "Pressure rhythm / reset denial",
-        "danger_zone": "Geography loss / rushed entry",
-        "collapse_trigger": "Defensive hand decay",
-        "method_probability": "Decision (model-derived)",
+        "control_zone": f"{fighter_a} pressure rhythm / reset denial",
+        "danger_zone": f"{fighter_b} geography loss / rushed entry",
+        "collapse_trigger": f"{fighter_a} defensive hand decay",
+        "method_probability": f"Decision (model-derived) | {fighter_a} / {fighter_b}",
         "confidence_band": "55%",
         "report_type": "Premium Fight Intelligence Report",
         "round_band": "R2-R4 (model-derived inflection band)",
@@ -789,6 +825,8 @@ def _draw_cover(module, c, blocks):
     )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
     c.drawCentredString(x + (w // 6), 307, "AI-RISA matchup subject | operator-approved")
+    module.set_font(c, "Helvetica", 7.2, module.MUTED)
+    module.para(c, blocks.get("fighter_a_style", "Model-derived pressure striker | Orthodox"), x + 12, 286, (w // 3) - 34, 16, size=7.2, col=module.MUTED, min_size=6.4)
 
     # VS block
     module.panel(c, x + (w // 3), 274, (w // 3) - 20, 86, None, module.GOLD, module.PANEL, title_line=False)
@@ -817,6 +855,8 @@ def _draw_cover(module, c, blocks):
     )
     module.set_font(c, "Helvetica", 8.0, module.GOLD2)
     c.drawCentredString(x + w - (w // 6), 307, "AI-RISA matchup subject | opponent profile")
+    module.set_font(c, "Helvetica", 7.2, module.MUTED)
+    module.para(c, blocks.get("fighter_b_style", "Model-derived counter striker | Orthodox"), x + (2 * w // 3) + 22, 286, (w // 3) - 34, 16, size=7.2, col=module.MUTED, min_size=6.4)
 
     # Event/date/customer-ready strip and report metadata row.
     module.panel(c, x, 130, w, 58, None, module.GOLD, module.PANEL, title_line=False)
@@ -965,14 +1005,14 @@ def _draw_executive(module, c, blocks):
 
 
 def _draw_fighter_architecture_radar(module, c, blocks):
-    module.page_base(c, 4, "Fighter Architecture Radar")
+    module.page_base(c, 5, "Fighter Architecture Radar")
     x = module.SAFE_X + 8
     w = module.PAGE_W - 2 * x
     module.panel(c, x, 82, w, 378, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
-    c.drawString(x + 18, 438, "Fighter Architecture Radar")
+    c.drawString(x + 18, 438, f"Fighter Architecture Radar | {blocks['fighter_a']} vs {blocks['fighter_b']}")
     module.set_font(c, "Helvetica", 7.8, module.MUTED)
-    c.drawString(x + 18, 424, "Fighter Overview | Tale of the Tape")
+    c.drawString(x + 18, 424, f"Fighter Overview | Tale of the Tape | {blocks['fighter_a']} / {blocks['fighter_b']}")
 
     cx = x + 255
     cy = 250
@@ -1031,10 +1071,10 @@ def _draw_fighter_architecture_radar(module, c, blocks):
 
     module.panel(c, x + 500, 246, 240, 148, None, module.GOLD, module.PANEL2, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
-    c.drawString(x + 516, 374, "Control Lane")
+    c.drawString(x + 516, 374, f"{blocks['fighter_a']} Control Lane")
     module.para(c, f"{blocks['fighter_a']} pressure rhythm and reset denial become the scoring driver if exits are layered.", x + 516, 330, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
     module.set_font(c, "Helvetica-Bold", 9.2, module.RED)
-    c.drawString(x + 516, 308, "Danger Lane")
+    c.drawString(x + 516, 308, f"{blocks['fighter_b']} Danger Lane")
     module.para(c, f"{blocks['fighter_b']} flips momentum if range control and counter-entry timing stay clean in the mid rounds.", x + 516, 264, 208, 34, size=8.6, col=module.WHITE, min_size=7.8)
 
     module.panel(c, x + 500, 82, 240, 148, None, module.BLUE, module.PANEL_BLUE, title_line=False)
@@ -1069,10 +1109,10 @@ def _draw_tactical_edge_table(module, c, blocks):
         ("Watch Cue", 0.21),
     ]
     rows = [
-        ("Pressure Rhythm", "Fighter A", "Model-derived 58%", "Layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4.", "Watch if exits are forced twice in one sequence."),
-        ("Counter Entry Timing", "Fighter B", "Model-derived 33%", "Clean exits and counter sequencing reduce pressure efficiency and compress card margin.", "Watch delayed counters after reset feints."),
+        ("Pressure Rhythm", blocks["fighter_a"], "Model-derived 58%", "Layered pressure plus reset denial creates repeatable scoreable moments in rounds 2-4.", f"Watch if {blocks['fighter_a']} forces exits twice in one sequence."),
+        ("Counter Entry Timing", blocks["fighter_b"], "Model-derived 33%", "Clean exits and counter sequencing reduce pressure efficiency and compress card margin.", f"Watch delayed counters after {blocks['fighter_b']} reset feints."),
         ("Range Geography", "Contested", "Model-derived 54%", "Who owns mid-range after first contact controls volume quality and risk exposure.", "Watch center-line denial after contact."),
-        ("Pocket Exit Discipline", "Fighter A", "Model-derived 52-60%", "Disciplined exits prevent swing-variance exchanges and preserve score integrity.", "Watch defensive hand return on exits."),
+        ("Pocket Exit Discipline", blocks["fighter_a"], "Model-derived 52-60%", "Disciplined exits prevent swing-variance exchanges and preserve score integrity.", f"Watch {blocks['fighter_a']} defensive hand return on exits."),
         ("Late-Round Reliability", "Volatile", "Model-derived high", "Fatigue and composure shifts can overturn prior lane control when discipline decays.", "Watch R4-R5 composure under pace spikes."),
     ]
     y, remaining = draw_table_with_wrapped_cells(
@@ -1104,11 +1144,70 @@ def _draw_tactical_edge_table(module, c, blocks):
     module.panel(c, x + 20, 92, w - 40, 96, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
     c.drawString(x + 34, 168, "Command Instruction")
-    module.para(c, "Keep exits layered, do not chase low-value pressure, and preserve scoring geography before forcing pace extensions.", x + 34, 130, w - 68, 30, size=8.3, col=module.WHITE, min_size=7.4)
+    module.para(c, f"Keep exits layered for {blocks['fighter_a']}, do not chase low-value pressure for {blocks['fighter_b']}, and preserve scoring geography before forcing pace extensions.", x + 34, 130, w - 68, 30, size=8.3, col=module.WHITE, min_size=7.4)
     module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
     c.drawString(x + 34, 108, "Failure Consequence")
-    module.para(c, "If pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 86, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
+    module.para(c, f"If {blocks['fighter_a']} pressure output rises while positional conversion falls, the card drifts toward the cleaner counter lane.", x + 34, 86, w - 68, 22, size=8.0, col=module.WHITE, min_size=7.2)
     _draw_depth_footer(module, c, x + 20, 8, w - 40, "Tactical Edge Map", "Table rows map tactical layers directly to confidence, mechanism, and watch cues.", blocks)
+    c.showPage()
+
+
+def _draw_scenario_tree(module, c, blocks):
+    module.page_base(c, 15, "Scenario Tree / Method Pathways")
+    x = module.SAFE_X + 14
+    w = module.PAGE_W - 2 * x
+    module.panel(c, x, 86, w, 374, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
+    c.drawString(x + 16, 438, "Scenario Tree / Method Pathways")
+    module.set_font(c, "Helvetica", 7.8, module.MUTED)
+    c.drawString(x + 16, 424, f"Opening technical range battle | {blocks['fighter_a']} vs {blocks['fighter_b']}")
+
+    top_x = x + 28
+    top_y = 350
+    node_w = w - 56
+    module.panel(c, top_x, top_y, node_w, 44, None, module.GOLD2, module.PANEL2, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+    c.drawCentredString(top_x + node_w / 2, top_y + 24, "OPENING TECHNICAL RANGE BATTLE")
+    module.para(c, f"{blocks['fighter_a']} tries to create pressure geometry while {blocks['fighter_b']} tries to keep the fight readable and countable.", top_x + 16, top_y + 6, node_w - 32, 14, size=7.5, col=module.WHITE, min_size=6.8, align='center')
+
+    left_x = x + 40
+    right_x = x + w - 320
+    mid_y = 266
+    module.panel(c, left_x, mid_y, 270, 52, None, module.BLUE, module.PANEL_BLUE, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.BLUE)
+    c.drawString(left_x + 14, mid_y + 29, blocks["fighter_a"].upper())
+    module.para(c, "Pressure conversion, layered entries, and momentum theft become the story if geometry stays crowded.", left_x + 14, mid_y + 8, 242, 20, size=7.4, col=module.WHITE, min_size=6.7)
+
+    module.panel(c, right_x, mid_y, 270, 52, None, module.RED, module.PANEL_RED, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.RED)
+    c.drawRightString(right_x + 256, mid_y + 29, blocks["fighter_b"].upper())
+    module.para(c, "Counter structure, clean exits, and ring awareness keep the fight in a scoreable lane.", right_x + 14, mid_y + 8, 242, 20, size=7.4, col=module.WHITE, min_size=6.7)
+
+    c.setStrokeColor(module.GOLD2)
+    c.setLineWidth(1.0)
+    c.line(top_x + node_w / 2, top_y, left_x + 135, mid_y + 52)
+    c.line(top_x + node_w / 2, top_y, right_x + 135, mid_y + 52)
+
+    bottom_x = x + 28
+    bottom_y = 126
+    module.panel(c, bottom_x, bottom_y, node_w, 86, None, module.GOLD, module.PANEL, title_line=False)
+    module.set_font(c, "Helvetica-Bold", 9.0, module.GOLD2)
+    c.drawString(bottom_x + 14, bottom_y + 60, "SWING SCENARIO: DANGER MOMENTS VERSUS CLEAN STRETCHES")
+    module.para(c, f"If {blocks['fighter_a']} breaks the structure early, the fight becomes nonlinear. If {blocks['fighter_b']} keeps the exchange clean, the scorecard stays close and technical.", bottom_x + 14, bottom_y + 18, node_w - 28, 34, size=7.6, col=module.WHITE, min_size=6.8)
+    c.setStrokeColor(module.GOLD2)
+    c.line(left_x + 135, mid_y, bottom_x + node_w / 2, bottom_y + 86)
+    c.line(right_x + 135, mid_y, bottom_x + node_w / 2, bottom_y + 86)
+
+    _draw_depth_footer(
+        module,
+        c,
+        x + 18,
+        8,
+        w - 36,
+        "Scenario Tree / Method Pathways",
+        f"{blocks['fighter_a']} and {blocks['fighter_b']} branch through control, counter, and swing-variance method pathways.",
+        blocks,
+    )
     c.showPage()
 
 
@@ -1397,13 +1496,23 @@ def _draw_source_traceability(module, c, blocks, report_context_preview):
     c.drawString(table_x + 78, 334, blocks["event_name"])
 
     module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 320, "Report ID")
+    c.drawString(table_x, 320, "Event Date")
     module.set_font(c, "Helvetica", 8.8, module.WHITE)
-    c.drawString(table_x + 78, 320, blocks.get("report_id", "selected_matchup_report"))
+    c.drawString(table_x + 78, 320, blocks["event_date"])
 
     module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
-    c.drawString(table_x, 302, "Source Discipline Statement")
-    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 292, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
+    c.drawString(table_x, 306, "Promotion")
+    module.set_font(c, "Helvetica", 8.8, module.WHITE)
+    c.drawString(table_x + 78, 306, blocks.get("promotion", "UFC"))
+
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(table_x, 292, "Report ID")
+    module.set_font(c, "Helvetica", 8.8, module.WHITE)
+    c.drawString(table_x + 78, 292, blocks.get("report_id", "selected_matchup_report"))
+
+    module.set_font(c, "Helvetica-Bold", 8.8, module.GOLD2)
+    c.drawString(table_x, 274, "Source Discipline Statement")
+    module.para(c, "Claims remain model-derived unless directly supported by this source map and confirmed through operator review.", table_x + 150, 264, table_w - 156, 24, size=8.0, col=module.WHITE, min_size=7.2)
 
     module.panel(c, x + 18, 128, w - 36, 136, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", 8.8, module.BLUE)
@@ -1582,8 +1691,8 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     module.DATA["report_type"] = "CUSTOMER READY"
     module.DATA["report_id"] = blocks.get("report_id", "selected_matchup_report")
     module.DATA["generated"] = _dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    module.DATA["a_style"] = "Aggressive Power Striker | Orthodox"
-    module.DATA["b_style"] = "Technical Counter Striker | Orthodox"
+    module.DATA["a_style"] = blocks.get("fighter_a_style", "Model-derived pressure striker | Orthodox")
+    module.DATA["b_style"] = blocks.get("fighter_b_style", "Model-derived counter striker | Orthodox")
 
     module.TEXT["exec"] = blocks.get("executive_summary", blocks.get("summary", ""))
     module.TEXT["headline"] = blocks.get("headline", "")
@@ -1608,9 +1717,9 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
     stream = io.BytesIO()
     c = module.canvas.Canvas(stream, pagesize=module.landscape(module.A4))
 
-    # Render with canonical v29 page functions to preserve layout parity.
-    module.cover(c)
-    module.executive(c)
+    # Render with the dynamic v29 layout helpers so selected-matchup content stays bound.
+    _draw_cover(module, c, blocks)
+    _draw_executive(module, c, blocks)
     module.section_page(
         c,
         3,
@@ -1641,8 +1750,8 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         module.TEXT["matchup"],
         module.GOLD,
     )
-    module.radar(c)
-    module.tactical(c)
+    _draw_fighter_architecture_radar(module, c, blocks)
+    _draw_tactical_edge_table(module, c, blocks)
     module.section_page(
         c,
         7,
@@ -1748,30 +1857,10 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         module.TEXT["range"],
         module.GOLD,
     )
-    module.round_page(c)
-    module.scenario(c)
-    module.four_cards_page(
-        c,
-        16,
-        "Scorecard Scenario",
-        [
-            (f"{module.DATA['a_short'].upper()} CLOSE DECISION", "Danger moments outweigh clean stretches. Disruption controls the story even when exchanges are competitive."),
-            (f"{module.DATA['b_short'].upper()} TECHNICAL DECISION", "Cleaner exchanges and disciplined exits dominate. Structure denies emotional escalation."),
-            ("SWING SCORECARDS", "Judges split disruption versus technical consistency. Round optics become the deciding layer."),
-            ("FULL DISTANCE LEAN", "Decision is stronger than stoppage projection. The cleanest forecast is a scored distance fight."),
-        ],
-    )
-    module.four_cards_page(
-        c,
-        17,
-        "Stoppage Windows",
-        [
-            (f"{module.DATA['a_short'].upper()} DAMAGE SWING", "R1-R3. Live if the opponent is forced into repeated defensive adaptation."),
-            (f"{module.DATA['b_short'].upper()} COUNTER ACCUMULATION", "R2-R3. Live if entries become readable and overcommitted."),
-            ("LATE FINISH PRESSURE", "Low probability. Depends on style degradation, not only volume."),
-            ("NO FINISH READ", "Most likely. Projection remains full distance by decision."),
-        ],
-    )
+    _draw_round_control_graph(module, c, blocks)
+    _draw_scenario_tree(module, c, blocks)
+    _draw_scorecard_scenario(module, c, blocks)
+    _draw_method_probability_chart(module, c, blocks)
     module.section_page(
         c,
         18,
@@ -1848,7 +1937,7 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
         module.GOLD,
     )
     _draw_source_traceability(module, c, blocks, report_context_preview)
-    module.disclaimer_page(c)
+    _draw_customer_appendix(module, c)
     c.save()
     pdf_bytes = stream.getvalue()
 

@@ -1,0 +1,89 @@
+{
+  "slice": "button2-v29-template-sample-data-bleed-repair-v1",
+  "date": "2026-05-20",
+  "live_proof": {
+    "base_url": "http://127.0.0.1:5050",
+    "queue_ready": {
+      "total_rows": 21,
+      "ready_count": 21,
+      "source_of_truth": "ops/prf_queue/button2_approved_fight_queue.json"
+    },
+    "selected_matchup_ids": [
+      "ufc_304_sean_strickland_dricus_du_plessis",
+      "ufc_300_bo_nickal_vs_cody_brundage"
+    ],
+    "batch_result": {
+      "ok": true,
+      "generated_count": 2,
+      "failed_count": 0,
+      "skipped_count": 0
+    },
+    "reports": [
+      {
+        "matchup_id": "ufc_304_sean_strickland_dricus_du_plessis",
+        "fighter_a": "Sean Strickland",
+        "fighter_b": "Dricus du Plessis",
+        "event_name": "UFC 304",
+        "event_date": "2026-07-27",
+        "promotion": "UFC",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260520T004419Z_774f92558804.pdf",
+        "output_filename": "sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260520T004419Z_774f92558804.pdf",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "template_pack_asset_backed": true,
+        "visual_gate_status": "premium_template_confirmed",
+        "customer_ready": true,
+        "checks": {
+          "sean_strickland_present": true,
+          "dricus_du_plessis_present": true,
+          "bahram_absent": true,
+          "rajabzadeh_absent": true,
+          "donovan_absent": true,
+          "wisse_absent": true,
+          "event_name_present": true,
+          "event_date_present": true,
+          "promotion_present": true,
+          "ufc_source_url_present": true,
+          "report_id_label_present": true,
+          "expected_report_id_slug_present": true
+        }
+      },
+      {
+        "matchup_id": "ufc_300_bo_nickal_vs_cody_brundage",
+        "fighter_a": "Bo Nickal",
+        "fighter_b": "Cody Brundage",
+        "event_name": "UFC 300",
+        "event_date": "2026-07-12",
+        "promotion": "UFC",
+        "output_path": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports\\bo_nickal_vs_cody_brundage_ufc_300_premium_20260520T004420Z_849c23a2f0b4.pdf",
+        "output_filename": "bo_nickal_vs_cody_brundage_ufc_300_premium_20260520T004420Z_849c23a2f0b4.pdf",
+        "renderer_route_used": "template_pack_asset_renderer",
+        "renderer_profile": "premium_template_pack_v29_layout_parity_rebuild_v1",
+        "template_pack_asset_backed": true,
+        "visual_gate_status": "premium_template_confirmed",
+        "customer_ready": true,
+        "checks": {
+          "bahram_absent": true,
+          "rajabzadeh_absent": true,
+          "donovan_absent": true,
+          "wisse_absent": true,
+          "event_name_present": true,
+          "event_date_present": true,
+          "promotion_present": true,
+          "ufc_source_url_present": true,
+          "report_id_label_present": true,
+          "expected_report_id_slug_present": true
+        }
+      }
+    ]
+  },
+  "governance_flags": {
+    "delivery_performed": false,
+    "external_api_delivery_performed": false,
+    "queue_write_performed": false,
+    "learning_apply_performed": false,
+    "calibration_write_performed": false,
+    "button3_mutation_performed": false
+  },
+  "final_verdict": "Live 5050 proof confirms selected fighter binding, sample-name bleed elimination, source map event metadata integrity, and customer_ready gating only after strict bleed checks pass."
+}

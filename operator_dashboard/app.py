@@ -83,6 +83,15 @@ _BUTTON2_STALE_NAME_PAIRS = [
     ("jbalia", "diatta"),
 ]
 
+_BUTTON2_TEMPLATE_SAMPLE_BLEED_TOKENS = [
+    "bahram",
+    "rajabzadeh",
+    "donovan",
+    "wisse",
+    "aggressive power striker",
+    "technical counter striker",
+]
+
 _BUTTON2_REQUIRED_PREMIUM_MARKERS = [
     "executive command dashboard",
     "fighter architecture radar",
@@ -321,6 +330,17 @@ def _scan_forbidden_markers(pdf_text):
     }
 
 
+def _pdf_quality_gate_status(strict_gate_violations, text_scan):
+    violations = [str(value) for value in (strict_gate_violations or [])]
+    if any(value.startswith("template_sample_bleed_present:") for value in violations):
+        return "v29_template_sample_bleed_failed"
+    if any(value.startswith("v29_layout_") for value in violations):
+        return "v29_template_layout_parity_failed"
+    if isinstance(text_scan, dict) and text_scan.get("any_forbidden_found"):
+        return "pdf_quality_gate_failed"
+    return "pdf_quality_gate_failed"
+
+
 def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     if not isinstance(selected_preview, dict):
         return False
@@ -367,6 +387,11 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     if source_url:
         if source_url not in text_lower and (not source_domain or source_domain not in text_lower):
             violations.append("source_url_or_domain_missing_in_pdf_text")
+
+    sample_selected = {fighter_a, fighter_b} == {"bahram rajabzadeh", "donovan wisse"}
+    for token in _BUTTON2_TEMPLATE_SAMPLE_BLEED_TOKENS:
+        if token in text_lower and not sample_selected:
+            violations.append(f"template_sample_bleed_present:{token}")
 
     expected_slug = _build_fight_id_from_selected_matchup(selected_preview)
     output_path = str(result.get("output_path") or "").strip()
@@ -1582,10 +1607,12 @@ def button2_selected_matchup_generate_guarded_v1():
             except Exception:
                 pass
 
+            gate_status = _pdf_quality_gate_status(strict_gate_violations, text_scan)
+
             return jsonify({
                 "ok": False,
                 "error": "customer_pdf_quality_gate_failed",
-                "reason": "legacy_section_card_engine_detected",
+                "reason": gate_status,
                 "message": "Customer-facing PDF quality gate failed.",
                 "customer_pdf_quality_gate_failed": True,
                 "strict_quality_gate_passed": strict_gate_passed,
@@ -1603,6 +1630,8 @@ def button2_selected_matchup_generate_guarded_v1():
                 "template_pack_root": result.get("template_pack_root", _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT),
                 "template_pack_asset_backed": bool(result.get("template_pack_asset_backed", False)),
                 "jbalia_layout_applied": bool(result.get("premium_template_render_used", False)),
+                "customer_ready": False,
+                "visual_gate_status": gate_status,
                 "generated_at": result.get("generated_at") or _utc_now_iso_seconds(),
                 "file_modified_at": file_meta.get("file_modified_at") or result.get("file_modified_at"),
                 "file_size_bytes": file_meta.get("file_size_bytes") or result.get("file_size_bytes"),
@@ -2335,9 +2364,7 @@ def button2_generate_selected_batch_v1():
             except Exception:
                 pass
 
-            gate_status = "pdf_quality_gate_failed"
-            if any(str(v).startswith("v29_layout_") for v in (strict_gate_violations or [])):
-                gate_status = "v29_template_layout_parity_failed"
+            gate_status = _pdf_quality_gate_status(strict_gate_violations, text_scan)
 
             results.append({
                 "matchup_id": matchup_id,
