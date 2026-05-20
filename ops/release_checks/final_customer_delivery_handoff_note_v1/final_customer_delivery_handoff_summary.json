@@ -1,0 +1,28 @@
+{
+  "slice": "final-customer-delivery-handoff-note-v1",
+  "title": "AI-RISA Final Customer Delivery Handoff",
+  "active_baseline": {
+    "commit": "3f89a44",
+    "tag": "button2-v29-template-final-delivery-fit-scan-repair-v5"
+  },
+  "approved_delivery_pdfs": [
+    "reports/dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260520T085052Z_b3cf659403e4.pdf",
+    "reports/ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260520T085054Z_2d63fe3ea02b.pdf",
+    "reports/ryan_curtis_vs_adam_borics_bellator_298_premium_20260520T085055Z_25fb60d9e693.pdf"
+  ],
+  "final_visual_scan": "PASS",
+  "pages_reviewed": [2, 5, 6, 14, 16, 17, 23],
+  "blocked_list": [],
+  "blocked_list_status": "empty",
+  "excluded_baselines": [
+    "e9735dd",
+    "573ccb9",
+    "b3a6c36",
+    "all earlier PDFs"
+  ],
+  "delivery_rule": {
+    "manual_delivery_only": true,
+    "automatic_delivery": false,
+    "external_api_delivery": false
+  }
+}
