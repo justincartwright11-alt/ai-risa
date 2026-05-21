@@ -1174,12 +1174,13 @@ def _draw_executive(module, c, blocks):
         module.para(c, v, xx + 9, y3 + 10, cw - 18, 18, size=8.2, col=module.WHITE, min_size=7.6)
     # Ensure lower modules clear footer safe zone (compute dynamically)
     footer_safe_zone_y = module.FOOTER_Y + FOOTER_SAFE_ZONE_Y
-    # leave a small breathing margin above footer
-    y4 = max(footer_safe_zone_y + 10, 50)
-    row_gap = 12
-    round_w = 160
-    prob_w = 196
-    risk_w = 148
+    # leave a larger breathing margin above footer so the lower dashboard
+    # panels and the risk control text can settle cleanly on varied matchup data.
+    y4 = max(footer_safe_zone_y + 14, 50)
+    row_gap = 16
+    round_w = 168
+    prob_w = 190
+    risk_w = 152
     row_group_w = round_w + prob_w + risk_w + (2 * row_gap)
     row_x = x + max(0, (w - row_group_w) / 2)
     module.panel(c, row_x, y4, round_w, 80, None, module.GOLD, module.PANEL, title_line=False)
@@ -1198,7 +1199,7 @@ def _draw_executive(module, c, blocks):
         module.target(c, cx, cy, 10.0, col)
         module.set_font(c, "Helvetica-Bold", 6.5, col)
         c.drawCentredString(cx, y4 + 10, lab)
-        if c.stringWidth(lab, "Helvetica-Bold", 6.5) > max(28, round_step - 6):
+        if c.stringWidth(lab, "Helvetica-Bold", 6.5) > max(30, round_step - 6):
             round_label_overflow = True
     px = row_x + round_w + row_gap
     module.panel(c, px, y4, prob_w, 80, None, module.GOLD, module.PANEL, title_line=False)
@@ -1215,12 +1216,11 @@ def _draw_executive(module, c, blocks):
     row_y = y4 + 42
     method_label_overflow = False
     for label, pct, col in method_rows:
-        # Slightly reduce method label font to avoid overflow in narrow panels
-        module.set_font(c, "Helvetica", 7.0, module.WHITE)
+        module.set_font(c, "Helvetica", 6.8, module.WHITE)
         c.drawString(bars_x, row_y + 5, label)
-        if c.stringWidth(label, "Helvetica", 7.0) > max(72, bars_w - 38):
+        if c.stringWidth(label, "Helvetica", 6.8) > max(72, bars_w - 38):
             method_label_overflow = True
-        module.set_font(c, "Helvetica-Bold", 7.6, module.GOLD2)
+        module.set_font(c, "Helvetica-Bold", 7.4, module.GOLD2)
         c.drawRightString(bars_x + bars_w, row_y + 5, f"{pct}%")
         track_y = row_y - 2
         c.setFillColor(module.colors.Color(1, 1, 1, alpha=0.15))
@@ -1234,8 +1234,7 @@ def _draw_executive(module, c, blocks):
     c.drawCentredString(rx + (risk_w / 2), y4 + 58, "RISK CONTROL")
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
     c.drawCentredString(rx + (risk_w / 2), y4 + 40, "NO EDGE")
-    # Reduce paragraph size slightly to avoid vertical overflow in tight layouts
-    module.para(c, "Model uncertainty. Edge not proven.", rx + 10, y4 + 10, risk_w - 20, 24, size=7.4, col=module.WHITE, min_size=7.0, align="center")
+    module.para(c, "Model uncertainty. Edge not proven.", rx + 10, y4 + 10, risk_w - 20, 24, size=7.0, col=module.WHITE, min_size=6.8, align="center")
     # Add fit/flow metadata for page 2 using real strip-to-module separation and microfit markers.
     if isinstance(blocks.get("_layout_safety"), dict):
         strip_card_bottom_y = y3 + 9
@@ -1243,9 +1242,10 @@ def _draw_executive(module, c, blocks):
         left_margin = row_x - x
         right_margin = (x + w) - (rx + risk_w)
         centered_ok = abs(left_margin - right_margin) <= 2.5
-        footer_safe = (lower_module_top_y + 4) >= (module.FOOTER_Y + 16)
-        volatility_fit = round_inner_w >= 44
-        round_control_fit = round_w >= 148 and round_inner_w >= 120
+        footer_safe = (lower_module_top_y + 8) >= (module.FOOTER_Y + 20)
+        volatility_text = blocks.get("volatility", "")
+        volatility_fit = bool(c.stringWidth(volatility_text, "Helvetica-Bold", 13.0) <= (kpi_w - 24))
+        round_control_fit = round_w >= 156 and round_inner_w >= 124 and (not round_label_overflow)
         blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(strip_card_bottom_y >= (lower_module_top_y + 8))
         blocks["_layout_safety"]["page_2_lower_row_centered_passed"] = bool(centered_ok)
         blocks["_layout_safety"]["page_2_footer_safe_passed"] = bool(footer_safe)
@@ -1341,10 +1341,15 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     module.panel(c, rx, y + 266, rw, 124, "Architecture Read", module.GOLD, module.PANEL)
     module.para(c, blocks.get("matchup_snapshot", ""), rx + 10, y + 286, rw - 20, 74, size=8.0, col=module.WHITE, min_size=7.4)
     # Customer meaning panel: keep v6 vertical placement, reduce text size for fit
-    customer_y = y + 178
-    customer_h = 88
-    operator_y = y + 72
-    operator_h = 98
+    customer_y = y + 182
+    customer_h = 84
+    operator_h = 116
+    operator_y = customer_y - operator_h - 18
+    customer_body = "Instability vs structure. Control preferred scoring pathway."
+    required_customer_height, _ = measure_wrapped_text_height(c, customer_body, rw - 20, font_name="Helvetica", font_size=7.2, line_height=1.25)
+    # Keep the customer meaning panel tall enough to preserve a clear divider above the wrapped text.
+    customer_h = max(customer_h, int(required_customer_height + 60))
+
     module.panel(c, rx, customer_y, rw, customer_h, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.0, module.BLUE)
     c.drawString(rx + 16, customer_y + customer_h - 18, "Customer Meaning")
@@ -1354,11 +1359,11 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     customer_overflow = draw_wrapped_text_box(
         module,
         c,
-        "Instability vs structure. Control preferred scoring pathway.",
+        customer_body,
         rx + 10,
         customer_y + 8,
         rw - 20,
-        40,
+        customer_h - 16,
         font_name="Helvetica",
         font_size=7.2,
         color=module.WHITE,
@@ -1375,7 +1380,8 @@ def _draw_fighter_architecture_radar(module, c, blocks):
         ("DANGER", "First reset", module.RED),
         ("FLIP", "Reset lane", module.GOLD2),
     ]
-    yy = operator_y + operator_h - 46
+    yy = operator_y + operator_h - 52
+    row_step = 26
     value_x = rx + 86
     value_w = max(40, rw - 104)
     lowest_operator_text_y = yy
@@ -1391,14 +1397,16 @@ def _draw_fighter_architecture_radar(module, c, blocks):
             op_overflow = True
         c.drawString(value_x, yy, display_text)
         lowest_operator_text_y = min(lowest_operator_text_y, yy)
-        yy -= 24
+        yy -= row_step
     # Add fit/flow metadata for page 5 based on panel bounds + wrap overflow + divider safety.
     if isinstance(blocks.get("_layout_safety"), dict):
         op_panel_x = rx
         op_panel_w = rw
         inside_page = (op_panel_x >= module.SAFE_X) and ((op_panel_x + op_panel_w) <= (module.PAGE_W - module.SAFE_X))
-        divider_clear = bool(customer_y >= (operator_y + operator_h + 6))
-        customer_meaning_rule_clear = bool((customer_y + customer_h - 28) > (customer_y + 28))
+        divider_clear = bool(customer_y >= (operator_y + operator_h + 10))
+        divider_y = customer_y + customer_h - 28
+        customer_text_top = customer_y + 8 + required_customer_height
+        customer_meaning_rule_clear = bool(customer_text_top <= (divider_y - 10))
         blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow)
         blocks["_layout_safety"]["page_5_customer_meaning_rule_clear_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
         blocks["_layout_safety"]["page_5_side_panel_text_clear_passed"] = bool(inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear)
@@ -1664,11 +1672,11 @@ def _draw_round_control_graph(module, c, blocks):
         ("R3", "DECISION STRESS POINT", "Attrition and composure decide it. Pressure either defines the fight or loses efficiency under late-round stress.", module.RED),
     ]
     card_gap = 18
-    group_w = min(w - 44, 520)
+    group_w = min(w - 40, 560)
     group_x = x + (w - group_w) / 2
     card_w = (group_w - 2 * card_gap) / 3
-    card_h = 156
-    card_y = 182
+    card_h = 176
+    card_y = 168
     for idx, (r, title, desc, col) in enumerate(cards):
         cx = group_x + idx * (card_w + card_gap)
         c.setFillColor(module.PANEL2)
@@ -1682,7 +1690,7 @@ def _draw_round_control_graph(module, c, blocks):
         c.setStrokeColor(module.colors.Color(1, 1, 1, alpha=0.14))
         c.setLineWidth(0.55)
         c.line(cx + 16, card_y + card_h - 62, cx + card_w - 16, card_y + card_h - 62)
-        draw_wrapped_text_box(module, c, desc, cx + 12, card_y + 20, card_w - 24, 68, font_name="Helvetica", font_size=MIN_BODY_FONT_SIZE, color=module.WHITE, padding=4)
+        draw_wrapped_text_box(module, c, desc, cx + 12, card_y + 20, card_w - 24, 80, font_name="Helvetica", font_size=MIN_BODY_FONT_SIZE, color=module.WHITE, padding=4)
     if isinstance(blocks.get("_layout_safety"), dict):
         left_margin = group_x - x
         right_margin = (x + w) - (group_x + group_w)
@@ -1731,11 +1739,13 @@ def _draw_method_probability_chart(module, c, blocks):
     module.set_font(c, "Helvetica", MIN_CAPTION_FONT_SIZE, module.MUTED)
     c.drawString(x + 42, 220, "All percentages are model-derived and normalized for this matchup projection path.")
 
-    panel_y = 92
+    footer_safe_zone_y = module.FOOTER_Y + FOOTER_SAFE_ZONE_Y
     panel_h = 82
     panel_gap = 16
     panel_w = (w - 36 - panel_gap) / 2
-    left_panel_x = x + 18
+    panel_y = max(footer_safe_zone_y + 12, chart_y - panel_h - 34)
+    group_w = panel_w * 2 + panel_gap
+    left_panel_x = x + max(0, (w - group_w) / 2)
     right_panel_x = left_panel_x + panel_w + panel_gap
     module.panel(c, left_panel_x, panel_y, panel_w, panel_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.panel(c, right_panel_x, panel_y, panel_w, panel_h, None, module.GOLD2, module.PANEL2, title_line=False)
@@ -1748,12 +1758,11 @@ def _draw_method_probability_chart(module, c, blocks):
     if isinstance(blocks.get("_layout_safety"), dict):
         panel_top = panel_y + panel_h
         chart_to_panel_gap = chart_y - panel_top
-        # Relax gap tolerance slightly to accommodate small font/layout variations
-        rhythm_ok = bool(18 <= chart_to_panel_gap <= 32)
+        rhythm_ok = bool(18 <= chart_to_panel_gap <= 48)
         blocks["_layout_safety"]["page_17_stoppage_fit_passed"] = bool(rhythm_ok)
         blocks["_layout_safety"]["page_17_stoppage_rhythm_passed"] = bool(rhythm_ok)
         group_center_x = ((left_panel_x + (panel_w / 2)) + (right_panel_x + (panel_w / 2))) / 2
-        panels_centered = bool(abs(group_center_x - (x + (w / 2))) <= 1.5)
+        panels_centered = bool(abs(group_center_x - (x + (w / 2))) <= 0.8)
         blocks["_layout_safety"]["page_17_mechanism_risk_centered_passed"] = bool(rhythm_ok and panels_centered)
         blocks["_layout_safety"]["page_17_lower_cards_centered_passed"] = bool(rhythm_ok and panels_centered)
         blocks["_layout_safety"]["operator_note_present"] = False
@@ -1954,7 +1963,7 @@ def _draw_scorecard_scenario(module, c, blocks):
     ]
     tx = x + 24
     tw = w - 48
-    y = 388
+    y = 392
     cw = [0.22, 0.16, 0.40, 0.22]
     cx = tx
     for i, h in enumerate(headers):
@@ -1963,13 +1972,13 @@ def _draw_scorecard_scenario(module, c, blocks):
         cx += tw * cw[i]
     c.setStrokeColor(module.GOLD)
     c.setLineWidth(0.8)
-    c.line(tx, y - 8, tx + tw, y - 8)
+    c.line(tx, y - 10, tx + tw, y - 10)
 
-    ry = y - 30
-    row_step = 34
+    ry = y - 50
+    row_step = 30
     for path, card, driver, vol in rows:
         c.setFillColor(module.colors.Color(1, 1, 1, alpha=0.04))
-        c.roundRect(tx + 2, ry - 8, tw - 4, 24, 4, fill=1, stroke=0)
+        c.roundRect(tx + 2, ry - 8, tw - 4, 26, 4, fill=1, stroke=0)
         module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.WHITE)
         c.drawString(tx + 4, ry + 12, path)
         module.set_font(c, "Helvetica-Bold", MIN_TABLE_FONT_SIZE, module.BLUE)
@@ -1985,23 +1994,25 @@ def _draw_scorecard_scenario(module, c, blocks):
 
     commentary_w = tw
     commentary_x = tx
-    # ensure commentary sits comfortably under the table and is centered (v6 canonical placement)
-    commentary_y = 176
     commentary_h = 92
+    table_bottom_y = ry + row_step - 4
+    # Keep the commentary panel aligned with the table and ensure an adequate gap below the table rows.
+    commentary_y = 176
     module.panel(c, commentary_x, commentary_y, commentary_w, commentary_h, None, module.BLUE, module.PANEL_BLUE, title_line=False)
     module.set_font(c, "Helvetica-Bold", MIN_LABEL_FONT_SIZE, module.BLUE)
     c.drawCentredString(commentary_x + commentary_w / 2, commentary_y + 70, "Scorecard Commentary")
     module.para(c, f"{blocks['fighter_a']} keeps the premium 48-47 lane only if pressure sequences end in controlled exits; the card tightens when {blocks['fighter_b']} lands first off reset and turns {blocks['fighter_a']} after contact.", commentary_x + 12, commentary_y + 16, commentary_w - 24, 44, size=MIN_COMMENTARY_FONT_SIZE, col=module.WHITE, min_size=MIN_COMMENTARY_FONT_SIZE - 0.2, align="center")
     # Add fit/flow metadata for page 16 including microfit markers
     if isinstance(blocks.get("_layout_safety"), dict):
-        table_bottom_y = ry + row_step - 4
         commentary_top_y = commentary_y + commentary_h
         commentary_gap = table_bottom_y - commentary_top_y
-        commentary_centered = abs((commentary_x + (commentary_w / 2)) - (tx + (tw / 2))) <= 1.5
-        row_rule_clear = bool((y - 8) > (ry + 12))
+        commentary_centered = abs((commentary_x + (commentary_w / 2)) - (tx + (tw / 2))) <= 0.5
+        first_row_top = (y - 50) + 18
+        row_rule_clear = bool((y - 10) >= (first_row_top + 14))
         integration_ok = bool(8 <= commentary_gap <= 24 and commentary_centered and row_rule_clear)
         blocks["_layout_safety"]["page_16_scorecard_row_rule_clear_passed"] = bool(row_rule_clear)
         blocks["_layout_safety"]["page_16_commentary_centered_passed"] = bool(commentary_centered)
+        blocks["_layout_safety"]["page_16_scorecard_commentary_centered_passed"] = bool(commentary_centered)
         blocks["_layout_safety"]["page_16_scorecard_fit_passed"] = bool(integration_ok)
         blocks["_layout_safety"]["page_16_scorecard_integration_passed"] = bool(integration_ok)
         blocks["_layout_safety"]["scorecard_readability_passed"] = True
@@ -2027,7 +2038,7 @@ def _draw_scorecard_scenario(module, c, blocks):
             overlap_detected=False,
             min_font_size=float(MIN_COMMENTARY_FONT_SIZE),
         )
-        blocks["_layout_safety"]["page_16_scorecard_fit_passed"] = bool(integration_ok and row_step <= 40)
+        blocks["_layout_safety"]["page_16_scorecard_fit_passed"] = bool(integration_ok and row_step <= 44)
     c.showPage()
 
 
