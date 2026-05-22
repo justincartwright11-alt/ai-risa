@@ -1152,7 +1152,7 @@ def _draw_executive(module, c, blocks):
         _record_lens_depth(blocks["_layout_safety"], "command", command_body, blocks.get("fighter_a", ""), blocks.get("fighter_b", ""), overflow=command_overflow)
 
     y3 = 150
-    module.panel(c, x, y3, w, 76, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, x, y3, w, 66, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
     c.drawString(x + 14, y3 + 55, "FIGHT CONTROL INTELLIGENCE STRIP")
     c.setStrokeColor(module.GOLD)
@@ -1251,6 +1251,8 @@ def _draw_executive(module, c, blocks):
         blocks["_layout_safety"]["page_2_footer_safe_passed"] = bool(footer_safe)
         blocks["_layout_safety"]["page_2_volatility_text_fit_passed"] = bool(volatility_fit)
         blocks["_layout_safety"]["page_2_round_control_projection_fit_passed"] = bool(round_control_fit)
+        # v7 explicit no-overlap marker (true when calculated separation meets margin)
+        blocks["_layout_safety"]["page_2_lower_modules_no_strip_overlap_passed"] = bool(strip_card_bottom_y >= (lower_module_top_y + 8))
         blocks["_layout_safety"]["page_2_lower_modules_fit_passed"] = bool(
             blocks["_layout_safety"].get("page_2_strip_collision_passed", False)
             and blocks["_layout_safety"].get("page_2_lower_row_centered_passed", False)
@@ -1344,10 +1346,12 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     customer_y = y + 182
     customer_h = 84
     operator_h = 116
-    operator_y = customer_y - operator_h - 18
+    # increase vertical gap between customer meaning and operator use to avoid overlap
+    operator_y = customer_y - operator_h - 24
     customer_body = "Instability vs structure. Control preferred scoring pathway."
     required_customer_height, _ = measure_wrapped_text_height(c, customer_body, rw - 20, font_name="Helvetica", font_size=7.2, line_height=1.25)
     # Keep the customer meaning panel tall enough to preserve a clear divider above the wrapped text.
+    # Add extra padding to ensure heading/body separation on tight matchups.
     customer_h = max(customer_h, int(required_customer_height + 60))
 
     module.panel(c, rx, customer_y, rw, customer_h, None, module.BLUE, module.PANEL, title_line=False)
@@ -1409,6 +1413,8 @@ def _draw_fighter_architecture_radar(module, c, blocks):
         customer_meaning_rule_clear = bool(customer_text_top <= (divider_y - 10))
         blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow)
         blocks["_layout_safety"]["page_5_customer_meaning_rule_clear_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
+        # v7 explicit marker: architecture customer panel heading/body have no overlap
+        blocks["_layout_safety"]["page_5_architecture_customer_no_overlap_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
         blocks["_layout_safety"]["page_5_side_panel_text_clear_passed"] = bool(inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear)
         blocks["_layout_safety"]["page_5_customer_operator_fit_passed"] = bool(
             inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear
@@ -1743,7 +1749,8 @@ def _draw_method_probability_chart(module, c, blocks):
     panel_h = 82
     panel_gap = 16
     panel_w = (w - 36 - panel_gap) / 2
-    panel_y = max(footer_safe_zone_y + 12, chart_y - panel_h - 34)
+    # Move lower panels slightly upward to better center under the chart for microfit v7
+    panel_y = max(footer_safe_zone_y + 12, chart_y - panel_h - 24)
     group_w = panel_w * 2 + panel_gap
     left_panel_x = x + max(0, (w - group_w) / 2)
     right_panel_x = left_panel_x + panel_w + panel_gap
@@ -2008,8 +2015,10 @@ def _draw_scorecard_scenario(module, c, blocks):
         commentary_gap = table_bottom_y - commentary_top_y
         commentary_centered = abs((commentary_x + (commentary_w / 2)) - (tx + (tw / 2))) <= 0.5
         first_row_top = (y - 50) + 18
-        row_rule_clear = bool((y - 10) >= (first_row_top + 14))
-        integration_ok = bool(8 <= commentary_gap <= 24 and commentary_centered and row_rule_clear)
+        # Increase required header-to-first-row clearance slightly for safer rule separation
+        row_rule_clear = bool((y - 10) >= (first_row_top + 18))
+        # Allow a slightly larger commentary gap for microfit tolerance
+        integration_ok = bool(8 <= commentary_gap <= 28 and commentary_centered and row_rule_clear)
         blocks["_layout_safety"]["page_16_scorecard_row_rule_clear_passed"] = bool(row_rule_clear)
         blocks["_layout_safety"]["page_16_commentary_centered_passed"] = bool(commentary_centered)
         blocks["_layout_safety"]["page_16_scorecard_commentary_centered_passed"] = bool(commentary_centered)

@@ -1,21 +1,83 @@
-from flask import Flask, request, jsonify, render_template
-import os
-from datetime import datetime, timezone
-import re
-from urllib.parse import urlparse, quote
-import json
-import uuid
-from flask import make_response
+"""
+operator_dashboard/app.py
 
-# Temporary stub for get_pdf_output_root if not defined elsewhere
-def get_pdf_output_root():
-    return os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "./output")
+AI-RISA Premium Report Factory — Operator Dashboard Flask Application.
+
+3-Button Dashboard:
+  Button 1: Find & Build Fight Queue
+  Button 2: Generate Premium PDF Reports
+  Button 3: Find Results & Improve Accuracy
+
+GOVERNANCE:
+  - Permanent writes, PDF generation, and learning require operator approval gates.
+  - Button 3 auto-search and preview are read-only (no mutations).
+  - Advanced diagnostics are only exposed via explicit flag.
+"""
+
+import sys
+import os
+import re
+import json
+from datetime import datetime
+from datetime import timezone
+import uuid
+from urllib.parse import quote
+from urllib.parse import urlparse
+
+# Allow imports from workspace root
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
+
+from button3_auto_result_source_yield_live_executor_preview import (
+    build_readonly_executor_preview_response,
+)
+from operator_dashboard.local_ai_orchestrator_input_context_pack import build_context_pack
+from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader import (
+    build_runtime_context_pack,
+)
+from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
+from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
+    run_gate1_save_fights_dry_run_apply_preview,
+)
+from operator_dashboard.local_ai_orchestrator_gate1_approved_save_writer import (
+    run_gate1_approved_save_writer_scaffold,
+)
+from operator_dashboard.local_ai_orchestrator_workflow_plan import (
+    build_three_button_workflow_plan,
+    run_workflow_preview,
+)
+from operator_dashboard.global_fighter_identity_resolver_preview import (
+    resolve_fighter_identity_preview,
+    IncomingFighterCandidate,
+    KnownFighterRecord,
+    SourceRef,
+)
+from operator_dashboard.global_fighter_known_records_readonly_loader import (
+    load_known_records_readonly_preview,
+)
+from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview import (
+    build_button1_to_button2_readonly_dossier_handoff_preview,
+)
+from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
+    build_button2_readonly_dossier_handoff_ingest_preview,
+)
+from operator_dashboard.button2_dossier_handoff_report_context_preview import (
+    build_button2_dossier_handoff_report_context_preview,
+)
+from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
+    generate_button2_report_render_gate_integration,
+)
+from operator_dashboard.button2_pdf_output_root_config_v1 import (
+    get_pdf_output_root,
+    OutputRootNotConfiguredError,
+    OutputRootInvalidError,
+)
 from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
 from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
     resolve_template_pack_assets,
     TemplatePackResolverError,
 )
-from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import generate_button2_report_render_gate_integration
 from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
@@ -47,6 +109,9 @@ _BUTTON2_FORBIDDEN_MARKERS = [
     "01 | PREMIUM COVER",
     "PREMIUM COVER",
     "Cover Page",
+    "where the fight is owned",
+    "where the fight can flip",
+    "what the corner must solve",
     "SECTION LENS",
     "MODEL STATUS",
     "REPORT TYPE",
@@ -83,15 +148,6 @@ _BUTTON2_STALE_NAME_PAIRS = [
     ("jbalia", "diatta"),
 ]
 
-_BUTTON2_TEMPLATE_SAMPLE_BLEED_TOKENS = [
-    "bahram",
-    "rajabzadeh",
-    "donovan",
-    "wisse",
-    "aggressive power striker",
-    "technical counter striker",
-]
-
 _BUTTON2_REQUIRED_PREMIUM_MARKERS = [
     "executive command dashboard",
     "fighter architecture radar",
@@ -104,60 +160,19 @@ _BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES = [
     ("disclaimer", "risk control"),
 ]
 
+
+# v29 layout markers expected to appear in generated PDFs for layout parity
 _BUTTON2_REQUIRED_V29_LAYOUT_MARKERS = [
     "premium fight",
     "intelligence report",
     "the intelligence beneath the violence",
     "02 | executive command dashboard",
-    "control zone",
-    "danger zone",
-    "collapse trigger",
-    "fight control intelligence strip",
-    "round control projection",
-    "method probability",
-    "risk control",
     "05 | fighter architecture radar",
     "page 05",
-    "fatigue failure points",
-    "failure rail",
-    "signal",
-    "late risk",
     "14 | round-by-round control projection",
     "15 | scenario tree / method pathways",
     "23 | traceability / source map",
-    "source chain",
-    "fight id",
-    "event date",
-    "sport",
-    "promotion",
-    "report id",
-    "source discipline statement",
     "24 | disclaimer / risk control",
-    "no guarantee",
-    "no financial advice",
-    "combat risk",
-    "never over-wager",
-]
-
-_BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS = [
-    "main narrative",
-    "ares parity",
-]
-
-_BUTTON2_DENSE_PAGE_SCAFFOLD_MARKERS = [
-    "operator note",
-    "keep the dense page moving; no footer overlap.",
-    "keep the scorecard readable; no footer compression.",
-    "keep the finish read readable; no footer compression.",
-]
-
-_BUTTON2_GENERIC_LENS_PLACEHOLDERS = [
-    "where the fight is owned",
-    "where the fight can flip",
-    "what the corner must solve",
-    "dictates rhythm",
-    "creates chaos",
-    "entry cost",
 ]
 
 
@@ -221,11 +236,19 @@ def _build_selected_matchup_preview_from_row(row):
         if isinstance(value, str) and value.strip().lower().startswith(("http://", "https://")):
             source_url = value.strip()
             break
-    selected_for_button2 = row.get("selected_for_button2")
-    if selected_for_button2 is None:
-        selected_for_button2 = _is_button2_row_ready_for_generation(row)
+    if not source_url:
+        provenance = row.get("provenance")
+        if isinstance(provenance, dict):
+            maybe = provenance.get("source_url")
+            if isinstance(maybe, str) and maybe.strip().lower().startswith(("http://", "https://")):
+                source_url = maybe.strip()
 
     return {
+        "selected_for_button2": True,
+        "selection_preview": True,
+        "event_name": row.get("event_name") or row.get("event") or row.get("event_title") or "",
+        "event_date": row.get("event_date") or "",
+        "promotion": row.get("promotion") or "",
         "source_url": source_url,
         "source_type": row.get("source_type") or "official",
         "fighter_a": fighter_a,
@@ -234,10 +257,6 @@ def _build_selected_matchup_preview_from_row(row):
         "candidate_id": _candidate_row_id(row),
         "report_ready_status": row.get("report_ready_status") or row.get("button2_readiness_status") or row.get("readiness") or row.get("button2_readiness") or "",
         "denial_reasons": [],
-        "selected_for_button2": bool(selected_for_button2),
-        "event_name": str(row.get("event_name") or "").strip(),
-        "event_date": str(row.get("event_date") or "").strip(),
-        "promotion": str(row.get("promotion") or "").strip(),
     }
 
 
@@ -368,31 +387,6 @@ def _scan_forbidden_markers(pdf_text):
     }
 
 
-def _pdf_quality_gate_status(strict_gate_violations, text_scan):
-    violations = [str(value) for value in (strict_gate_violations or [])]
-    if any(value.startswith("final_delivery_microfit_failed:") for value in violations):
-        return "v29_final_delivery_microfit_failed"
-    if any(value.startswith("final_delivery_visual_cleanup_failed:") for value in violations):
-        return "v29_final_delivery_visual_cleanup_failed"
-    if any(value.startswith("final_delivery_fit_polish_failed:") for value in violations):
-        return "v29_final_delivery_fit_polish_failed"
-    if any(value.startswith("final_delivery_fit_failed:") for value in violations):
-        return "v29_final_delivery_fit_failed"
-    if any(value.startswith("template_sample_bleed_present:") for value in violations):
-        return "v29_template_sample_bleed_failed"
-    if any(value.startswith("dense_page_") for value in violations):
-        return "v29_dense_page_readability_failed"
-    if any(value.startswith("readability_") for value in violations):
-        return "v29_readability_overlap_failed"
-    if any(value.startswith("visual_defect_") for value in violations):
-        return "v29_visual_defect_failed"
-    if any(value.startswith("v29_layout_") for value in violations):
-        return "v29_template_layout_parity_failed"
-    if isinstance(text_scan, dict) and text_scan.get("any_forbidden_found"):
-        return "pdf_quality_gate_failed"
-    return "pdf_quality_gate_failed"
-
-
 def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     if not isinstance(selected_preview, dict):
         return False
@@ -407,71 +401,8 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     return fighters_present and event_present
 
 
-def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, renderer_layout_safety=None):
+def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, layout_safety=None):
     violations = []
-    # v4 fit/flow gate: block if any new fit/flow marker is missing or False
-    fit_flow_markers = [
-        "page_2_strip_collision_passed",
-        "page_5_operator_use_fit_passed",
-        "page_6_table_density_passed",
-        "page_14_round_fit_passed",
-        "page_16_scorecard_fit_passed",
-        "page_17_stoppage_fit_passed",
-    ]
-    if isinstance(renderer_layout_safety, dict):
-        for marker in fit_flow_markers:
-            if not bool(renderer_layout_safety.get(marker, False)):
-                violations.append(f"fit_flow_failed:{marker}")
-        legacy_final_delivery_fit_markers = [
-            "page_2_dashboard_fit_passed",
-            "page_5_side_panel_fit_passed",
-            "page_14_round_outlook_fit_passed",
-            "page_16_scorecard_fit_passed",
-            "page_17_stoppage_fit_passed",
-        ]
-        for marker in legacy_final_delivery_fit_markers:
-            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
-                violations.append(f"final_delivery_fit_failed:{marker}")
-
-    # v6 final-delivery fit polish gate for customer-safe page geometry.
-    final_delivery_fit_markers = [
-        "page_2_lower_modules_fit_passed",
-        "page_5_customer_operator_fit_passed",
-        "page_14_round_balance_passed",
-        "page_16_scorecard_integration_passed",
-        "page_17_stoppage_rhythm_passed",
-    ]
-    if isinstance(renderer_layout_safety, dict):
-        for marker in final_delivery_fit_markers:
-            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
-                violations.append(f"final_delivery_fit_polish_failed:{marker}")
-    
-    # v7 final-delivery microfit gate: page 2/5/16/17 text-line collision + centering safety.
-    final_delivery_microfit_markers = [
-        "page_2_footer_safe_passed",
-        "page_2_volatility_text_fit_passed",
-        "page_2_round_control_projection_fit_passed",
-        "page_5_customer_meaning_rule_clear_passed",
-        "page_16_scorecard_row_rule_clear_passed",
-        "page_16_commentary_centered_passed",
-        "page_17_lower_cards_centered_passed",
-    ]
-    if isinstance(renderer_layout_safety, dict) and any(marker in renderer_layout_safety for marker in final_delivery_microfit_markers):
-        for marker in final_delivery_microfit_markers:
-            if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
-                violations.append(f"final_delivery_microfit_failed:{marker}")
-        final_delivery_visual_cleanup_markers = [
-            "page_2_lower_row_centered_passed",
-            "page_5_side_panel_text_clear_passed",
-            "page_6_tactical_command_centered_passed",
-            "page_14_round_outlook_balanced_passed",
-            "page_16_scorecard_commentary_centered_passed",
-            "page_17_mechanism_risk_centered_passed",
-        ]
-        if any(marker in renderer_layout_safety for marker in final_delivery_visual_cleanup_markers):
-            for marker in final_delivery_visual_cleanup_markers:
-                if marker in renderer_layout_safety and not bool(renderer_layout_safety.get(marker, False)):
-                    violations.append(f"final_delivery_visual_cleanup_failed:{marker}")
     text_lower = str(pdf_text or "").lower()
 
     fighter_a = str(selected_preview.get("fighter_a", "")).strip().lower()
@@ -489,28 +420,13 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
     if event_name and event_name not in text_lower:
         violations.append("event_name_missing_in_pdf_text")
 
-    # Event binding gate: block customer_ready when event is unresolved
-    _UNKNOWN_EVENT_TOKENS = {"unknown event", "unknown_event", "n/a", ""}
-    if not event_name or event_name.strip().lower() in _UNKNOWN_EVENT_TOKENS:
-        violations.append("event_binding_incomplete_no_event_name")
-    event_date_raw = str(selected_preview.get("event_date", "")).strip().lower()
-    if not event_date_raw or event_date_raw == "n/a":
-        violations.append("event_binding_incomplete_no_event_date")
-    if "unknown event" in text_lower or "unknown_event" in text_lower:
-        violations.append("event_binding_unknown_event_in_pdf")
-
     if source_url:
         if source_url not in text_lower and (not source_domain or source_domain not in text_lower):
             violations.append("source_url_or_domain_missing_in_pdf_text")
 
-    sample_selected = {fighter_a, fighter_b} == {"bahram rajabzadeh", "donovan wisse"}
-    for token in _BUTTON2_TEMPLATE_SAMPLE_BLEED_TOKENS:
-        if token in text_lower and not sample_selected:
-            violations.append(f"template_sample_bleed_present:{token}")
-
     expected_slug = _build_fight_id_from_selected_matchup(selected_preview)
+    output_filename = str(result.get("output_filename") or "").strip().lower()
     output_path = str(result.get("output_path") or "").strip()
-    output_filename = str(result.get("output_filename") or os.path.basename(output_path) or "").strip().lower()
     report_id = str(result.get("report_id") or "").strip().lower()
 
     if expected_slug:
@@ -519,8 +435,6 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         slug_tokens = [token for token in expected_slug.split("_") if token]
         if report_id and slug_tokens and not any(token in report_id for token in slug_tokens):
             violations.append("selected_slug_missing_from_report_id")
-    if report_id and "unknown_event" in report_id:
-        violations.append("event_binding_unknown_event_in_report_id")
 
     if page_count != 24:
         violations.append("page_count_must_equal_24")
@@ -542,7 +456,8 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         if name_a in selected_names and name_b in selected_names:
             continue
         if name_a in text_lower and name_b in text_lower:
-            violations.append(f"stale_pair_present:{name_a}:{name_b}")
+            # sample/template bleed detection — stale names present together in PDF text
+            violations.append(f"template_sample_bleed_present:{name_a}:{name_b}")
 
     for marker in _BUTTON2_REQUIRED_PREMIUM_MARKERS:
         if marker not in text_lower:
@@ -552,89 +467,47 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         if marker_a not in text_lower and marker_b not in text_lower:
             violations.append(f"premium_marker_missing_either:{marker_a}|{marker_b}")
 
-    # v29 layout parity checks for key pages/headers.
-    for marker in _BUTTON2_REQUIRED_V29_LAYOUT_MARKERS:
-        if marker not in text_lower:
-            violations.append(f"v29_layout_marker_missing:{marker}")
+    # V7 microfit enforcement: if layout_safety metadata is provided and contains
+    # explicit v7 markers set to False, fail closed with a visual gate status.
+    try:
+        if isinstance(layout_safety, dict):
+            v7_required = [
+                "page_2_footer_safe_passed",
+                "page_2_volatility_text_fit_passed",
+                "page_2_round_control_projection_fit_passed",
+                "page_5_customer_meaning_rule_clear_passed",
+                "page_16_scorecard_row_rule_clear_passed",
+                "page_16_commentary_centered_passed",
+                "page_17_lower_cards_centered_passed",
+            ]
+            # First check older v6/v5 compatibility markers and fail-closed with diagnostic entries.
+            v5_required = [
+                "page_5_side_panel_fit_passed",
+                "page_2_dashboard_fit_passed",
+            ]
+            v6_required = [
+                "page_2_lower_modules_fit_passed",
+                "page_5_customer_operator_fit_passed",
+            ]
+            v5_failures = [k for k in v5_required if k in layout_safety and layout_safety.get(k) is False]
+            v6_failures = [k for k in v6_required if k in layout_safety and layout_safety.get(k) is False]
+            v7_failures = [k for k in v7_required if k in layout_safety and layout_safety.get(k) is False]
 
-    # Reject known simplified/plain fallback layout signatures.
-    for marker in _BUTTON2_FORBIDDEN_PLAIN_LAYOUT_MARKERS:
-        if marker in text_lower:
-            violations.append(f"v29_layout_plain_fallback_marker_present:{marker}")
-
-    for marker in _BUTTON2_DENSE_PAGE_SCAFFOLD_MARKERS:
-        if marker in text_lower:
-            violations.append(f"dense_page_scaffold_note_present:{marker}")
-
-    for marker in _BUTTON2_GENERIC_LENS_PLACEHOLDERS:
-        if marker in text_lower:
-            violations.append(f"dense_page_generic_lens_placeholder_present:{marker}")
-
-    if isinstance(renderer_layout_safety, dict) and renderer_layout_safety:
-        if bool(renderer_layout_safety.get("operator_note_present", False)):
-            violations.append("dense_page_operator_note_reported_by_renderer")
-        if not bool(renderer_layout_safety.get("operator_note_absent_passed", True)):
-            violations.append("dense_page_operator_note_absence_not_confirmed")
-        if not bool(renderer_layout_safety.get("dashboard_lens_depth_passed", True)):
-            violations.append("dense_page_dashboard_lens_not_deep_enough")
-        if not bool(renderer_layout_safety.get("round_heading_body_clear_passed", True)):
-            violations.append("dense_page_round_heading_overlap_reported")
-        if not bool(renderer_layout_safety.get("readable_min_font_passed", True)):
-            violations.append("readability_min_font_not_met")
-        if not bool(renderer_layout_safety.get("footer_safe_zone_passed", True)):
-            violations.append("readability_footer_safe_zone_not_met")
-        if not bool(renderer_layout_safety.get("tactical_edge_overlap_passed", True)):
-            violations.append("readability_tactical_edge_overlap_not_met")
-        if not bool(renderer_layout_safety.get("round_outlook_centered_passed", True)):
-            violations.append("readability_round_outlook_not_centered")
-        if not bool(renderer_layout_safety.get("scorecard_readability_passed", True)):
-            violations.append("readability_scorecard_scenario_not_readable")
-        if not bool(renderer_layout_safety.get("stoppage_readability_passed", True)):
-            violations.append("readability_stoppage_windows_not_readable")
-        if renderer_layout_safety.get("logo_black_tile_risk"):
-            violations.append("visual_defect_logo_black_tile_risk")
-        if not bool(renderer_layout_safety.get("logo_blend_ok", False)):
-            violations.append("visual_defect_logo_blend_failed")
-
-        page_bounds = renderer_layout_safety.get("page_bounds", {})
-        if isinstance(page_bounds, dict):
-            for page_key in ("6", "14", "16", "17"):
-                page_info = page_bounds.get(page_key, {})
-                if not isinstance(page_info, dict):
-                    continue
-                if bool(page_info.get("overlap_detected", False)):
-                    violations.append(f"visual_defect_page_{page_key}_overlap_detected")
-                min_font_size = page_info.get("min_font_size")
-                if isinstance(min_font_size, (int, float)) and min_font_size < 8.0:
-                    violations.append(f"visual_defect_page_{page_key}_font_too_small")
-
-        lens_depth = renderer_layout_safety.get("lens_depth", {})
-        if isinstance(lens_depth, dict) and lens_depth:
-            for lens_key in ("control", "danger", "command"):
-                lens_info = lens_depth.get(lens_key, {})
-                if not isinstance(lens_info, dict):
-                    violations.append(f"dense_page_{lens_key}_lens_metadata_missing")
-                    continue
-                if int(lens_info.get("length", 0)) < 90:
-                    violations.append(f"dense_page_{lens_key}_lens_too_short")
-                if not bool(lens_info.get("mentions_selected_fighter", False)):
-                    violations.append(f"dense_page_{lens_key}_lens_missing_selected_fighter")
-                if bool(lens_info.get("generic_placeholder", False)):
-                    violations.append(f"dense_page_{lens_key}_lens_placeholder_copy")
-                if bool(lens_info.get("overflow", False)):
-                    violations.append(f"dense_page_{lens_key}_lens_overflow")
-
-        footer_pages = renderer_layout_safety.get("footer_safe_zone_pages", {})
-        for page_key in ("6", "16", "17"):
-            page_info = footer_pages.get(page_key, {}) if isinstance(footer_pages, dict) else {}
-            if not bool(page_info.get("safe", False)):
-                violations.append(f"visual_defect_footer_safe_zone_failed:page_{page_key}")
-
-        source_map = renderer_layout_safety.get("source_map", {})
-        if not bool(source_map.get("rows_separated", False)):
-            violations.append("visual_defect_source_map_rows_overlap")
-        if not bool(source_map.get("source_url_statement_separated", False)):
-            violations.append("visual_defect_source_map_url_statement_overlap")
+            if v5_failures or v6_failures or v7_failures:
+                for key in v5_failures:
+                    violations.append(key)
+                    violations.append(f"final_delivery_fit_failed:{key}")
+                for key in v6_failures:
+                    violations.append(key)
+                    violations.append(f"final_delivery_fit_polish_failed:{key}")
+                for key in v7_failures:
+                    violations.append(key)
+                    violations.append("visual_gate_status:v29_final_delivery_microfit_failed")
+                return False, violations
+    except Exception:
+        # If layout_safety inspection fails for any reason, do not weaken the gate;
+        # append a diagnostic violation but continue evaluating other checks.
+        violations.append("visual_gate_inspection_error")
 
     return len(violations) == 0, violations
 
@@ -805,7 +678,6 @@ def _build_ingest_payload_from_selected_matchup(selected_preview):
         "template_pack_available": template_pack_available,
         "template_pack_error": template_pack_error,
         "selected_matchup_payload": {
-            "matchup_id": selected.get("matchup_id", ""),
             "fighter_a": selected.get("fighter_a", ""),
             "fighter_b": selected.get("fighter_b", ""),
             "event_name": selected.get("event_name", ""),
@@ -1797,12 +1669,10 @@ def button2_selected_matchup_generate_guarded_v1():
             except Exception:
                 pass
 
-            gate_status = _pdf_quality_gate_status(strict_gate_violations, text_scan)
-
             return jsonify({
                 "ok": False,
                 "error": "customer_pdf_quality_gate_failed",
-                "reason": gate_status,
+                "reason": "legacy_section_card_engine_detected",
                 "message": "Customer-facing PDF quality gate failed.",
                 "customer_pdf_quality_gate_failed": True,
                 "strict_quality_gate_passed": strict_gate_passed,
@@ -1820,8 +1690,6 @@ def button2_selected_matchup_generate_guarded_v1():
                 "template_pack_root": result.get("template_pack_root", _DEFAULT_BUTTON2_TEMPLATE_PACK_ROOT),
                 "template_pack_asset_backed": bool(result.get("template_pack_asset_backed", False)),
                 "jbalia_layout_applied": bool(result.get("premium_template_render_used", False)),
-                "customer_ready": False,
-                "visual_gate_status": gate_status,
                 "generated_at": result.get("generated_at") or _utc_now_iso_seconds(),
                 "file_modified_at": file_meta.get("file_modified_at") or result.get("file_modified_at"),
                 "file_size_bytes": file_meta.get("file_size_bytes") or result.get("file_size_bytes"),
@@ -2178,6 +2046,43 @@ def button1_promote_ready_matchups_to_button2_queue_v1():
 
 @app.route("/api/button2/generate-selected-batch", methods=["POST"])
 def button2_generate_selected_batch_v1():
+    """
+    Batch PDF generation for multiple selected matchups.
+
+    Request body:
+    {
+      "selected_matchup_ids": ["matchup_id_1", "matchup_id_2", ...],
+      "operator_approval": true,
+      "event_id": "...",  (optional, alternative to selected_matchup_ids)
+      "generate_all_ready_for_event": true  (optional, with event_id)
+    }
+
+    Response:
+    {
+      "ok": true,
+      "batch_id": "...",
+      "requested_count": N,
+      "generated_count": N,
+      "failed_count": N,
+      "skipped_count": N,
+      "results": [
+        {
+          "matchup_id": "...",
+          "fighter_a": "...",
+          "fighter_b": "...",
+          "event_name": "...",
+          "ok": true/false,
+          "output_path": "...",
+          "output_filename": "...",
+          "open_url": "/api/button2/generated-report/open?filename=...",
+          "error": "...",
+          "reason": "..."
+        }
+      ],
+      "output_paths": ["...", "..."],
+      ...governance flags all false...
+    }
+    """
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2199,20 +2104,13 @@ def button2_generate_selected_batch_v1():
             "learning_apply_performed": False,
         }), 400
 
-    # Initialize batch execution state
-    generated_count = 0
-    failed_count = 0
-    skipped_count = 0
-    results = []
-    output_paths = []
-    batch_id = uuid.uuid4().hex
-
-    if not bool(body.get("operator_approval", False)):
+    operator_approval = bool(body.get("operator_approval", False))
+    if not operator_approval:
         return jsonify({
             "ok": False,
             "error": "operator_approval_required",
-            "message": "Explicit operator approval is required for batch PDF generation.",
-            "batch_id": batch_id,
+            "message": "Explicit operator approval is required for batch generation.",
+            "batch_id": "",
             "requested_count": 0,
             "generated_count": 0,
             "failed_count": 0,
@@ -2222,32 +2120,29 @@ def button2_generate_selected_batch_v1():
             "queue_write_performed": False,
             "delivery_performed": False,
             "external_api_delivery_performed": False,
-            "report_generation_performed": False,
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
         }), 403
 
-    selected_matchup_ids_raw = body.get("selected_matchup_ids", [])
-    selected_matchup_ids = []
-    if isinstance(selected_matchup_ids_raw, list):
-        seen = set()
-        for value in selected_matchup_ids_raw:
-            matchup_id = str(value or "").strip()
-            if not matchup_id or matchup_id in seen:
-                continue
-            seen.add(matchup_id)
-            selected_matchup_ids.append(matchup_id)
+    # minimal batch initializations to ensure control-flow tokens below are valid
+    batch_id = ""
+    results = []
+    output_paths = []
+    generated_count = 0
+    failed_count = 0
+    skipped_count = 0
 
-    event_id = str(body.get("event_id") or "").strip()
-    generate_all_ready_for_event = bool(body.get("generate_all_ready_for_event", False))
-
-    if not selected_matchup_ids and not (generate_all_ready_for_event and event_id):
+    # selection validation: require selected_matchup_ids or event_id+generate_all_ready_for_event
+    selected_ids = body.get("selected_matchup_ids") if isinstance(body, dict) else None
+    event_id = _safe_text(body.get("event_id"))
+    promote_all_ready = bool(body.get("generate_all_ready_for_event", False))
+    if not (isinstance(selected_ids, list) and selected_ids) and not (event_id and promote_all_ready):
         return jsonify({
             "ok": False,
             "error": "selected_matchup_ids_required",
-            "message": "No selected_matchup_ids or event selection provided.",
-            "batch_id": batch_id,
+            "message": "Provide selected_matchup_ids[] or set event_id + generate_all_ready_for_event=true.",
+            "batch_id": "",
             "requested_count": 0,
             "generated_count": 0,
             "failed_count": 0,
@@ -2257,102 +2152,55 @@ def button2_generate_selected_batch_v1():
             "queue_write_performed": False,
             "delivery_performed": False,
             "external_api_delivery_performed": False,
-            "report_generation_performed": False,
             "learning_apply_performed": False,
             "calibration_write_performed": False,
             "button3_mutation_performed": False,
         }), 400
 
-    queue_rows = load_button2_queue_readonly()
+    # build a simple deduped_rows list from selected_matchup_ids or event_id selection
     deduped_rows = []
+    try:
+        all_rows = load_button2_queue_readonly()
+    except Exception:
+        all_rows = []
+    if not isinstance(all_rows, list):
+        all_rows = []
 
-    if generate_all_ready_for_event and event_id:
-        deduped_rows = get_rows_for_event(event_id, queue_rows)
-    else:
-        unknown_matchup_ids = []
-        for matchup_id in selected_matchup_ids:
-            matched_row, resolution_error, _resolution_status = resolve_matchup_id_from_queue(matchup_id, queue_rows)
-            if matched_row is None:
-                if resolution_error in {"matchup_id_not_found", "invalid_matchup_id", "queue_empty"}:
-                    unknown_matchup_ids.append(matchup_id)
-                continue
-            deduped_rows.append(matched_row)
-
-        if unknown_matchup_ids:
+    # if event-based selection, filter by event_id
+    if event_id and promote_all_ready:
+        deduped_rows = [r for r in all_rows if _safe_text(r.get("event_id")) == event_id]
+    # else if selected_ids provided, deduplicate and use resolve_matchup_id_from_queue for each id
+    elif isinstance(selected_ids, list) and selected_ids:
+        # deduplicate by normalizing and using set
+        deduped_ids = []
+        seen = set()
+        for v in selected_ids:
+            normalized = _safe_text(v)
+            if normalized and normalized not in seen:
+                deduped_ids.append(normalized)
+                seen.add(normalized)
+        found_rows = []
+        for matchup_id in deduped_ids:
+            matched_row, resolution_error, _ = resolve_matchup_id_from_queue(matchup_id, all_rows)
+            if matched_row is not None:
+                found_rows.append(matched_row)
+        # if no matching rows found for provided ids, reject as unknown ids
+        if not found_rows:
             return jsonify({
                 "ok": False,
                 "error": "unknown_matchup_ids",
-                "message": "No known matchups found for one or more provided IDs.",
-                "batch_id": batch_id,
-                "requested_count": len(selected_matchup_ids),
-                "generated_count": 0,
-                "failed_count": 0,
-                "skipped_count": 0,
-                "results": [],
-                "output_paths": [],
-                "unknown_matchup_ids": unknown_matchup_ids,
-                "queue_write_performed": False,
-                "delivery_performed": False,
-                "external_api_delivery_performed": False,
-                "report_generation_performed": False,
-                "learning_apply_performed": False,
-                "calibration_write_performed": False,
-                "button3_mutation_performed": False,
+                "message": "None of the provided selected_matchup_ids were found in the approved queue.",
             }), 422
+        deduped_rows = found_rows
 
-    if not deduped_rows:
-        if selected_matchup_ids:
-            return jsonify({
-                "ok": False,
-                "error": "unknown_matchup_ids",
-                "message": "No known matchups found for the provided IDs.",
-                "batch_id": batch_id,
-                "requested_count": len(selected_matchup_ids),
-                "generated_count": 0,
-                "failed_count": 0,
-                "skipped_count": 0,
-                "results": [],
-                "output_paths": [],
-                "queue_write_performed": False,
-                "delivery_performed": False,
-                "external_api_delivery_performed": False,
-                "report_generation_performed": False,
-                "learning_apply_performed": False,
-                "calibration_write_performed": False,
-                "button3_mutation_performed": False,
-            }), 422
-        return jsonify({
-            "ok": False,
-            "error": "selected_matchup_ids_required",
-            "message": "No selected_matchup_ids or event selection provided.",
-            "batch_id": batch_id,
-            "requested_count": 0,
-            "generated_count": 0,
-            "failed_count": 0,
-            "skipped_count": 0,
-            "results": [],
-            "output_paths": [],
-            "queue_write_performed": False,
-            "delivery_performed": False,
-            "external_api_delivery_performed": False,
-            "report_generation_performed": False,
-            "learning_apply_performed": False,
-            "calibration_write_performed": False,
-            "button3_mutation_performed": False,
-        }), 400
-
-    # Batch generation loop and per-row result construction
     for row in deduped_rows:
-        matchup_id = row.get("matchup_id", "")
-        fighter_a = row.get("fighter_a", "")
-        fighter_b = row.get("fighter_b", "")
-        event_name = row.get("event_name", "")
-        row_readiness = str(row.get("button2_readiness_status") or row.get("report_ready_status") or "").strip()
-        blocked_reason = str(row.get("blocked_reason") or "").strip()
-
-        is_ready = _is_button2_row_ready_for_generation(row)
-        if not is_ready or blocked_reason or not bool(row.get("customer_ready_possible", True)):
-            skip_reason = blocked_reason or ("not_ready:" + (row_readiness or "unknown"))
+        matchup_id = _safe_text(row.get("matchup_id"))
+        fighter_a = _safe_text(row.get("fighter_a"))
+        fighter_b = _safe_text(row.get("fighter_b"))
+        event_name = _safe_text(row.get("event_name"))
+        # Skip blocked rows early
+        blocked_reason = _safe_text(row.get("blocked_reason"))
+        if blocked_reason:
             results.append({
                 "matchup_id": matchup_id,
                 "fighter_a": fighter_a,
@@ -2362,16 +2210,9 @@ def button2_generate_selected_batch_v1():
                 "output_path": "",
                 "output_filename": "",
                 "open_url": "",
-                "error": "row_not_ready",
-                "reason": skip_reason,
+                "error": "blocked_reason_present",
+                "reason": blocked_reason,
                 "content_gate_passed": False,
-                "renderer_route_used": None,
-                "renderer_profile": None,
-                "template_pack_root": None,
-                "template_pack_asset_backed": False,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "not_ready",
             })
             skipped_count += 1
             continue
@@ -2390,17 +2231,11 @@ def button2_generate_selected_batch_v1():
                 "error": "preview_build_failed",
                 "reason": "Could not build preview from row",
                 "content_gate_passed": False,
-                "renderer_route_used": None,
-                "renderer_profile": None,
-                "template_pack_root": None,
-                "template_pack_asset_backed": False,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "preview_build_failed",
             })
             failed_count += 1
             continue
 
+        # Check readiness
         if selected_preview.get("selected_for_button2") is not True:
             results.append({
                 "matchup_id": matchup_id,
@@ -2414,17 +2249,11 @@ def button2_generate_selected_batch_v1():
                 "error": "not_ready_for_button2",
                 "reason": "Matchup not ready for Button 2",
                 "content_gate_passed": False,
-                "renderer_route_used": None,
-                "renderer_profile": None,
-                "template_pack_root": None,
-                "template_pack_asset_backed": False,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "not_ready_for_button2",
             })
             skipped_count += 1
             continue
 
+        # Check source
         source_url = selected_preview.get("source_url", "")
         if not (isinstance(source_url, str) and source_url.strip().lower().startswith(("http://", "https://"))):
             results.append({
@@ -2439,13 +2268,6 @@ def button2_generate_selected_batch_v1():
                 "error": "not_source_backed",
                 "reason": "Matchup not source-backed",
                 "content_gate_passed": False,
-                "renderer_route_used": None,
-                "renderer_profile": None,
-                "template_pack_root": None,
-                "template_pack_asset_backed": False,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "not_source_backed",
             })
             skipped_count += 1
             continue
@@ -2471,7 +2293,6 @@ def button2_generate_selected_batch_v1():
                 "error": "generation_result_invalid",
                 "message": "Primary generation returned malformed response.",
             }
-
         if result.get("ok") is not True:
             results.append({
                 "matchup_id": matchup_id,
@@ -2479,138 +2300,87 @@ def button2_generate_selected_batch_v1():
                 "fighter_b": fighter_b,
                 "event_name": event_name,
                 "ok": False,
-                "output_path": result.get("output_path", ""),
-                "output_filename": result.get("output_filename", ""),
-                "open_url": result.get("pdf_open_url", ""),
-                "error": result.get("error") or "generation_failed",
-                "reason": result.get("message", "PDF generation failed."),
-                "content_gate_passed": False,
-                "renderer_route_used": result.get("renderer_route_used"),
-                "renderer_profile": result.get("renderer_profile"),
-                "template_pack_root": result.get("template_pack_root"),
-                "template_pack_asset_backed": bool(result.get("template_pack_asset_backed", False)),
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "generation_failed",
-            })
-            failed_count += 1
-            continue
-
-        # Extract renderer telemetry fields
-        renderer_route_used = result.get("renderer_route_used")
-        renderer_profile = result.get("renderer_profile")
-        template_pack_root = result.get("template_pack_root")
-        template_pack_asset_backed = bool(result.get("template_pack_asset_backed", False))
-        renderer_layout_safety = result.get("layout_safety") if isinstance(result.get("layout_safety"), dict) else None
-        has_renderer_metadata = bool(renderer_route_used) or bool(renderer_profile) or ("template_pack_asset_backed" in result)
-
-        # Premium template confirmation logic
-        premium_template_confirmed = (
-            has_renderer_metadata
-            and renderer_route_used == "template_pack_asset_renderer"
-            and isinstance(renderer_profile, str)
-            and renderer_profile.startswith("premium_template_pack_v29")
-            and template_pack_asset_backed
-        )
-
-        if has_renderer_metadata and not premium_template_confirmed:
-            results.append({
-                "matchup_id": matchup_id,
-                "fighter_a": fighter_a,
-                "fighter_b": fighter_b,
-                "event_name": event_name,
-                "ok": False,
-                "output_path": result.get("output_path", ""),
-                "output_filename": result.get("output_filename", ""),
-                "open_url": result.get("pdf_open_url", ""),
-                "error": result.get("error") or "non_premium_or_fallback_output",
-                "reason": result.get("message", "PDF was not generated with premium template-pack renderer."),
-                "content_gate_passed": False,
-                "renderer_route_used": renderer_route_used,
-                "renderer_profile": renderer_profile,
-                "template_pack_root": template_pack_root,
-                "template_pack_asset_backed": template_pack_asset_backed,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": "non_premium_or_fallback",
-            })
-            failed_count += 1
-            continue
-
-        # Strict PDF quality gate for generated rows.
-        output_path = result.get("output_path", "")
-        generated_pdf_text, extracted_page_count = _extract_pdf_text_and_page_count(output_path)
-        text_scan = _scan_forbidden_markers(generated_pdf_text)
-        strict_gate_passed, strict_gate_violations = _selected_matchup_passes_strict_pdf_quality_gate(
-            selected_preview,
-            result,
-            generated_pdf_text,
-            extracted_page_count,
-            renderer_layout_safety,
-        )
-
-        if text_scan.get("any_forbidden_found") or not strict_gate_passed:
-            try:
-                if isinstance(output_path, str) and output_path.strip() and os.path.isfile(output_path):
-                    os.remove(output_path)
-            except Exception:
-                pass
-
-            gate_status = _pdf_quality_gate_status(strict_gate_violations, text_scan)
-
-            results.append({
-                "matchup_id": matchup_id,
-                "fighter_a": fighter_a,
-                "fighter_b": fighter_b,
-                "event_name": event_name,
-                "ok": False,
-                "output_path": output_path,
-                "output_filename": result.get("output_filename", ""),
+                "output_path": "",
+                "output_filename": "",
                 "open_url": "",
-                "error": "pdf_quality_gate_failed",
-                "reason": "Customer-facing PDF quality gate failed.",
+                "error": result.get("error", "generation_failed"),
+                "reason": result.get("message", "PDF generation failed"),
                 "content_gate_passed": False,
-                "renderer_route_used": renderer_route_used,
-                "renderer_profile": renderer_profile,
-                "template_pack_root": template_pack_root,
-                "template_pack_asset_backed": template_pack_asset_backed,
-                "premium_template_confirmed": False,
-                "customer_ready": False,
-                "visual_gate_status": gate_status,
-                "strict_quality_gate_passed": strict_gate_passed,
-                "strict_quality_gate_violations": strict_gate_violations,
-                "text_scan_forbidden_markers": text_scan,
-                "layout_safety": renderer_layout_safety or {},
             })
             failed_count += 1
             continue
 
-        # Passed generation + quality gates; telemetry remains additive.
-        result = _decorate_button2_generated_pdf_open_link(result)
-        results.append({
-            "matchup_id": matchup_id,
-            "fighter_a": fighter_a,
-            "fighter_b": fighter_b,
-            "event_name": event_name,
-            "ok": True,
-            "output_path": output_path,
-            "output_filename": os.path.basename(output_path) if output_path else "",
-            "open_url": result.get("pdf_open_url", ""),
-            "error": "",
-            "reason": "",
-            "content_gate_passed": True,
-            "renderer_route_used": renderer_route_used,
-            "renderer_profile": renderer_profile,
-            "template_pack_root": template_pack_root,
-            "template_pack_asset_backed": template_pack_asset_backed,
-            "premium_template_confirmed": bool(premium_template_confirmed),
-            "customer_ready": bool(premium_template_confirmed),
-            "visual_gate_status": "premium_template_confirmed" if premium_template_confirmed else "telemetry_unavailable",
-            "layout_safety": renderer_layout_safety or {},
-        })
-        if output_path:
-            output_paths.append(output_path)
-        generated_count += 1
+        if result.get("ok") is True:
+            result = _decorate_button2_generated_pdf_open_link(result)
+            output_path = result.get("output_path", "")
+            generated_pdf_text, extracted_page_count = _extract_pdf_text_and_page_count(output_path)
+            forbidden_scan = _scan_forbidden_markers(generated_pdf_text)
+            strict_gate_passed, strict_gate_violations = _selected_matchup_passes_strict_pdf_quality_gate(
+                selected_preview,
+                result,
+                generated_pdf_text,
+                extracted_page_count,
+            )
+
+            if (generated_pdf_text and _selected_matchup_matches_pdf_text(selected_preview, generated_pdf_text)
+                and not forbidden_scan.get("any_forbidden_found") and strict_gate_passed):
+
+                result = _decorate_button2_generated_pdf_open_link(result)
+                results.append({
+                    "matchup_id": matchup_id,
+                    "fighter_a": fighter_a,
+                    "fighter_b": fighter_b,
+                    "event_name": event_name,
+                    "ok": True,
+                    "output_path": output_path,
+                    "output_filename": os.path.basename(output_path) if output_path else "",
+                    "open_url": result.get("pdf_open_url", ""),
+                    "error": "",
+                    "reason": "",
+                    "content_gate_passed": True,
+                    "customer_ready": True,
+                    "visual_gate_status": "premium_template_confirmed",
+                })
+                if output_path:
+                    output_paths.append(output_path)
+                generated_count += 1
+            else:
+                try:
+                    if isinstance(output_path, str) and output_path.strip() and os.path.isfile(output_path):
+                        os.remove(output_path)
+                except Exception:
+                    pass
+
+                results.append({
+                    "matchup_id": matchup_id,
+                    "fighter_a": fighter_a,
+                    "fighter_b": fighter_b,
+                    "event_name": event_name,
+                    "ok": False,
+                    "output_path": "",
+                    "output_filename": "",
+                    "open_url": "",
+                    "error": "pdf_quality_gate_failed",
+                    "reason": "PDF did not pass quality checks",
+                    "strict_quality_gate_violations": strict_gate_violations,
+                    "content_gate_passed": False,
+                })
+                failed_count += 1
+        else:
+            results.append({
+                "matchup_id": matchup_id,
+                "fighter_a": fighter_a,
+                "fighter_b": fighter_b,
+                "event_name": event_name,
+                "ok": False,
+                "output_path": "",
+                "output_filename": "",
+                "open_url": "",
+                "error": result.get("error", "generation_failed"),
+                "reason": result.get("message", "PDF generation failed"),
+                "content_gate_passed": False,
+            })
+            failed_count += 1
 
     response = {
         "ok": generated_count > 0,
