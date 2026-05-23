@@ -1,0 +1,26 @@
+{
+  "slice_name": "button2-v29-template-final-delivery-right-rail-overlap-repair-v8",
+  "status": "IMPLEMENTED / VALIDATED / LIVE-PROVEN",
+  "commit": "NOT YET",
+  "tag": "NOT YET",
+  "date": "2026-05-23",
+  "purpose": "Lock the final v8 Button 2 delivery polish for page 2 strip separation and page 5 right-rail panel overlap repair.",
+  "validation_summary": {
+    "py_compile": "passed",
+    "v8_regression_tests": "passed",
+    "fresh_canonical_proof": "passed",
+    "page_2_page_5_visual_overlap_scan": "passed",
+    "visual_proof_count": "8/8 pass"
+  },
+  "proof_matchups": [
+    "Tyrone Spong vs Lancelot Proton de la Chapelle",
+    "Murthel Groenhart vs Fabio Kwasi",
+    "Max Holloway vs Justin Gaethje",
+    "Levi Rigters vs Guto Inocente"
+  ],
+  "proof_artifacts": {
+    "visual_proof_folder": "ops/release_checks/button2_v29_live_proof_v8/visual/",
+    "summary_json": "ops/release_checks/button2_v29_template_final_delivery_right_rail_overlap_repair_v8/v29_final_delivery_right_rail_overlap_repair_v8_summary.json"
+  },
+  "final_verdict": "PASS"
+}

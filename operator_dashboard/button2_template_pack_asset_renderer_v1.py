@@ -1072,8 +1072,10 @@ def _draw_cover(module, c, blocks, *, layout_safety=None):
 V7_REQUIRED_FIXES = [
     "page_2_round_control_projection_fit_passed",
     "page_2_lower_modules_fit_passed",
+    "page_2_lower_modules_no_strip_overlap_passed",
     "page_2_volatility_text_fit_passed",
     "page_5_customer_meaning_rule_clear_passed",
+    "page_5_customer_panel_inside_radar_band_passed",
     "page_16_scorecard_row_rule_clear_passed",
     "page_16_commentary_centered_passed",
     "page_17_lower_cards_centered_passed",
@@ -1152,7 +1154,8 @@ def _draw_executive(module, c, blocks):
         _record_lens_depth(blocks["_layout_safety"], "command", command_body, blocks.get("fighter_a", ""), blocks.get("fighter_b", ""), overflow=command_overflow)
 
     y3 = 150
-    module.panel(c, x, y3, w, 66, None, module.GOLD, module.PANEL, title_line=False)
+    strip_panel_height = 66
+    module.panel(c, x, y3, w, strip_panel_height, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.2, module.GOLD2)
     c.drawString(x + 14, y3 + 55, "FIGHT CONTROL INTELLIGENCE STRIP")
     c.setStrokeColor(module.GOLD)
@@ -1172,11 +1175,11 @@ def _draw_executive(module, c, blocks):
         module.set_font(c, "Helvetica-Bold", 8.7, col)
         c.drawString(xx + 9, y3 + 31, t)
         module.para(c, v, xx + 9, y3 + 10, cw - 18, 18, size=8.2, col=module.WHITE, min_size=7.6)
-    # Ensure lower modules clear footer safe zone (compute dynamically)
+    # Ensure lower modules clear the strip panel, the strip cards, and the footer safe zone.
     footer_safe_zone_y = module.FOOTER_Y + FOOTER_SAFE_ZONE_Y
-    # leave a larger breathing margin above footer so the lower dashboard
-    # panels and the risk control text can settle cleanly on varied matchup data.
-    y4 = max(footer_safe_zone_y + 14, 50)
+    strip_panel_top_y = y3 + strip_panel_height
+    strip_card_bottom_y = y3 + 9 + 35
+    y4 = max(strip_panel_top_y + 14, strip_card_bottom_y + 12, footer_safe_zone_y + 14, 50)
     row_gap = 16
     round_w = 168
     prob_w = 190
@@ -1237,22 +1240,22 @@ def _draw_executive(module, c, blocks):
     module.para(c, "Model uncertainty. Edge not proven.", rx + 10, y4 + 10, risk_w - 20, 24, size=7.0, col=module.WHITE, min_size=6.8, align="center")
     # Add fit/flow metadata for page 2 using real strip-to-module separation and microfit markers.
     if isinstance(blocks.get("_layout_safety"), dict):
-        strip_card_bottom_y = y3 + 9
+        lower_module_bottom_y = y4
         lower_module_top_y = y4 + 80
         left_margin = row_x - x
         right_margin = (x + w) - (rx + risk_w)
         centered_ok = abs(left_margin - right_margin) <= 2.5
-        footer_safe = (lower_module_top_y + 8) >= (module.FOOTER_Y + 20)
+        footer_safe = lower_module_bottom_y >= (footer_safe_zone_y + 12)
         volatility_text = blocks.get("volatility", "")
         volatility_fit = bool(c.stringWidth(volatility_text, "Helvetica-Bold", 13.0) <= (kpi_w - 24))
         round_control_fit = round_w >= 156 and round_inner_w >= 124 and (not round_label_overflow)
-        blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(strip_card_bottom_y >= (lower_module_top_y + 8))
+        blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(lower_module_bottom_y >= (strip_panel_top_y + 12))
         blocks["_layout_safety"]["page_2_lower_row_centered_passed"] = bool(centered_ok)
         blocks["_layout_safety"]["page_2_footer_safe_passed"] = bool(footer_safe)
         blocks["_layout_safety"]["page_2_volatility_text_fit_passed"] = bool(volatility_fit)
         blocks["_layout_safety"]["page_2_round_control_projection_fit_passed"] = bool(round_control_fit)
-        # v7 explicit no-overlap marker (true when calculated separation meets margin)
-        blocks["_layout_safety"]["page_2_lower_modules_no_strip_overlap_passed"] = bool(strip_card_bottom_y >= (lower_module_top_y + 8))
+        # v7 explicit no-overlap marker (true when the lower module row lies above strip cards)
+        blocks["_layout_safety"]["page_2_lower_modules_no_strip_overlap_passed"] = bool(lower_module_bottom_y >= (strip_card_bottom_y + 8))
         blocks["_layout_safety"]["page_2_lower_modules_fit_passed"] = bool(
             blocks["_layout_safety"].get("page_2_strip_collision_passed", False)
             and blocks["_layout_safety"].get("page_2_lower_row_centered_passed", False)
@@ -1342,18 +1345,25 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     rw = right_col_w
     module.panel(c, rx, y + 266, rw, 124, "Architecture Read", module.GOLD, module.PANEL)
     module.para(c, blocks.get("matchup_snapshot", ""), rx + 10, y + 286, rw - 20, 74, size=8.0, col=module.WHITE, min_size=7.4)
-    # Customer meaning panel: keep v6 vertical placement, reduce text size for fit
-    customer_y = y + 182
-    customer_h = 84
+    # Customer meaning and operator-use panels are stacked below the architecture radar.
+    operator_min_h = 96
+    customer_min_h = 84
+    panel_gap = 18
     operator_h = 116
-    # increase vertical gap between customer meaning and operator use to avoid overlap
-    operator_y = customer_y - operator_h - 24
-    customer_body = "Instability vs structure. Control preferred scoring pathway."
+    customer_body = blocks.get("customer_meaning", "Instability vs structure. Control preferred scoring pathway.")
     required_customer_height, _ = measure_wrapped_text_height(c, customer_body, rw - 20, font_name="Helvetica", font_size=7.2, line_height=1.25)
-    # Keep the customer meaning panel tall enough to preserve a clear divider above the wrapped text.
-    # Add extra padding to ensure heading/body separation on tight matchups.
-    customer_h = max(customer_h, int(required_customer_height + 60))
-
+    customer_h = max(customer_min_h, int(required_customer_height + 60))
+    architecture_bottom_y = y + 266
+    max_customer_top = architecture_bottom_y
+    # Position the customer panel beneath the architecture read section, allowing flush adjacency
+    # while preserving the operator panel spacing and divider clearance.
+    customer_y = min(y + 182, max_customer_top - customer_h + 10)
+    operator_y = customer_y - operator_h - panel_gap
+    if operator_y < (y + 20):
+        operator_y = y + 20
+        customer_y = operator_y + operator_h + panel_gap
+    if customer_y + customer_h > max_customer_top:
+        customer_h = max(customer_min_h, max_customer_top - customer_y)
     module.panel(c, rx, customer_y, rw, customer_h, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.0, module.BLUE)
     c.drawString(rx + 16, customer_y + customer_h - 18, "Customer Meaning")
@@ -1411,19 +1421,26 @@ def _draw_fighter_architecture_radar(module, c, blocks):
         divider_y = customer_y + customer_h - 28
         customer_text_top = customer_y + 8 + required_customer_height
         customer_meaning_rule_clear = bool(customer_text_top <= (divider_y - 10))
-        blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow)
+        customer_panel_top = customer_y + customer_h
+        architecture_bottom_y = y + 266
+        customer_within_architecture_band = bool(customer_panel_top <= architecture_bottom_y)
+        blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow and (operator_y >= (y + 20)))
         blocks["_layout_safety"]["page_5_customer_meaning_rule_clear_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
-        # v7 explicit marker: architecture customer panel heading/body have no overlap
-        blocks["_layout_safety"]["page_5_architecture_customer_no_overlap_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
-        blocks["_layout_safety"]["page_5_side_panel_text_clear_passed"] = bool(inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear)
+        # v7 explicit marker: customer panel stays flush with or below the architecture radar bottom.
+        blocks["_layout_safety"]["page_5_customer_panel_inside_radar_band_passed"] = bool(customer_within_architecture_band and (not customer_overflow))
+        blocks["_layout_safety"]["page_5_architecture_customer_no_overlap_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow) and customer_within_architecture_band)
+        blocks["_layout_safety"]["page_5_side_panel_text_clear_passed"] = bool(
+            inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear and customer_within_architecture_band
+        )
         blocks["_layout_safety"]["page_5_customer_operator_fit_passed"] = bool(
-            inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear
+            inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear and customer_within_architecture_band
         )
         blocks["_layout_safety"]["page_5_side_panel_fit_passed"] = bool(
             inside_page
             and (not op_overflow)
             and (not customer_overflow)
             and divider_clear
+            and customer_within_architecture_band
             and (value_x + value_w <= rx + rw - 10)
         )
     c.showPage()

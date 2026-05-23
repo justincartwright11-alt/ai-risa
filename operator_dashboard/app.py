@@ -401,7 +401,7 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
     return fighters_present and event_present
 
 
-def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, layout_safety=None):
+def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, renderer_metadata=None):
     violations = []
     text_lower = str(pdf_text or "").lower()
 
@@ -467,15 +467,38 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
         if marker_a not in text_lower and marker_b not in text_lower:
             violations.append(f"premium_marker_missing_either:{marker_a}|{marker_b}")
 
-    # V7 microfit enforcement: if layout_safety metadata is provided and contains
-    # explicit v7 markers set to False, fail closed with a visual gate status.
+    # Accept either legacy layout_safety dicts or optional renderer metadata
+    # wrappers that include layout_safety and allow newer v8 gate enforcement.
+    layout_safety = None
+    renderer_metadata_present = False
+    if isinstance(renderer_metadata, dict):
+        if isinstance(renderer_metadata.get("layout_safety"), dict):
+            layout_safety = renderer_metadata.get("layout_safety")
+            renderer_metadata_present = True
+        else:
+            layout_safety = renderer_metadata
+
     try:
         if isinstance(layout_safety, dict):
+            v8_required = [
+                "page_2_footer_safe_passed",
+                "page_2_round_control_projection_fit_passed",
+                "page_2_lower_modules_no_strip_overlap_passed",
+                "page_5_customer_meaning_rule_clear_passed",
+                "page_5_architecture_customer_no_overlap_passed",
+                "page_5_operator_use_fit_passed",
+                "page_5_customer_panel_inside_radar_band_passed",
+                "page_16_scorecard_row_rule_clear_passed",
+                "page_16_commentary_centered_passed",
+                "page_17_lower_cards_centered_passed",
+            ]
             v7_required = [
                 "page_2_footer_safe_passed",
                 "page_2_volatility_text_fit_passed",
                 "page_2_round_control_projection_fit_passed",
+                "page_2_lower_modules_no_strip_overlap_passed",
                 "page_5_customer_meaning_rule_clear_passed",
+                "page_5_customer_panel_inside_radar_band_passed",
                 "page_16_scorecard_row_rule_clear_passed",
                 "page_16_commentary_centered_passed",
                 "page_17_lower_cards_centered_passed",
@@ -489,6 +512,17 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
                 "page_2_lower_modules_fit_passed",
                 "page_5_customer_operator_fit_passed",
             ]
+
+            if renderer_metadata_present:
+                v8_failures = [
+                    k for k in v8_required if k in layout_safety and layout_safety.get(k) is False
+                ]
+                if v8_failures:
+                    for key in v8_failures:
+                        violations.append(key)
+                    violations.append("visual_gate_status:v29_final_delivery_right_rail_overlap_failed")
+                    return False, violations
+
             v5_failures = [k for k in v5_required if k in layout_safety and layout_safety.get(k) is False]
             v6_failures = [k for k in v6_required if k in layout_safety and layout_safety.get(k) is False]
             v7_failures = [k for k in v7_required if k in layout_safety and layout_safety.get(k) is False]
