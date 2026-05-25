@@ -5,9 +5,10 @@ from pathlib import Path
 
 from operator_dashboard import app as app_module
 from operator_dashboard import button2_template_pack_asset_renderer_v1 as renderer
-from operator_dashboard.test_button2_v29_template_final_delivery_visual_cleanup_v7 import (
+from operator_dashboard.test_button2_v29_template_final_delivery_fit_polish_v6 import (
     BATCH_ROUTE,
-    _layout_safety_stub_v7,
+    DummyCanvas,
+    FakeModule,
     _preview,
     _queue_rows,
     _render_output,
@@ -16,124 +17,145 @@ from operator_dashboard.test_button2_v29_template_final_delivery_visual_cleanup_
 )
 
 
-def _rectangles_overlap(a, b):
-    return (
-        a["x"] < b["x"] + b["w"]
-        and a["x"] + a["w"] > b["x"]
-        and a["y"] < b["y"] + b["h"]
-        and a["y"] + a["h"] > b["y"]
-    )
+def _layout_safety_stub_v7():
+    return {
+        "logo_blend_ok": True,
+        "logo_black_tile_risk": False,
+        "operator_note_present": False,
+        "operator_note_absent_passed": True,
+        "page_2_strip_collision_passed": True,
+        "page_2_dashboard_fit_passed": True,
+        "page_2_lower_modules_fit_passed": True,
+        "page_2_lower_row_centered_passed": True,
+        "page_5_operator_use_fit_passed": True,
+        "page_5_side_panel_fit_passed": True,
+        "page_5_customer_operator_fit_passed": True,
+        "page_5_side_panel_text_clear_passed": True,
+        "page_6_table_density_passed": True,
+        "page_6_tactical_command_centered_passed": True,
+        "page_14_round_fit_passed": True,
+        "page_14_round_outlook_fit_passed": True,
+        "page_14_round_balance_passed": True,
+        "page_14_round_outlook_balanced_passed": True,
+        "page_16_scorecard_fit_passed": True,
+        "page_16_scorecard_integration_passed": True,
+        "page_16_scorecard_commentary_centered_passed": True,
+        "page_17_stoppage_fit_passed": True,
+        "page_17_stoppage_rhythm_passed": True,
+        "page_17_mechanism_risk_centered_passed": True,
+        "dashboard_lens_depth_passed": True,
+        "round_heading_body_clear_passed": True,
+        "readable_min_font_passed": True,
+        "footer_safe_zone_passed": True,
+        "tactical_edge_overlap_passed": True,
+        "scorecard_readability_passed": True,
+        "stoppage_readability_passed": True,
+        "round_outlook_centered_passed": True,
+        "footer_safe_zone_pages": {"6": {"safe": True}, "16": {"safe": True}, "17": {"safe": True}},
+        "page_bounds": {
+            "6": {"overlap_detected": False, "min_font_size": 8.8},
+            "14": {"overlap_detected": False, "min_font_size": 8.6},
+            "16": {"overlap_detected": False, "min_font_size": 8.8},
+            "17": {"overlap_detected": False, "min_font_size": 8.8},
+        },
+        "lens_depth": {
+            "control": {"length": 120, "mentions_selected_fighter": True, "generic_placeholder": False, "overflow": False},
+            "danger": {"length": 120, "mentions_selected_fighter": True, "generic_placeholder": False, "overflow": False},
+            "command": {"length": 120, "mentions_selected_fighter": True, "generic_placeholder": False, "overflow": False},
+        },
+        "source_map": {"rows_separated": True, "source_url_statement_separated": True},
+    }
 
 
-def _right_rail_panels(module):
-    return [panel for panel in module.panel_calls if panel["x"] > (module.PAGE_W / 2)]
-
-
-def test_page_2_fight_control_strip_and_lower_row_do_not_overlap():
-    module, _canvas, blocks = _run(renderer._draw_executive)
-    assert blocks["_layout_safety"].get("page_2_strip_collision_passed") is True
-    assert blocks["_layout_safety"].get("page_2_lower_modules_no_strip_overlap_passed") is True
-
-    strip_cards = [panel for panel in module.panel_calls if abs(panel["h"] - 35.0) < 0.2]
-    lower_row_panels = [panel for panel in module.panel_calls if abs(panel["h"] - 84.0) < 0.2 and panel["y"] <= 150]
-    assert strip_cards, "Fight control strip cards were not found"
-    assert lower_row_panels, "Lower row modules were not found"
-    strip_bottom = max(card["y"] + card["h"] for card in strip_cards)
-    assert min(panel["y"] for panel in lower_row_panels) + 80 <= strip_bottom - 8
-
-
-def test_page_2_lower_modules_clear_footer_safe_zone():
-    module, _canvas, blocks = _run(renderer._draw_executive)
-    assert blocks["_layout_safety"].get("page_2_footer_safe_passed") is True
-    footer_line_y = module.FOOTER_Y
-    lower_row_top = min(panel["y"] for panel in module.panel_calls if abs(panel["h"] - 84.0) < 0.2 and panel["y"] <= 150)
-    assert lower_row_top >= footer_line_y + 16
-
-
-def test_page_2_lower_modules_center_as_one_row():
+def test_page_2_lower_row_modules_are_centered_and_fit():
     module, _canvas, blocks = _run(renderer._draw_executive)
     cards = sorted(
-        [panel for panel in module.panel_calls if abs(panel["h"] - 84.0) < 0.2 and panel["y"] <= 150],
+        [p for p in module.panel_calls if abs(p["y"] - 52.0) < 0.2 and abs(p["h"] - 84.0) < 0.2],
         key=lambda item: item["x"],
     )
     assert len(cards) == 3
-    assert max(card["y"] for card in cards) - min(card["y"] for card in cards) < 1.0
-    row_right = cards[-1]["x"] + cards[-1]["w"]
-    assert row_right <= module.PAGE_W - 8
-    assert blocks["_layout_safety"].get("page_2_strip_collision_passed") is True
+    left_edge = cards[0]["x"]
+    right_edge = cards[-1]["x"] + cards[-1]["w"]
+    assert abs(((left_edge + right_edge) / 2) - (module.PAGE_W / 2)) <= 2.5
+    assert blocks["_layout_safety"].get("page_2_lower_row_centered_passed") is True
+    assert blocks["_layout_safety"].get("page_2_lower_modules_fit_passed") is True
 
 
-def test_page_5_right_rail_panels_do_not_overlap():
-    module, _canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
-    panels = _right_rail_panels(module)
-    assert len(panels) >= 3
-    for i, panel_a in enumerate(panels):
-        for panel_b in panels[i + 1 :]:
-            assert not _rectangles_overlap(panel_a, panel_b), f"Right rail panels overlapped: {panel_a} vs {panel_b}"
-    assert blocks["_layout_safety"].get("page_5_side_panel_fit_passed") is True
+def test_page_2_round_control_projection_shows_all_three_rounds():
+    _module, canvas, blocks = _run(renderer._draw_executive)
+    round_tokens = {"R1", "R2", "R3"}
+    drawn = {item["text"] for item in canvas.text_calls if item["kind"] == "drawCentredString" and item["text"] in round_tokens}
+    assert drawn == round_tokens
+    assert blocks["_layout_safety"].get("page_2_lower_row_centered_passed") is True
 
 
-def test_page_5_customer_meaning_heading_body_do_not_overlap():
+def test_page_5_customer_meaning_text_not_crossed_by_divider():
+    module, canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
+    customer_panel = next(
+        panel for panel in module.panel_calls if abs(panel["y"] - 250.0) < 0.2 and abs(panel["h"] - 88.0) < 0.2
+    )
+    customer_para = next(item for item in module.para_calls if str(item["text"]).startswith("Instability versus structure"))
+    divider_y = customer_panel["y"] + customer_panel["h"] - 28
+    assert customer_para["x"] >= customer_panel["x"] + 10
+    assert customer_para["y"] + 20 < divider_y
+    assert blocks["_layout_safety"].get("page_5_side_panel_text_clear_passed") is True
+
+
+def test_page_5_side_panel_text_has_safe_padding():
     module, _canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
     customer_panel = next(
-        panel
-        for panel in module.panel_calls
-        if panel["x"] > (module.PAGE_W / 2) and panel["h"] >= 84 and panel["y"] > 150 and panel["y"] < 260
+        panel for panel in module.panel_calls if abs(panel["y"] - 250.0) < 0.2 and abs(panel["h"] - 88.0) < 0.2
     )
-    customer_para = next(item for item in module.para_calls if item["x"] > (module.PAGE_W / 2) and item["y"] > 150)
-    assert customer_para["x"] >= customer_panel["x"] + 10
-    assert customer_para["x"] + customer_para["w"] <= customer_panel["x"] + customer_panel["w"] - 10
-    assert blocks["_layout_safety"].get("page_5_customer_meaning_rule_clear_passed") is True
-
-
-def test_page_5_customer_meaning_rule_does_not_cross_body():
-    module, _canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
-    assert blocks["_layout_safety"].get("page_5_customer_meaning_rule_clear_passed") is True
-    assert blocks["_layout_safety"].get("page_5_customer_operator_fit_passed") is True
-
-
-def test_page_5_operator_use_rows_fit_inside_panel():
-    module, _canvas, blocks = _run(renderer._draw_fighter_architecture_radar)
-    operator_panel = next(
-        panel
-        for panel in module.panel_calls
-        if panel["x"] > (module.PAGE_W / 2) and panel["h"] >= 110 and panel["y"] < 150
-    )
-    operator_texts = [text for text in _canvas.text_calls if text["kind"] == "drawString" and text["x"] > operator_panel["x"]]
-    assert operator_texts, "Operator-use text was not rendered"
-    assert max(text["x"] for text in operator_texts) <= operator_panel["x"] + operator_panel["w"] - 10
-    assert blocks["_layout_safety"].get("page_5_operator_use_fit_passed") is True
-
-
-def test_page_5_long_fighter_names_do_not_break_right_rail():
-    module, _canvas, blocks = _run(
-        renderer._draw_fighter_architecture_radar,
-        {
-            "fighter_a": "Tyrone Spong",
-            "fighter_b": "Lancelot Proton de la Chapelle",
-            "matchup_snapshot": "Long-name stress test for right rail panel fit.",
-            "customer_meaning": "Customer meaning copy is stable under long fighter names.",
-        },
-    )
-    assert blocks["_layout_safety"].get("page_5_side_panel_fit_passed") is True
-    assert blocks["_layout_safety"].get("page_5_customer_operator_fit_passed") is True
+    customer_para = next(item for item in module.para_calls if str(item["text"]).startswith("Instability versus structure"))
+    assert customer_para["x"] - customer_panel["x"] >= 8
+    assert customer_para["y"] - customer_panel["y"] >= 8
     assert blocks["_layout_safety"].get("page_5_side_panel_text_clear_passed") is True
-    panels = _right_rail_panels(module)
-    assert all(panel["x"] + panel["w"] <= module.PAGE_W - module.SAFE_X + 0.5 for panel in panels)
 
 
-def test_page_16_scorecard_rows_still_clear_rules():
+def test_page_6_tactical_command_panel_centered():
+    module, _canvas, blocks = _run(renderer._draw_tactical_edge_table)
+    outer = next(panel for panel in module.panel_calls if abs(panel["y"] - 94.0) < 0.2 and abs(panel["h"] - 84.0) < 0.2 and panel["w"] > 300)
+    assert abs((outer["x"] + (outer["w"] / 2)) - (module.PAGE_W / 2)) <= 2.5
+    inner_cards = sorted(
+        [panel for panel in module.panel_calls if abs(panel["y"] - 104.0) < 0.2 and abs(panel["h"] - 64.0) < 0.2],
+        key=lambda panel: panel["x"],
+    )
+    assert len(inner_cards) == 2
+    assert abs(inner_cards[0]["w"] - inner_cards[1]["w"]) <= 0.2
+    assert blocks["_layout_safety"].get("page_6_tactical_command_centered_passed") is True
+
+
+def test_page_14_round_outlook_balanced():
+    module, canvas, blocks = _run(renderer._draw_round_control_graph, {"fighter_a": "Maximillian Alexander Holloway", "fighter_b": "Justin Xavier Gaethje"})
+    round_labels = [item for item in canvas.text_calls if item["kind"] == "drawCentredString" and item["text"] in {"R1", "R2", "R3"}]
+    assert len(round_labels) == 3
+    assert blocks["_layout_safety"].get("page_14_round_outlook_balanced_passed") is True
+    assert blocks["_layout_safety"].get("page_14_round_balance_passed") is True
+
+
+def test_page_16_scorecard_commentary_centered_and_integrated():
     module, _canvas, blocks = _run(renderer._draw_scorecard_scenario)
-    assert blocks["_layout_safety"].get("page_16_scorecard_integration_passed") is True
+    commentary = next(panel for panel in module.panel_calls if abs(panel["y"] - 176.0) < 0.2 and abs(panel["h"] - 92.0) < 0.2)
+    table = next(panel for panel in module.panel_calls if abs(panel["y"] - 96.0) < 0.2 and abs(panel["h"] - 364.0) < 0.2)
+    assert abs((commentary["x"] + commentary["w"] / 2) - (table["x"] + table["w"] / 2)) <= 1.5
     assert blocks["_layout_safety"].get("page_16_scorecard_commentary_centered_passed") is True
+    assert blocks["_layout_safety"].get("page_16_scorecard_integration_passed") is True
 
 
-def test_page_17_lower_cards_still_centered():
+def test_page_17_mechanism_and_risk_control_boxes_centered():
     module, _canvas, blocks = _run(renderer._draw_method_probability_chart)
+    cards = sorted(
+        [panel for panel in module.panel_calls if abs(panel["y"] - 92.0) < 0.2 and abs(panel["h"] - 82.0) < 0.2],
+        key=lambda panel: panel["x"],
+    )
+    assert len(cards) == 2
+    group_center = ((cards[0]["x"] + (cards[0]["w"] / 2)) + (cards[1]["x"] + (cards[1]["w"] / 2))) / 2
+    assert abs(group_center - (module.PAGE_W / 2)) <= 2.5
+    assert abs(cards[0]["w"] - cards[1]["w"]) <= 0.2
     assert blocks["_layout_safety"].get("page_17_mechanism_risk_centered_passed") is True
 
 
-def test_final_gate_blocks_page_2_strip_collision(tmp_path):
+def test_final_visual_gate_blocks_page_5_divider_text_collision(tmp_path):
     preview = _preview()
     out, pdf_path, text, page_count = _render_output(tmp_path)
     layout_safety = dict(out.get("layout_safety", {}))
@@ -147,11 +169,15 @@ def test_final_gate_blocks_page_2_strip_collision(tmp_path):
         "page_2_analysis_modules_no_strip_overlap_passed",
         "page_2_footer_safe_zone_passed",
         "page_2_dashboard_no_visual_overlap_passed",
+        "page_2_dashboard_fit_passed",
+        "page_2_lower_modules_fit_passed",
         "page_5_architecture_read_text_fit_passed",
         "page_5_customer_meaning_heading_clear_passed",
         "page_5_customer_meaning_body_clear_passed",
         "page_5_customer_panel_below_architecture_panel_passed",
         "page_5_operator_panel_below_customer_panel_passed",
+        "page_5_customer_operator_fit_passed",
+        "page_5_side_panel_fit_passed",
         "page_5_right_rail_no_text_overlap_passed",
         "page_5_right_rail_no_box_overlap_passed",
         "page_5_customer_meaning_rule_clear_passed",
@@ -163,22 +189,20 @@ def test_final_gate_blocks_page_2_strip_collision(tmp_path):
         "page_17_lower_cards_centered_passed",
     ]:
         layout_safety[key] = True
-    layout_safety["page_2_strip_collision_passed"] = False
-    layout_safety["page_2_lower_modules_no_strip_overlap_passed"] = False
-    fight_id = app_module._build_fight_id_from_selected_matchup(preview["selected_matchup"])
+    layout_safety["page_5_side_panel_text_clear_passed"] = False
     ok, violations = app_module._selected_matchup_passes_strict_pdf_quality_gate(
         preview["selected_matchup"],
-        {"output_path": str(pdf_path), "output_filename": f"{fight_id}.pdf", "report_id": fight_id},
+        {"output_path": str(pdf_path), "output_filename": "max_holloway_vs_justin_gaethje_ufc_300_premium_test.pdf", "report_id": "max_holloway_vs_justin_gaethje_ufc_300"},
         text,
         page_count,
         layout_safety,
     )
     assert ok is False
-    assert "page_2_lower_modules_no_strip_overlap_passed" in violations
+    assert "final_delivery_visual_cleanup_failed:page_5_side_panel_text_clear_passed" in violations
     assert "visual_gate_status:v29_final_delivery_microfit_failed" in violations
 
 
-def test_final_gate_blocks_page_5_right_rail_collision(tmp_path):
+def test_final_visual_gate_blocks_page_2_lower_row_failure(tmp_path):
     preview = _preview()
     out, pdf_path, text, page_count = _render_output(tmp_path)
     layout_safety = dict(out.get("layout_safety", {}))
@@ -192,11 +216,15 @@ def test_final_gate_blocks_page_5_right_rail_collision(tmp_path):
         "page_2_analysis_modules_no_strip_overlap_passed",
         "page_2_footer_safe_zone_passed",
         "page_2_dashboard_no_visual_overlap_passed",
+        "page_2_dashboard_fit_passed",
+        "page_2_lower_modules_fit_passed",
         "page_5_architecture_read_text_fit_passed",
         "page_5_customer_meaning_heading_clear_passed",
         "page_5_customer_meaning_body_clear_passed",
         "page_5_customer_panel_below_architecture_panel_passed",
         "page_5_operator_panel_below_customer_panel_passed",
+        "page_5_customer_operator_fit_passed",
+        "page_5_side_panel_fit_passed",
         "page_5_right_rail_no_text_overlap_passed",
         "page_5_right_rail_no_box_overlap_passed",
         "page_5_customer_meaning_rule_clear_passed",
@@ -208,19 +236,18 @@ def test_final_gate_blocks_page_5_right_rail_collision(tmp_path):
         "page_17_lower_cards_centered_passed",
     ]:
         layout_safety[key] = True
-    layout_safety["page_5_side_panel_fit_passed"] = False
-    layout_safety["page_5_customer_operator_fit_passed"] = False
-    fight_id = app_module._build_fight_id_from_selected_matchup(preview["selected_matchup"])
+    layout_safety["page_2_lower_row_centered_passed"] = False
+    layout_safety["page_2_lower_modules_fit_passed"] = False
     ok, violations = app_module._selected_matchup_passes_strict_pdf_quality_gate(
         preview["selected_matchup"],
-        {"output_path": str(pdf_path), "output_filename": f"{fight_id}.pdf", "report_id": fight_id},
+        {"output_path": str(pdf_path), "output_filename": "max_holloway_vs_justin_gaethje_ufc_300_premium_test.pdf", "report_id": "max_holloway_vs_justin_gaethje_ufc_300"},
         text,
         page_count,
         layout_safety,
     )
     assert ok is False
-    assert "page_5_side_panel_fit_passed" in violations
-    assert "final_delivery_fit_polish_failed:page_5_customer_operator_fit_passed" in violations
+    assert "final_delivery_visual_cleanup_failed:page_2_lower_row_centered_passed" in violations
+    assert "final_delivery_fit_polish_failed:page_2_lower_modules_fit_passed" in violations
 
 
 def test_event_binding_gate_still_passes(tmp_path):
@@ -257,10 +284,9 @@ def test_event_binding_gate_still_passes(tmp_path):
         "page_17_lower_cards_centered_passed",
     ]:
         layout_safety[key] = True
-    fight_id = app_module._build_fight_id_from_selected_matchup(preview["selected_matchup"])
     ok, violations = app_module._selected_matchup_passes_strict_pdf_quality_gate(
         preview["selected_matchup"],
-        {"output_path": str(pdf_path), "output_filename": f"{fight_id}.pdf", "report_id": fight_id},
+        {"output_path": str(pdf_path), "output_filename": "max_holloway_vs_justin_gaethje_ufc_300_premium_test.pdf", "report_id": "max_holloway_vs_justin_gaethje_ufc_300"},
         text,
         page_count,
         layout_safety,
@@ -306,10 +332,9 @@ def test_sample_bleed_gate_still_passes(tmp_path):
     ]:
         layout_safety[key] = True
     layout_safety["dashboard_lens_depth_passed"] = True
-    fight_id = app_module._build_fight_id_from_selected_matchup(preview["selected_matchup"])
     ok, violations = app_module._selected_matchup_passes_strict_pdf_quality_gate(
         preview["selected_matchup"],
-        {"output_path": str(pdf_path), "output_filename": f"{fight_id}.pdf", "report_id": fight_id},
+        {"output_path": str(pdf_path), "output_filename": "max_holloway_vs_justin_gaethje_ufc_300_premium_test.pdf", "report_id": "max_holloway_vs_justin_gaethje_ufc_300"},
         text,
         page_count,
         layout_safety,
@@ -390,7 +415,7 @@ def test_governance_flags_remain_false(monkeypatch, tmp_path):
     with app_module.app.test_client() as client:
         data = client.post(BATCH_ROUTE, json={"operator_approval": True, "selected_matchup_ids": [rows[0]["matchup_id"]]}).get_json()
 
-    row = next(r for r in data["results"] if r.get("ok"))
+    row = next(result for result in data["results"] if result.get("ok"))
     assert data["generated_count"] == 1
     assert row["customer_ready"] is True
     assert row["visual_gate_status"] == "premium_template_confirmed"

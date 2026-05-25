@@ -1,0 +1,17 @@
+{
+  "test_final_delivery_group_passed": true,
+  "final_delivery_group_passed_count": 80,
+  "page_2_visual_verdict": "pass",
+  "page_5_visual_verdict": "pass",
+  "segment_depth_verdict": "pass",
+  "proof_pdf_paths": [
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_pdfs/callum_walsh_austin_williams_premium_test.pdf",
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_pdfs/tyrone_spong_lancelot_proton_de_la_chapelle_premium_test.pdf",
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_pdfs/murthel_groenhart_fabio_kwasi_premium_test.pdf",
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_pdfs/max_holloway_justin_gaethje_premium_test.pdf",
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_pdfs/levi_rigters_guto_inocente_premium_test.pdf"
+  ],
+  "visual_proof_path": "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/proof_images/levi_rigters_guto_inocente_contact_sheet.png",
+  "customer_ready_gate_status": "pass",
+  "unrelated_dirty_files_left_untouched": true
+}

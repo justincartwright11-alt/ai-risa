@@ -512,6 +512,23 @@ def _record_page_bounds(layout_safety, page_number, **info):
     pages[str(page_number)] = info
 
 
+def _rectangles_overlap(a, b):
+    return (
+        a["x"] < b["x"] + b["w"]
+        and a["x"] + a["w"] > b["x"]
+        and a["y"] < b["y"] + b["h"]
+        and a["y"] + a["h"] > b["y"]
+    )
+
+
+def _vertical_gap(a, b):
+    if a["y"] + a["h"] <= b["y"]:
+        return b["y"] - (a["y"] + a["h"])
+    if b["y"] + b["h"] <= a["y"]:
+        return a["y"] - (b["y"] + b["h"])
+    return -1
+
+
 def _record_lens_depth(layout_safety, lens_name, body, fighter_a, fighter_b, *, overflow=""):
     if not isinstance(layout_safety, dict):
         return
@@ -769,17 +786,18 @@ def _build_blocks(report_context_preview):
         ),
         # Matchup snapshot with tactical depth
         "matchup_snapshot": (
-            f"{fighter_a} vs {fighter_b} is a contest between pressure rhythm and counter structure. "
+            f"Tactical Thesis: {fighter_a} vs {fighter_b} is a contest between pressure rhythm and counter structure. "
             f"Control lane: {fighter_a} should force layered entries, crowd the reset window, and score before the exit is free. "
             f"Danger lane: {fighter_b} can flip the fight if the entries get rushed, the hands decay defensively, or the output is not converted into position. "
-            f"Command read: keep exits layered, do not chase low-value pressure, and make every exchange pay for itself."
+            f"Command read: keep exits layered, do not chase low-value pressure, and make every exchange pay for itself. "
+            f"Uncertainty is the heartbeat of this matchup: the fighter who can stay clear-headed when chaos appears is the one who keeps the edge."
         ),
         # Decision structure with specific watch cues
         "decision_structure": (
             f"Decision structure: the judge-friendly route belongs to the fighter who owns scoring geography without overcommitting. "
             f"{fighter_a} needs pressure rhythm, reset denial, and angle closure that prevents clean counters. "
             f"{fighter_b} needs disciplined counter-entry timing, ring awareness, and enough repeatable output to keep the scorecard narrow. "
-            f"Watch cue: if {fighter_b} is forced to defend twice in the same sequence, {fighter_a} is likely dictating the round. Failure consequence: a high-volume but low-conversion round becomes a point loss instead of a control round."
+            f"Watch cue: if {fighter_b} is forced to defend twice in the same sequence, {fighter_a} is likely dictating the round. Scoring consequence: a high-volume but low-conversion round becomes a point loss instead of a control round."
         ),
         # Energy/fatigue with work rates
         "energy": (
@@ -921,9 +939,15 @@ def _build_blocks(report_context_preview):
             f"Collapse Trigger ({fighter_a} pressure side): entries still arrive but stop producing controlled exits."
         ),
         "control_thesis": f"{fighter_a} wins when pressure turns each reset into another scoring exchange.",
-        "flip_point": f"If {fighter_b} starts landing first off the reset, the scorecard tightens immediately.",
+        "danger_objective": f"If {fighter_b} starts landing first off the reset, the scorecard tightens immediately.",
         "watch_cue": f"Watch whether {_fighter_last_name(fighter_b, 'Fighter B')} can exit clean after the first burst.",
         "command_rule": f"Force {fighter_b} to defend the second phase instead of countering the first one.",
+        "tactical_thesis": f"{fighter_a} can win the tactical fight by forcing {fighter_b} into repeated resets and scoring the second exchange.",
+        "customer_meaning": (
+            f"Customer Meaning: The core operational takeaway is that pressure control must be converted into clean, scoreable geography. "
+            f"Scoring consequence: if the opponent is allowed free resets, the scorecard shifts faster than the visual fight appears. "
+            f"Operator Use: remain adaptive, preserve lane discipline, and avoid low-value chase volume while the other fighter is reset-dependent."
+        ),
         # Body/Risk Anatomy Heat Map zones (model-derived)
         "risk_head_a": "62% model-derived",
         "risk_head_b": "58% model-derived",
@@ -1162,10 +1186,10 @@ def _draw_executive(module, c, blocks):
     c.setLineWidth(0.65)
     c.line(x + 14, y3 + 48, x + w - 14, y3 + 50)
     strip = [
-        ("CONTROL THESIS", "Instability vs structure", module.BLUE),
-        ("FLIP POINT", "Who creates doubt first?", module.GOLD2),
-        ("WATCH CUE", f"Does {b_short} reset clean?", module.GOLD2),
-        ("COMMAND RULE", "Break decision structure", module.GOLD2),
+        ("CONTROL OBJECTIVE", blocks.get("control_thesis", "Instability vs structure"), module.BLUE),
+        ("DANGER OBJECTIVE", blocks.get("danger_objective", "Who creates doubt first?"), module.RED),
+        ("WATCH CUE", blocks.get("watch_cue", f"Does {b_short} reset clean?"), module.GOLD2),
+        ("CORNER COMMAND", blocks.get("command_rule", "Break decision structure"), module.GOLD2),
     ]
     gap_s = 12
     cw = (w - 30 - gap_s * 3) / 4
@@ -1175,18 +1199,22 @@ def _draw_executive(module, c, blocks):
         module.set_font(c, "Helvetica-Bold", 8.7, col)
         c.drawString(xx + 9, y3 + 31, t)
         module.para(c, v, xx + 9, y3 + 10, cw - 18, 18, size=8.2, col=module.WHITE, min_size=7.6)
-    # Ensure lower modules clear the strip panel, the strip cards, and the footer safe zone.
-    footer_safe_zone_y = module.FOOTER_Y + FOOTER_SAFE_ZONE_Y
+    # Ensure lower modules clear the strip panel, the strip cards, and the page footer.
+    footer_baseline_y = module.FOOTER_Y
     strip_panel_top_y = y3 + strip_panel_height
     strip_card_bottom_y = y3 + 9 + 35
-    y4 = max(strip_panel_top_y + 14, strip_card_bottom_y + 12, footer_safe_zone_y + 14, 50)
+    lower_gap = 14
+    footer_gap = 16
+    y4_max = y3 - lower_gap - 84
+    y4 = max(footer_baseline_y + footer_gap, min(y4_max, 180))
     row_gap = 16
     round_w = 168
-    prob_w = 190
-    risk_w = 152
+    prob_w = 180
+    risk_w = 140
+    panel_h = 84
     row_group_w = round_w + prob_w + risk_w + (2 * row_gap)
     row_x = x + max(0, (w - row_group_w) / 2)
-    module.panel(c, row_x, y4, round_w, 80, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, row_x, y4, round_w, panel_h, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.2, module.GOLD2)
     c.drawString(row_x + 10, y4 + 58, "ROUND CONTROL")
     rounds = [("R1", "INFO", module.MUTED), ("R2", "PRESS", module.BLUE), ("R3", "ATTRITION", module.RED)]
@@ -1205,7 +1233,7 @@ def _draw_executive(module, c, blocks):
         if c.stringWidth(lab, "Helvetica-Bold", 6.5) > max(30, round_step - 6):
             round_label_overflow = True
     px = row_x + round_w + row_gap
-    module.panel(c, px, y4, prob_w, 80, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, px, y4, prob_w, panel_h, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
     c.drawString(px + 10, y4 + 58, "METHOD PROBABILITY")
     # Draw compact bars with explicit label/value separation to avoid row crowding.
@@ -1232,7 +1260,7 @@ def _draw_executive(module, c, blocks):
         c.roundRect(bars_x, track_y, max(8, bars_w * (pct / 100.0)), 6.0, 2, fill=1, stroke=0)
         row_y -= 16
     rx = px + prob_w + row_gap
-    module.panel(c, rx, y4, risk_w, 80, None, module.GOLD, module.PANEL, title_line=False)
+    module.panel(c, rx, y4, risk_w, panel_h, None, module.GOLD, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 9.6, module.GOLD2)
     c.drawCentredString(rx + (risk_w / 2), y4 + 58, "RISK CONTROL")
     module.set_font(c, "Helvetica-Bold", 11.0, module.GOLD2)
@@ -1245,17 +1273,49 @@ def _draw_executive(module, c, blocks):
         left_margin = row_x - x
         right_margin = (x + w) - (rx + risk_w)
         centered_ok = abs(left_margin - right_margin) <= 2.5
-        footer_safe = lower_module_bottom_y >= (footer_safe_zone_y + 12)
+        footer_safe = lower_module_bottom_y >= (footer_baseline_y + footer_gap)
         volatility_text = blocks.get("volatility", "")
         volatility_fit = bool(c.stringWidth(volatility_text, "Helvetica-Bold", 13.0) <= (kpi_w - 24))
         round_control_fit = round_w >= 156 and round_inner_w >= 124 and (not round_label_overflow)
-        blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(lower_module_bottom_y >= (strip_panel_top_y + 12))
+        page_2_lens_cards = [
+            {"x": x, "y": y2, "w": colw, "h": card_h},
+            {"x": dx, "y": y2, "w": colw, "h": card_h},
+            {"x": cx, "y": y2, "w": colw, "h": card_h},
+        ]
+        analysis_cards = [
+            {"x": row_x, "y": y4, "w": round_w, "h": 80},
+            {"x": px, "y": y4, "w": prob_w, "h": 80},
+            {"x": rx, "y": y4, "w": risk_w, "h": 80},
+        ]
+        blocks["_layout_safety"]["page_2_round_control_no_lens_overlap_passed"] = bool(
+            not any(_rectangles_overlap(analysis_cards[0], lens) for lens in page_2_lens_cards)
+            and _vertical_gap(analysis_cards[0], page_2_lens_cards[0]) >= 12
+        )
+        blocks["_layout_safety"]["page_2_method_probability_no_lens_overlap_passed"] = bool(
+            not any(_rectangles_overlap(analysis_cards[1], lens) for lens in page_2_lens_cards)
+            and _vertical_gap(analysis_cards[1], page_2_lens_cards[0]) >= 12
+        )
+        blocks["_layout_safety"]["page_2_risk_control_no_lens_overlap_passed"] = bool(
+            not any(_rectangles_overlap(analysis_cards[2], lens) for lens in page_2_lens_cards)
+            and _vertical_gap(analysis_cards[2], page_2_lens_cards[0]) >= 12
+        )
+        blocks["_layout_safety"]["page_2_analysis_modules_no_strip_overlap_passed"] = bool(
+            not any(_rectangles_overlap(card, {"x": x, "y": y3, "w": w, "h": strip_panel_height}) for card in analysis_cards)
+            and _vertical_gap({"x": x, "y": y3, "w": w, "h": strip_panel_height}, analysis_cards[0]) >= 12
+        )
+        blocks["_layout_safety"]["page_2_footer_safe_zone_passed"] = bool(footer_safe)
+        blocks["_layout_safety"]["page_2_dashboard_no_visual_overlap_passed"] = bool(
+            all(not _rectangles_overlap(card, lens) for card in analysis_cards for lens in page_2_lens_cards)
+            and _vertical_gap({"x": x, "y": y3, "w": w, "h": strip_panel_height}, analysis_cards[0]) >= 12
+            and footer_safe
+        )
+        blocks["_layout_safety"]["page_2_strip_collision_passed"] = bool(lower_module_top_y <= (y3 - lower_gap))
         blocks["_layout_safety"]["page_2_lower_row_centered_passed"] = bool(centered_ok)
         blocks["_layout_safety"]["page_2_footer_safe_passed"] = bool(footer_safe)
         blocks["_layout_safety"]["page_2_volatility_text_fit_passed"] = bool(volatility_fit)
         blocks["_layout_safety"]["page_2_round_control_projection_fit_passed"] = bool(round_control_fit)
-        # v7 explicit no-overlap marker (true when the lower module row lies above strip cards)
-        blocks["_layout_safety"]["page_2_lower_modules_no_strip_overlap_passed"] = bool(lower_module_bottom_y >= (strip_card_bottom_y + 8))
+        # v7 explicit no-overlap marker (true when the lower module row lies below the strip cards)
+        blocks["_layout_safety"]["page_2_lower_modules_no_strip_overlap_passed"] = bool(lower_module_top_y <= (strip_card_bottom_y - 8))
         blocks["_layout_safety"]["page_2_lower_modules_fit_passed"] = bool(
             blocks["_layout_safety"].get("page_2_strip_collision_passed", False)
             and blocks["_layout_safety"].get("page_2_lower_row_centered_passed", False)
@@ -1344,26 +1404,26 @@ def _draw_fighter_architecture_radar(module, c, blocks):
     rx = x + w_left + right_col_gap
     rw = right_col_w
     module.panel(c, rx, y + 266, rw, 124, "Architecture Read", module.GOLD, module.PANEL)
-    module.para(c, blocks.get("matchup_snapshot", ""), rx + 10, y + 286, rw - 20, 74, size=8.0, col=module.WHITE, min_size=7.4)
+    architecture_body = blocks.get("matchup_snapshot", "")
+    architecture_text_h, _ = measure_wrapped_text_height(c, architecture_body, rw - 20, font_name="Helvetica", font_size=8.0)
+    module.para(c, architecture_body, rx + 10, y + 286, rw - 20, 74, size=8.0, col=module.WHITE, min_size=7.4)
     # Customer meaning and operator-use panels are stacked below the architecture radar.
     operator_min_h = 96
-    customer_min_h = 84
-    panel_gap = 18
+    customer_min_h = 88
+    panel_gap = 0
     operator_h = 116
-    customer_body = blocks.get("customer_meaning", "Instability vs structure. Control preferred scoring pathway.")
-    required_customer_height, _ = measure_wrapped_text_height(c, customer_body, rw - 20, font_name="Helvetica", font_size=7.2, line_height=1.25)
+    customer_body = blocks.get("customer_meaning", "Instability versus structure. Control preferred scoring pathway.")
+    required_customer_height, _ = measure_wrapped_text_height(c, customer_body, rw - 20, font_name="Helvetica", font_size=7.2)
     customer_h = max(customer_min_h, int(required_customer_height + 60))
     architecture_bottom_y = y + 266
-    max_customer_top = architecture_bottom_y
-    # Position the customer panel beneath the architecture read section, allowing flush adjacency
-    # while preserving the operator panel spacing and divider clearance.
-    customer_y = min(y + 182, max_customer_top - customer_h + 10)
-    operator_y = customer_y - operator_h - panel_gap
+    customer_y = architecture_bottom_y - panel_gap - customer_h
+    operator_y = customer_y - panel_gap - operator_h
     if operator_y < (y + 20):
         operator_y = y + 20
         customer_y = operator_y + operator_h + panel_gap
-    if customer_y + customer_h > max_customer_top:
-        customer_h = max(customer_min_h, max_customer_top - customer_y)
+    if customer_y + customer_h > architecture_bottom_y - panel_gap:
+        customer_y = architecture_bottom_y - panel_gap - customer_h
+        operator_y = customer_y - panel_gap - operator_h
     module.panel(c, rx, customer_y, rw, customer_h, None, module.BLUE, module.PANEL, title_line=False)
     module.set_font(c, "Helvetica-Bold", 10.0, module.BLUE)
     c.drawString(rx + 16, customer_y + customer_h - 18, "Customer Meaning")
@@ -1375,9 +1435,9 @@ def _draw_fighter_architecture_radar(module, c, blocks):
         c,
         customer_body,
         rx + 10,
-        customer_y + 8,
+        customer_y + 18,
         rw - 20,
-        customer_h - 16,
+        customer_h - 38,
         font_name="Helvetica",
         font_size=7.2,
         color=module.WHITE,
@@ -1417,13 +1477,29 @@ def _draw_fighter_architecture_radar(module, c, blocks):
         op_panel_x = rx
         op_panel_w = rw
         inside_page = (op_panel_x >= module.SAFE_X) and ((op_panel_x + op_panel_w) <= (module.PAGE_W - module.SAFE_X))
-        divider_clear = bool(customer_y >= (operator_y + operator_h + 10))
+        divider_clear = bool(customer_y >= (operator_y + operator_h))
         divider_y = customer_y + customer_h - 28
-        customer_text_top = customer_y + 8 + required_customer_height
+        customer_text_top = customer_y + 18 + required_customer_height
         customer_meaning_rule_clear = bool(customer_text_top <= (divider_y - 10))
         customer_panel_top = customer_y + customer_h
         architecture_bottom_y = y + 266
         customer_within_architecture_band = bool(customer_panel_top <= architecture_bottom_y)
+        architecture_read_fit = bool(architecture_text_h <= 74)
+        operator_panel_top = operator_y + operator_h
+        customer_panel_bottom = customer_y
+        blocks["_layout_safety"]["page_5_architecture_read_text_fit_passed"] = bool(architecture_read_fit)
+        blocks["_layout_safety"]["page_5_customer_meaning_heading_clear_passed"] = bool(customer_meaning_rule_clear)
+        blocks["_layout_safety"]["page_5_customer_meaning_body_clear_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
+        blocks["_layout_safety"]["page_5_customer_panel_below_architecture_panel_passed"] = bool(customer_panel_top <= architecture_bottom_y)
+        blocks["_layout_safety"]["page_5_operator_panel_below_customer_panel_passed"] = bool(operator_panel_top <= customer_panel_bottom)
+        blocks["_layout_safety"]["page_5_right_rail_no_box_overlap_passed"] = bool(
+            not _rectangles_overlap({"x": rx, "y": customer_y, "w": rw, "h": customer_h}, {"x": rx, "y": operator_y, "w": rw, "h": operator_h})
+            and customer_panel_top <= architecture_bottom_y
+            and operator_panel_top <= customer_panel_bottom
+        )
+        blocks["_layout_safety"]["page_5_right_rail_no_text_overlap_passed"] = bool(
+            inside_page and (not customer_overflow) and (not op_overflow) and divider_clear and customer_meaning_rule_clear and customer_within_architecture_band
+        )
         blocks["_layout_safety"]["page_5_operator_use_fit_passed"] = bool(inside_page and not op_overflow and (operator_y >= (y + 20)))
         blocks["_layout_safety"]["page_5_customer_meaning_rule_clear_passed"] = bool(customer_meaning_rule_clear and (not customer_overflow))
         # v7 explicit marker: customer panel stays flush with or below the architecture radar bottom.
@@ -1767,7 +1843,7 @@ def _draw_method_probability_chart(module, c, blocks):
     panel_gap = 16
     panel_w = (w - 36 - panel_gap) / 2
     # Move lower panels slightly upward to better center under the chart for microfit v7
-    panel_y = max(footer_safe_zone_y + 12, chart_y - panel_h - 24)
+    panel_y = max(footer_safe_zone_y + 12, chart_y - panel_h - 22)
     group_w = panel_w * 2 + panel_gap
     left_panel_x = x + max(0, (w - group_w) / 2)
     right_panel_x = left_panel_x + panel_w + panel_gap

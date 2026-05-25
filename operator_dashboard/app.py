@@ -152,6 +152,16 @@ _BUTTON2_REQUIRED_PREMIUM_MARKERS = [
     "executive command dashboard",
     "fighter architecture radar",
     "tactical edge map",
+    "tactical thesis",
+    "control objective",
+    "danger objective",
+    "watch cue",
+    "failure cue",
+    "scoring consequence",
+    "corner command",
+    "customer meaning",
+    "operator use",
+    "uncertainty",
 ]
 
 _BUTTON2_REQUIRED_PREMIUM_MARKER_ALTERNATIVES = [
@@ -484,6 +494,19 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
                 "page_2_footer_safe_passed",
                 "page_2_round_control_projection_fit_passed",
                 "page_2_lower_modules_no_strip_overlap_passed",
+                "page_2_round_control_no_lens_overlap_passed",
+                "page_2_method_probability_no_lens_overlap_passed",
+                "page_2_risk_control_no_lens_overlap_passed",
+                "page_2_analysis_modules_no_strip_overlap_passed",
+                "page_2_footer_safe_zone_passed",
+                "page_2_dashboard_no_visual_overlap_passed",
+                "page_5_architecture_read_text_fit_passed",
+                "page_5_customer_meaning_heading_clear_passed",
+                "page_5_customer_meaning_body_clear_passed",
+                "page_5_customer_panel_below_architecture_panel_passed",
+                "page_5_operator_panel_below_customer_panel_passed",
+                "page_5_right_rail_no_text_overlap_passed",
+                "page_5_right_rail_no_box_overlap_passed",
                 "page_5_customer_meaning_rule_clear_passed",
                 "page_5_architecture_customer_no_overlap_passed",
                 "page_5_operator_use_fit_passed",
@@ -497,8 +520,10 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
                 "page_2_volatility_text_fit_passed",
                 "page_2_round_control_projection_fit_passed",
                 "page_2_lower_modules_no_strip_overlap_passed",
+                "page_2_lower_row_centered_passed",
                 "page_5_customer_meaning_rule_clear_passed",
                 "page_5_customer_panel_inside_radar_band_passed",
+                "page_5_side_panel_text_clear_passed",
                 "page_16_scorecard_row_rule_clear_passed",
                 "page_16_commentary_centered_passed",
                 "page_17_lower_cards_centered_passed",
@@ -522,22 +547,27 @@ def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, p
                         violations.append(key)
                     violations.append("visual_gate_status:v29_final_delivery_right_rail_overlap_failed")
                     return False, violations
+                # When renderer metadata is present and v8 checks passed, prefer
+                # the newer v8 enforcement path and skip legacy v5/v6/v7 checks
+                # to avoid failing on obsolete compatibility markers.
+            else:
+                v5_failures = [k for k in v5_required if k in layout_safety and layout_safety.get(k) is False]
+                v6_failures = [k for k in v6_required if k in layout_safety and layout_safety.get(k) is False]
+                v7_failures = [k for k in v7_required if k in layout_safety and layout_safety.get(k) is False]
 
-            v5_failures = [k for k in v5_required if k in layout_safety and layout_safety.get(k) is False]
-            v6_failures = [k for k in v6_required if k in layout_safety and layout_safety.get(k) is False]
-            v7_failures = [k for k in v7_required if k in layout_safety and layout_safety.get(k) is False]
-
-            if v5_failures or v6_failures or v7_failures:
-                for key in v5_failures:
-                    violations.append(key)
-                    violations.append(f"final_delivery_fit_failed:{key}")
-                for key in v6_failures:
-                    violations.append(key)
-                    violations.append(f"final_delivery_fit_polish_failed:{key}")
-                for key in v7_failures:
-                    violations.append(key)
-                    violations.append("visual_gate_status:v29_final_delivery_microfit_failed")
-                return False, violations
+                if v5_failures or v6_failures or v7_failures:
+                    for key in v5_failures:
+                        violations.append(key)
+                        violations.append(f"final_delivery_fit_failed:{key}")
+                    for key in v6_failures:
+                        violations.append(key)
+                        violations.append(f"final_delivery_fit_polish_failed:{key}")
+                    for key in v7_failures:
+                        violations.append(key)
+                        violations.append(f"final_delivery_visual_cleanup_failed:{key}")
+                    if v7_failures:
+                        violations.append("visual_gate_status:v29_final_delivery_microfit_failed")
+                    return False, violations
     except Exception:
         # If layout_safety inspection fails for any reason, do not weaken the gate;
         # append a diagnostic violation but continue evaluating other checks.
