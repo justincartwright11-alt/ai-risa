@@ -11,6 +11,8 @@ import csv
 import json
 import os
 import re
+import time
+from datetime import datetime, date, timedelta
 from typing import Any, Dict, List
 
 from operator_dashboard.local_ai_orchestrator_input_context_pack import (
@@ -257,6 +259,88 @@ def _normalize_approved_source_event_row(raw: Dict[str, Any], patterns: List[str
     return out
 
 
+def _get_current_week_window() -> tuple[date, date, date]:
+    """Return (current_week_start, current_week_end, upcoming_window_end) for current-week discovery."""
+    today = date.today()
+    # Current week: Monday to Sunday
+    days_since_monday = today.weekday()
+    current_week_start = today - timedelta(days=days_since_monday)
+    current_week_end = current_week_start + timedelta(days=6)
+    # Upcoming window: extend 14 days into the future
+    upcoming_window_end = today + timedelta(days=14)
+    return current_week_start, current_week_end, upcoming_window_end
+
+
+def _parse_event_date(date_str: str) -> date | None:
+    """Parse event date from ISO format string."""
+    if not date_str or not isinstance(date_str, str):
+        return None
+    try:
+        return datetime.strptime(date_str.strip(), "%Y-%m-%d").date()
+    except (ValueError, AttributeError):
+        return None
+
+
+def _is_event_in_window(event_row: Dict[str, Any], window_end: date) -> bool:
+    """Check if event date falls within current week or upcoming window."""
+    event_date_str = _safe_text(event_row.get("event_date"))
+    if not event_date_str:
+        return False
+    event_date = _parse_event_date(event_date_str)
+    if not event_date:
+        return False
+    today = date.today()
+    return today <= event_date <= window_end
+
+
+def _is_demo_or_fixture_feed(rows: List[Dict[str, Any]]) -> bool:
+    """Detect if rows contain demo/fixture markers (e.g., old static events)."""
+    if not rows:
+        return False
+    
+    # Check if any event is dated far in the past or has demo markers
+    for row in rows:
+        event_date_str = _safe_text(row.get("event_date"))
+        event_name = _safe_text(row.get("event_name", "")).lower()
+        
+        # Demo/fixture markers
+        demo_markers = ["demo", "fixture", "test", "sample", "placeholder"]
+        if any(marker in event_name for marker in demo_markers):
+            return True
+        
+        # If we have a date, check if it's far in the past
+        if event_date_str:
+            event_date = _parse_event_date(event_date_str)
+            if event_date:
+                # More than 30 days in the past is likely a fixture
+                days_old = (date.today() - event_date).days
+                if days_old > 30:
+                    return True
+    
+    return False
+
+
+def _check_feed_freshness(feed_path: str, max_age_seconds: int = 86400) -> tuple[bool, str]:
+    """Check if feed file is fresh (modified within max_age_seconds).
+    
+    Returns: (is_fresh, status_message)
+    """
+    try:
+        if not os.path.exists(feed_path):
+            return False, "feed_file_missing"
+        
+        file_mtime = os.path.getmtime(feed_path)
+        current_time = time.time()
+        age_seconds = current_time - file_mtime
+        
+        if age_seconds > max_age_seconds:
+            return False, "feed_stale"
+        
+        return True, "feed_fresh"
+    except Exception as e:
+        return False, f"feed_freshness_check_failed: {str(e)}"
+
+
 def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
     config = _load_approved_source_ingestion_config(root)
     diagnostics: List[str] = []
@@ -272,6 +356,9 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "diagnostics": diagnostics,
             "configured": False,
             "feed_used": "",
+            "feed_status": "not_configured",
+            "current_week_ready": False,
+            "save_allowed": False,
         }
 
     existing_feed_path = ""
@@ -288,6 +375,24 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "diagnostics": diagnostics,
             "configured": True,
             "feed_used": "",
+            "feed_status": "unavailable",
+            "current_week_ready": False,
+            "save_allowed": False,
+        }
+
+    # Check feed freshness
+    is_fresh, freshness_status = _check_feed_freshness(existing_feed_path)
+    if not is_fresh:
+        diagnostics.append(freshness_status)
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": True,
+            "feed_used": existing_feed_path,
+            "feed_status": "stale",
+            "current_week_ready": False,
+            "save_allowed": False,
+            "freshness_check": freshness_status,
         }
 
     raw_rows = _parse_approved_source_feed_rows(existing_feed_path)
@@ -300,12 +405,73 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
 
     if not approved_rows:
         diagnostics.append("no_source_backed_events_found")
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": True,
+            "feed_used": existing_feed_path,
+            "feed_status": "no_events",
+            "current_week_ready": False,
+            "save_allowed": False,
+        }
 
+    # Detect demo/fixture feeds
+    if _is_demo_or_fixture_feed(approved_rows):
+        diagnostics.append("demo_or_fixture_feed_detected")
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": True,
+            "feed_used": existing_feed_path,
+            "feed_status": "demo_or_fixture_feed",
+            "current_week_ready": False,
+            "save_allowed": False,
+        }
+
+    # Get current-week window and filter rows
+    current_week_start, current_week_end, upcoming_window_end = _get_current_week_window()
+    current_week_rows = [
+        row for row in approved_rows
+        if _is_event_in_window(row, upcoming_window_end)
+    ]
+
+    # Add metadata about discovery window and freshness
+    for row in current_week_rows:
+        row["_discovery_window_start"] = str(current_week_start)
+        row["_discovery_window_end"] = str(upcoming_window_end)
+        row["_discovery_generated_at"] = datetime.utcnow().isoformat() + "Z"
+        row["_source_feed_status"] = "fresh"
+
+    if not current_week_rows:
+        diagnostics.append("no_current_week_events_found")
+        return {
+            "rows": [],
+            "diagnostics": diagnostics,
+            "configured": True,
+            "feed_used": existing_feed_path,
+            "feed_status": "no_current_week_events",
+            "current_week_ready": False,
+            "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
+            "total_rows_in_feed": len(approved_rows),
+            "current_week_rows": 0,
+        }
+
+    diagnostics.append("current_week_events_found")
     return {
-        "rows": approved_rows,
+        "rows": current_week_rows,
         "diagnostics": diagnostics,
         "configured": True,
         "feed_used": existing_feed_path,
+        "feed_status": "current_week_ready",
+        "current_week_ready": True,
+        "save_allowed": True,
+        "current_week_start": str(current_week_start),
+        "current_week_end": str(upcoming_window_end),
+        "total_rows_in_feed": len(approved_rows),
+        "current_week_rows": len(current_week_rows),
+        "generated_at_utc": datetime.utcnow().isoformat() + "Z",
     }
 
 
@@ -546,6 +712,14 @@ def load_readonly_runtime_state(
         "approved_source_event_rows_count": len(approved_source_rows),
         "diagnostics": _safe_list(approved_source_live.get("diagnostics", [])),
         "feed_used": _safe_text(approved_source_live.get("feed_used", "")),
+        "feed_status": _safe_text(approved_source_live.get("feed_status", "unknown")),
+        "current_week_ready": bool(approved_source_live.get("current_week_ready", False)),
+        "save_allowed": bool(approved_source_live.get("save_allowed", False)),
+        "current_week_start": _safe_text(approved_source_live.get("current_week_start", "")),
+        "current_week_end": _safe_text(approved_source_live.get("current_week_end", "")),
+        "generated_at_utc": _safe_text(approved_source_live.get("generated_at_utc", "")),
+        "total_rows_in_feed": int(approved_source_live.get("total_rows_in_feed", 0)) if approved_source_live.get("total_rows_in_feed") else 0,
+        "current_week_rows": int(approved_source_live.get("current_week_rows", 0)) if approved_source_live.get("current_week_rows") else 0,
     }
 
     state = {

@@ -1885,10 +1885,27 @@ function renderButton1LiveSourceStatus(existingHtml, workflowData) {
     ? status.approved_source_event_rows_count
     : 0;
   const feedUsed = status.feed_used ? status.feed_used : 'not_found';
+  
+  // New fields from current-week discovery refresh
+  const feedStatus = String(status.feed_status || 'unknown');
+  const currentWeekReady = Boolean(status.current_week_ready);
+  const saveAllowed = Boolean(status.save_allowed);
+  const currentWeekStart = String(status.current_week_start || '—');
+  const currentWeekEnd = String(status.current_week_end || '—');
+  const generatedAtUtc = String(status.generated_at_utc || '—');
+  const totalRowsInFeed = Number.isFinite(status.total_rows_in_feed) ? status.total_rows_in_feed : 0;
+  const currentWeekRows = Number.isFinite(status.current_week_rows) ? status.current_week_rows : 0;
 
   const lines = [
     '<br><br><strong>Approved Source Live Ingestion (Preview):</strong>',
-    'Approved source-backed event rows: ' + eventRows,
+    '<strong style="color:#c9aa71;">Last Source Refresh:</strong> ' + generatedAtUtc,
+    '<strong style="color:#c9aa71;">Discovery Window:</strong> ' + currentWeekStart + ' to ' + currentWeekEnd,
+    '<strong style="color:#c9aa71;">Feed Status:</strong> ' + feedStatus,
+    '<strong style="color:#c9aa71;">Source Freshness:</strong> ' + (feedStatus === 'current_week_ready' ? 'Fresh' : 'Stale/Unavailable'),
+    '<strong style="color:#c9aa71;">Live Discovery Result:</strong> ' + currentWeekRows + ' / ' + totalRowsInFeed + ' events in window',
+    '<strong style="color:#98c379;">Current-Week Ready:</strong> ' + (currentWeekReady ? 'Yes' : 'No'),
+    '<strong style="color:#98c379;">Save Allowed:</strong> ' + (saveAllowed ? 'Yes' : 'No'),
+    'Approved source-backed event rows (legacy): ' + eventRows,
     'Feed used: ' + feedUsed,
     'Fail-closed diagnostics: ' + diagnosticsText,
     'No auto-save: Yes',
@@ -2906,6 +2923,30 @@ function renderButton1EventCardSelector(candidateRows) {
   window.button1CandidateRowsForSelector = Array.isArray(candidateRows) ? candidateRows : [];
   renderButton2QueuedMatchupRows(window.button1CandidateRowsForSelector);
 
+  // Check feed status from live_source_status if available
+  const status = window.button1LiveSourceStatus || {};
+  const currentWeekReady = Boolean(status.current_week_ready);
+  const feedStatus = String(status.feed_status || 'unknown');
+  
+  // Fail-closed: If current-week not ready, show error message and don't display cards
+  if (!currentWeekReady) {
+    let failClosedMessage = 'No current-week source-backed matchups found. ';
+    if (feedStatus === 'stale') {
+      failClosedMessage += 'Feed is stale (older than 24 hours). Please refresh the approved source.';
+    } else if (feedStatus === 'demo_or_fixture_feed') {
+      failClosedMessage += 'Feed appears to contain demo/fixture events. Cannot display as current-week discovery.';
+    } else if (feedStatus === 'no_current_week_events') {
+      failClosedMessage += 'No events found in current discovery window.';
+    } else if (feedStatus === 'unavailable') {
+      failClosedMessage += 'Approved source feed is unavailable.';
+    } else {
+      failClosedMessage += 'Discovery failed. Details: ' + feedStatus;
+    }
+    listEl.innerHTML = '<div style="color:#e74c3c;padding:12px;background:#2c1a1a;border-radius:4px;border:1px solid #e74c3c;">' + 
+                       '<strong>⚠ Discovery Failed (Fail-Closed):</strong><br>' + failClosedMessage + '</div>';
+    return;
+  }
+
   const eventCards = buildEventCardAndMatchupSelectorModel(window.button1CandidateRowsForSelector);
   if (!eventCards.length) {
     listEl.innerHTML = 'No event cards available. Run Button 1 preview to hydrate candidate rows.';
@@ -3392,6 +3433,12 @@ function handleButton1Click() {
       const operationId = tokenPreview && (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
         ? (tokenPreview.token_id || tokenPreview.operation_id || tokenPreview.token)
         : 'preview';
+
+      // Capture live_source_status from workflow for use in renderButton1EventCardSelector
+      const payload = readFirstWorkflowPayload(data);
+      if (payload && payload.live_source_status) {
+        window.button1LiveSourceStatus = payload.live_source_status;
+      }
 
       renderButton1EventCardSelector(candidateRows);
 
