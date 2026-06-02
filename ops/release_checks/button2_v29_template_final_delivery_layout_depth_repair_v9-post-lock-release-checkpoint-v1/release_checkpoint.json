@@ -1,0 +1,36 @@
+{
+  "slice": "button2-v29-template-final-delivery-layout-depth-repair-v9-post-lock-release-checkpoint-v1",
+  "commit": "c21bdfb",
+  "tag": "button2-v29-template-final-delivery-layout-depth-repair-v9",
+  "status": "POST-LOCK RELEASE CHECKPOINT v1",
+  "date": "2026-06-02",
+  "proven_evidence": {
+    "regression_group_passed": 80,
+    "page_02_visual_verdict": "pass",
+    "page_05_visual_verdict": "pass",
+    "segment_depth_verdict": "pass",
+    "customer_ready_gate": "pass"
+  },
+  "committed_scope": [
+    "operator_dashboard/app.py",
+    "operator_dashboard/button2_template_pack_asset_renderer_v1.py",
+    "operator_dashboard/test_button2_v29_template_final_delivery_layout_depth_repair_v9.py",
+    "operator_dashboard/test_button2_v29_template_final_delivery_right_rail_overlap_repair_v8.py",
+    "operator_dashboard/test_button2_v29_template_final_delivery_visual_cleanup_v7.py",
+    "docs/button2_v29_template_final_delivery_layout_depth_repair_v9.md",
+    "ops/release_checks/button2_v29_template_final_delivery_layout_depth_repair_v9/layout_depth_repair_v9_summary.json"
+  ],
+  "files_left_untouched_note": "All other files and directories outside the committed scope were intentionally left untouched to preserve renderer geometry and layout transformations.",
+  "next_build_target": {
+    "slice": "button2-v29-template-final-delivery-layout-depth-repair-v9-post-lock-release-checkpoint-v1",
+    "permitted_actions": [
+      "package-evidence-archive",
+      "update-release-metadata",
+      "run-full-ci-and-visual-verification"
+    ],
+    "forbidden_actions": [
+      "edit-renderer-geometry",
+      "immediate-layout-repair"
+    ]
+  }
+}
