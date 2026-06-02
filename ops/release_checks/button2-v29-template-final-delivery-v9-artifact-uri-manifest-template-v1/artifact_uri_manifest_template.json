@@ -1,0 +1,20 @@
+{
+  "slice_name": "button2-v29-template-final-delivery-v9-artifact-uri-manifest-v1",
+  "frozen_v9_commit": "c21bdfb",
+  "frozen_v9_tag": "button2-v29-template-final-delivery-layout-depth-repair-v9",
+  "checkpoint_commit": "a227240",
+  "checkpoint_tag": "button2-v29-template-final-delivery-layout-depth-repair-v9-post-lock-release-checkpoint-v1",
+  "artifacts": [
+    {
+      "file_name": "max_holloway_justin_gaethje_premium_test.pdf",
+      "artifact_type": "pdf",
+      "storage_uri": "",
+      "sha256": "",
+      "size_bytes": null,
+      "uploaded_by": "",
+      "uploaded_at_utc": "",
+      "access_notes": ""
+    }
+  ],
+  "notes": "Populate `storage_uri`, `sha256`, `uploaded_by`, and `uploaded_at_utc` after uploading artifacts to approved storage. Do not commit binaries to Git without operator approval."
+}
