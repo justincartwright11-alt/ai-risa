@@ -1,0 +1,260 @@
+{
+  "slice_name": "button2-v29-template-final-delivery-v9-evidence-archive-and-ci-verification-v1",
+  "frozen_v9_commit": "c21bdfb",
+  "frozen_v9_tag": "button2-v29-template-final-delivery-layout-depth-repair-v9",
+  "checkpoint_commit": "a227240",
+  "checkpoint_tag": "button2-v29-template-final-delivery-layout-depth-repair-v9-post-lock-release-checkpoint-v1",
+  "proof_pdf_files": [
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_pdfs\\callum_walsh_austin_williams_premium_test.pdf",
+      "exists": true,
+      "sha256": "346a1a5b3a8418ab10acfea29c62c9509943c7d5838cad57e931ac4cc58a64a1",
+      "size_bytes": 5152128
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_pdfs\\tyrone_spong_lancelot_proton_de_la_chapelle_premium_test.pdf",
+      "exists": true,
+      "sha256": "4361b8ca866c4c4a42dda83f016c2124cc7bab4e1d91a9ec6f4eefee8c460e2e",
+      "size_bytes": 5152414
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_pdfs\\murthel_groenhart_fabio_kwasi_premium_test.pdf",
+      "exists": true,
+      "sha256": "4ae1bd0f4b95af102843e1d248b1f1f84160b288802de302bdc15dfe7f124d38",
+      "size_bytes": 5152241
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_pdfs\\max_holloway_justin_gaethje_premium_test.pdf",
+      "exists": true,
+      "sha256": "342b4b3a927849961cf16167cc22852143eda27427b07e8b8047bfd847f14b63",
+      "size_bytes": 5152203
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_pdfs\\levi_rigters_guto_inocente_premium_test.pdf",
+      "exists": true,
+      "sha256": "29a9ae6c1fcdb3604cac976b8231bcbd9b248d2389cf42ac99debdd8285faac8",
+      "size_bytes": 5152109
+    }
+  ],
+  "proof_image_files": [
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_contact_sheet.png",
+      "exists": true,
+      "sha256": "fa214c81306d4ccfbd594946a5abd30f65c1b12f3b221471f2e1b0a7fb2df4fb",
+      "size_bytes": 811186
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_02.png",
+      "exists": true,
+      "sha256": "3324df36a5f1bc66ff681cbedbb8308f1b37b9bfdc339fe546eda3d6215203e2",
+      "size_bytes": 258182
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_05.png",
+      "exists": true,
+      "sha256": "6a3f74935e0bfba2f7b967bb228e1dab1956741b074be58dcb4e1735d4f75a1c",
+      "size_bytes": 152592
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_14.png",
+      "exists": true,
+      "sha256": "da5ee2a4c9d99418a707c860fb82c72ff814c46a4d2a5b136e5a202ce4510acd",
+      "size_bytes": 96447
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_16.png",
+      "exists": true,
+      "sha256": "af1fc242483199e4557c1367aa4e5930e245905c49c0bc69a9f6c24740ea7c0c",
+      "size_bytes": 102571
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_17.png",
+      "exists": true,
+      "sha256": "fb45fc81d3a27ea2db04e01b68ef49bcb8cf0781847cbf6b3d5df1a38146db6b",
+      "size_bytes": 99362
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\callum_walsh_austin_williams_page_23.png",
+      "exists": true,
+      "sha256": "593126799b3e602f5364c0d35e1ec00794b62798bec4a89cd29bbfbe477f7d90",
+      "size_bytes": 111481
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_contact_sheet.png",
+      "exists": true,
+      "sha256": "b5072e4941edec55b7a711f89ecfadf1d400e3f785f9eea1f475c48f2c89f586",
+      "size_bytes": 807889
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_02.png",
+      "exists": true,
+      "sha256": "9f7d511b8afc9e31b360698843bebd452d09f84cc70611b4ffb61286ecb81661",
+      "size_bytes": 256031
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_05.png",
+      "exists": true,
+      "sha256": "936de34b34b066bdac584da6d3f79cc77db742a443d22bb90e1fe63dd4e6e29d",
+      "size_bytes": 152490
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_14.png",
+      "exists": true,
+      "sha256": "7967e2dcb1e00440d4bf07f97b526cd887340b157bc478f8c397829ad5c401fc",
+      "size_bytes": 96196
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_16.png",
+      "exists": true,
+      "sha256": "6cb74273419a0df6e61dcc9120a1e926c06a55e5dec24698e43905655f25c668",
+      "size_bytes": 101766
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_17.png",
+      "exists": true,
+      "sha256": "befd53d2891ee6bbe8373a3346b53467ee2808e61d094a2cafe7c211a4d8db36",
+      "size_bytes": 98743
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\levi_rigters_guto_inocente_page_23.png",
+      "exists": true,
+      "sha256": "7de9193b05aa4c264d27c52adc71c61b3da7da1453ebb03e629218d404f65112",
+      "size_bytes": 112573
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_contact_sheet.png",
+      "exists": true,
+      "sha256": "409ad961441722159c437618725a326ee2fba141473cdee375add10458699e8e",
+      "size_bytes": 811666
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_02.png",
+      "exists": true,
+      "sha256": "834c251016180514c45d246a9b8da61f5a3470591aafcc2f22f998a5833bd108",
+      "size_bytes": 257338
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_05.png",
+      "exists": true,
+      "sha256": "dbd24a7213f3512de1f8fe31bc47c7aec71537bbca11c89b27eddd4f9e3da189",
+      "size_bytes": 152622
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_14.png",
+      "exists": true,
+      "sha256": "1f5ff0a558bab5e7a6482bda8fb040f5da05e9ec6762f39dd41da705296137ed",
+      "size_bytes": 96596
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_16.png",
+      "exists": true,
+      "sha256": "cbef78e572bf1ee94ee4acc84bd4b44a0b6ff09ebb6873298a874e56516a0ca3",
+      "size_bytes": 102473
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_17.png",
+      "exists": true,
+      "sha256": "a2ef06d56f543d808dbdff34e0b52d77be91ecf1b99e02eda7467a26a0c0e713",
+      "size_bytes": 99194
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\max_holloway_justin_gaethje_page_23.png",
+      "exists": true,
+      "sha256": "a1fd503cebb06e5116d0c2f9dcb5fac7dd5861ad0e424a9ee822dce7f165d37d",
+      "size_bytes": 112420
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_contact_sheet.png",
+      "exists": true,
+      "sha256": "4b0fd338a8c0742812db236b413c4a2e62b00aeec020726496d41a7ed04b3059",
+      "size_bytes": 814607
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_02.png",
+      "exists": true,
+      "sha256": "afade4d715e14a0c07496113b86fcd4bc463a86f8230539b0130ffe33cea3897",
+      "size_bytes": 257516
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_05.png",
+      "exists": true,
+      "sha256": "0ea6d2a3cfa0c26a0a545d572b0767ef236d7b00a9d8b3039c12bb273d060df9",
+      "size_bytes": 152588
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_14.png",
+      "exists": true,
+      "sha256": "a00b6a6318532fa90cefe8b3b90b59da0a49b2598c029e58da10d85bfe046a41",
+      "size_bytes": 96705
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_16.png",
+      "exists": true,
+      "sha256": "9cb2064cdef2cdcc6e20cb6a50702218de6e734b2a70bb636ecac463f689e8ac",
+      "size_bytes": 102649
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_17.png",
+      "exists": true,
+      "sha256": "cfedbe3ff3acebb75299bb8466ba5913a978d89b41f12867cb0ef5b9a613c23a",
+      "size_bytes": 99763
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\murthel_groenhart_fabio_kwasi_page_23.png",
+      "exists": true,
+      "sha256": "39d835f2a67078e6ea3a2d68dea883ac12500141e39403eacfec0b32263fd83b",
+      "size_bytes": 113584
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_contact_sheet.png",
+      "exists": true,
+      "sha256": "03a0e5475a9a45f256b620d16d64610466e6cb19685c6247d1fefeee80e25f8d",
+      "size_bytes": 823284
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_02.png",
+      "exists": true,
+      "sha256": "020d57ed83ddd7540555bf6ce8f6ca480e87337c7c7e1d5551eb32ea736e86cc",
+      "size_bytes": 259884
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_05.png",
+      "exists": true,
+      "sha256": "51b6c2dff654f2039c729cc07ea32edbe12e97862cc4acc64abd8858bf425441",
+      "size_bytes": 152238
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_14.png",
+      "exists": true,
+      "sha256": "aba45b53590696015963b4e30def832f76b12cfa102048f38741c29fca3ce291",
+      "size_bytes": 96851
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_16.png",
+      "exists": true,
+      "sha256": "c8feb0066ee745e32d02baab34f15fb279d12922ed26c74bdcc27b1b2428ca56",
+      "size_bytes": 103555
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_17.png",
+      "exists": true,
+      "sha256": "e2cb92fa905e52c819371b131849a9bbd3c329764425b079f7e3daa37919fd82",
+      "size_bytes": 101484
+    },
+    {
+      "path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\proof_images\\tyrone_spong_lancelot_proton_de_la_chapelle_page_23.png",
+      "exists": true,
+      "sha256": "e4dcde48a8b90cdb58c8b397941c0ea358325bf9b1615a43a45e90cf2f442a7d",
+      "size_bytes": 115685
+    }
+  ],
+  "source_summary_json_path": "ops\\release_checks\\button2_v29_template_final_delivery_layout_depth_repair_v9\\layout_depth_repair_v9_summary.json",
+  "visual_verdicts": {
+    "page_2_visual_verdict": "pass",
+    "page_5_visual_verdict": "pass",
+    "segment_depth_verdict": "pass",
+    "customer_ready_gate_status": "pass"
+  },
+  "archive_created_at_utc": "2026-06-02T02:39:46.268965Z",
+  "evidence_archive_policy": "Proof files are referenced and hashed. Binary archive left untracked if large. Do not edit proof files."
+}
