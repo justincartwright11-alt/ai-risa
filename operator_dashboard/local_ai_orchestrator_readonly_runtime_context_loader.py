@@ -349,6 +349,7 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
     patterns = [p for p in config.get("approved_source_url_patterns", []) if _safe_text(p)]
     feed_paths = [p for p in config.get("feed_paths", []) if _safe_text(p)]
     upcoming_window_days = 14
+    current_week_start, current_week_end, upcoming_window_end = _get_current_week_window()
 
     if not enabled or not patterns:
         diagnostics.append("approved_source_not_configured")
@@ -360,6 +361,8 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "feed_status": "not_configured",
             "current_week_ready": False,
             "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
             "upcoming_window_days": upcoming_window_days,
             "current_week_rows_count": 0,
         }
@@ -383,6 +386,8 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "feed_status": "unavailable",
             "current_week_ready": False,
             "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
             "generated_at_utc": "",
             "total_rows_in_feed": 0,
             "current_week_rows": 0,
@@ -415,6 +420,8 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "feed_status": "stale",
             "current_week_ready": False,
             "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
             "generated_at_utc": generated_at_utc,
             "total_rows_in_feed": 0,
             "current_week_rows": 0,
@@ -444,6 +451,8 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "feed_status": "no_events",
             "current_week_ready": False,
             "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
             "generated_at_utc": generated_at_utc if 'generated_at_utc' in locals() else "",
             "total_rows_in_feed": 0,
             "current_week_rows": 0,
@@ -466,6 +475,8 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
             "feed_status": "demo_or_fixture_feed",
             "current_week_ready": False,
             "save_allowed": False,
+            "current_week_start": str(current_week_start),
+            "current_week_end": str(upcoming_window_end),
             "generated_at_utc": generated_at_utc if 'generated_at_utc' in locals() else "",
             "total_rows_in_feed": len(approved_rows),
             "current_week_rows": 0,
@@ -478,7 +489,6 @@ def _load_approved_source_live_event_rows(root: str) -> Dict[str, Any]:
         }
 
     # Get current-week window and filter rows
-    current_week_start, current_week_end, upcoming_window_end = _get_current_week_window()
     current_week_rows = [
         row for row in approved_rows
         if _is_event_in_window(row, upcoming_window_end)

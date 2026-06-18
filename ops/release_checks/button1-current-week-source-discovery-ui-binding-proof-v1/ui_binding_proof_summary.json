@@ -1,0 +1,30 @@
+{
+  "slice": "button1-current-week-source-discovery-ui-binding-proof-v1",
+  "source": "dashboard UI after clicking Find Fights",
+  "proof_scope": [
+    "Feed Status",
+    "Last Source Refresh",
+    "Discovery Window",
+    "Current-Week Ready",
+    "Save Allowed"
+  ],
+  "ui_values": {
+    "last_source_refresh": "2026-05-18T10:31:58.344267+00:00",
+    "discovery_window": "2026-06-15 to 2026-07-02",
+    "feed_status": "stale",
+    "source_freshness": "Stale/Unavailable",
+    "live_discovery_result": "0 / 0 events in window",
+    "current_week_ready": "No",
+    "save_allowed": "No",
+    "diagnostics": "feed_stale"
+  },
+  "runtime_contract_path": "workflow.jobs[0].input_ref.metadata.payload.live_source_status",
+  "verdict": {
+    "ui_binding_present": true,
+    "fail_closed_behavior_visible": true,
+    "stale_feed_not_promoted_as_current_week": true
+  },
+  "artifacts": {
+    "screenshot": "ops/release_checks/button1-current-week-source-discovery-ui-binding-proof-v1/ui_binding_panel_screenshot.png"
+  }
+}
