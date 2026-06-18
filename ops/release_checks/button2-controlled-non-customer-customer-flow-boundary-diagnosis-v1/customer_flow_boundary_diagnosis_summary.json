@@ -1,0 +1,80 @@
+{
+  "slice": "button2-controlled-non-customer-customer-flow-boundary-diagnosis-v1",
+  "date": "2026-06-18",
+  "status": "DIAGNOSIS_ONLY",
+  "locked_upstream_state": {
+    "runtime_preflight": "READY",
+    "controlled_fixture_render": "PASS",
+    "open_route_proof": "PASS",
+    "library_route_proof": "PASS",
+    "route_layer_regression": "PASS",
+    "customer_report_path": "NOT ACTIVATED"
+  },
+  "proof_chain_end": {
+    "controlled_fixture_render": true,
+    "generated_report_open_route": true,
+    "generated_report_library_route": true,
+    "route_layer_regression_test": true,
+    "route_layer_regression_handoff": true,
+    "final_route_layer_index": true
+  },
+  "customer_generation_begins_at": [
+    "/api/operator/button2/generate-report",
+    "/api/button2/selected-matchup/generate-guarded-v1",
+    "operator_dashboard/button2_report_generation_route_render_gate_integration_v1.py::generate_button2_report_render_gate_integration"
+  ],
+  "required_inputs": {
+    "generate_report": [
+      "operator_approved=true",
+      "fight_id is a non-empty string",
+      "ingest_payload is a non-empty dict"
+    ],
+    "selected_matchup_generate_guarded_v1": [
+      "operator_approved=true",
+      "selected_matchup_id resolves in canonical queue source",
+      "selected matchup complete and ready",
+      "source_url is http(s)",
+      "fight_id derivable from selected matchup"
+    ]
+  },
+  "operator_gates": [
+    "operator approval gate",
+    "queue resolution gate",
+    "selected-matchup readiness gate",
+    "source-backed gate",
+    "report-context gate",
+    "render gate",
+    "output-path gate",
+    "write gate",
+    "strict quality gate"
+  ],
+  "side_effect_surfaces": {
+    "pdf_file_write": true,
+    "report_library_listing_update": true,
+    "queue_or_database_mutation": false,
+    "delivery_or_export_path": true,
+    "customer_facing_open_path": true
+  },
+  "safe_non_customer_surfaces_already_proven": [
+    "controlled fixture render proof",
+    "/api/button2/generated-report/open",
+    "/api/button2/generated-report/library"
+  ],
+  "boundary_diagnosis": {
+    "controlled_proof_chain_ends_at": "read-only open/library/regression proof chain and final index",
+    "customer_generation_begins_at": "operator-gated generation routes and render gate integration",
+    "customer_generation_blocked": true,
+    "reason": "Only read-only controlled fixture proofs are complete; customer-generation routes, render gate, output write, and customer-ready transition remain unactivated."
+  },
+  "recommended_next_safe_slice": "controlled non-customer Button 2 customer-flow boundary diagnosis only, or docs-only audit update",
+  "boundary_confirmation": {
+    "no_customer_pdf_generation": true,
+    "no_delivery": true,
+    "no_queue_database_writes": true,
+    "no_provider_execution": true,
+    "no_source_network_calls": true,
+    "no_button1_changes": true,
+    "no_button3_changes": true,
+    "customer_report_path_not_activated": true
+  }
+}
