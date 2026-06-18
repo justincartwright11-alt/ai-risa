@@ -1,0 +1,20 @@
+{
+  "slice": "button1-current-week-approved-provider-config-parser-validator-scaffold-v1",
+  "baseline": {
+    "slice": "button1-current-week-approved-provider-config-contract-v1",
+    "commit": "920bb12",
+    "tag": "button1-current-week-approved-provider-config-contract-v1"
+  },
+  "status": "scaffold_added_pending_validation",
+  "constraints": {
+    "button1_config_validation_only": true,
+    "no_real_provider": true,
+    "no_scraping": true,
+    "no_live_source_wiring": true,
+    "button2_unchanged": true,
+    "button3_unchanged": true,
+    "no_auto_save": true,
+    "no_auto_promotion": true,
+    "fail_closed_required": true
+  }
+}
