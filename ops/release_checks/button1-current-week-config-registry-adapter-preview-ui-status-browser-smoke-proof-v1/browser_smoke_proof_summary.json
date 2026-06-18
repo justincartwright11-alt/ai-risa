@@ -1,0 +1,114 @@
+{
+  "slice_name": "button1-current-week-config-registry-adapter-preview-ui-status-browser-smoke-proof-v1",
+  "baseline_slice": "button1-current-week-config-registry-adapter-preview-ui-status-scaffold-v1",
+  "baseline_commit": "998678b",
+  "baseline_tag": "button1-current-week-config-registry-adapter-preview-ui-status-scaffold-v1",
+  "scope": "Browser smoke proof: evidence-only validation that registry adapter status panel renders correctly and remains non-interactive",
+  "test_environment": {
+    "server": "Flask development (http://127.0.0.1:5050)",
+    "mode": "Manual browser interaction",
+    "browser": "Integrated VS Code browser",
+    "dashboard": "operator_dashboard/templates/index.html"
+  },
+  "test_procedure": [
+    "Started Flask server on port 5050",
+    "Loaded dashboard page (AI-RISA Premium Report Factory)",
+    "Clicked Button 1 (Find Fights)",
+    "Triggered /api/local-ai/orchestrator/workflow-preview",
+    "Captured registry adapter status panel rendering",
+    "Verified all fields display correctly",
+    "Confirmed non-interactive behavior"
+  ],
+  "panel_fields_rendered": {
+    "registry_adapter_status_header": "Registry Adapter Status (Preview-Only)",
+    "read_only_indicator": "🔒 Read-Only",
+    "governance_statement": "Preview only. No provider execution, no live source calls, and no queue/database writes are performed.",
+    "adapter_validity": "Missing Config",
+    "enabled_candidates": "0 / 0",
+    "provider_execution": "✓ NO (expected)",
+    "network_calls": "✓ NO (expected)",
+    "queue_db_writes": "✓ NO (expected)",
+    "total_candidates": "0",
+    "diagnostics": "provider_config_missing",
+    "operator_approval_required": "🔒 Operator approval required"
+  },
+  "interactive_elements_not_rendered": [
+    "No Save buttons",
+    "No Execute buttons",
+    "No Update controls",
+    "No Provider Run triggers",
+    "No Network Call initiation",
+    "No Queue Write actions",
+    "No interactive form fields",
+    "No dropdowns or selectors"
+  ],
+  "governance_validation": {
+    "provider_execution_performed": {
+      "expected": false,
+      "actual": "✓ NO (expected)",
+      "status": "PASS"
+    },
+    "network_calls_performed": {
+      "expected": false,
+      "actual": "✓ NO (expected)",
+      "status": "PASS"
+    },
+    "queue_write_performed": {
+      "expected": false,
+      "actual": "✓ NO (expected)",
+      "status": "PASS"
+    },
+    "database_write_performed": {
+      "expected": false,
+      "actual": "✓ NO (expected)",
+      "status": "PASS"
+    },
+    "operator_approval_required": {
+      "expected": true,
+      "actual": "🔒 Yes",
+      "status": "PASS"
+    }
+  },
+  "isolation_validation": {
+    "button2_state": "Unchanged - not affected by Button 1 interaction",
+    "button3_state": "Unchanged - not affected by Button 1 interaction",
+    "overall_dashboard": "Responsive, no visual defects, all three buttons functional"
+  },
+  "accessibility_tree_validation": {
+    "panel_presence_in_dom": true,
+    "all_required_fields_present": true,
+    "no_extraneous_interactive_elements": true,
+    "structure_matches_design_spec": true
+  },
+  "data_binding": {
+    "source": "workflow.jobs[0].input_ref.metadata.payload.registry_adapter_status",
+    "format": "JSON object",
+    "fields_used": [
+      "registry_candidate_valid",
+      "enabled_registry_candidate_ids",
+      "registry_candidate_count",
+      "provider_execution_performed",
+      "network_calls_performed",
+      "queue_write_performed",
+      "database_write_performed",
+      "diagnostics",
+      "operator_approval_required"
+    ]
+  },
+  "browser_rendering_evidence": {
+    "panel_visibility": "Visible and fully rendered",
+    "panel_trigger": "Automatic on workflow preview completion",
+    "render_time": "< 2 seconds after workflow complete",
+    "panel_location": "b1-result-panel below Gate 1 dry-run section"
+  },
+  "mutations_performed": {
+    "panel_display": "read-only only",
+    "flask_write_endpoints": "none",
+    "local_storage": "none",
+    "dom_manipulation": "panel show/hide only",
+    "console_errors": "none"
+  },
+  "proof_verdict": "PASS",
+  "summary": "Registry adapter status panel renders correctly in browser with all required fields displaying accurate data, proper non-interactive read-only behavior, correct governance flag display, no side effects on other UI components, and clean DOM structure matching design specification. UI scaffold implementation validated for production rendering with no defects detected.",
+  "next_action": "Lock this proof slice and proceed to implementation of Button 1 provider execution and auto-discovery features."
+}
