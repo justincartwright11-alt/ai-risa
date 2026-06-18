@@ -1,0 +1,23 @@
+{
+  "slice": "button1-current-week-config-registry-adapter-preview-ui-status-design-v1",
+  "baseline": {
+    "slice": "button1-current-week-config-registry-adapter-runtime-preview-scaffold-v1",
+    "commit": "531882d",
+    "tag": "button1-current-week-config-registry-adapter-runtime-preview-scaffold-v1"
+  },
+  "status": "design_created_pending_lock",
+  "constraints": {
+    "design_only": true,
+    "ui_code_changes": false,
+    "no_runtime_wiring_changes": true,
+    "no_provider_execution": true,
+    "no_network_calls": true,
+    "no_scraping": true,
+    "no_queue_write": true,
+    "no_database_write": true,
+    "no_auto_save": true,
+    "no_promotion_to_button2": true,
+    "button2_unchanged": true,
+    "button3_unchanged": true
+  }
+}
