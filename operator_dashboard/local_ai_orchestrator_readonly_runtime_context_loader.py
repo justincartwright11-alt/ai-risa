@@ -24,6 +24,9 @@ from operator_dashboard.local_ai_orchestrator_input_context_pack import (
 from operator_dashboard.button1_auto_discovery_readiness_ranking_v1 import (
     build_button1_auto_discovery_readiness_ranking,
 )
+from operator_dashboard.button1_live_source_provider_orchestrator_v1 import (
+    run_button1_live_source_provider_orchestrator,
+)
 
 
 def _default_workspace_root() -> str:
@@ -832,6 +835,24 @@ def load_readonly_runtime_state(
     return _normalize_runtime_state(state)
 
 
+def load_button1_runtime_state_preview(
+    runtime_state_override: Dict[str, Any] | None = None,
+    workspace_root: str | None = None,
+) -> Dict[str, Any]:
+    """Load Button 1 preview state with orchestrated live-source status.
+
+    This preview path keeps stale approved-source JSON from acting as live
+    discovery authority when no approved provider is configured.
+    """
+    root = workspace_root or _default_workspace_root()
+    state = load_readonly_runtime_state(runtime_state_override, workspace_root=root)
+    preview_state = dict(state)
+    preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(provider_registry=[])
+    preview_state["approved_source_preview_rows"] = []
+    preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
+    return preview_state
+
+
 def build_button1_runtime_context(
     runtime_state_override: Dict[str, Any] | None = None,
     workspace_root: str | None = None,
@@ -855,6 +876,46 @@ def build_button1_runtime_context(
         "date_window": _safe_dict(state.get("date_window", {})),
         "candidate_rows": ranked_candidate_rows,
         # Advanced read-only known-record projection context for Button 1 preview.
+        "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
+        "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),
+        "result_ledger_records": _safe_list_of_dict(state.get("result_ledger_records", [])),
+        "global_read_projection_records": _safe_list_of_dict(state.get("global_read_projection_records", [])),
+    }
+
+    pack = LocalAIInputContextPack(
+        source_button="button1_find_fights",
+        input_ref={
+            "kind": "discovery_preview",
+            "ref_id": "b1_discovery_preview",
+            "payload": payload,
+        },
+    )
+    pack.validate()
+    return pack
+
+
+def build_button1_runtime_context_preview(
+    runtime_state_override: Dict[str, Any] | None = None,
+    workspace_root: str | None = None,
+) -> LocalAIInputContextPack:
+    state = load_button1_runtime_state_preview(runtime_state_override, workspace_root=workspace_root)
+    raw_candidate_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", [])) + _safe_list_of_dict(
+        state.get("local_candidate_rows", [])
+    )
+    event_rows = _safe_list_of_dict(state.get("discovered_candidate_rows", []))
+    event_provenance_lookup = _build_event_provenance_lookup(event_rows)
+    candidate_rows = _propagate_event_provenance(raw_candidate_rows, event_provenance_lookup)
+
+    ranked_candidate_rows = build_button1_auto_discovery_readiness_ranking(candidate_rows)
+
+    payload = {
+        "manual_text": state.get("manual_intake_text", ""),
+        "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
+        "live_source_status": _safe_dict(state.get("live_source_status", {})),
+        "event_hint": state.get("event_hint", ""),
+        "promotion_hint": state.get("promotion_hint", ""),
+        "date_window": _safe_dict(state.get("date_window", {})),
+        "candidate_rows": ranked_candidate_rows,
         "approved_historical_records": _safe_list_of_dict(state.get("approved_historical_records", [])),
         "report_history_records": _safe_list_of_dict(state.get("report_history_records", [])),
         "result_ledger_records": _safe_list_of_dict(state.get("result_ledger_records", [])),
@@ -948,9 +1009,11 @@ def build_runtime_context_payload(
 
 __all__ = [
     "build_button1_runtime_context",
+    "build_button1_runtime_context_preview",
     "build_button2_runtime_context",
     "build_button3_runtime_context",
     "build_runtime_context_pack",
     "build_runtime_context_payload",
+    "load_button1_runtime_state_preview",
     "load_readonly_runtime_state",
 ]

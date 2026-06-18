@@ -35,6 +35,7 @@ from button3_auto_result_source_yield_live_executor_preview import (
 from operator_dashboard.local_ai_orchestrator_input_context_pack import build_context_pack
 from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader import (
     build_runtime_context_pack,
+    build_button1_runtime_context_preview,
 )
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
 from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
@@ -2850,7 +2851,13 @@ def local_ai_orchestrator_workflow_preview():
             built_context_pack = build_context_pack(source_button, context_pack_payload)
             job_input_ref = built_context_pack.to_job_input_ref()
         elif use_runtime_context:
-            runtime_context_pack = build_runtime_context_pack(source_button)
+            if source_button == "button1_find_fights":
+                runtime_context_pack = build_button1_runtime_context_preview()
+            else:
+                if source_button == "button1_find_fights":
+                    runtime_context_pack = build_button1_runtime_context_preview()
+                else:
+                    runtime_context_pack = build_runtime_context_pack(source_button)
             job_input_ref = runtime_context_pack.to_job_input_ref()
         else:
             kind = str(input_ref_payload.get("kind", "empty") or "empty")

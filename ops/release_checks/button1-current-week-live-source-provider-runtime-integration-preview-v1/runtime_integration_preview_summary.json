@@ -1,0 +1,30 @@
+{
+  "slice": "button1-current-week-live-source-provider-runtime-integration-preview-v1",
+  "baseline": {
+    "slice": "button1-current-week-live-source-provider-orchestrator-scaffold-v1",
+    "commit": "01551a1",
+    "tag": "button1-current-week-live-source-provider-orchestrator-scaffold-v1"
+  },
+  "status": "validated_pass",
+  "validation": {
+    "scaffold_tests": "8 passed",
+    "runtime_integration_tests": "8 passed",
+    "adjacent_button1_tests": "26 passed"
+  },
+  "runtime_smoke": {
+    "saved_response_json": "ops/release_checks/button1-current-week-live-source-provider-runtime-integration-preview-v1/workflow_preview_response.json",
+    "feed_status": "unavailable",
+    "current_week_ready": false,
+    "save_allowed": false,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "diagnostics": ["no_approved_live_source_provider_configured"]
+  },
+  "verdicts": {
+    "no_provider_fail_closed": "pass",
+    "stale_source_not_promoted": "pass",
+    "operator_approval_gate_preserved": "pass",
+    "button2_unchanged": "pass",
+    "button3_unchanged": "pass"
+  }
+}
