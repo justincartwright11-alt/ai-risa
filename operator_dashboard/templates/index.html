@@ -727,6 +727,56 @@
     <h3>Fight Queue</h3>
     <div id="b1-profile-cards-container" class="profile-preview-cards-container" style="display:none;"></div>
     <div id="b1-status" class="status-msg">Loading fight queue…</div>
+    
+    <!-- ── Registry Adapter Status Panel (Read-Only, Non-Interactive) ──── -->
+    <div id="b1-registry-adapter-status-panel" style="display:none;background:#0f1117;border:1px solid #2a2d3e;border-radius:10px;padding:16px;margin-top:16px;font-size:0.85rem;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <strong style="color:#c9aa71;">Registry Adapter Status (Preview-Only)</strong>
+        <span style="display:inline-block;font-size:0.7rem;background:rgba(201,170,113,0.15);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:3px;padding:2px 6px;">🔒 Read-Only</span>
+      </div>
+      <p style="color:#8a94b8;font-size:0.78rem;line-height:1.4;margin-bottom:10px;">
+        Preview only. No provider execution, no live source calls, and no queue/database writes are performed.
+      </p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Adapter Validity</strong><br>
+          <span id="b1-adapter-validity" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Enabled Candidates</strong><br>
+          <span id="b1-adapter-enabled-count" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Provider Execution</strong><br>
+          <span id="b1-adapter-execution" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Network Calls</strong><br>
+          <span id="b1-adapter-network" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Queue/DB Writes</strong><br>
+          <span id="b1-adapter-writes" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Total Candidates</strong><br>
+          <span id="b1-adapter-total-count" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+      
+      <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+        <strong style="color:#c9aa71;">Diagnostics</strong><br>
+        <span id="b1-adapter-diagnostics" style="color:#8a94b8;display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word;">—</span>
+      </div>
+    </div>
+
     <div class="b1-event-cards-panel" id="b1-event-cards-panel">
       <h4>Source-Backed Event Cards</h4>
       <div class="b1-event-cards-note">
@@ -1912,6 +1962,115 @@ function renderButton1LiveSourceStatus(existingHtml, workflowData) {
     'Operator approval required: Yes'
   ];
   return existingHtml + lines.join('<br>');
+}
+
+function renderButton1RegistryAdapterStatus(workflowData) {
+  const payload = readFirstWorkflowPayload(workflowData);
+  const adapterStatus = payload && payload.registry_adapter_status ? payload.registry_adapter_status : null;
+  
+  if (!adapterStatus) {
+    // Hide panel if no data
+    const panel = document.getElementById('b1-registry-adapter-status-panel');
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+  
+  const panel = document.getElementById('b1-registry-adapter-status-panel');
+  if (panel) panel.style.display = 'block';
+  
+  // Extract fields from adapter status using design spec field names
+  const registryCandidateValid = Boolean(adapterStatus.registry_candidate_valid);
+  const registrationValid = Boolean(adapterStatus.registration_valid);
+  const validationValid = Boolean(adapterStatus.validation_valid);
+  const candidateCount = Number.isFinite(adapterStatus.registry_candidate_count) ? adapterStatus.registry_candidate_count : 0;
+  const enabledIds = Array.isArray(adapterStatus.enabled_registry_candidate_ids) ? adapterStatus.enabled_registry_candidate_ids : [];
+  const enabledCount = enabledIds.length;
+  const providerExecution = Boolean(adapterStatus.provider_execution_performed);
+  const networkCalls = Boolean(adapterStatus.network_calls_performed);
+  const queueWrites = Boolean(adapterStatus.queue_write_performed);
+  const dbWrites = Boolean(adapterStatus.database_write_performed);
+  const operatorApprovalRequired = Boolean(adapterStatus.operator_approval_required);
+  const diagnostics = Array.isArray(adapterStatus.diagnostics) ? adapterStatus.diagnostics : [];
+  
+  // Determine validity color
+  let validityColor = '#98c379'; // green: all valid
+  let validityText = 'All Valid';
+  if (!registryCandidateValid || !registrationValid || !validationValid) {
+    validityColor = '#e06c75'; // red: fail-closed
+    validityText = 'Fail-Closed';
+    if (!registrationValid) {
+      validityText = 'Missing Config';
+    } else if (!registryCandidateValid || !validationValid) {
+      validityText = 'Invalid Config';
+    }
+  }
+  
+  // Update DOM elements
+  const validitySpan = document.getElementById('b1-adapter-validity');
+  if (validitySpan) {
+    validitySpan.textContent = validityText;
+    validitySpan.style.color = validityColor;
+  }
+  
+  const enabledSpan = document.getElementById('b1-adapter-enabled-count');
+  if (enabledSpan) {
+    enabledSpan.textContent = enabledCount + ' / ' + candidateCount;
+    enabledSpan.style.color = enabledCount > 0 ? '#98c379' : '#e5c07b';
+  }
+  
+  const executionSpan = document.getElementById('b1-adapter-execution');
+  if (executionSpan) {
+    executionSpan.textContent = providerExecution ? '❌ YES (unexpected)' : '✓ NO (expected)';
+    executionSpan.style.color = providerExecution ? '#e06c75' : '#98c379';
+  }
+  
+  const networkSpan = document.getElementById('b1-adapter-network');
+  if (networkSpan) {
+    networkSpan.textContent = networkCalls ? '❌ YES (unexpected)' : '✓ NO (expected)';
+    networkSpan.style.color = networkCalls ? '#e06c75' : '#98c379';
+  }
+  
+  const writesSpan = document.getElementById('b1-adapter-writes');
+  if (writesSpan) {
+    const hasWrites = queueWrites || dbWrites;
+    writesSpan.textContent = hasWrites ? '❌ YES (unexpected)' : '✓ NO (expected)';
+    writesSpan.style.color = hasWrites ? '#e06c75' : '#98c379';
+  }
+  
+  const totalSpan = document.getElementById('b1-adapter-total-count');
+  if (totalSpan) {
+    totalSpan.textContent = String(candidateCount);
+    totalSpan.style.color = candidateCount > 0 ? '#c9aa71' : '#8a94b8';
+  }
+  
+  const diagnosticsSpan = document.getElementById('b1-adapter-diagnostics');
+  if (diagnosticsSpan) {
+    if (diagnostics.length > 0) {
+      diagnosticsSpan.textContent = diagnostics.join('\n');
+      diagnosticsSpan.style.color = !registryCandidateValid ? '#e06c75' : '#8a94b8';
+    } else if (!registryCandidateValid) {
+      diagnosticsSpan.textContent = 'Registry adapter unavailable';
+      diagnosticsSpan.style.color = '#e06c75';
+    } else {
+      diagnosticsSpan.textContent = 'All checks passed';
+      diagnosticsSpan.style.color = '#98c379';
+    }
+  }
+  
+  // Show approval requirement
+  if (operatorApprovalRequired) {
+    const approvalDiv = document.getElementById('b1-registry-adapter-status-panel');
+    if (approvalDiv) {
+      let bannerMsg = approvalDiv.querySelector('.b1-adapter-approval-banner');
+      if (!bannerMsg) {
+        bannerMsg = document.createElement('div');
+        bannerMsg.className = 'b1-adapter-approval-banner';
+        bannerMsg.style.cssText = 'background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#c9aa71;margin-top:10px;';
+        approvalDiv.appendChild(bannerMsg);
+      }
+      bannerMsg.textContent = '🔒 Operator approval required';
+    }
+  }
 }
 
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
@@ -3466,6 +3625,9 @@ function handleButton1Click() {
       if (currentStatus) {
         currentStatus.innerHTML = renderButton1LiveSourceStatus(currentStatus.innerHTML, result.workflowData);
       }
+      
+      // Render registry adapter status (read-only preview panel)
+      renderButton1RegistryAdapterStatus(result.workflowData);
 
       // Build advanced source-pack preview fields from available runtime context.
       // No new UI controls; summary-only and preview-only behavior is preserved.

@@ -1,0 +1,83 @@
+{
+  "slice_name": "button1-current-week-config-registry-adapter-preview-ui-status-scaffold-v1",
+  "baseline_slice": "button1-current-week-config-registry-adapter-preview-ui-status-design-v1",
+  "baseline_commit": "1ec479e",
+  "baseline_tag": "button1-current-week-config-registry-adapter-preview-ui-status-design-v1",
+  "scope": "UI scaffold implementation: HTML panel structure, JavaScript rendering function, workflow integration",
+  "files_changed": [
+    {
+      "file": "operator_dashboard/templates/index.html",
+      "type": "modified",
+      "changes": [
+        "Added HTML panel structure for registry_adapter_status display in b1-result-panel",
+        "Added JavaScript function renderButton1RegistryAdapterStatus to render status data",
+        "Integrated rendering call into handleButton1Click workflow after renderButton1LiveSourceStatus"
+      ]
+    },
+    {
+      "file": "operator_dashboard/test_button1_registry_adapter_preview_ui_scaffold_v1.py",
+      "type": "created",
+      "changes": [
+        "9 comprehensive tests validating UI panel rendering, governance flags, and non-interactive behavior"
+      ]
+    },
+    {
+      "file": "docs/button1_current_week_config_registry_adapter_preview_ui_status_scaffold_v1.md",
+      "type": "created",
+      "changes": [
+        "Implementation documentation and test results"
+      ]
+    }
+  ],
+  "governance_checks": {
+    "provider_execution_performed": false,
+    "network_calls_performed": false,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "button2_unchanged": true,
+    "button3_unchanged": true,
+    "ui_reads_existing_payload_only": true,
+    "non_interactive_ui": true,
+    "fail_closed_messages": "Registry adapter unavailable messages displayed when config missing",
+    "operator_approval_required_flag": "Displayed in UI"
+  },
+  "test_results": {
+    "total_tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "tests": [
+      "test_ui_panel_renders_with_valid_adapter_status",
+      "test_ui_panel_displays_fail_closed_state_when_config_missing",
+      "test_governance_flags_all_false_in_ui_panel",
+      "test_ui_panel_fields_match_design_spec",
+      "test_ui_panel_read_only_no_action_buttons",
+      "test_ui_isolation_from_button2_and_button3",
+      "test_adapter_status_payload_contract_stability",
+      "test_multiple_ui_render_cycles_preserve_state",
+      "test_ui_panel_no_network_requests_in_rendering"
+    ]
+  },
+  "ui_fields_displayed": [
+    "Adapter Validity (registry_candidate_valid)",
+    "Enabled Candidates (enabled_registry_candidate_ids count / registry_candidate_count)",
+    "Provider Execution (provider_execution_performed - must be false)",
+    "Network Calls (network_calls_performed - must be false)",
+    "Queue/DB Writes (queue_write_performed OR database_write_performed - must be false)",
+    "Total Candidates (registry_candidate_count)",
+    "Diagnostics (diagnostics list or fail-closed message)"
+  ],
+  "ui_behavior": {
+    "panel_visibility": "Hidden when no data, shown when registry_adapter_status present",
+    "status_colors": "Green (all valid), Amber (attention), Red (fail-closed)",
+    "interactive_controls": "None - read-only display only",
+    "button2_promotion": "Not available in this panel",
+    "operator_approval_message": "Displayed when operator_approval_required is true"
+  },
+  "payload_contract": {
+    "data_source": "workflow.jobs[0].input_ref.metadata.payload.registry_adapter_status",
+    "new_runtime_paths": "None - consumes existing payload only",
+    "new_network_calls": "None",
+    "new_provider_execution": "None"
+  },
+  "verdict": "PASS - UI scaffold implementation complete, all tests passing, governance checks verified, non-interactive behavior confirmed, Button 2/3 isolation verified"
+}
