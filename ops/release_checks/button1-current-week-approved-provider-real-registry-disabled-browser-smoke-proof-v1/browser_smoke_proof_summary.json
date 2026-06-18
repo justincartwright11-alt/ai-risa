@@ -1,0 +1,40 @@
+{
+  "slice_name": "button1-current-week-approved-provider-real-registry-disabled-browser-smoke-proof-v1",
+  "scope": "Evidence-only browser/UI proof",
+  "runtime_registry_path": "ops/approved_sources/button1_live_provider_registry.json",
+  "browser_target": "http://127.0.0.1:5050/",
+  "action": "Clicked Button 1 Find Fights and observed Registry Adapter Status panel",
+  "panel_observed": {
+    "adapter_validity": "All Valid",
+    "enabled_candidates": "0 / 2",
+    "provider_execution": "NO (expected)",
+    "network_calls": "NO (expected)",
+    "queue_db_writes": "NO (expected)",
+    "total_candidates": 2,
+    "diagnostics": "no_enabled_provider",
+    "operator_approval_required_displayed": true
+  },
+  "transition_proof": {
+    "previous_diagnostic": "provider_config_missing",
+    "current_diagnostic": "no_enabled_provider",
+    "registration_valid": true,
+    "validation_valid": true,
+    "registry_candidate_valid": true
+  },
+  "governance": {
+    "provider_execution_performed": false,
+    "network_calls_performed": false,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "preview_only": true,
+    "read_only": true,
+    "operator_approval_required": true
+  },
+  "isolation": {
+    "button2_unaffected": true,
+    "button3_unaffected": true
+  },
+  "runtime_code_changed": false,
+  "ui_code_changed": false,
+  "verdict": "PASS"
+}
