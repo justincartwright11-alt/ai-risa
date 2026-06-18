@@ -777,6 +777,88 @@
       </div>
     </div>
 
+    <!-- ── Execution Gate Status Panel (Read-Only, Non-Interactive) ─────── -->
+    <div id="b1-execution-gate-status-panel" style="display:none;background:#0f1117;border:1px solid #2a2d3e;border-radius:10px;padding:16px;margin-top:12px;font-size:0.85rem;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <strong style="color:#c9aa71;">Execution Gate Status (Preview-Only)</strong>
+        <span style="display:inline-block;font-size:0.7rem;background:rgba(201,170,113,0.15);color:#c9aa71;border:1px solid rgba(201,170,113,0.3);border-radius:3px;padding:2px 6px;">🔒 Read-Only</span>
+      </div>
+      <p style="color:#8a94b8;font-size:0.78rem;line-height:1.4;margin-bottom:10px;">
+        Preview only. Deny-by-default status display only. No provider execution, no source calls, no scraping, and no queue/database writes are performed.
+      </p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Gate Checked</strong><br>
+          <span id="b1-gate-checked" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Gate Allowed</strong><br>
+          <span id="b1-gate-allowed" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Decision</strong><br>
+          <span id="b1-gate-decision" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Preview Only</strong><br>
+          <span id="b1-gate-preview-only" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Provider ID</strong><br>
+          <span id="b1-gate-provider-id" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Source Button</strong><br>
+          <span id="b1-gate-source-button" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Provider Execution</strong><br>
+          <span id="b1-gate-execution" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Network Calls</strong><br>
+          <span id="b1-gate-network" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Source Calls / Scraping</strong><br>
+          <span id="b1-gate-source-scraping" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Queue/DB Writes</strong><br>
+          <span id="b1-gate-writes" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Button 2 Promotion</strong><br>
+          <span id="b1-gate-promotion" style="color:#8a94b8;">—</span>
+        </div>
+        <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+          <strong style="color:#c9aa71;">Decision Timestamp</strong><br>
+          <span id="b1-gate-decision-time" style="color:#8a94b8;">—</span>
+        </div>
+      </div>
+
+      <div style="background:#141824;border:1px solid #2a2d3e;border-radius:8px;padding:10px;font-size:0.78rem;color:#d7dce8;">
+        <strong style="color:#c9aa71;">Reason Codes</strong><br>
+        <span id="b1-gate-reasons" style="color:#8a94b8;display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word;">—</span>
+      </div>
+    </div>
+
     <div class="b1-event-cards-panel" id="b1-event-cards-panel">
       <h4>Source-Backed Event Cards</h4>
       <div class="b1-event-cards-note">
@@ -2071,6 +2153,63 @@ function renderButton1RegistryAdapterStatus(workflowData) {
       bannerMsg.textContent = '🔒 Operator approval required';
     }
   }
+}
+
+function renderButton1ExecutionGateStatus(workflowData) {
+  const payload = readFirstWorkflowPayload(workflowData);
+  const gate = payload && payload.execution_gate_status ? payload.execution_gate_status : null;
+
+  const panel = document.getElementById('b1-execution-gate-status-panel');
+  if (!gate) {
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+
+  if (panel) panel.style.display = 'block';
+
+  const checked = Boolean(gate.execution_gate_checked);
+  const allowed = Boolean(gate.execution_gate_allowed);
+  const decision = String(gate.execution_gate_decision || 'deny');
+  const previewOnly = Boolean(gate.preview_only);
+  const providerId = String(gate.provider_id || '—');
+  const sourceButton = String(gate.source_button || '—');
+  const reasons = Array.isArray(gate.execution_gate_reason_codes) ? gate.execution_gate_reason_codes : [];
+  const decisionTime = String(gate.decision_timestamp_utc || '—');
+
+  const providerExecution = Boolean(gate.provider_execution_performed);
+  const networkCalls = Boolean(gate.network_calls_performed);
+  const sourceCalls = Boolean(gate.source_calls_performed);
+  const scraping = Boolean(gate.scraping_performed);
+  const queueWrites = Boolean(gate.queue_write_performed);
+  const dbWrites = Boolean(gate.database_write_performed);
+  const button2Promotion = Boolean(gate.button2_promotion_performed);
+
+  const setText = function(id, text, color) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    if (color) el.style.color = color;
+  };
+
+  setText('b1-gate-checked', checked ? 'YES' : 'NO', checked ? '#98c379' : '#e5c07b');
+  setText('b1-gate-allowed', allowed ? 'YES' : 'NO', allowed ? '#98c379' : '#e06c75');
+  setText('b1-gate-decision', decision.toUpperCase(), decision === 'allow' ? '#98c379' : '#e06c75');
+  setText('b1-gate-preview-only', previewOnly ? 'YES' : 'NO', previewOnly ? '#98c379' : '#e5c07b');
+  setText('b1-gate-provider-id', providerId, '#8a94b8');
+  setText('b1-gate-source-button', sourceButton, '#8a94b8');
+
+  setText('b1-gate-execution', providerExecution ? '❌ YES (unexpected)' : '✓ NO (expected)', providerExecution ? '#e06c75' : '#98c379');
+  setText('b1-gate-network', networkCalls ? '❌ YES (unexpected)' : '✓ NO (expected)', networkCalls ? '#e06c75' : '#98c379');
+  setText('b1-gate-source-scraping', (sourceCalls || scraping) ? '❌ YES (unexpected)' : '✓ NO (expected)', (sourceCalls || scraping) ? '#e06c75' : '#98c379');
+  setText('b1-gate-writes', (queueWrites || dbWrites) ? '❌ YES (unexpected)' : '✓ NO (expected)', (queueWrites || dbWrites) ? '#e06c75' : '#98c379');
+  setText('b1-gate-promotion', button2Promotion ? '❌ YES (unexpected)' : '✓ NO (expected)', button2Promotion ? '#e06c75' : '#98c379');
+  setText('b1-gate-decision-time', decisionTime, '#8a94b8');
+
+  setText(
+    'b1-gate-reasons',
+    reasons.length > 0 ? reasons.join('\n') : 'execution_gate_status_unavailable_fail_closed',
+    reasons.length > 0 ? '#8a94b8' : '#e06c75'
+  );
 }
 
 // ── Button 1: Find & Build Fight Queue ───────────────────────────────────────
@@ -3628,6 +3767,8 @@ function handleButton1Click() {
       
       // Render registry adapter status (read-only preview panel)
       renderButton1RegistryAdapterStatus(result.workflowData);
+      // Render execution gate status (read-only preview panel)
+      renderButton1ExecutionGateStatus(result.workflowData);
 
       // Build advanced source-pack preview fields from available runtime context.
       // No new UI controls; summary-only and preview-only behavior is preserved.
