@@ -1,0 +1,69 @@
+{
+  "slice": "button2-runtime-preflight-weasyprint-import-proof-v1",
+  "date": "2026-06-18",
+  "status": "FAIL_CLOSED",
+  "goal": "prove weasyprint preflight readiness after output-root and msys2/gtk path repairs, without generating PDFs",
+  "evidence_sources": {
+    "dashboard_runtime_preflight_panel": {
+      "button2_pdf_output_root": {
+        "status": "READY",
+        "value": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports"
+      },
+      "msys_gtk_dll_path": {
+        "status": "READY",
+        "value": "C:\\msys64\\ucrt64\\bin",
+        "path_exists": true,
+        "in_process_path": true
+      },
+      "weasyprint_render_readiness": {
+        "status": "MISSING",
+        "value": "import_error:OSError"
+      },
+      "reports_output_directory": {
+        "status": "READY"
+      },
+      "safe_pdf_open_route": {
+        "status": "READY",
+        "value": "/api/button2/generated-report/open"
+      },
+      "current_server_port": {
+        "status": "READY",
+        "value": "5050"
+      }
+    },
+    "backend_preflight_function": {
+      "function": "operator_dashboard.app._build_runtime_preflight_status",
+      "result": {
+        "button2_pdf_output_root": {
+          "ready": true
+        },
+        "msys_gtk_dll_path": {
+          "ready": true,
+          "path_exists": true,
+          "in_process_path": true
+        },
+        "weasyprint_render_readiness": {
+          "ready": false,
+          "value": "import_error:OSError"
+        }
+      }
+    },
+    "weasyprint_runtime_message": "WeasyPrint could not import some external libraries"
+  },
+  "verdict": {
+    "weasyprint_ready": false,
+    "proof_result": "NOT_READY",
+    "classification": "native_dependency_import_failure_persists_after_path_injection"
+  },
+  "boundary_confirmation": {
+    "runtime_behavior_changes_applied": false,
+    "pdf_generation_executed": false,
+    "report_delivery_executed": false,
+    "customer_output_changed": false,
+    "queue_or_database_writes": false,
+    "button1_provider_governance_changed": false,
+    "button1_authorization_changed": false,
+    "button3_learning_calibration_changed": false
+  },
+  "next_recommended_slice": "button2-runtime-preflight-weasyprint-import-repair-v1"
+}
