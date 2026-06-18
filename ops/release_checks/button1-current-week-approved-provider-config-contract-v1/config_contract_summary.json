@@ -1,0 +1,39 @@
+{
+  "slice": "button1-current-week-approved-provider-config-contract-v1",
+  "baseline": {
+    "slice": "button1-current-week-live-source-provider-runtime-integration-preview-v1",
+    "commit": "fae8d29",
+    "tag": "button1-current-week-live-source-provider-runtime-integration-preview-v1"
+  },
+  "status": "docs_only_contract_defined",
+  "constraints": {
+    "docs_only": true,
+    "no_provider_implementation": true,
+    "no_scraping": true,
+    "no_live_source_wiring": true,
+    "button2_unchanged": true,
+    "button3_unchanged": true,
+    "no_auto_save": true,
+    "no_auto_promotion": true,
+    "fail_closed_unchanged": true
+  },
+  "required_contract_fields": [
+    "provider_id",
+    "provider_name",
+    "provider_type",
+    "enabled",
+    "source_tier",
+    "allowed_domains",
+    "endpoint_or_feed_location",
+    "auth_required",
+    "refresh_cadence_minutes",
+    "max_feed_age_hours",
+    "ruleset_scope",
+    "promotion_scope",
+    "region_scope",
+    "output_schema_version",
+    "operator_approved_by",
+    "approval_timestamp_utc",
+    "provenance_notes"
+  ]
+}
