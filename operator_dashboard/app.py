@@ -69,6 +69,9 @@ from operator_dashboard.button2_dossier_handoff_report_context_preview import (
 from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
     generate_button2_report_render_gate_integration,
 )
+from operator_dashboard.button2_customer_flow_dry_run_contract_preview_v1 import (
+    run_button2_customer_flow_dry_run_contract_preview,
+)
 from operator_dashboard.button2_pdf_output_root_config_v1 import (
     get_pdf_output_root,
     OutputRootNotConfiguredError,
@@ -1576,6 +1579,21 @@ def generate_report():
     result = generate_button2_report_render_gate_integration(data)
     result = _decorate_button2_generated_pdf_open_link(result)
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
+    return jsonify(result), status_code
+
+
+@app.route("/api/operator/button2/customer-flow/dry-run-contract-preview", methods=["POST"])
+def button2_customer_flow_dry_run_contract_preview():
+    """Return a decision-only customer-flow dry-run contract preview."""
+    body = request.get_json(silent=True)
+    if body is None:
+        body = {}
+
+    result = run_button2_customer_flow_dry_run_contract_preview(body)
+    if not isinstance(result, dict):
+        result = result.to_dict()
+
+    status_code = 200 if result.get("ok") else 400
     return jsonify(result), status_code
 
 
