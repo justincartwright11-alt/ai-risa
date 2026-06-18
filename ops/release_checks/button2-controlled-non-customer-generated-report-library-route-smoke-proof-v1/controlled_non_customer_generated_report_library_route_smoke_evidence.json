@@ -1,0 +1,110 @@
+{
+  "slice": "button2-controlled-non-customer-generated-report-library-route-smoke-proof-v1",
+  "route": "/api/button2/generated-report/library",
+  "output_root_used": "c:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops\\release_checks\\button2-controlled-fixture-render-smoke-proof-v1",
+  "fixture_dir_entries_before": [
+    "controlled_fixture_render_smoke.pdf",
+    "controlled_fixture_render_smoke_summary.json"
+  ],
+  "fixture_dir_entries_after": [
+    "controlled_fixture_render_smoke.pdf",
+    "controlled_fixture_render_smoke_summary.json"
+  ],
+  "fixture_pdf_meta_before": {
+    "exists": true,
+    "size_bytes": 7597,
+    "mtime_ns": 1781774131264782400
+  },
+  "fixture_pdf_meta_after": {
+    "exists": true,
+    "size_bytes": 7597,
+    "mtime_ns": 1781774131264782400
+  },
+  "fixture_summary_meta_before": {
+    "exists": true,
+    "size_bytes": 1215,
+    "mtime_ns": 1781774131267292100
+  },
+  "fixture_summary_meta_after": {
+    "exists": true,
+    "size_bytes": 1215,
+    "mtime_ns": 1781774131267292100
+  },
+  "reports_dir_entries_before": [
+    "alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260527T035412Z_8d831a3640a1.pdf",
+    "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260527T035355Z_3149fb31507a.pdf",
+    "ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260527T035359Z_26f20019db48.pdf",
+    "bo_nickal_vs_cody_brundage_ufc_300_premium_20260527T035423Z_e0645d3cd120.pdf",
+    "callum_walsh_vs_austin_williams_joshua_vs_dubois_premium_20260527T035402Z_ca3a04f90763.pdf",
+    "chris_billam_smith_vs_mairis_briedis_joshua_vs_dubois_premium_20260527T035409Z_c5d980fd2266.pdf",
+    "dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260527T035406Z_0013279da00b.pdf",
+    "islam_makhachev_vs_dustin_poirier_ufc_300_premium_20260527T035416Z_f18c63f999d5.pdf",
+    "kayla_harrison_vs_holly_holm_ufc_300_premium_20260527T035426Z_7c6cd0bd51ab.pdf",
+    "levi_rigters_vs_guto_inocente_glory_100_premium_20260527T035440Z_9df82f2fa182.pdf",
+    "max_holloway_vs_justin_gaethje_ufc_300_premium_20260527T035419Z_a98c865f3ad6.pdf",
+    "murthel_groenhart_vs_fabio_kwasi_glory_100_premium_20260527T035443Z_c9c36db19110.pdf",
+    "natalia_novikova_vs_xiaonan_martinez_one_169_premium_20260527T035345Z_959366de83d6.pdf",
+    "rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260527T035430Z_5c0cb91504f8.pdf",
+    "ryan_curtis_vs_adam_borics_bellator_298_premium_20260527T035339Z_99a2634353fd.pdf",
+    "ryan_curtis_vs_adam_borics_bellator_298_premium_20260602T030305Z_992f3bc39aa5.pdf",
+    "sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260527T035335Z_d1c8eece8396.pdf",
+    "tyjani_beztati_vs_endy_semeleer_glory_100_premium_20260527T035433Z_90ea0120a91a.pdf",
+    "tyrone_spong_vs_lancelot_proton_de_la_chapelle_glory_85_premium_20260527T035349Z_293c1956342d.pdf",
+    "zebaztian_kadestam_vs_john_kavanagh_one_169_premium_20260527T035342Z_5b0ce6457614.pdf"
+  ],
+  "reports_dir_entries_after": [
+    "alex_pereira_vs_jiri_prochazka_ufc_300_premium_20260527T035412Z_8d831a3640a1.pdf",
+    "anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260527T035355Z_3149fb31507a.pdf",
+    "ben_whittaker_vs_willy_hutchinson_joshua_vs_dubois_premium_20260527T035359Z_26f20019db48.pdf",
+    "bo_nickal_vs_cody_brundage_ufc_300_premium_20260527T035423Z_e0645d3cd120.pdf",
+    "callum_walsh_vs_austin_williams_joshua_vs_dubois_premium_20260527T035402Z_ca3a04f90763.pdf",
+    "chris_billam_smith_vs_mairis_briedis_joshua_vs_dubois_premium_20260527T035409Z_c5d980fd2266.pdf",
+    "dalton_smith_vs_jose_zepeda_joshua_vs_dubois_premium_20260527T035406Z_0013279da00b.pdf",
+    "islam_makhachev_vs_dustin_poirier_ufc_300_premium_20260527T035416Z_f18c63f999d5.pdf",
+    "kayla_harrison_vs_holly_holm_ufc_300_premium_20260527T035426Z_7c6cd0bd51ab.pdf",
+    "levi_rigters_vs_guto_inocente_glory_100_premium_20260527T035440Z_9df82f2fa182.pdf",
+    "max_holloway_vs_justin_gaethje_ufc_300_premium_20260527T035419Z_a98c865f3ad6.pdf",
+    "murthel_groenhart_vs_fabio_kwasi_glory_100_premium_20260527T035443Z_c9c36db19110.pdf",
+    "natalia_novikova_vs_xiaonan_martinez_one_169_premium_20260527T035345Z_959366de83d6.pdf",
+    "rico_verhoeven_vs_tariq_osaro_glory_100_premium_20260527T035430Z_5c0cb91504f8.pdf",
+    "ryan_curtis_vs_adam_borics_bellator_298_premium_20260527T035339Z_99a2634353fd.pdf",
+    "ryan_curtis_vs_adam_borics_bellator_298_premium_20260602T030305Z_992f3bc39aa5.pdf",
+    "sean_strickland_vs_dricus_du_plessis_ufc_304_premium_20260527T035335Z_d1c8eece8396.pdf",
+    "tyjani_beztati_vs_endy_semeleer_glory_100_premium_20260527T035433Z_90ea0120a91a.pdf",
+    "tyrone_spong_vs_lancelot_proton_de_la_chapelle_glory_85_premium_20260527T035349Z_293c1956342d.pdf",
+    "zebaztian_kadestam_vs_john_kavanagh_one_169_premium_20260527T035342Z_5b0ce6457614.pdf"
+  ],
+  "queue_meta_before": {
+    "exists": true,
+    "size_bytes": 17671,
+    "mtime_ns": 1779188320084833300
+  },
+  "queue_meta_after": {
+    "exists": true,
+    "size_bytes": 17671,
+    "mtime_ns": 1779188320084833300
+  },
+  "button1_source_meta_before": {
+    "exists": true,
+    "size_bytes": 23428,
+    "mtime_ns": 1779100318344267200
+  },
+  "button1_source_meta_after": {
+    "exists": true,
+    "size_bytes": 23428,
+    "mtime_ns": 1779100318344267200
+  },
+  "response": {
+    "status_code": 200,
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Pragma": "no-cache"
+    },
+    "body_length": 2415,
+    "fixture_filename_present": true,
+    "safe_open_link": "/api/button2/generated-report/open?filename=controlled_fixture_render_smoke.pdf",
+    "safe_open_link_present": true,
+    "non_pdf_fixture_summary_not_listed": true
+  }
+}
