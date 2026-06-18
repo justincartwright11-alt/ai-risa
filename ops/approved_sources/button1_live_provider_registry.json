@@ -1,0 +1,59 @@
+{
+  "schema_version": "button1_live_provider_registry_v1",
+  "providers": [
+    {
+      "provider_id": "ufc_official_events",
+      "provider_name": "UFC Official Events",
+      "provider_type": "official",
+      "enabled": false,
+      "source_tier": "official_promotion",
+      "allowed_domains": [
+        "ufc.com"
+      ],
+      "endpoint_or_feed_location": "https://www.ufc.com/events",
+      "auth_required": false,
+      "refresh_cadence_minutes": 120,
+      "max_feed_age_hours": 24,
+      "ruleset_scope": [
+        "event_card_discovery"
+      ],
+      "promotion_scope": [
+        "UFC"
+      ],
+      "region_scope": [
+        "global"
+      ],
+      "output_schema_version": "button1_live_provider_registry_v1",
+      "operator_approved_by": "operator@example.com",
+      "approval_timestamp_utc": "2026-06-18T00:00:00Z",
+      "provenance_notes": "Runtime registry present but provider disabled by policy. No execution without future operator-approved execution slice."
+    },
+    {
+      "provider_id": "one_fc_official_events",
+      "provider_name": "ONE Championship Official Events",
+      "provider_type": "official",
+      "enabled": false,
+      "source_tier": "official_promotion",
+      "allowed_domains": [
+        "onefc.com"
+      ],
+      "endpoint_or_feed_location": "https://www.onefc.com/events/",
+      "auth_required": false,
+      "refresh_cadence_minutes": 180,
+      "max_feed_age_hours": 24,
+      "ruleset_scope": [
+        "event_card_discovery"
+      ],
+      "promotion_scope": [
+        "ONE Championship"
+      ],
+      "region_scope": [
+        "global"
+      ],
+      "output_schema_version": "button1_live_provider_registry_v1",
+      "operator_approved_by": "operator@example.com",
+      "approval_timestamp_utc": "2026-06-18T00:00:00Z",
+      "provenance_notes": "Disabled default entry for contract-valid runtime registry bootstrap."
+    }
+  ]
+}
