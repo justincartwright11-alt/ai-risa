@@ -1,0 +1,38 @@
+{
+  "slice": "button2-controlled-fixture-render-smoke-proof-v1",
+  "status": "PASS",
+  "preflight_before_render": {
+    "button2_pdf_output_root": {
+      "ready": true,
+      "value": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports"
+    },
+    "msys_gtk_dll_path": {
+      "ready": true,
+      "value": "C:\\msys64\\ucrt64\\bin",
+      "path_exists": true,
+      "in_process_path": true
+    },
+    "weasyprint_render_readiness": {
+      "ready": true,
+      "value": "import_ok"
+    }
+  },
+  "render_attempted": true,
+  "render_success": true,
+  "output_path": "ops\\release_checks\\button2-controlled-fixture-render-smoke-proof-v1\\controlled_fixture_render_smoke.pdf",
+  "file_exists": true,
+  "file_size_bytes": 7597,
+  "pdf_bytes_len": 7597,
+  "error": null,
+  "boundary_confirmation": {
+    "controlled_fixture_only": true,
+    "customer_report_path_used": false,
+    "delivery_performed": false,
+    "queue_or_database_writes": false,
+    "button1_governance_changed": false,
+    "button1_authorization_changed": false,
+    "button3_learning_calibration_changed": false,
+    "provider_execution": false,
+    "source_or_network_calls": false
+  }
+}
