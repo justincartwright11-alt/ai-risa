@@ -33,6 +33,9 @@ from operator_dashboard.button1_approved_provider_config_registration_v1 import 
 from operator_dashboard.button1_config_registration_to_orchestrator_registry_adapter_v1 import (
     adapt_button1_registration_output_to_orchestrator_registry_candidates,
 )
+from operator_dashboard.button1_provider_adapter_execution_gate_v1 import (
+    evaluate_button1_provider_adapter_execution_gate,
+)
 
 
 def _default_workspace_root() -> str:
@@ -89,6 +92,53 @@ def _load_button1_registry_adapter_status_preview(root: str) -> Dict[str, Any]:
     adapter_status["database_write_performed"] = False
     adapter_status["operator_approval_required"] = True
     return _safe_dict(adapter_status)
+
+
+def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Build preview-only execution gate status for Button 1 runtime preview.
+
+    This status path must remain non-executing and deny-by-default.
+    """
+
+    state_dict = _safe_dict(state)
+    registry_adapter_status = _safe_dict(state_dict.get("registry_adapter_status", {}))
+    enabled_ids = [
+        _safe_text(provider_id)
+        for provider_id in _safe_list(registry_adapter_status.get("enabled_registry_candidate_ids", []))
+        if _safe_text(provider_id)
+    ]
+    registered_ids = [
+        _safe_text(provider_id)
+        for provider_id in _safe_list(registry_adapter_status.get("registered_provider_ids", []))
+        if _safe_text(provider_id)
+    ]
+
+    provider_id = enabled_ids[0] if enabled_ids else (registered_ids[0] if registered_ids else "")
+    provider_enabled = bool(provider_id and provider_id in set(enabled_ids))
+
+    gate_status = evaluate_button1_provider_adapter_execution_gate(
+        {
+            "source_button": "button1_find_fights",
+            "provider_id": provider_id,
+            "provider_enabled": provider_enabled,
+            # Runtime preview is deny-by-default and non-executing.
+            "operator_approval_token": "",
+            "enable_preview_allow_decision": False,
+        }
+    )
+
+    gate_status["execution_gate_allowed"] = False
+    gate_status["execution_gate_decision"] = "deny"
+    gate_status["preview_only"] = True
+    gate_status["operator_approval_required"] = True
+    gate_status["provider_execution_performed"] = False
+    gate_status["network_calls_performed"] = False
+    gate_status["source_calls_performed"] = False
+    gate_status["scraping_performed"] = False
+    gate_status["queue_write_performed"] = False
+    gate_status["database_write_performed"] = False
+    gate_status["button2_promotion_performed"] = False
+    return _safe_dict(gate_status)
 
 
 def _read_text_file(path: str) -> str:
@@ -879,6 +929,7 @@ def load_button1_runtime_state_preview(
     preview_state = dict(state)
     preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(provider_registry=[])
     preview_state["registry_adapter_status"] = _load_button1_registry_adapter_status_preview(root)
+    preview_state["execution_gate_status"] = _load_button1_execution_gate_status_preview(preview_state)
     preview_state["approved_source_preview_rows"] = []
     preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
     return preview_state
@@ -945,6 +996,7 @@ def build_button1_runtime_context_preview(
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
         "live_source_status": _safe_dict(state.get("live_source_status", {})),
         "registry_adapter_status": _safe_dict(state.get("registry_adapter_status", {})),
+        "execution_gate_status": _safe_dict(state.get("execution_gate_status", {})),
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),
