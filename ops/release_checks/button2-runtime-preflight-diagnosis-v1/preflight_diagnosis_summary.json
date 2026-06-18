@@ -1,0 +1,79 @@
+{
+  "slice": "button2-runtime-preflight-diagnosis-v1",
+  "date": "2026-06-18",
+  "status": "PASS",
+  "mode": "diagnosis_only",
+  "current_preflight_values": {
+    "button2_pdf_output_root": {
+      "status": "MISSING",
+      "value": "unset"
+    },
+    "msys_gtk_dll_path": {
+      "status": "MISSING",
+      "value": "C:\\msys64\\ucrt64\\bin",
+      "path_exists": true,
+      "in_process_path": false
+    },
+    "weasyprint_render_readiness": {
+      "status": "MISSING",
+      "value": "import_error:OSError"
+    },
+    "reports_output_directory": {
+      "status": "READY",
+      "exists": true,
+      "writable": true
+    },
+    "safe_pdf_open_route": {
+      "status": "READY",
+      "value": "/api/button2/generated-report/open"
+    },
+    "current_server_port": {
+      "status": "READY",
+      "value": "5050"
+    }
+  },
+  "inspected_files": [
+    "operator_dashboard/app.py",
+    "operator_dashboard/button2_pdf_output_root_config_v1.py",
+    "operator_dashboard/test_button2_pdf_output_root_config_preview_v1.py",
+    "operator_dashboard/test_operator_dashboard_runtime_preflight_status_panel_v1.py",
+    "scripts/start_ai_risa_dashboard_windows.ps1",
+    "operator_dashboard/templates/index.html"
+  ],
+  "inspected_functions": [
+    "_build_runtime_preflight_status(host_value)",
+    "_path_is_in_process_path(target_path)",
+    "get_pdf_output_root()",
+    "button2_generated_report_open_v1()",
+    "button2_generated_report_library_v1()"
+  ],
+  "root_cause_classification": {
+    "button2_pdf_output_root": "missing_runtime_environment_variable_in_active_flask_process",
+    "msys_gtk_dll_path": "required_windows_native_dependency_path_not_in_process_path",
+    "weasyprint_render_readiness": "native_dependency_load_failure_consistent_with_missing_gtk_runtime_path"
+  },
+  "fallback_assessment": {
+    "reports_dir_is_fallback_for_output_root": false,
+    "output_root_env_required": true
+  },
+  "recommended_repair_order": [
+    "output_root_resolution",
+    "msys_gtk_path_injection",
+    "weasyprint_import_proof"
+  ],
+  "hard_boundary_confirmation": {
+    "pdf_generation_performed": false,
+    "report_delivery_performed": false,
+    "button1_provider_governance_changed": false,
+    "button1_authorization_changed": false,
+    "button3_learning_or_calibration_changed": false,
+    "customer_output_changed": false,
+    "queue_or_database_writes_performed": false,
+    "runtime_behavior_changed": false
+  },
+  "verdicts": {
+    "no_runtime_change": "PASS",
+    "button1_governance_untouched": "PASS",
+    "button3_untouched": "PASS"
+  }
+}
