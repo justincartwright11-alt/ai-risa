@@ -1,0 +1,37 @@
+{
+  "slice": "button1-current-week-fail-closed-save-action-suppression-ui-browser-smoke-proof-v1",
+  "date": "2026-06-18",
+  "status": "PASS",
+  "proof_type": "browser_ui_smoke",
+  "source_button": "button1_find_fights",
+  "checks": {
+    "save_selected_btn_disabled": true,
+    "save_all_btn_disabled": true,
+    "suppression_reason_visible": true,
+    "suppression_reason_text": "Save disabled: approved source feed unavailable / no current-week source-backed matchups / execution gate denied / no ready rows to save.",
+    "discovery_failed_panel_visible": true,
+    "discovery_failed_text": "No current-week source-backed matchups found. Approved source feed is unavailable."
+  },
+  "backend_state_confirmed": {
+    "save_allowed": false,
+    "current_week_ready": false,
+    "feed_status": "unavailable",
+    "execution_gate_allowed": false,
+    "execution_gate_decision": "DENY",
+    "would_save_rows": 0
+  },
+  "side_effect_flags": {
+    "provider_execution": false,
+    "network_calls": false,
+    "scraping": false,
+    "queue_writes": false,
+    "button2_promotion": false
+  },
+  "accessibility_snapshot_evidence": {
+    "save_selected_btn": "[disabled]",
+    "save_all_btn": "[disabled]",
+    "suppression_div_text": "Save disabled: approved source feed unavailable / no current-week source-backed matchups / execution gate denied / no ready rows to save.",
+    "discovery_failed_message": "No current-week source-backed matchups found. Approved source feed is unavailable."
+  },
+  "verdict": "PASS"
+}
