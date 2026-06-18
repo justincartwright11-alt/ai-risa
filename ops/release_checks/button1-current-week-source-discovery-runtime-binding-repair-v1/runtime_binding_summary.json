@@ -1,0 +1,30 @@
+{
+  "slice": "button1-current-week-source-discovery-runtime-binding-repair-v1",
+  "baseline_commit": "7b41ada",
+  "runtime_smoke_response_path": "ops/release_checks/button1-current-week-source-discovery-runtime-binding-repair-v1/workflow_preview_response_after_repair.json",
+  "runtime_contract_verdict": {
+    "feed_status": "stale",
+    "generated_at_utc": "2026-05-18T10:31:58.344267+00:00",
+    "generated_at_utc_is_timestamp": true,
+    "generated_at_utc_is_not_filename": true,
+    "current_week_ready": false,
+    "save_allowed": false,
+    "feed_used": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\ops/approved_sources/button1_live_event_source_rows.json",
+    "feed_used_separate_from_generated_at_utc": true,
+    "source_freshness": "feed_stale",
+    "upcoming_window_days": 14,
+    "fallback_used": false,
+    "current_week_rows_count": 0,
+    "approved_source_event_rows_count": 0
+  },
+  "operator_gate_verdict": {
+    "gate_required": true,
+    "write_authorized": false,
+    "queue_write_performed": false,
+    "database_write_performed": false
+  },
+  "notes": [
+    "Runtime response is fail-closed due stale feed; old fixture rows are not promoted as current live discovery.",
+    "Button 2 and Button 3 mutation/learning/calibration flags remain preview-only false."
+  ]
+}
