@@ -1,0 +1,39 @@
+{
+  "slice_name": "button1-current-week-provider-adapter-execution-gate-runtime-preview-browser-smoke-proof-v1",
+  "scope": "Evidence-only browser/API proof",
+  "browser_target": "http://127.0.0.1:5050/",
+  "button1_action": "Find Fights clicked",
+  "api_route": "/api/local-ai/orchestrator/workflow-preview",
+  "api_request": {
+    "source_button": "button1_find_fights",
+    "use_runtime_context": true,
+    "execute_preview": true
+  },
+  "execution_gate_status_observed": {
+    "present": true,
+    "execution_gate_checked": true,
+    "execution_gate_allowed": false,
+    "execution_gate_decision": "deny",
+    "preview_only": true,
+    "reason_codes": [
+      "execution_gate_operator_approval_missing",
+      "execution_gate_provider_not_enabled"
+    ]
+  },
+  "side_effect_flags": {
+    "provider_execution_performed": false,
+    "network_calls_performed": false,
+    "source_calls_performed": false,
+    "scraping_performed": false,
+    "queue_write_performed": false,
+    "database_write_performed": false,
+    "button2_promotion_performed": false
+  },
+  "governance": {
+    "deny_by_default": true,
+    "runtime_scope": "preview_status_only",
+    "button2_unaffected": true,
+    "button3_unaffected": true
+  },
+  "verdict": "PASS"
+}
