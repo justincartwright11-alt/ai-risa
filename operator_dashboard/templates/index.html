@@ -866,8 +866,11 @@
         Operator selection is explicit. Only source-backed matchups may be selected for Button 2 preview.
       </div>
       <div id="b1-promotion-toolbar" style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
-        <button class="b1-select-btn" id="b1-save-selected-ready-to-pdf-queue-btn" onclick="button1SaveSelectedReadyToPdfQueue()">Save Selected Ready to PDF Queue</button>
-        <button class="b1-select-btn" id="b1-save-all-ready-to-pdf-queue-btn" onclick="button1SaveAllReadyToPdfQueue()">Save All Ready to PDF Queue</button>
+        <button class="b1-select-btn" id="b1-save-selected-ready-to-pdf-queue-btn" onclick="button1SaveSelectedReadyToPdfQueue()" disabled>Save Selected Ready to PDF Queue</button>
+        <button class="b1-select-btn" id="b1-save-all-ready-to-pdf-queue-btn" onclick="button1SaveAllReadyToPdfQueue()" disabled>Save All Ready to PDF Queue</button>
+      </div>
+      <div id="b1-save-suppression-reason" style="margin-top:6px;font-size:0.74rem;color:#e74c3c;padding:4px 8px;background:rgba(231,76,60,0.08);border-radius:4px;border:1px solid rgba(231,76,60,0.3);display:block;">
+        Save disabled: run Button 1 to check save eligibility.
       </div>
       <div id="b1-promotion-status" class="status-msg" style="margin-top:8px;">
         Promotion status: no promotion run yet.
@@ -2151,6 +2154,48 @@ function renderButton1RegistryAdapterStatus(workflowData) {
         approvalDiv.appendChild(bannerMsg);
       }
       bannerMsg.textContent = '🔒 Operator approval required';
+    }
+  }
+}
+
+function syncButton1SaveButtonState(workflowData, writerPreviewData) {
+  const saveSelectedBtn = document.getElementById('b1-save-selected-ready-to-pdf-queue-btn');
+  const saveAllBtn = document.getElementById('b1-save-all-ready-to-pdf-queue-btn');
+  const reasonEl = document.getElementById('b1-save-suppression-reason');
+  if (!saveSelectedBtn || !saveAllBtn) return;
+
+  const payload = readFirstWorkflowPayload(workflowData);
+  const liveStatus = payload && payload.live_source_status ? payload.live_source_status : {};
+  const gateStatus = payload && payload.execution_gate_status ? payload.execution_gate_status : {};
+  const writer = writerPreviewData || {};
+
+  const currentWeekReady = Boolean(liveStatus.current_week_ready);
+  const saveAllowed = Boolean(liveStatus.save_allowed);
+  const gateAllowed = Boolean(gateStatus.execution_gate_allowed);
+  const wouldWriteCount = (writer.would_write && writer.audit_record_preview &&
+    Number.isFinite(writer.audit_record_preview.candidate_rows_count))
+    ? writer.audit_record_preview.candidate_rows_count : 0;
+
+  const reasons = [];
+  if (!saveAllowed) reasons.push('approved source feed unavailable');
+  if (!currentWeekReady) reasons.push('no current-week source-backed matchups');
+  if (!gateAllowed) reasons.push('execution gate denied');
+  if (wouldWriteCount === 0) reasons.push('no ready rows to save');
+
+  const suppress = reasons.length > 0;
+  saveSelectedBtn.disabled = suppress;
+  saveAllBtn.disabled = suppress;
+
+  if (reasonEl) {
+    if (suppress) {
+      reasonEl.textContent = 'Save disabled: ' + reasons.join(' / ') + '.';
+      reasonEl.style.display = 'block';
+    } else {
+      reasonEl.textContent = 'Save enabled: all conditions met.';
+      reasonEl.style.display = 'block';
+      reasonEl.style.color = '#98c379';
+      reasonEl.style.borderColor = 'rgba(152,195,121,0.3)';
+      reasonEl.style.background = 'rgba(152,195,121,0.08)';
     }
   }
 }
@@ -3769,6 +3814,8 @@ function handleButton1Click() {
       renderButton1RegistryAdapterStatus(result.workflowData);
       // Render execution gate status (read-only preview panel)
       renderButton1ExecutionGateStatus(result.workflowData);
+      // Sync save button suppression based on fail-closed gate and source status
+      syncButton1SaveButtonState(result.workflowData, result.writerPreviewData);
 
       // Build advanced source-pack preview fields from available runtime context.
       // No new UI controls; summary-only and preview-only behavior is preserved.
