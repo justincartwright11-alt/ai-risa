@@ -2705,6 +2705,142 @@ def button2_dossier_handoff_report_context_preview():
 
 # ─── Button 3 API ─────────────────────────────────────────────────────────────
 
+_BUTTON3_APPLY_OPERATION_ID_MAX_BYTES = 255
+
+
+def _normalize_button3_operation_id(raw_operation_id):
+    """Validate operation_id deterministically or generate one when omitted."""
+    if raw_operation_id is None:
+        return str(uuid.uuid4()), None
+
+    if not isinstance(raw_operation_id, str):
+        return None, "operation_id must be a string"
+
+    if raw_operation_id == "":
+        return None, "operation_id must be a non-empty string"
+
+    encoded = raw_operation_id.encode("utf-8", errors="strict")
+    if len(encoded) > _BUTTON3_APPLY_OPERATION_ID_MAX_BYTES:
+        return (
+            None,
+            f"operation_id must be <= {_BUTTON3_APPLY_OPERATION_ID_MAX_BYTES} bytes",
+        )
+
+    return raw_operation_id, None
+
+
+def _button3_apply_response(
+    *,
+    status_code,
+    apply_status,
+    audit_id,
+    operation_id,
+    error_message,
+):
+    payload = {
+        "apply_status": apply_status,
+        "authorization_passed": False,
+        "apply_executed": False,
+        "mutation_performed": False,
+        "learning_write_performed": False,
+        "calibration_write_performed": False,
+        "queue_write_performed": False,
+        "audit_id": audit_id,
+        "error_message": error_message,
+        "preview_only": True,
+        "write_authorized": False,
+    }
+    if operation_id is not None:
+        payload["operation_id"] = operation_id
+    return jsonify(payload), status_code
+
+
+@app.route("/api/button3/apply/official-result", methods=["POST"])
+def button3_apply_official_result():
+    """
+    Official-source-approved apply endpoint (fail-closed preview contract only).
+
+    Governance:
+      - No apply execution
+      - No durable writes
+      - No queue/learning/calibration writes
+      - operation_id is audit/provenance metadata only
+    """
+    body = request.get_json(silent=True)
+    audit_id = str(uuid.uuid4())
+
+    if body is None or not isinstance(body, dict):
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=None,
+            error_message="request body must be a JSON object",
+        )
+
+    operation_id, operation_id_error = _normalize_button3_operation_id(
+        body.get("operation_id")
+    )
+    if operation_id_error is not None:
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=None,
+            error_message=operation_id_error,
+        )
+
+    # Existing apply contract fields are still validated as top-level request fields.
+    result_comparison_id = body.get("result_comparison_id")
+    operator_approval_token = body.get("operator_approval_token")
+    conflict_resolution = body.get("conflict_resolution")
+    dry_run = body.get("dry_run", False)
+
+    if not isinstance(result_comparison_id, str) or result_comparison_id.strip() == "":
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=operation_id,
+            error_message="result_comparison_id is required",
+        )
+
+    if not isinstance(operator_approval_token, str) or operator_approval_token.strip() == "":
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=operation_id,
+            error_message="operator_approval_token is required",
+        )
+
+    if not isinstance(conflict_resolution, str) or conflict_resolution.strip() == "":
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=operation_id,
+            error_message="conflict_resolution is required",
+        )
+
+    if not isinstance(dry_run, bool):
+        return _button3_apply_response(
+            status_code=400,
+            apply_status="validation_failed",
+            audit_id=audit_id,
+            operation_id=operation_id,
+            error_message="dry_run must be a boolean",
+        )
+
+    # Fail-closed response: endpoint is deliberately non-activated.
+    return _button3_apply_response(
+        status_code=200,
+        apply_status="not_executed",
+        audit_id=audit_id,
+        operation_id=operation_id,
+        error_message=None,
+    )
+
 @app.route(
     "/api/operator/button3/auto-result-source-yield-live-executor-preview",
     methods=["POST"],
