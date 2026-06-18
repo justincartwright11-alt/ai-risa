@@ -1123,6 +1123,23 @@ def _path_is_in_process_path(target_path):
     return False
 
 
+def _ensure_msys_gtk_path_in_process_path(target_path):
+    """Inject MSYS2 GTK bin path into this process PATH when present and missing."""
+    if not isinstance(target_path, str) or not target_path.strip():
+        return False
+    if not os.path.isdir(target_path):
+        return False
+    if _path_is_in_process_path(target_path):
+        return False
+
+    current_path = os.environ.get("PATH", "")
+    if isinstance(current_path, str) and current_path.strip():
+        os.environ["PATH"] = target_path + os.pathsep + current_path
+    else:
+        os.environ["PATH"] = target_path
+    return True
+
+
 def _resolve_button2_pdf_output_root_for_runtime():
     """Resolve BUTTON2_PDF_OUTPUT_ROOT for this process without touching non-output preflight checks."""
     output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
@@ -1144,6 +1161,7 @@ def _build_runtime_preflight_status(host_value):
     output_root_ready = bool(output_root_value) and os.path.isdir(output_root_value)
 
     gtk_path = r"C:\msys64\ucrt64\bin"
+    _ensure_msys_gtk_path_in_process_path(gtk_path)
     gtk_exists = os.path.isdir(gtk_path)
     gtk_in_path = _path_is_in_process_path(gtk_path)
 
