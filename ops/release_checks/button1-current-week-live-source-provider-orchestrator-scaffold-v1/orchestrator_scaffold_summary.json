@@ -1,0 +1,36 @@
+{
+  "slice": "button1-current-week-live-source-provider-orchestrator-scaffold-v1",
+  "baseline": {
+    "slice": "button1-current-week-live-source-provider-design-v1",
+    "commit": "f88c81a",
+    "tag": "button1-current-week-live-source-provider-design-v1"
+  },
+  "status": "validated_pass",
+  "scaffold_files": [
+    "operator_dashboard/button1_live_source_provider_orchestrator_v1.py",
+    "operator_dashboard/test_button1_current_week_live_source_provider_orchestrator_scaffold_v1.py",
+    "docs/button1_current_week_live_source_provider_orchestrator_scaffold_v1.md",
+    "ops/release_checks/button1-current-week-live-source-provider-orchestrator-scaffold-v1/orchestrator_scaffold_summary.json"
+  ],
+  "constraints": {
+    "button1_only": true,
+    "button2_unchanged": true,
+    "button3_unchanged": true,
+    "no_auto_save": true,
+    "no_auto_promotion": true,
+    "fail_closed_without_approved_provider": true
+  },
+  "test_results": {
+    "operator_dashboard/test_button1_current_week_live_source_provider_orchestrator_scaffold_v1.py": "8 passed",
+    "operator_dashboard/test_button1_current_week_source_discovery_refresh_and_stale_feed_guard_v1.py": "18 passed",
+    "operator_dashboard/test_button1_current_week_source_discovery_runtime_binding_repair_v1.py": "8 passed"
+  },
+  "behavior_verdicts": {
+    "empty_registry_fail_closed": "pass",
+    "provider_disabled_fail_closed": "pass",
+    "invalid_payload_fail_closed": "pass",
+    "outside_window_fail_closed": "pass",
+    "inside_window_current_week_ready": "pass",
+    "operator_gate_preserved": "pass"
+  }
+}
