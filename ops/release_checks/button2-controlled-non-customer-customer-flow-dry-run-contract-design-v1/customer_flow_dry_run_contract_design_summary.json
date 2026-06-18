@@ -1,0 +1,65 @@
+{
+  "slice": "button2-controlled-non-customer-customer-flow-dry-run-contract-design-v1",
+  "date": "2026-06-18",
+  "status": "DESIGN_ONLY",
+  "goal": "Design a fail-closed dry-run contract for testing the Button 2 customer-flow boundary without rendering or writing customer PDFs.",
+  "dry_run_purpose": "Validate customer-flow preconditions without rendering or writing customer PDFs.",
+  "allowed_behavior": [
+    "accept controlled non-customer payload",
+    "validate required fields",
+    "validate operator-gate posture",
+    "validate output-root readiness",
+    "validate render-gate readiness flags",
+    "produce dry-run decision object only"
+  ],
+  "forbidden_behavior": [
+    "pdf render execution",
+    "file write",
+    "delivery",
+    "queue/database mutation",
+    "customer report artifact",
+    "Button 1 provider changes",
+    "Button 3 learning/calibration",
+    "provider/source/network calls"
+  ],
+  "required_output_fields": [
+    "dry_run=true",
+    "customer_generation_permitted=false",
+    "render_execution_performed=false",
+    "pdf_file_write_performed=false",
+    "delivery_performed=false",
+    "queue_database_write_performed=false",
+    "button1_changed=false",
+    "button3_changed=false",
+    "decision",
+    "blocking_reasons",
+    "readiness_snapshot"
+  ],
+  "blocking_reasons": [
+    "customer_generation_not_authorized",
+    "dry_run_only",
+    "operator_gate_required",
+    "no_customer_delivery_authority",
+    "no_queue_database_write_authority"
+  ],
+  "future_implementation_constraints": [
+    "dry-run route or function must be separate from the actual generation route",
+    "dry-run must fail closed",
+    "dry-run must never call render_button2_pdf",
+    "dry-run must never call output-path write helpers",
+    "dry-run must be regression tested before any customer-flow activation"
+  ],
+  "relationship_to_locked_boundary_diagnosis": "This contract sits immediately before customer generation, but remains read-only and decision-only.",
+  "next_allowed_slice": "dry-run contract scaffold only, not customer generation",
+  "boundary_confirmation": {
+    "no_pdf_render_execution": true,
+    "no_file_write": true,
+    "no_delivery": true,
+    "no_queue_database_mutation": true,
+    "no_customer_report_artifact": true,
+    "no_button1_provider_changes": true,
+    "no_button3_learning_calibration_changes": true,
+    "no_provider_source_network_calls": true,
+    "no_customer_report_activation": true
+  }
+}
