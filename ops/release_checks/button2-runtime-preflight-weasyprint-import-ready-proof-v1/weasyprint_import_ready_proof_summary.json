@@ -1,0 +1,59 @@
+{
+  "slice": "button2-runtime-preflight-weasyprint-import-ready-proof-v1",
+  "date": "2026-06-18",
+  "status": "PASS",
+  "proof_type": "runtime_preflight_ready_proof",
+  "objective": "verify weasyprint_render_readiness flips to READY after output-root and msys2/gtk path repairs",
+  "evidence": {
+    "live_dashboard_runtime_preflight": {
+      "button2_pdf_output_root": {
+        "status": "READY",
+        "value": "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\reports"
+      },
+      "msys_gtk_dll_path": {
+        "status": "READY",
+        "value": "C:\\msys64\\ucrt64\\bin",
+        "path_exists": true,
+        "in_process_path": true
+      },
+      "weasyprint_render_readiness": {
+        "status": "READY",
+        "value": "import_ok"
+      },
+      "safe_pdf_open_route": {
+        "status": "READY",
+        "value": "/api/button2/generated-report/open"
+      },
+      "current_server_port": {
+        "status": "READY",
+        "value": "5050"
+      }
+    },
+    "backend_preflight_function_check": {
+      "function": "operator_dashboard.app._build_runtime_preflight_status",
+      "button2_pdf_output_root": {
+        "ready": true
+      },
+      "msys_gtk_dll_path": {
+        "ready": true,
+        "path_exists": true,
+        "in_process_path": true
+      },
+      "weasyprint_render_readiness": {
+        "ready": true,
+        "value": "import_ok"
+      }
+    }
+  },
+  "boundary_confirmation": {
+    "code_changes_in_this_slice": false,
+    "pdf_generation_executed": false,
+    "report_delivery_executed": false,
+    "customer_output_changed": false,
+    "queue_or_database_writes": false,
+    "button1_provider_governance_changed": false,
+    "button1_authorization_changed": false,
+    "button3_learning_calibration_changed": false
+  },
+  "verdict": "READY_CONFIRMED"
+}
