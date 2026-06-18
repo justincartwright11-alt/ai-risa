@@ -2172,15 +2172,17 @@ function syncButton1SaveButtonState(workflowData, writerPreviewData) {
   const currentWeekReady = Boolean(liveStatus.current_week_ready);
   const saveAllowed = Boolean(liveStatus.save_allowed);
   const gateAllowed = Boolean(gateStatus.execution_gate_allowed);
-  const wouldWriteCount = (writer.would_write && writer.audit_record_preview &&
-    Number.isFinite(writer.audit_record_preview.candidate_rows_count))
-    ? writer.audit_record_preview.candidate_rows_count : 0;
+  const wouldSaveRows = Number.isFinite(writer.would_save_rows)
+    ? writer.would_save_rows
+    : ((writer.would_write && writer.audit_record_preview &&
+      Number.isFinite(writer.audit_record_preview.candidate_rows_count))
+      ? writer.audit_record_preview.candidate_rows_count : 0);
 
   const reasons = [];
   if (!saveAllowed) reasons.push('approved source feed unavailable');
   if (!currentWeekReady) reasons.push('no current-week source-backed matchups');
   if (!gateAllowed) reasons.push('execution gate denied');
-  if (wouldWriteCount === 0) reasons.push('no ready rows to save');
+  if (wouldSaveRows === 0) reasons.push('no ready rows to save');
 
   const suppress = reasons.length > 0;
   saveSelectedBtn.disabled = suppress;
@@ -2190,6 +2192,9 @@ function syncButton1SaveButtonState(workflowData, writerPreviewData) {
     if (suppress) {
       reasonEl.textContent = 'Save disabled: ' + reasons.join(' / ') + '.';
       reasonEl.style.display = 'block';
+      reasonEl.style.color = '#e74c3c';
+      reasonEl.style.borderColor = 'rgba(231,76,60,0.3)';
+      reasonEl.style.background = 'rgba(231,76,60,0.08)';
     } else {
       reasonEl.textContent = 'Save enabled: all conditions met.';
       reasonEl.style.display = 'block';
