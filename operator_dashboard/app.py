@@ -1123,6 +1123,9 @@ def _path_is_in_process_path(target_path):
     return False
 
 
+_BUTTON2_GTK_DLL_DIR_HANDLE = None
+
+
 def _ensure_msys_gtk_path_in_process_path(target_path):
     """Inject MSYS2 GTK bin path into this process PATH when present and missing."""
     if not isinstance(target_path, str) or not target_path.strip():
@@ -1138,6 +1141,30 @@ def _ensure_msys_gtk_path_in_process_path(target_path):
     else:
         os.environ["PATH"] = target_path
     return True
+
+
+def _ensure_windows_gtk_dll_directory_loaded(target_path):
+    """Load GTK DLL directory for current process on Windows to support WeasyPrint imports."""
+    global _BUTTON2_GTK_DLL_DIR_HANDLE
+
+    if os.name != "nt":
+        return False
+    if not isinstance(target_path, str) or not target_path.strip():
+        return False
+    if not os.path.isdir(target_path):
+        return False
+    if _BUTTON2_GTK_DLL_DIR_HANDLE is not None:
+        return True
+
+    add_dll_directory = getattr(os, "add_dll_directory", None)
+    if not callable(add_dll_directory):
+        return False
+
+    try:
+        _BUTTON2_GTK_DLL_DIR_HANDLE = add_dll_directory(target_path)
+        return True
+    except Exception:
+        return False
 
 
 def _resolve_button2_pdf_output_root_for_runtime():
@@ -1162,6 +1189,7 @@ def _build_runtime_preflight_status(host_value):
 
     gtk_path = r"C:\msys64\ucrt64\bin"
     _ensure_msys_gtk_path_in_process_path(gtk_path)
+    _ensure_windows_gtk_dll_directory_loaded(gtk_path)
     gtk_exists = os.path.isdir(gtk_path)
     gtk_in_path = _path_is_in_process_path(gtk_path)
 
