@@ -31,6 +31,7 @@ This slice records what is currently allowed, what is blocked, and what must rem
 - Mutation flags remain false
 
 Referenced docs:
+
 - `docs/button3_result_comparison_controlled_preview_path_v1.md`
 - `docs/button3_result_comparison_controlled_preview_dashboard_runtime_confirmation_v1.md`
 
@@ -83,6 +84,7 @@ This diagnosis aligns with the frozen Button 2 stop-state index:
 - no write execution paths are opened by this document
 
 Reference:
+
 - `docs/ai_risa_three_button_factory_button2_stop_state_and_next_track_governance_index_v1.md`
 
 ## Explicit Non-Goals
