@@ -27,6 +27,12 @@ from operator_dashboard.button1_auto_discovery_readiness_ranking_v1 import (
 from operator_dashboard.button1_live_source_provider_orchestrator_v1 import (
     run_button1_live_source_provider_orchestrator,
 )
+from operator_dashboard.button1_approved_provider_config_registration_v1 import (
+    register_button1_approved_provider_config,
+)
+from operator_dashboard.button1_config_registration_to_orchestrator_registry_adapter_v1 import (
+    adapt_button1_registration_output_to_orchestrator_registry_candidates,
+)
 
 
 def _default_workspace_root() -> str:
@@ -59,6 +65,30 @@ def _safe_text(value: Any) -> str:
 
 def _safe_bool(value: Any) -> bool:
     return bool(value)
+
+
+def _default_button1_provider_registry_config_path(root: str) -> str:
+    return os.path.join(root, "ops", "approved_sources", "button1_live_provider_registry.json")
+
+
+def _load_button1_registry_adapter_status_preview(root: str) -> Dict[str, Any]:
+    """Build read-only registry-adapter status for Button 1 runtime preview.
+
+    This path is config-only and must not execute providers, call sources,
+    scrape, or write queue/database rows.
+    """
+
+    config_path = _default_button1_provider_registry_config_path(root)
+    registration_output = register_button1_approved_provider_config(config_path)
+    adapter_status = adapt_button1_registration_output_to_orchestrator_registry_candidates(registration_output)
+
+    # Enforce fail-closed governance flags in preview/runtime payloads.
+    adapter_status["network_calls_performed"] = False
+    adapter_status["provider_execution_performed"] = False
+    adapter_status["queue_write_performed"] = False
+    adapter_status["database_write_performed"] = False
+    adapter_status["operator_approval_required"] = True
+    return _safe_dict(adapter_status)
 
 
 def _read_text_file(path: str) -> str:
@@ -848,6 +878,7 @@ def load_button1_runtime_state_preview(
     state = load_readonly_runtime_state(runtime_state_override, workspace_root=root)
     preview_state = dict(state)
     preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(provider_registry=[])
+    preview_state["registry_adapter_status"] = _load_button1_registry_adapter_status_preview(root)
     preview_state["approved_source_preview_rows"] = []
     preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
     return preview_state
@@ -871,6 +902,7 @@ def build_button1_runtime_context(
         "manual_text": state.get("manual_intake_text", ""),
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
         "live_source_status": _safe_dict(state.get("live_source_status", {})),
+        "registry_adapter_status": _safe_dict(state.get("registry_adapter_status", {})),
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),
@@ -912,6 +944,7 @@ def build_button1_runtime_context_preview(
         "manual_text": state.get("manual_intake_text", ""),
         "approved_source_refs": _safe_list(state.get("approved_source_preview_rows", [])),
         "live_source_status": _safe_dict(state.get("live_source_status", {})),
+        "registry_adapter_status": _safe_dict(state.get("registry_adapter_status", {})),
         "event_hint": state.get("event_hint", ""),
         "promotion_hint": state.get("promotion_hint", ""),
         "date_window": _safe_dict(state.get("date_window", {})),
