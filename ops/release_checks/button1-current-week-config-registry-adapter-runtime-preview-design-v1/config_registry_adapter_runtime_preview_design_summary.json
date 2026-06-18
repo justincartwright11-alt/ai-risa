@@ -1,0 +1,20 @@
+{
+  "slice": "button1-current-week-config-registry-adapter-runtime-preview-design-v1",
+  "baseline": {
+    "slice": "button1-current-week-config-registration-to-orchestrator-registry-adapter-scaffold-v1",
+    "commit": "0666aca",
+    "tag": "button1-current-week-config-registration-to-orchestrator-registry-adapter-scaffold-v1"
+  },
+  "status": "design_created_pending_lock",
+  "constraints": {
+    "docs_only": true,
+    "no_runtime_wiring": true,
+    "no_provider_execution": true,
+    "no_network_calls": true,
+    "no_scraping": true,
+    "button2_unchanged": true,
+    "button3_unchanged": true,
+    "no_auto_save": true,
+    "no_promotion_to_button2": true
+  }
+}
