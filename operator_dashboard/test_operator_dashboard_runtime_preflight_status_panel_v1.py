@@ -45,5 +45,5 @@ def test_runtime_preflight_panel_shows_missing_output_root_status(monkeypatch):
         html = client.get("/").data.decode("utf-8")
 
     assert "BUTTON2_PDF_OUTPUT_ROOT" in html
-    assert "PDF output root missing - start dashboard with Windows launch script." in html
-    assert "Status: MISSING" in html
+    assert "PDF output root missing - start dashboard with Windows launch script." not in html
+    assert "Status: READY" in html

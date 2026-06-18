@@ -1123,9 +1123,24 @@ def _path_is_in_process_path(target_path):
     return False
 
 
-def _build_runtime_preflight_status(host_value):
+def _resolve_button2_pdf_output_root_for_runtime():
+    """Resolve BUTTON2_PDF_OUTPUT_ROOT for this process without touching non-output preflight checks."""
     output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
     output_root_value = output_root.strip() if isinstance(output_root, str) else ""
+    if output_root_value:
+        return output_root_value
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    reports_dir = os.path.join(repo_root, "reports")
+    if os.path.isdir(reports_dir):
+        os.environ["BUTTON2_PDF_OUTPUT_ROOT"] = reports_dir
+        return reports_dir
+
+    return ""
+
+
+def _build_runtime_preflight_status(host_value):
+    output_root_value = _resolve_button2_pdf_output_root_for_runtime()
     output_root_ready = bool(output_root_value) and os.path.isdir(output_root_value)
 
     gtk_path = r"C:\msys64\ucrt64\bin"
@@ -1232,7 +1247,7 @@ def _build_waiting_row_selected_key(row):
 def index():
     """3-button operator dashboard."""
     runtime_warning = ""
-    output_root = os.environ.get("BUTTON2_PDF_OUTPUT_ROOT", "")
+    output_root = _resolve_button2_pdf_output_root_for_runtime()
     if not isinstance(output_root, str) or not output_root.strip():
         runtime_warning = "PDF output root missing - start dashboard with Windows launch script."
     runtime_preflight = _build_runtime_preflight_status(request.host)
@@ -2482,6 +2497,7 @@ def button2_generated_report_open_v1():
             "message": "filename must be a safe PDF filename.",
         }), 400
 
+    _resolve_button2_pdf_output_root_for_runtime()
     try:
         output_root = get_pdf_output_root()
     except (OutputRootNotConfiguredError, OutputRootInvalidError) as e:
@@ -2523,6 +2539,7 @@ def button2_generated_report_library_v1():
             "message": "Directory override is not allowed.",
         }), 400
 
+    _resolve_button2_pdf_output_root_for_runtime()
     try:
         output_root = get_pdf_output_root()
     except (OutputRootNotConfiguredError, OutputRootInvalidError) as e:
