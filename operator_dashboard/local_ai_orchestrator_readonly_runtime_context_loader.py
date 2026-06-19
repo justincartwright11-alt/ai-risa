@@ -94,6 +94,36 @@ def _load_button1_registry_adapter_status_preview(root: str) -> Dict[str, Any]:
     return _safe_dict(adapter_status)
 
 
+def _build_button1_orchestrator_registry_preview(adapter_status: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Build preview-only orchestrator registry candidates from adapter status.
+
+    This preserves non-executing behavior by not attaching live adapters.
+    """
+
+    status = _safe_dict(adapter_status)
+    candidates = _safe_list_of_dict(status.get("registry_candidates", []))
+    provider_registry: List[Dict[str, Any]] = []
+
+    for candidate in candidates:
+        provider_id = _safe_text(candidate.get("provider_id"))
+        provider_name = _safe_text(candidate.get("provider_name")) or provider_id
+        if not provider_id or not provider_name:
+            continue
+
+        provider_registry.append(
+            {
+                "provider_id": provider_id,
+                "name": provider_name,
+                "enabled": bool(candidate.get("enabled", False)),
+                # Keep preview config-only context and do not bind execution adapters.
+                "config": {"provider_id": provider_id},
+                "adapter": None,
+            }
+        )
+
+    return provider_registry
+
+
 def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[str, Any]:
     """Build preview-only execution gate status for Button 1 runtime preview.
 
@@ -927,8 +957,30 @@ def load_button1_runtime_state_preview(
     root = workspace_root or _default_workspace_root()
     state = load_readonly_runtime_state(runtime_state_override, workspace_root=root)
     preview_state = dict(state)
-    preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(provider_registry=[])
     preview_state["registry_adapter_status"] = _load_button1_registry_adapter_status_preview(root)
+    provider_registry = _build_button1_orchestrator_registry_preview(preview_state["registry_adapter_status"])
+    preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(
+        provider_registry=provider_registry
+    )
+
+    # Preserve adapter diagnostics in the live-source status payload for fail-closed visibility.
+    adapter_diagnostics = [
+        _safe_text(d)
+        for d in _safe_list(preview_state["registry_adapter_status"].get("diagnostics", []))
+        if _safe_text(d)
+    ]
+    live_source_status = _safe_dict(preview_state.get("live_source_status", {}))
+    live_diagnostics = [
+        _safe_text(d)
+        for d in _safe_list(live_source_status.get("diagnostics", []))
+        if _safe_text(d)
+    ]
+    for diag in adapter_diagnostics:
+        if diag not in live_diagnostics:
+            live_diagnostics.append(diag)
+    live_source_status["diagnostics"] = live_diagnostics
+    preview_state["live_source_status"] = live_source_status
+
     preview_state["execution_gate_status"] = _load_button1_execution_gate_status_preview(preview_state)
     preview_state["approved_source_preview_rows"] = []
     preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
