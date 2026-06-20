@@ -217,6 +217,9 @@ def evaluate_button1_provider_adapter_execution_gate(
     }
 
     return {
+        "decision": decision,
+        "allowed": allowed,
+        "reason_codes": diagnostics,
         "execution_gate_checked": checked,
         "execution_gate_allowed": allowed,
         "execution_gate_decision": decision,

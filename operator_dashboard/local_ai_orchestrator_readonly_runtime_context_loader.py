@@ -171,17 +171,31 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
         }
     )
 
+    no_write_flags = {
+        "provider_execution_performed": False,
+        "network_calls_performed": False,
+        "source_calls_performed": False,
+        "scraping_performed": False,
+        "queue_write_performed": False,
+        "database_write_performed": False,
+        "customer_pdf_generation_performed": False,
+        "button2_promotion_performed": False,
+        "learning_write_performed": False,
+        "calibration_write_performed": False,
+        "auto_save_performed": False,
+    }
+
     gate_status["execution_gate_allowed"] = False
     gate_status["execution_gate_decision"] = "deny"
+    gate_status["allowed"] = False
+    gate_status["decision"] = "deny"
+    gate_status["reason_codes"] = _safe_list(gate_status.get("execution_gate_reason_codes", []))
     gate_status["preview_only"] = True
     gate_status["operator_approval_required"] = True
-    gate_status["provider_execution_performed"] = False
-    gate_status["network_calls_performed"] = False
-    gate_status["source_calls_performed"] = False
-    gate_status["scraping_performed"] = False
-    gate_status["queue_write_performed"] = False
-    gate_status["database_write_performed"] = False
-    gate_status["button2_promotion_performed"] = False
+    gate_status["live_save_allowed"] = False
+    gate_status["save_allowed"] = False
+    gate_status["no_write_flags"] = dict(no_write_flags)
+    gate_status.update(no_write_flags)
     return _safe_dict(gate_status)
 
 
