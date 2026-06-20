@@ -70,6 +70,23 @@ def _safe_bool(value: Any) -> bool:
     return bool(value)
 
 
+_RUNTIME_GATE_REASON_CODE_PRIORITY = (
+    "execution_gate_operator_approval_missing",
+    "source_call_authorization_missing",
+    "max_result_count_unbounded",
+    "timeout_unbounded",
+    "provenance_required_missing",
+    "network_call_not_authorized",
+)
+
+
+def _normalized_gate_reason_codes(reason_codes: List[Any]) -> List[str]:
+    normalized = {_safe_text(code) for code in reason_codes if _safe_text(code)}
+    ordered = [code for code in _RUNTIME_GATE_REASON_CODE_PRIORITY if code in normalized]
+    extras = sorted(code for code in normalized if code not in set(_RUNTIME_GATE_REASON_CODE_PRIORITY))
+    return ordered + extras
+
+
 def _default_button1_provider_registry_config_path(root: str) -> str:
     return os.path.join(root, "ops", "approved_sources", "button1_live_provider_registry.json")
 
@@ -185,11 +202,14 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
         "auto_save_performed": False,
     }
 
+    reason_codes = _normalized_gate_reason_codes(_safe_list(gate_status.get("execution_gate_reason_codes", [])))
+
     gate_status["execution_gate_allowed"] = False
     gate_status["execution_gate_decision"] = "deny"
+    gate_status["execution_gate_reason_codes"] = list(reason_codes)
     gate_status["allowed"] = False
     gate_status["decision"] = "deny"
-    gate_status["reason_codes"] = _safe_list(gate_status.get("execution_gate_reason_codes", []))
+    gate_status["reason_codes"] = list(reason_codes)
     gate_status["preview_only"] = True
     gate_status["operator_approval_required"] = True
     gate_status["live_save_allowed"] = False

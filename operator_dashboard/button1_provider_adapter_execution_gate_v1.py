@@ -20,6 +20,14 @@ _ALLOWED_HTTP_METHODS = {"GET"}
 _SUPPORTED_RESPONSE_TYPES = {"html", "json", "xml", "rss"}
 _MAX_RESULT_COUNT_BOUND = 100
 _TIMEOUT_SECONDS_BOUND = 60
+_REASON_CODE_PRIORITY = (
+    "execution_gate_operator_approval_missing",
+    "source_call_authorization_missing",
+    "max_result_count_unbounded",
+    "timeout_unbounded",
+    "provenance_required_missing",
+    "network_call_not_authorized",
+)
 
 
 def _safe_text(value: Any) -> str:
@@ -41,6 +49,14 @@ def _now_utc_iso() -> str:
 def _add_diag(diagnostics: List[str], reason: str) -> None:
     if reason and reason not in diagnostics:
         diagnostics.append(reason)
+
+
+def _normalized_reason_codes(reason_codes: List[str]) -> List[str]:
+    # Keep known blocker codes in a stable order and sort any extras for determinism.
+    codes = {code for code in reason_codes if _safe_text(code)}
+    ordered = [code for code in _REASON_CODE_PRIORITY if code in codes]
+    extras = sorted(code for code in codes if code not in set(_REASON_CODE_PRIORITY))
+    return ordered + extras
 
 
 def _coerce_positive_int(value: Any) -> Optional[int]:
@@ -185,6 +201,7 @@ def evaluate_button1_provider_adapter_execution_gate(
     elif not diagnostics:
         _add_diag(diagnostics, "execution_gate_scaffold_default_deny")
 
+    reason_codes = _normalized_reason_codes(diagnostics)
     decision = "allow" if allowed else "deny"
     no_write_flags = {
         "provider_execution_performed": False,
@@ -219,11 +236,11 @@ def evaluate_button1_provider_adapter_execution_gate(
     return {
         "decision": decision,
         "allowed": allowed,
-        "reason_codes": diagnostics,
+        "reason_codes": reason_codes,
         "execution_gate_checked": checked,
         "execution_gate_allowed": allowed,
         "execution_gate_decision": decision,
-        "execution_gate_reason_codes": diagnostics,
+        "execution_gate_reason_codes": reason_codes,
         "source_button": source_button,
         "provider_id": provider_id,
         "provider_enabled": provider_enabled,
