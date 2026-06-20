@@ -110,6 +110,13 @@ def _base_result(
     current_week_rows: int,
     approved_source_event_rows_count: int,
     current_week_rows_count: int,
+    source_call_authorization_present: bool = False,
+    source_call_authorization_valid: bool = False,
+    source_domain_authorized: bool = False,
+    http_method_authorized: bool = False,
+    response_type_supported: bool = False,
+    provenance_required: bool = True,
+    provenance_complete: bool = False,
 ) -> Dict[str, Any]:
     window_start, window_end = _get_discovery_window(now_utc, upcoming_window_days)
 
@@ -136,6 +143,17 @@ def _base_result(
         "approved_source_event_rows_count": int(approved_source_event_rows_count),
         # Explicit governance marker: save_allowed indicates preview eligibility only.
         "operator_approval_required": True,
+        "source_call_authorization_present": source_call_authorization_present,
+        "source_call_authorization_valid": source_call_authorization_valid,
+        "source_domain_authorized": source_domain_authorized,
+        "http_method_authorized": http_method_authorized,
+        "response_type_supported": response_type_supported,
+        "provenance_required": provenance_required,
+        "provenance_complete": provenance_complete,
+        "customer_pdf_generation_performed": False,
+        "learning_write_performed": False,
+        "calibration_write_performed": False,
+        "auto_save_performed": False,
         "queue_write_performed": False,
         "database_write_performed": False,
         "refreshed_feed_artifact": {

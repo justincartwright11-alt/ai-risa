@@ -152,8 +152,21 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
             "provider_id": provider_id,
             "provider_enabled": provider_enabled,
             # Runtime preview is deny-by-default and non-executing.
-            "operator_approval_token": "",
-            "token_format_valid": False,
+            "operator_approval_present": False,
+            "operator_approval_valid": False,
+            "source_call_authorization_present": False,
+            "source_call_authorization_valid": False,
+            "requested_http_method": "",
+            "requested_source_url_or_domain": "",
+            "expected_response_type": "",
+            "max_result_count": 0,
+            "timeout_seconds": 0,
+            "provenance_required": True,
+            "provenance_complete": False,
+            "save_requested": False,
+            "customer_output_requested": False,
+            "learning_update_requested": False,
+            "button2_promotion_requested": False,
             "enable_preview_allow_decision": False,
         }
     )
