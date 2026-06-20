@@ -51,6 +51,9 @@ def evaluate_button1_provider_adapter_execution_gate(
     operator_approval_token = _safe_text(req.get("operator_approval_token"))
     provider_enabled = _safe_bool(req.get("provider_enabled"))
     enable_preview_allow_decision = _safe_bool(req.get("enable_preview_allow_decision"))
+    token_format_valid = _safe_bool(req.get("token_format_valid"))
+    token_present = bool(operator_approval_token)
+    token_valid = token_present and token_format_valid
 
     if not source_button:
         _add_diag(diagnostics, "execution_gate_missing_source_button")
@@ -60,8 +63,10 @@ def evaluate_button1_provider_adapter_execution_gate(
     if not provider_id:
         _add_diag(diagnostics, "execution_gate_missing_provider_id")
 
-    if not operator_approval_token:
+    if not token_present:
         _add_diag(diagnostics, "execution_gate_operator_approval_missing")
+    elif not token_valid:
+        _add_diag(diagnostics, "execution_gate_operator_approval_invalid")
 
     if not provider_enabled:
         _add_diag(diagnostics, "execution_gate_provider_not_enabled")
@@ -85,6 +90,8 @@ def evaluate_button1_provider_adapter_execution_gate(
         "execution_gate_reason_codes": diagnostics,
         "source_button": source_button,
         "provider_id": provider_id,
+        "token_present": token_present,
+        "token_valid": token_valid,
         "operator_approval_required": True,
         "preview_only": True,
         "decision_timestamp_utc": _now_utc_iso(),

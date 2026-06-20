@@ -5,7 +5,7 @@
       "provider_id": "ufc_official_events",
       "provider_name": "UFC Official Events",
       "provider_type": "official",
-      "enabled": false,
+      "enabled": true,
       "source_tier": "official_promotion",
       "allowed_domains": [
         "ufc.com"
@@ -26,7 +26,7 @@
       "output_schema_version": "button1_live_provider_registry_v1",
       "operator_approved_by": "operator@example.com",
       "approval_timestamp_utc": "2026-06-18T00:00:00Z",
-      "provenance_notes": "Runtime registry present but provider disabled by policy. No execution without future operator-approved execution slice."
+      "provenance_notes": "Modeling-only enablement for preview-gate readiness display. No provider execution, source calls, queue/database writes, Button 2 promotion, or learning/calibration writes are authorized. Execution requires a separate operator-approved execution slice."
     },
     {
       "provider_id": "one_fc_official_events",

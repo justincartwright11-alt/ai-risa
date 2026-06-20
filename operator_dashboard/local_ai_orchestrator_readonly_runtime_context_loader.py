@@ -153,6 +153,7 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
             "provider_enabled": provider_enabled,
             # Runtime preview is deny-by-default and non-executing.
             "operator_approval_token": "",
+            "token_format_valid": False,
             "enable_preview_allow_decision": False,
         }
     )
