@@ -62,17 +62,58 @@ def _detect_conflict(payload: Dict[str, Any]) -> bool:
     return _clean_str(payload.get("comparison_status", "")).lower() == "conflict"
 
 
+def _has_duplicate_result_evidence(payload: Dict[str, Any]) -> bool:
+    conflicting_sources = payload.get("conflicting_sources", [])
+    if not isinstance(conflicting_sources, list) or len(conflicting_sources) < 2:
+        return False
+
+    seen = set()
+    for item in conflicting_sources:
+        if not isinstance(item, dict):
+            continue
+        identity = (
+            _clean_str(item.get("actual_winner", "")).lower(),
+            _clean_str(item.get("actual_method", "")).lower(),
+            _normalize_round(item.get("actual_round", "")).lower(),
+        )
+        if identity in seen:
+            return True
+        seen.add(identity)
+    return False
+
+
+def _has_partial_result_evidence(actual_winner: str, actual_method: str, actual_round: str) -> bool:
+    fields = [bool(actual_winner), bool(actual_method), bool(actual_round)]
+    return any(fields) and not all(fields)
+
+
+def _has_stale_result_evidence(payload: Dict[str, Any]) -> bool:
+    return bool(payload.get("stale_result_evidence", False))
+
+
 def _resolve_status(payload: Dict[str, Any], result_source_url: str, actual_winner: str, predicted_winner: str) -> str:
     explicit_status = _clean_str(payload.get("comparison_status", "")).lower()
-    if explicit_status in _SUPPORTED_STATUSES:
-        return explicit_status
+    if explicit_status:
+        if explicit_status in _SUPPORTED_STATUSES:
+            return explicit_status
+        return "needs_manual_review"
+
+    actual_method = _clean_str(payload.get("actual_method", ""))
+    actual_round = _normalize_round(payload.get("actual_round", ""))
+
+    if _has_stale_result_evidence(payload):
+        return "needs_manual_review"
 
     if _detect_conflict(payload):
         return "conflict"
+    if _has_duplicate_result_evidence(payload):
+        return "needs_manual_review"
     if not result_source_url:
         return "needs_source"
     if not actual_winner:
         return "no_result_found"
+    if _has_partial_result_evidence(actual_winner, actual_method, actual_round):
+        return "needs_manual_review"
     if bool(payload.get("manual_review_candidate", False)):
         return "needs_manual_review"
     if not predicted_winner:
