@@ -1349,6 +1349,8 @@ const BUTTON1_PROMOTE_READY_MATCHUPS_TO_BUTTON2_QUEUE_ENDPOINT =
   '/api/button1/promote-ready-matchups-to-button2-queue';
 const BUTTON2_SELECTED_MATCHUP_GENERATE_GUARDED_ENDPOINT =
   '/api/button2/selected-matchup/generate-guarded-v1';
+const B3_RESULT_COMPARISON_PREVIEW_ENDPOINT =
+  '/api/button3/result-comparison/preview-v1';
 
 const SOURCE_BUTTON_FIND_FIGHTS = 'button1_find_fights';
 const SOURCE_BUTTON_GENERATE_PDFS = 'button2_generate_pdfs';
@@ -4280,6 +4282,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Button 3: Find Results & Compare ─────────────────────────────────────────
 
+function postButton3ResultComparisonPreview(payload) {
+  return fetch(B3_RESULT_COMPARISON_PREVIEW_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload || {})
+  }).then(r => r.json().then(data => ({ ok: r.ok, data: data })))
+    .then(result => {
+      if (!result.ok || !result.data || result.data.ok === false) {
+        throw new Error('button3_result_comparison_preview_failed');
+      }
+      return result.data;
+    });
+}
+
+function renderButton3ResultComparisonPreview(data) {
+  const comparisonStatus = String(data.comparison_status || 'needs_manual_review');
+  const blockedStatuses = new Set(['needs_source', 'no_result_found', 'needs_manual_review', 'conflict']);
+  const isBlocked = blockedStatuses.has(comparisonStatus);
+  const statusText = isBlocked
+    ? 'Blocked for manual review (fail-closed).'
+    : 'Preview ready for operator review.';
+
+  setStatus(
+    'b3-status',
+    'Comparison status: ' + escapeHtml(comparisonStatus) + ' | ' + escapeHtml(statusText),
+    isBlocked ? 'error' : 'ok'
+  );
+
+  const surface = document.getElementById('b3-comparison-preview-surface');
+  if (!surface) return;
+
+  const sourceUrl = String(data.result_source_url || 'missing');
+  const sourceTier = String(data.source_tier || 'unknown');
+  const fighterA = String(data.fighter_a || '');
+  const fighterB = String(data.fighter_b || '');
+  const matchupLabel = fighterA || fighterB
+    ? (fighterA + ' vs ' + fighterB).trim()
+    : 'not provided';
+
+  surface.innerHTML =
+    '<strong>Controlled Result Comparison Preview (Read-Only)</strong><br>' +
+    'comparison_status: ' + escapeHtml(comparisonStatus) + '<br>' +
+    'matchup: ' + escapeHtml(matchupLabel) + '<br>' +
+    'result_source_url: ' + escapeHtml(sourceUrl) + '<br>' +
+    'source_tier: ' + escapeHtml(sourceTier) + '<br>' +
+    'operator_review_required: ' + (data.operator_review_required === true ? 'true' : 'false') + '<br>' +
+    'operator_approval_gate_required_for_apply: ' + (data.operator_approval_gate_required_for_apply === true ? 'true' : 'false') + '<br>' +
+    'write/apply paths remain blocked in preview mode.';
+}
+
 function handleButton3Click() {
   showPanel('b3-result-panel');
 
@@ -4291,10 +4343,10 @@ function handleButton3Click() {
   if (total) total.style.display = 'none';
   if (gate)  gate.style.display = 'none';
 
-  setStatus('b3-status', '<span class="spinner"></span>Running local AI workflow preview…');
-  requestLocalAiWorkflowPreviewWithRuntimeContext(SOURCE_BUTTON_FIND_RESULTS)
-    .then(data => renderSimpleWorkflowSummary('b3-status', data))
-    .catch(() => setStatus('b3-status', 'Could not run local AI preview. No changes were made.', 'error'));
+  setStatus('b3-status', '<span class="spinner"></span>Running read-only result comparison preview…');
+  postButton3ResultComparisonPreview({})
+    .then(data => renderButton3ResultComparisonPreview(data))
+    .catch(() => setStatus('b3-status', 'Could not run read-only result comparison preview. No changes were made.', 'error'));
 }
 
 // ── Phase 7: Controlled Delivery Preview ─────────────────────────────────────

@@ -291,7 +291,7 @@ def test_no_live_web_calls_in_preview_mode(mock_post, mock_get, client):
 
 def test_template_still_renders_exactly_three_buttons():
     """Index.html still renders exactly 3 buttons."""
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     # Count button click handlers
     button1_count = html.count('handleButton1Click')
@@ -304,7 +304,7 @@ def test_template_still_renders_exactly_three_buttons():
 
 def test_template_calls_use_runtime_context_function():
     """Template button handlers call requestLocalAiWorkflowPreviewWithRuntimeContext."""
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     assert 'requestLocalAiWorkflowPreviewWithRuntimeContext' in html, \
         "Template should call new runtime context function"
@@ -312,21 +312,21 @@ def test_template_calls_use_runtime_context_function():
 
 def test_template_sends_use_runtime_context_true():
     """Template functions send use_runtime_context: true in payload."""
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     assert 'use_runtime_context: true' in html, \
         "Template should send use_runtime_context=true"
 
 
 def test_template_has_auto_hydration_on_load_and_interval():
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     assert 'hydrateDashboardCardsOnLoad()' in html
     assert 'setInterval(hydrateDashboardCardsOnLoad, 30000);' in html
 
 
 def test_template_contains_waiting_refresh_card_surface_labels():
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     assert 'Waiting for refresh' in html
     assert 'Ready to save' in html
@@ -336,7 +336,7 @@ def test_template_contains_waiting_refresh_card_surface_labels():
 
 def test_template_preserves_fallback_logic():
     """Template preserves fallback to input_ref on runtime context failure."""
-    with open('operator_dashboard/templates/index.html', 'r') as f:
+    with open('operator_dashboard/templates/index.html', 'r', encoding='utf-8') as f:
         html = f.read()
     assert '.catch' in html, "Template should have fallback .catch handler"
 

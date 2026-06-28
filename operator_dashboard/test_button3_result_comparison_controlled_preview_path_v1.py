@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import Mock, patch
 
 from operator_dashboard.app import app as flask_app
 
@@ -159,3 +160,31 @@ def test_required_fields_present_in_preview_payload(client):
         "operator_review_required",
     ]:
         assert field in data
+
+
+def test_preview_endpoint_invokes_hardened_preview_module(client):
+    fake_builder = Mock(return_value={
+        "ok": True,
+        "preview_only": True,
+        "comparison_status": "needs_manual_review",
+        "result_source_url": "",
+        "source_tier": "unknown",
+        "operator_review_required": True,
+        "operator_approval_gate_required_for_apply": True,
+        "mutation_performed": False,
+        "learning_apply_performed": False,
+        "calibration_write_performed": False,
+        "queue_write_performed": False,
+        "button3_mutation_performed": False,
+    })
+
+    with patch("operator_dashboard.app._lazy_button3_result_comparison_preview", return_value=fake_builder):
+        payload = _base_payload()
+        resp = client.post(ENDPOINT, json=payload)
+        data = resp.get_json()
+
+    assert resp.status_code == 200
+    fake_builder.assert_called_once()
+    called_payload = fake_builder.call_args[0][0]
+    assert called_payload["fight_id"] == payload["fight_id"]
+    assert data["preview_only"] is True
