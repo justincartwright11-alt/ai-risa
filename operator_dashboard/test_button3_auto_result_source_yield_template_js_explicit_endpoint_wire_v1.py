@@ -105,6 +105,10 @@ class TestResultComparisonPreviewEndpointContract:
                 "controlled_learning_contract_gate_passed": True,
                 "gcid_write_design_gate_passed": True,
                 "gcid_write_design_review_gate_passed": True,
+                "gcid_write_runtime_implementation_gate_passed": True,
+                "gcid_write_runtime_proof_review_gate_passed": True,
+                "customer_output_release_design_gate_passed": True,
+                "customer_output_release_design_review_gate_passed": True,
             },
             "canonical_fight_identity_key": "fight_key::f-200",
             "source_result_record_id": "source_record::f-200",
@@ -128,6 +132,22 @@ class TestResultComparisonPreviewEndpointContract:
                     "operation_id": "req_101",
                 },
             },
+            "customer_output_target_lineage": {
+                "customer_output_target_id": "customer_output_target::f-200",
+                "target_channel": "customer_dashboard",
+            },
+            "customer_output_release_operator_approval": {
+                "operator_id": "op_101",
+                "approval_action": "evaluate_customer_output_release_eligibility",
+                "operation_id": "req_101",
+                "approval_state": "approved",
+                "scope": {
+                    "fight_key": "fight_key::f-200",
+                    "source_result_record_id": "source_record::f-200",
+                    "operation_id": "req_101",
+                    "customer_output_target_id": "customer_output_target::f-200",
+                },
+            },
             "audit_metadata": {
                 "denial_reason_trace_id": "deny-trace-101",
                 "operator_trace_id": "op-trace-101",
@@ -135,6 +155,10 @@ class TestResultComparisonPreviewEndpointContract:
             "rollback_metadata": {
                 "rollback_operation_id": "rollback-101",
                 "rollback_strategy": "manual_operator_rollback",
+            },
+            "release_traceability_metadata": {
+                "release_trace_id": "release-trace-101",
+                "customer_output_target_id": "customer_output_target::f-200",
             },
         })
         return data
@@ -277,6 +301,17 @@ class TestResultComparisonPreviewEndpointContract:
         assert "gcid_audit_metadata_complete" in data
         assert "gcid_rollback_metadata_complete" in data
         assert "gcid_scope_match" in data
+        assert "customer_output_release_eligibility_evaluation" in data
+        assert "customer_output_release_eligibility_state" in data
+        assert "customer_output_release_eligible" in data
+        assert "customer_output_release_reason_code" in data
+        assert "customer_output_release_reason_detail" in data
+        assert "customer_output_release_evaluated_at_utc" in data
+        assert "customer_output_provenance_complete" in data
+        assert "customer_output_audit_metadata_complete" in data
+        assert "customer_output_rollback_metadata_complete" in data
+        assert "customer_output_release_traceability_complete" in data
+        assert "customer_output_scope_match" in data
 
     def test_eligible_state_response_shape_consistency(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -285,6 +320,7 @@ class TestResultComparisonPreviewEndpointContract:
         ledger = data.get("accuracy_ledger_evaluation", {})
         candidate = data.get("controlled_learning_candidate_evaluation", {})
         gcid = data.get("gcid_write_eligibility_evaluation", {})
+        customer_output = data.get("customer_output_release_eligibility_evaluation", {})
         assert data["authorization_state"] == "eligible"
         assert data["authorized"] is True
         assert auth.get("authorization_state") == "eligible"
@@ -305,6 +341,15 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["gcid_audit_metadata_complete"] is True
         assert data["gcid_rollback_metadata_complete"] is True
         assert data["gcid_scope_match"] is True
+        assert data["customer_output_release_eligibility_state"] == "eligible"
+        assert data["customer_output_release_eligible"] is True
+        assert customer_output.get("customer_output_release_eligibility_state") == "eligible"
+        assert customer_output.get("customer_output_release_eligible") is True
+        assert data["customer_output_provenance_complete"] is True
+        assert data["customer_output_audit_metadata_complete"] is True
+        assert data["customer_output_rollback_metadata_complete"] is True
+        assert data["customer_output_release_traceability_complete"] is True
+        assert data["customer_output_scope_match"] is True
 
     def test_candidate_creation_stays_separate_from_learning_application(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -473,6 +518,58 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["gcid_write_eligibility_state"] == "denied"
         assert data["gcid_write_reason_code"] == "missing_rollback_metadata"
 
+    @pytest.mark.parametrize(
+        "approval_state,reason_code",
+        [
+            ("expired", "approval_expired"),
+            ("revoked", "approval_revoked"),
+            ("replayed", "approval_replayed"),
+        ],
+    )
+    def test_customer_output_approval_state_matrix_denies(self, client, approval_state, reason_code):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["customer_output_release_operator_approval"]["approval_state"] = approval_state
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["customer_output_release_eligibility_state"] == "denied"
+        assert data["customer_output_release_reason_code"] == reason_code
+
+    @pytest.mark.parametrize(
+        "field,reason_code",
+        [
+            ("canonical_fight_identity_key", "gcid_not_eligible"),
+            ("source_result_record_id", "gcid_not_eligible"),
+            ("source_lineage", "gcid_not_eligible"),
+            ("gate_state_lineage", "gcid_not_eligible"),
+            ("customer_output_target_lineage", "missing_customer_output_target_lineage"),
+        ],
+    )
+    def test_customer_output_provenance_completeness_matrix_denies_missing_fields(self, client, field, reason_code):
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop(field, None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["customer_output_release_eligibility_state"] == "denied"
+        assert data["customer_output_release_reason_code"] == reason_code
+
+    def test_customer_output_scope_mismatch_denies_out_of_scope_approval(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["customer_output_release_operator_approval"]["scope"]["fight_key"] = "fight_key::other"
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["customer_output_release_eligibility_state"] == "denied"
+        assert data["customer_output_release_reason_code"] == "fight_key_scope_mismatch"
+
+        payload = self._with_authorization_context(self._base_payload())
+        payload["customer_output_release_operator_approval"]["scope"]["customer_output_target_id"] = "customer_output_target::other"
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["customer_output_release_eligibility_state"] == "denied"
+        assert data["customer_output_release_reason_code"] == "target_scope_mismatch"
+
+    def test_customer_output_missing_traceability_metadata_denies(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop("release_traceability_metadata", None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["customer_output_release_eligibility_state"] == "denied"
+        assert data["customer_output_release_reason_code"] == "missing_release_traceability_metadata"
+
     def test_no_mutation_safety_matrix_flags_false(self, client):
         payload = self._with_authorization_context(self._base_payload())
         data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
@@ -492,6 +589,11 @@ class TestResultComparisonPreviewEndpointContract:
         assert data.get("gcid_write_execution_authority_issued", False) is False
         assert data.get("gcid_write_executed", False) is False
         assert data.get("durable_gcid_persistence_executed", False) is False
+        assert data.get("customer_output_release_authorized", False) is False
+        assert data.get("customer_output_release_execution_authority_issued", False) is False
+        assert data.get("customer_output_release_executed", False) is False
+        assert data.get("report_regeneration_executed", False) is False
+        assert data.get("durable_customer_output_persistence_executed", False) is False
 
     def test_operator_approval_not_consumed_as_execution_authority(self, client):
         payload = self._base_payload()

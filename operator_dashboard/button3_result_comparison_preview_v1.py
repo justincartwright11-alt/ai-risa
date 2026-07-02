@@ -120,6 +120,53 @@ _GCID_ELIGIBILITY_REASON_DETAILS = {
 }
 
 
+_CUSTOMER_OUTPUT_RELEASE_REASON_DETAILS = {
+    "missing_contract_gates": "contract_gates object is required",
+    "source_trust_gate_not_passed": "Source Trust gate must be passed",
+    "identity_match_gate_not_passed": "Identity Match gate must be passed",
+    "apply_authorization_gate_not_passed": "Apply Authorization gate must be passed",
+    "accuracy_ledger_gate_not_passed": "Accuracy-Ledger gate must be passed",
+    "controlled_learning_gate_not_passed": "Controlled-Learning gate must be passed",
+    "gcid_runtime_impl_gate_not_passed": "GCID runtime implementation gate must be passed",
+    "gcid_runtime_proof_review_gate_not_passed": "GCID runtime proof/review gate must be passed",
+    "customer_output_design_gate_not_passed": "Customer-output release design gate must be passed",
+    "customer_output_design_review_gate_not_passed": "Customer-output release design-review gate must be passed",
+    "unknown_state": "unknown state detected",
+    "comparison_status_not_eligible": "comparison_status must be ready_to_compare",
+    "apply_authorization_not_eligible": "apply authorization must be eligible before customer-output-release eligibility evaluation",
+    "accuracy_ledger_not_eligible": "accuracy-ledger eligibility must be true before customer-output-release eligibility evaluation",
+    "controlled_learning_not_eligible": "controlled-learning candidate eligibility must be true before customer-output-release eligibility evaluation",
+    "gcid_not_eligible": "gcid-write eligibility must be true before customer-output-release eligibility evaluation",
+    "missing_canonical_fight_identity_key": "canonical_fight_identity_key is required",
+    "missing_source_result_record_id": "source_result_record_id is required",
+    "missing_source_lineage": "source_lineage object is required",
+    "missing_gate_state_lineage": "gate_state_lineage object is required",
+    "missing_customer_output_target_lineage": "customer_output_target_lineage object is required",
+    "incomplete_provenance": "provenance fields are incomplete",
+    "missing_operator_approval": "customer_output_release_operator_approval object is required",
+    "missing_operator_id": "operator_id is required for customer-output-release eligibility approval",
+    "missing_approval_action": "approval_action must be 'evaluate_customer_output_release_eligibility'",
+    "missing_operation_id": "operation_id is required for customer-output-release eligibility approval",
+    "invalid_approval_state": "approval_state must be one of 'approved', 'expired', 'revoked', or 'replayed'",
+    "approval_not_approved": "approval_state must be 'approved'",
+    "approval_expired": "approval_state indicates approval has expired",
+    "approval_revoked": "approval_state indicates approval has been revoked",
+    "approval_replayed": "approval_state indicates approval replay detected",
+    "missing_scope": "scope object is required for customer-output-release eligibility approval",
+    "fight_key_scope_mismatch": "approval scope fight_key does not match canonical_fight_identity_key",
+    "source_record_scope_mismatch": "approval scope source_result_record_id does not match source_result_record_id",
+    "operation_scope_mismatch": "approval scope operation_id does not match operation_id",
+    "target_scope_mismatch": "approval scope customer_output_target_id does not match customer_output_target_lineage target id",
+    "missing_audit_metadata": "audit_metadata object is required",
+    "missing_rollback_metadata": "rollback_metadata object is required",
+    "missing_release_traceability_metadata": "release_traceability_metadata object is required",
+    "missing_denial_traceability": "audit metadata must include denial traceability fields",
+    "missing_operator_traceability": "audit metadata must include operator traceability fields",
+    "missing_release_traceability": "release traceability metadata must include release traceability fields",
+    "eligible": "customer-output-release eligibility evaluation passed with mutation blocked",
+}
+
+
 def _clean_str(value: Any) -> str:
     if value is None:
         return ""
@@ -1086,6 +1133,278 @@ def _evaluate_gcid_write_eligibility(
     }
 
 
+def _evaluate_customer_output_release_eligibility(
+    payload: Dict[str, Any],
+    *,
+    comparison_status: str,
+    apply_authorization: Dict[str, Any],
+    accuracy_ledger_evaluation: Dict[str, Any],
+    controlled_learning_candidate_evaluation: Dict[str, Any],
+    gcid_write_eligibility_evaluation: Dict[str, Any],
+    evaluation_timestamp_utc: str,
+) -> Dict[str, Any]:
+    contract_gates = payload.get("contract_gates")
+    canonical_fight_identity_key = _clean_str(payload.get("canonical_fight_identity_key", ""))
+    source_result_record_id = _clean_str(payload.get("source_result_record_id", ""))
+    source_lineage = payload.get("source_lineage")
+    gate_state_lineage = payload.get("gate_state_lineage")
+    customer_output_target_lineage = payload.get("customer_output_target_lineage")
+    release_operator_approval = payload.get("customer_output_release_operator_approval")
+    audit_metadata = payload.get("audit_metadata")
+    rollback_metadata = payload.get("rollback_metadata")
+    release_traceability_metadata = payload.get("release_traceability_metadata")
+
+    target_id = ""
+    if isinstance(customer_output_target_lineage, dict):
+        target_id = _clean_str(customer_output_target_lineage.get("customer_output_target_id", ""))
+
+    provenance_validation = {
+        "canonical_fight_identity_key_present": bool(canonical_fight_identity_key),
+        "source_result_record_id_present": bool(source_result_record_id),
+        "source_lineage_present": isinstance(source_lineage, dict),
+        "gate_state_lineage_present": isinstance(gate_state_lineage, dict),
+        "customer_output_target_lineage_present": isinstance(customer_output_target_lineage, dict),
+    }
+    provenance_validation["complete"] = all(provenance_validation.values()) and bool(target_id)
+
+    audit_validation = {
+        "audit_metadata_present": isinstance(audit_metadata, dict),
+        "denial_traceability_present": isinstance(audit_metadata, dict)
+        and bool(_clean_str((audit_metadata or {}).get("denial_reason_trace_id", ""))),
+        "operator_traceability_present": isinstance(audit_metadata, dict)
+        and bool(_clean_str((audit_metadata or {}).get("operator_trace_id", ""))),
+    }
+    audit_validation["complete"] = all(audit_validation.values())
+
+    rollback_validation = {
+        "rollback_metadata_present": isinstance(rollback_metadata, dict),
+        "rollback_operation_id_present": isinstance(rollback_metadata, dict)
+        and bool(_clean_str((rollback_metadata or {}).get("rollback_operation_id", ""))),
+        "rollback_strategy_present": isinstance(rollback_metadata, dict)
+        and bool(_clean_str((rollback_metadata or {}).get("rollback_strategy", ""))),
+    }
+    rollback_validation["complete"] = all(rollback_validation.values())
+
+    release_traceability_validation = {
+        "release_traceability_metadata_present": isinstance(release_traceability_metadata, dict),
+        "release_trace_id_present": isinstance(release_traceability_metadata, dict)
+        and bool(_clean_str((release_traceability_metadata or {}).get("release_trace_id", ""))),
+        "release_target_binding_present": isinstance(release_traceability_metadata, dict)
+        and bool(_clean_str((release_traceability_metadata or {}).get("customer_output_target_id", ""))),
+    }
+    release_traceability_validation["complete"] = all(release_traceability_validation.values())
+
+    approval_validation = {
+        "approval_present": isinstance(release_operator_approval, dict),
+        "operator_id_present": False,
+        "approval_action_valid": False,
+        "operation_id_present": False,
+        "approval_state": "",
+        "scope_present": False,
+        "scope_match": False,
+        "status": "denied",
+    }
+
+    if isinstance(release_operator_approval, dict):
+        approval_operator_id = _clean_str(release_operator_approval.get("operator_id", ""))
+        approval_action = _clean_str(release_operator_approval.get("approval_action", ""))
+        approval_operation_id = _clean_str(release_operator_approval.get("operation_id", ""))
+        approval_state = _clean_str(release_operator_approval.get("approval_state", "")).lower()
+        approval_scope = release_operator_approval.get("scope")
+
+        approval_validation["operator_id_present"] = bool(approval_operator_id)
+        approval_validation["approval_action_valid"] = approval_action == "evaluate_customer_output_release_eligibility"
+        approval_validation["operation_id_present"] = bool(approval_operation_id)
+        approval_validation["approval_state"] = approval_state
+        approval_validation["scope_present"] = isinstance(approval_scope, dict)
+
+        if isinstance(approval_scope, dict):
+            scope_fight_key = _clean_str(approval_scope.get("fight_key", ""))
+            scope_source_record_id = _clean_str(approval_scope.get("source_result_record_id", ""))
+            scope_operation_id = _clean_str(approval_scope.get("operation_id", ""))
+            scope_target_id = _clean_str(approval_scope.get("customer_output_target_id", ""))
+            approval_validation["scope_match"] = (
+                bool(scope_fight_key)
+                and scope_fight_key == canonical_fight_identity_key
+                and bool(scope_source_record_id)
+                and scope_source_record_id == source_result_record_id
+                and bool(scope_operation_id)
+                and scope_operation_id == approval_operation_id
+                and bool(scope_target_id)
+                and scope_target_id == target_id
+            )
+
+    def _deny(reason_code: str) -> Dict[str, Any]:
+        return {
+            "customer_output_release_eligibility_state": "denied",
+            "customer_output_release_eligible": False,
+            "reason_code": reason_code,
+            "reason_detail": _CUSTOMER_OUTPUT_RELEASE_REASON_DETAILS.get(
+                reason_code,
+                "customer-output-release eligibility evaluation denied",
+            ),
+            "provenance_validation": provenance_validation,
+            "audit_validation": audit_validation,
+            "rollback_validation": rollback_validation,
+            "release_traceability_validation": release_traceability_validation,
+            "approval_validation": approval_validation,
+            "evaluation_timestamp_utc": evaluation_timestamp_utc,
+            "customer_output_release_authorized": False,
+            "customer_output_release_execution_authority_issued": False,
+            "customer_output_release_executed": False,
+            "report_regeneration_executed": False,
+            "durable_customer_output_persistence_executed": False,
+        }
+
+    if comparison_status != "ready_to_compare":
+        return _deny("comparison_status_not_eligible")
+    if not bool(apply_authorization.get("authorized", False)):
+        return _deny("apply_authorization_not_eligible")
+    if not bool(accuracy_ledger_evaluation.get("accuracy_ledger_eligible", False)):
+        return _deny("accuracy_ledger_not_eligible")
+    if not bool(controlled_learning_candidate_evaluation.get("controlled_learning_candidate_eligible", False)):
+        return _deny("controlled_learning_not_eligible")
+    if not bool(gcid_write_eligibility_evaluation.get("gcid_write_eligible", False)):
+        return _deny("gcid_not_eligible")
+
+    if not isinstance(contract_gates, dict):
+        return _deny("missing_contract_gates")
+    if not bool(contract_gates.get("source_trust_gate_passed", False)):
+        return _deny("source_trust_gate_not_passed")
+    if not bool(contract_gates.get("identity_match_gate_passed", False)):
+        return _deny("identity_match_gate_not_passed")
+    if not bool(contract_gates.get("apply_authorization_gate_passed", False)):
+        return _deny("apply_authorization_gate_not_passed")
+    if not bool(contract_gates.get("accuracy_ledger_contract_gate_passed", False)):
+        return _deny("accuracy_ledger_gate_not_passed")
+    if not bool(contract_gates.get("controlled_learning_contract_gate_passed", False)):
+        return _deny("controlled_learning_gate_not_passed")
+    if not bool(contract_gates.get("gcid_write_runtime_implementation_gate_passed", False)):
+        return _deny("gcid_runtime_impl_gate_not_passed")
+    if not bool(contract_gates.get("gcid_write_runtime_proof_review_gate_passed", False)):
+        return _deny("gcid_runtime_proof_review_gate_not_passed")
+    if not bool(contract_gates.get("customer_output_release_design_gate_passed", False)):
+        return _deny("customer_output_design_gate_not_passed")
+    if not bool(contract_gates.get("customer_output_release_design_review_gate_passed", False)):
+        return _deny("customer_output_design_review_gate_not_passed")
+    if bool(contract_gates.get("unknown_state_detected", False)):
+        return _deny("unknown_state")
+
+    if not canonical_fight_identity_key:
+        return _deny("missing_canonical_fight_identity_key")
+    if not source_result_record_id:
+        return _deny("missing_source_result_record_id")
+    if not isinstance(source_lineage, dict):
+        return _deny("missing_source_lineage")
+    if not isinstance(gate_state_lineage, dict):
+        return _deny("missing_gate_state_lineage")
+    if not isinstance(customer_output_target_lineage, dict):
+        return _deny("missing_customer_output_target_lineage")
+
+    source_lineage_url = _clean_str(source_lineage.get("source_url", ""))
+    source_lineage_tier = _clean_str(source_lineage.get("source_tier", ""))
+    gate_source_trust = _clean_str(gate_state_lineage.get("source_trust_state", ""))
+    gate_identity_match = _clean_str(gate_state_lineage.get("identity_match_state", ""))
+    gate_apply_authorization = _clean_str(gate_state_lineage.get("apply_authorization_state", ""))
+    target_channel = _clean_str(customer_output_target_lineage.get("target_channel", ""))
+    if (
+        not source_lineage_url
+        or not source_lineage_tier
+        or not gate_source_trust
+        or not gate_identity_match
+        or not gate_apply_authorization
+        or not target_id
+        or not target_channel
+    ):
+        return _deny("incomplete_provenance")
+
+    if not isinstance(release_operator_approval, dict):
+        return _deny("missing_operator_approval")
+
+    approval_operator_id = _clean_str(release_operator_approval.get("operator_id", ""))
+    approval_action = _clean_str(release_operator_approval.get("approval_action", ""))
+    approval_operation_id = _clean_str(release_operator_approval.get("operation_id", ""))
+    approval_state = _clean_str(release_operator_approval.get("approval_state", "")).lower()
+    approval_scope = release_operator_approval.get("scope")
+
+    if not approval_operator_id:
+        return _deny("missing_operator_id")
+    if approval_action != "evaluate_customer_output_release_eligibility":
+        return _deny("missing_approval_action")
+    if not approval_operation_id:
+        return _deny("missing_operation_id")
+    if approval_state not in {"approved", "expired", "revoked", "replayed"}:
+        return _deny("invalid_approval_state")
+    if approval_state == "expired":
+        return _deny("approval_expired")
+    if approval_state == "revoked":
+        return _deny("approval_revoked")
+    if approval_state == "replayed":
+        return _deny("approval_replayed")
+    if approval_state != "approved":
+        return _deny("approval_not_approved")
+    if not isinstance(approval_scope, dict):
+        return _deny("missing_scope")
+
+    scope_fight_key = _clean_str(approval_scope.get("fight_key", ""))
+    scope_source_record_id = _clean_str(approval_scope.get("source_result_record_id", ""))
+    scope_operation_id = _clean_str(approval_scope.get("operation_id", ""))
+    scope_target_id = _clean_str(approval_scope.get("customer_output_target_id", ""))
+
+    if not scope_fight_key or scope_fight_key != canonical_fight_identity_key:
+        return _deny("fight_key_scope_mismatch")
+    if not scope_source_record_id or scope_source_record_id != source_result_record_id:
+        return _deny("source_record_scope_mismatch")
+    if not scope_operation_id or scope_operation_id != approval_operation_id:
+        return _deny("operation_scope_mismatch")
+    if not scope_target_id or scope_target_id != target_id:
+        return _deny("target_scope_mismatch")
+
+    if not isinstance(audit_metadata, dict):
+        return _deny("missing_audit_metadata")
+    if not isinstance(rollback_metadata, dict):
+        return _deny("missing_rollback_metadata")
+    if not isinstance(release_traceability_metadata, dict):
+        return _deny("missing_release_traceability_metadata")
+
+    denial_reason_trace_id = _clean_str(audit_metadata.get("denial_reason_trace_id", ""))
+    operator_trace_id = _clean_str(audit_metadata.get("operator_trace_id", ""))
+    if not denial_reason_trace_id:
+        return _deny("missing_denial_traceability")
+    if not operator_trace_id:
+        return _deny("missing_operator_traceability")
+
+    rollback_operation_id = _clean_str(rollback_metadata.get("rollback_operation_id", ""))
+    rollback_strategy = _clean_str(rollback_metadata.get("rollback_strategy", ""))
+    if not rollback_operation_id or not rollback_strategy:
+        return _deny("missing_rollback_metadata")
+
+    release_trace_id = _clean_str(release_traceability_metadata.get("release_trace_id", ""))
+    release_target_id = _clean_str(release_traceability_metadata.get("customer_output_target_id", ""))
+    if not release_trace_id or not release_target_id or release_target_id != target_id:
+        return _deny("missing_release_traceability")
+
+    approval_validation["status"] = "approved"
+
+    return {
+        "customer_output_release_eligibility_state": "eligible",
+        "customer_output_release_eligible": True,
+        "reason_code": "eligible",
+        "reason_detail": _CUSTOMER_OUTPUT_RELEASE_REASON_DETAILS["eligible"],
+        "provenance_validation": provenance_validation,
+        "audit_validation": audit_validation,
+        "rollback_validation": rollback_validation,
+        "release_traceability_validation": release_traceability_validation,
+        "approval_validation": approval_validation,
+        "evaluation_timestamp_utc": evaluation_timestamp_utc,
+        "customer_output_release_authorized": False,
+        "customer_output_release_execution_authority_issued": False,
+        "customer_output_release_executed": False,
+        "report_regeneration_executed": False,
+        "durable_customer_output_persistence_executed": False,
+    }
+
+
 def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str, Any]:
     body = payload if isinstance(payload, dict) else {}
 
@@ -1143,6 +1462,16 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         apply_authorization=apply_authorization,
         accuracy_ledger_evaluation=accuracy_ledger_evaluation,
         controlled_learning_candidate_evaluation=controlled_learning_candidate_evaluation,
+        evaluation_timestamp_utc=evaluation_timestamp_utc,
+    )
+
+    customer_output_release_eligibility_evaluation = _evaluate_customer_output_release_eligibility(
+        body,
+        comparison_status=comparison_status,
+        apply_authorization=apply_authorization,
+        accuracy_ledger_evaluation=accuracy_ledger_evaluation,
+        controlled_learning_candidate_evaluation=controlled_learning_candidate_evaluation,
+        gcid_write_eligibility_evaluation=gcid_write_eligibility_evaluation,
         evaluation_timestamp_utc=evaluation_timestamp_utc,
     )
 
@@ -1248,6 +1577,65 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "gcid_write_executed": bool(gcid_write_eligibility_evaluation.get("gcid_write_executed", False)),
         "durable_gcid_persistence_executed": bool(
             gcid_write_eligibility_evaluation.get("durable_gcid_persistence_executed", False)
+        ),
+        "customer_output_release_eligibility_evaluation": customer_output_release_eligibility_evaluation,
+        "customer_output_release_eligibility_state": customer_output_release_eligibility_evaluation.get(
+            "customer_output_release_eligibility_state",
+            "denied",
+        ),
+        "customer_output_release_eligible": bool(
+            customer_output_release_eligibility_evaluation.get("customer_output_release_eligible", False)
+        ),
+        "customer_output_release_reason_code": customer_output_release_eligibility_evaluation.get(
+            "reason_code",
+            "unknown_state",
+        ),
+        "customer_output_release_reason_detail": customer_output_release_eligibility_evaluation.get(
+            "reason_detail",
+            "customer-output-release eligibility evaluation denied",
+        ),
+        "customer_output_release_evaluated_at_utc": customer_output_release_eligibility_evaluation.get(
+            "evaluation_timestamp_utc",
+            evaluation_timestamp_utc,
+        ),
+        "customer_output_provenance_complete": bool(
+            customer_output_release_eligibility_evaluation.get("provenance_validation", {}).get("complete", False)
+        ),
+        "customer_output_audit_metadata_complete": bool(
+            customer_output_release_eligibility_evaluation.get("audit_validation", {}).get("complete", False)
+        ),
+        "customer_output_rollback_metadata_complete": bool(
+            customer_output_release_eligibility_evaluation.get("rollback_validation", {}).get("complete", False)
+        ),
+        "customer_output_release_traceability_complete": bool(
+            customer_output_release_eligibility_evaluation.get("release_traceability_validation", {}).get(
+                "complete",
+                False,
+            )
+        ),
+        "customer_output_scope_match": bool(
+            customer_output_release_eligibility_evaluation.get("approval_validation", {}).get("scope_match", False)
+        ),
+        "customer_output_release_authorized": bool(
+            customer_output_release_eligibility_evaluation.get("customer_output_release_authorized", False)
+        ),
+        "customer_output_release_execution_authority_issued": bool(
+            customer_output_release_eligibility_evaluation.get(
+                "customer_output_release_execution_authority_issued",
+                False,
+            )
+        ),
+        "customer_output_release_executed": bool(
+            customer_output_release_eligibility_evaluation.get("customer_output_release_executed", False)
+        ),
+        "report_regeneration_executed": bool(
+            customer_output_release_eligibility_evaluation.get("report_regeneration_executed", False)
+        ),
+        "durable_customer_output_persistence_executed": bool(
+            customer_output_release_eligibility_evaluation.get(
+                "durable_customer_output_persistence_executed",
+                False,
+            )
         ),
         "operator_review_required": True,
         "mutation_performed": False,

@@ -57,6 +57,10 @@ def _with_apply_authorization_context(payload):
             "controlled_learning_contract_gate_passed": True,
             "gcid_write_design_gate_passed": True,
             "gcid_write_design_review_gate_passed": True,
+            "gcid_write_runtime_implementation_gate_passed": True,
+            "gcid_write_runtime_proof_review_gate_passed": True,
+            "customer_output_release_design_gate_passed": True,
+            "customer_output_release_design_review_gate_passed": True,
         },
         "canonical_fight_identity_key": "fight_key::anthony_joshua_vs_daniel_dubois",
         "source_result_record_id": "result_record::001",
@@ -80,6 +84,22 @@ def _with_apply_authorization_context(payload):
                 "operation_id": "operation_001",
             },
         },
+        "customer_output_target_lineage": {
+            "customer_output_target_id": "customer_output_target::001",
+            "target_channel": "customer_dashboard",
+        },
+        "customer_output_release_operator_approval": {
+            "operator_id": "op_001",
+            "approval_action": "evaluate_customer_output_release_eligibility",
+            "operation_id": "operation_001",
+            "approval_state": "approved",
+            "scope": {
+                "fight_key": "fight_key::anthony_joshua_vs_daniel_dubois",
+                "source_result_record_id": "result_record::001",
+                "operation_id": "operation_001",
+                "customer_output_target_id": "customer_output_target::001",
+            },
+        },
         "audit_metadata": {
             "denial_reason_trace_id": "deny-trace-001",
             "operator_trace_id": "op-trace-001",
@@ -87,6 +107,10 @@ def _with_apply_authorization_context(payload):
         "rollback_metadata": {
             "rollback_operation_id": "rollback-001",
             "rollback_strategy": "manual_operator_rollback",
+        },
+        "release_traceability_metadata": {
+            "release_trace_id": "release-trace-001",
+            "customer_output_target_id": "customer_output_target::001",
         },
     })
     return data
@@ -257,6 +281,9 @@ def test_apply_authorization_allows_only_when_all_preconditions_pass(client):
     assert data["gcid_write_eligibility_state"] == "eligible"
     assert data["gcid_write_eligible"] is True
     assert data["gcid_write_reason_code"] == "eligible"
+    assert data["customer_output_release_eligibility_state"] == "eligible"
+    assert data["customer_output_release_eligible"] is True
+    assert data["customer_output_release_reason_code"] == "eligible"
 
 
 def test_candidate_creation_remains_separate_from_learning_application(client):
@@ -379,6 +406,11 @@ def test_no_ledger_write_execution_even_when_eligible(client):
     assert data["gcid_write_execution_authority_issued"] is False
     assert data["gcid_write_executed"] is False
     assert data["durable_gcid_persistence_executed"] is False
+    assert data["customer_output_release_authorized"] is False
+    assert data["customer_output_release_execution_authority_issued"] is False
+    assert data["customer_output_release_executed"] is False
+    assert data["report_regeneration_executed"] is False
+    assert data["durable_customer_output_persistence_executed"] is False
 
 
 def test_missing_operator_id_is_denied(client):
@@ -597,6 +629,97 @@ def test_gcid_missing_rollback_metadata_denied(client):
     data = client.post(ENDPOINT, json=payload).get_json()
     assert data["gcid_write_eligibility_state"] == "denied"
     assert data["gcid_write_reason_code"] == "missing_rollback_metadata"
+
+
+def test_customer_output_response_includes_provenance_audit_rollback_release_outputs(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert "customer_output_release_eligibility_evaluation" in data
+    assert "customer_output_release_eligibility_state" in data
+    assert "customer_output_release_reason_code" in data
+    assert "customer_output_release_evaluated_at_utc" in data
+    assert "customer_output_provenance_complete" in data
+    assert "customer_output_audit_metadata_complete" in data
+    assert "customer_output_rollback_metadata_complete" in data
+    assert "customer_output_release_traceability_complete" in data
+    assert "customer_output_scope_match" in data
+    assert data["customer_output_provenance_complete"] is True
+    assert data["customer_output_audit_metadata_complete"] is True
+    assert data["customer_output_rollback_metadata_complete"] is True
+    assert data["customer_output_release_traceability_complete"] is True
+    assert data["customer_output_scope_match"] is True
+
+
+def test_customer_output_replayed_revoked_expired_approval_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["approval_state"] = "replayed"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "approval_replayed"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["approval_state"] = "revoked"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "approval_revoked"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["approval_state"] = "expired"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "approval_expired"
+
+
+def test_customer_output_out_of_scope_bindings_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["scope"]["fight_key"] = "fight_key::other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "fight_key_scope_mismatch"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["scope"]["source_result_record_id"] = "result_record::other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "source_record_scope_mismatch"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["scope"]["operation_id"] = "operation_other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "operation_scope_mismatch"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["customer_output_release_operator_approval"]["scope"]["customer_output_target_id"] = "customer_output_target::other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "target_scope_mismatch"
+
+
+def test_customer_output_incomplete_or_missing_metadata_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("customer_output_target_lineage", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "missing_customer_output_target_lineage"
+
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("release_traceability_metadata", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_reason_code"] == "missing_release_traceability_metadata"
+
+
+def test_customer_output_no_release_execution_or_regeneration_even_when_eligible(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["customer_output_release_eligible"] is True
+    assert data["customer_output_release_authorized"] is False
+    assert data["customer_output_release_execution_authority_issued"] is False
+    assert data["customer_output_release_executed"] is False
+    assert data["report_regeneration_executed"] is False
+    assert data["customer_output_changed"] is False
+    assert data["customer_report_generated"] is False
 
 
 def test_preview_endpoint_invokes_hardened_preview_module(client):
