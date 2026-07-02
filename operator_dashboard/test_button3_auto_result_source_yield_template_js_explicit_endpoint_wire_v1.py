@@ -102,6 +102,7 @@ class TestResultComparisonPreviewEndpointContract:
                 "identity_match_gate_passed": True,
                 "apply_authorization_gate_passed": True,
                 "accuracy_ledger_contract_gate_passed": True,
+                "controlled_learning_contract_gate_passed": True,
             },
         })
         return data
@@ -231,12 +232,16 @@ class TestResultComparisonPreviewEndpointContract:
         assert "accuracy_ledger_evaluation" in data
         assert "accuracy_ledger_state" in data
         assert "accuracy_ledger_reason_code" in data
+        assert "controlled_learning_candidate_evaluation" in data
+        assert "controlled_learning_candidate_state" in data
+        assert "controlled_learning_candidate_reason_code" in data
 
     def test_eligible_state_response_shape_consistency(self, client):
         payload = self._with_authorization_context(self._base_payload())
         data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
         auth = data.get("apply_authorization", {})
         ledger = data.get("accuracy_ledger_evaluation", {})
+        candidate = data.get("controlled_learning_candidate_evaluation", {})
         assert data["authorization_state"] == "eligible"
         assert data["authorized"] is True
         assert auth.get("authorization_state") == "eligible"
@@ -245,6 +250,17 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["accuracy_ledger_eligible"] is True
         assert ledger.get("accuracy_ledger_state") == "eligible"
         assert ledger.get("accuracy_ledger_eligible") is True
+        assert data["controlled_learning_candidate_state"] == "eligible"
+        assert data["controlled_learning_candidate_eligible"] is True
+        assert candidate.get("controlled_learning_candidate_state") == "eligible"
+        assert candidate.get("controlled_learning_candidate_eligible") is True
+
+    def test_candidate_creation_stays_separate_from_learning_application(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["candidate_creation_separate_from_learning_application"] is True
+        assert data["learning_application_authorized"] is False
+        assert data["controlled_learning_application_performed"] is False
 
     def test_accuracy_separation_fields_present(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -264,6 +280,8 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["accuracy_ledger_state"] == "denied"
         assert data["accuracy_ledger_reason_code"] == "winner_only_signal"
         assert data["winner_only_reinforcement_blocked"] is True
+        assert data["controlled_learning_candidate_state"] == "denied"
+        assert data["controlled_learning_candidate_reason_code"] == "accuracy_ledger_not_eligible"
 
     def test_lucky_prediction_reinforcement_is_blocked(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -272,6 +290,8 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["accuracy_ledger_state"] == "denied"
         assert data["accuracy_ledger_reason_code"] == "lucky_prediction_signal"
         assert data["lucky_prediction_reinforcement_blocked"] is True
+        assert data["controlled_learning_candidate_state"] == "denied"
+        assert data["controlled_learning_candidate_reason_code"] == "accuracy_ledger_not_eligible"
 
     def test_missing_contract_gates_denies_accuracy_ledger(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -279,6 +299,22 @@ class TestResultComparisonPreviewEndpointContract:
         data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
         assert data["accuracy_ledger_state"] == "denied"
         assert data["accuracy_ledger_reason_code"] == "missing_contract_gates"
+        assert data["controlled_learning_candidate_state"] == "denied"
+        assert data["controlled_learning_candidate_reason_code"] == "accuracy_ledger_not_eligible"
+
+    def test_missing_controlled_learning_contract_gate_denies_candidate(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["contract_gates"].pop("controlled_learning_contract_gate_passed", None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["controlled_learning_candidate_state"] == "denied"
+        assert data["controlled_learning_candidate_reason_code"] == "controlled_learning_contract_gate_not_passed"
+
+    def test_controlled_learning_unknown_state_denies_candidate(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["contract_gates"]["unknown_state_detected"] = True
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["controlled_learning_candidate_state"] == "denied"
+        assert data["controlled_learning_candidate_reason_code"] == "unknown_state"
 
     @pytest.mark.parametrize(
         "gate_key,reason_code",
@@ -348,6 +384,8 @@ class TestResultComparisonPreviewEndpointContract:
         assert data.get("customer_report_generated", False) is False
         assert data.get("queue_write_performed", False) is False
         assert data.get("accuracy_ledger_write_performed", False) is False
+        assert data.get("controlled_learning_candidate_write_performed", False) is False
+        assert data.get("controlled_learning_application_performed", False) is False
 
     def test_operator_approval_not_consumed_as_execution_authority(self, client):
         payload = self._base_payload()

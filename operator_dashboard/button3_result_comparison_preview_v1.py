@@ -60,6 +60,26 @@ _ACCURACY_LEDGER_REASON_DETAILS = {
 }
 
 
+_CONTROLLED_LEARNING_REASON_DETAILS = {
+    "missing_contract_gates": "contract_gates object is required",
+    "source_trust_gate_not_passed": "Source Trust gate must be passed",
+    "identity_match_gate_not_passed": "Identity Match gate must be passed",
+    "apply_authorization_gate_not_passed": "Apply Authorization gate must be passed",
+    "accuracy_ledger_gate_not_passed": "Accuracy-Ledger gate must be passed",
+    "controlled_learning_contract_gate_not_passed": "Controlled-Learning contract gate must be passed",
+    "apply_authorization_not_eligible": "apply authorization must be eligible before controlled-learning evaluation",
+    "accuracy_ledger_not_eligible": "accuracy-ledger eligibility must be true before controlled-learning evaluation",
+    "comparison_status_not_eligible": "comparison_status must be ready_to_compare",
+    "incomplete_signals": "complete outcome/method/timing/structural signals are required",
+    "contradictory_evidence": "conflicting result evidence detected",
+    "stale_evidence": "stale result evidence detected",
+    "winner_only_signal": "winner-only learning is blocked",
+    "lucky_prediction_signal": "lucky-prediction learning is blocked",
+    "unknown_state": "unknown state detected",
+    "eligible": "controlled-learning candidate evaluation passed",
+}
+
+
 def _clean_str(value: Any) -> str:
     if value is None:
         return ""
@@ -619,6 +639,188 @@ def _evaluate_accuracy_ledger(
     }
 
 
+def _controlled_learning_deny_payload(
+    *,
+    reason_code: str,
+    dimensions: Dict[str, Any],
+    winner_only_signal: bool,
+    lucky_prediction_signal: bool,
+) -> Dict[str, Any]:
+    return {
+        "controlled_learning_candidate_state": "denied",
+        "controlled_learning_candidate_eligible": False,
+        "reason_code": reason_code,
+        "reason_detail": _CONTROLLED_LEARNING_REASON_DETAILS.get(
+            reason_code,
+            "controlled-learning candidate evaluation denied",
+        ),
+        "dimensions": dimensions,
+        "winner_only_learning_blocked": winner_only_signal,
+        "lucky_prediction_learning_blocked": lucky_prediction_signal,
+        "candidate_creation_separate_from_application": True,
+        "learning_application_authorized": False,
+        "learning_application_performed": False,
+        "candidate_write_executed": False,
+    }
+
+
+def _evaluate_controlled_learning_candidate(
+    payload: Dict[str, Any],
+    *,
+    comparison_status: str,
+    apply_authorization: Dict[str, Any],
+    accuracy_ledger_evaluation: Dict[str, Any],
+) -> Dict[str, Any]:
+    dimensions = dict(accuracy_ledger_evaluation.get("dimensions", {}))
+    outcome_state = _clean_str(dimensions.get("outcome_accuracy_state", "unavailable"))
+    method_state = _clean_str(dimensions.get("method_accuracy_state", "unavailable"))
+    timing_state = _clean_str(dimensions.get("timing_accuracy_state", "unavailable"))
+    structural_state = _clean_str(dimensions.get("structural_accuracy_state", "unavailable"))
+
+    contradiction_detected = _detect_conflict(payload)
+    stale_evidence = _has_stale_result_evidence(payload)
+    winner_only_signal = bool(accuracy_ledger_evaluation.get("winner_only_reinforcement_blocked", False)) or (
+        outcome_state == "hit"
+        and method_state in {"unavailable", "miss"}
+        and timing_state in {"unavailable", "miss"}
+    )
+    lucky_prediction_signal = bool(accuracy_ledger_evaluation.get("lucky_prediction_reinforcement_blocked", False)) or bool(
+        payload.get("lucky_prediction_signal", False)
+    )
+
+    if comparison_status != "ready_to_compare":
+        return _controlled_learning_deny_payload(
+            reason_code="comparison_status_not_eligible",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if not bool(apply_authorization.get("authorized", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="apply_authorization_not_eligible",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if not bool(accuracy_ledger_evaluation.get("accuracy_ledger_eligible", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="accuracy_ledger_not_eligible",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    contract_gates = payload.get("contract_gates")
+    if not isinstance(contract_gates, dict):
+        return _controlled_learning_deny_payload(
+            reason_code="missing_contract_gates",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if not bool(contract_gates.get("source_trust_gate_passed", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="source_trust_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("identity_match_gate_passed", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="identity_match_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("apply_authorization_gate_passed", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="apply_authorization_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("accuracy_ledger_contract_gate_passed", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="accuracy_ledger_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("controlled_learning_contract_gate_passed", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="controlled_learning_contract_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if bool(contract_gates.get("unknown_state_detected", False)):
+        return _controlled_learning_deny_payload(
+            reason_code="unknown_state",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if contradiction_detected:
+        return _controlled_learning_deny_payload(
+            reason_code="contradictory_evidence",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if stale_evidence:
+        return _controlled_learning_deny_payload(
+            reason_code="stale_evidence",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if winner_only_signal:
+        return _controlled_learning_deny_payload(
+            reason_code="winner_only_signal",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if lucky_prediction_signal:
+        return _controlled_learning_deny_payload(
+            reason_code="lucky_prediction_signal",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if (
+        outcome_state == "unavailable"
+        or method_state == "unavailable"
+        or timing_state == "unavailable"
+        or structural_state != "pass"
+    ):
+        return _controlled_learning_deny_payload(
+            reason_code="incomplete_signals",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    return {
+        "controlled_learning_candidate_state": "eligible",
+        "controlled_learning_candidate_eligible": True,
+        "reason_code": "eligible",
+        "reason_detail": _CONTROLLED_LEARNING_REASON_DETAILS["eligible"],
+        "dimensions": dimensions,
+        "winner_only_learning_blocked": False,
+        "lucky_prediction_learning_blocked": False,
+        "candidate_creation_separate_from_application": True,
+        "learning_application_authorized": False,
+        "learning_application_performed": False,
+        "candidate_write_executed": False,
+    }
+
+
 def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str, Any]:
     body = payload if isinstance(payload, dict) else {}
 
@@ -658,6 +860,12 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         actual_round=actual_round,
         result_source_url=result_source_url,
         source_tier=source_tier,
+    )
+    controlled_learning_candidate_evaluation = _evaluate_controlled_learning_candidate(
+        body,
+        comparison_status=comparison_status,
+        apply_authorization=apply_authorization,
+        accuracy_ledger_evaluation=accuracy_ledger_evaluation,
     )
 
     evaluation_timestamp_utc = _clean_str(body.get("evaluation_timestamp_utc", ""))
@@ -707,12 +915,42 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "lucky_prediction_reinforcement_blocked": bool(
             accuracy_ledger_evaluation.get("lucky_prediction_reinforcement_blocked", False)
         ),
+        "controlled_learning_candidate_evaluation": controlled_learning_candidate_evaluation,
+        "controlled_learning_candidate_state": controlled_learning_candidate_evaluation.get(
+            "controlled_learning_candidate_state",
+            "denied",
+        ),
+        "controlled_learning_candidate_eligible": bool(
+            controlled_learning_candidate_evaluation.get("controlled_learning_candidate_eligible", False)
+        ),
+        "controlled_learning_candidate_reason_code": controlled_learning_candidate_evaluation.get(
+            "reason_code",
+            "unknown_state",
+        ),
+        "controlled_learning_candidate_reason_detail": controlled_learning_candidate_evaluation.get(
+            "reason_detail",
+            "controlled-learning candidate evaluation denied",
+        ),
+        "candidate_creation_separate_from_learning_application": bool(
+            controlled_learning_candidate_evaluation.get("candidate_creation_separate_from_application", True)
+        ),
+        "learning_application_authorized": bool(
+            controlled_learning_candidate_evaluation.get("learning_application_authorized", False)
+        ),
+        "winner_only_learning_blocked": bool(
+            controlled_learning_candidate_evaluation.get("winner_only_learning_blocked", False)
+        ),
+        "lucky_prediction_learning_blocked": bool(
+            controlled_learning_candidate_evaluation.get("lucky_prediction_learning_blocked", False)
+        ),
         "operator_review_required": True,
         "mutation_performed": False,
         "save_performed": False,
         "database_write_performed": False,
         "accuracy_ledger_mutation_performed": False,
         "accuracy_ledger_write_performed": False,
+        "controlled_learning_candidate_write_performed": False,
+        "controlled_learning_application_performed": False,
         "learning_apply_performed": False,
         "calibration_write_performed": False,
         "gcid_write_performed": False,

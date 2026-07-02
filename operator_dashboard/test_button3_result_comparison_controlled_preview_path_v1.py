@@ -54,6 +54,7 @@ def _with_apply_authorization_context(payload):
             "identity_match_gate_passed": True,
             "apply_authorization_gate_passed": True,
             "accuracy_ledger_contract_gate_passed": True,
+            "controlled_learning_contract_gate_passed": True,
         },
     })
     return data
@@ -219,6 +220,32 @@ def test_apply_authorization_allows_only_when_all_preconditions_pass(client):
     assert data["authorization_reason_code"] == "eligible"
     assert data["accuracy_ledger_state"] == "eligible"
     assert data["accuracy_ledger_eligible"] is True
+    assert data["controlled_learning_candidate_state"] == "eligible"
+    assert data["controlled_learning_candidate_eligible"] is True
+
+
+def test_candidate_creation_remains_separate_from_learning_application(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["candidate_creation_separate_from_learning_application"] is True
+    assert data["learning_application_authorized"] is False
+    assert data["controlled_learning_application_performed"] is False
+
+
+def test_missing_controlled_learning_contract_gate_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["contract_gates"].pop("controlled_learning_contract_gate_passed", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["controlled_learning_candidate_state"] == "denied"
+    assert data["controlled_learning_candidate_reason_code"] == "controlled_learning_contract_gate_not_passed"
+
+
+def test_controlled_learning_unknown_contract_state_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["contract_gates"]["unknown_state_detected"] = True
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["controlled_learning_candidate_state"] == "denied"
+    assert data["controlled_learning_candidate_reason_code"] == "unknown_state"
 
 
 def test_accuracy_dimension_separation_fields_present(client):
@@ -257,6 +284,8 @@ def test_winner_only_signal_is_denied(client):
     assert data["accuracy_ledger_state"] == "denied"
     assert data["accuracy_ledger_reason_code"] == "winner_only_signal"
     assert data["winner_only_reinforcement_blocked"] is True
+    assert data["controlled_learning_candidate_state"] == "denied"
+    assert data["controlled_learning_candidate_reason_code"] == "accuracy_ledger_not_eligible"
 
 
 def test_lucky_prediction_signal_is_denied(client):
@@ -266,6 +295,25 @@ def test_lucky_prediction_signal_is_denied(client):
     assert data["accuracy_ledger_state"] == "denied"
     assert data["accuracy_ledger_reason_code"] == "lucky_prediction_signal"
     assert data["lucky_prediction_reinforcement_blocked"] is True
+    assert data["controlled_learning_candidate_state"] == "denied"
+    assert data["controlled_learning_candidate_reason_code"] == "accuracy_ledger_not_eligible"
+
+
+def test_controlled_learning_winner_only_block_when_ledger_marks_block(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["comparison_status"] = "ready_to_compare"
+    payload["actual_method"] = ""
+    payload["actual_round"] = ""
+    payload["actual_time"] = ""
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["winner_only_learning_blocked"] is True
+
+
+def test_controlled_learning_lucky_prediction_block_when_ledger_marks_block(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["lucky_prediction_signal"] = True
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["lucky_prediction_learning_blocked"] is True
 
 
 def test_missing_contract_gates_is_denied_for_accuracy_ledger(client):
@@ -290,6 +338,8 @@ def test_no_ledger_write_execution_even_when_eligible(client):
     assert data["accuracy_ledger_eligible"] is True
     assert data["accuracy_ledger_write_performed"] is False
     assert data["accuracy_ledger_mutation_performed"] is False
+    assert data["controlled_learning_candidate_write_performed"] is False
+    assert data["controlled_learning_application_performed"] is False
 
 
 def test_missing_operator_id_is_denied(client):
