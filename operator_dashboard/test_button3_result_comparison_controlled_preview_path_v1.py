@@ -31,6 +31,25 @@ def _base_payload():
     }
 
 
+def _with_apply_authorization_context(payload):
+    data = dict(payload)
+    data.update({
+        "operator_id": "op_001",
+        "approval_action": "apply_official_result",
+        "operation_id": "operation_001",
+        "approval_state": "approved",
+        "upstream_states": {
+            "source_trust_passed": True,
+            "identity_match_passed": True,
+            "scope_match": True,
+            "conflict_detected": False,
+            "stale_context": False,
+            "unknown_state_detected": False,
+        },
+    })
+    return data
+
+
 def test_matched_winner_comparison_returns_hit_classification(client):
     resp = client.post(ENDPOINT, json=_base_payload())
     data = resp.get_json()
@@ -140,7 +159,7 @@ def test_no_apply_endpoint_opened_for_result_comparison_path():
 
 
 def test_required_fields_present_in_preview_payload(client):
-    resp = client.post(ENDPOINT, json=_base_payload())
+    resp = client.post(ENDPOINT, json=_with_apply_authorization_context(_base_payload()))
     data = resp.get_json()
     for field in [
         "fight_id",
@@ -157,9 +176,151 @@ def test_required_fields_present_in_preview_payload(client):
         "source_tier",
         "comparison_status",
         "accuracy_preview",
+        "authorization_state",
+        "authorized",
+        "authorization_reason_code",
+        "authorization_reason_detail",
+        "authorization_operator_id",
+        "authorization_approval_action",
+        "authorization_operation_id",
+        "authorization_evaluated_at_utc",
+        "apply_authorization",
         "operator_review_required",
     ]:
         assert field in data
+
+
+def test_apply_authorization_defaults_to_deny_without_context(client):
+    resp = client.post(ENDPOINT, json=_base_payload())
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data["authorization_state"] == "denied"
+    assert data["authorized"] is False
+    assert data["authorization_reason_code"] == "missing_operator_id"
+
+
+def test_apply_authorization_allows_only_when_all_preconditions_pass(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    resp = client.post(ENDPOINT, json=payload)
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data["comparison_status"] == "ready_to_compare"
+    assert data["authorization_state"] == "eligible"
+    assert data["authorized"] is True
+    assert data["authorization_reason_code"] == "eligible"
+
+
+def test_missing_operator_id_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("operator_id", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "missing_operator_id"
+
+
+def test_missing_approval_action_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("approval_action", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "missing_approval_action"
+
+
+def test_missing_operation_id_and_request_id_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("operation_id", None)
+    payload.pop("request_id", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "missing_operation_id"
+
+
+def test_missing_upstream_states_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("upstream_states", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "missing_upstream_states"
+
+
+def test_malformed_upstream_states_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["upstream_states"] = ["bad"]
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "malformed_upstream_states"
+
+
+@pytest.mark.parametrize(
+    "approval_state,reason_code",
+    [
+        ("expired", "approval_expired"),
+        ("revoked", "approval_revoked"),
+        ("replayed", "approval_replayed"),
+    ],
+)
+def test_non_approved_approval_state_is_denied(client, approval_state, reason_code):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["approval_state"] = approval_state
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == reason_code
+
+
+@pytest.mark.parametrize(
+    "state_key,reason_code,state_value",
+    [
+        ("source_trust_passed", "source_trust_not_passed", False),
+        ("identity_match_passed", "identity_match_not_passed", False),
+        ("scope_match", "scope_mismatch", False),
+        ("conflict_detected", "conflict_detected", True),
+        ("stale_context", "stale_context", True),
+        ("unknown_state_detected", "unknown_state", True),
+    ],
+)
+def test_fail_closed_upstream_preconditions_are_denied(client, state_key, reason_code, state_value):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["upstream_states"][state_key] = state_value
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == reason_code
+
+
+def test_unknown_comparison_state_maps_to_deny(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["comparison_status"] = "weird_future_state"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["comparison_status"] == "needs_manual_review"
+    assert data["authorization_state"] == "denied"
+    assert data["authorization_reason_code"] == "comparison_status_not_eligible"
+
+
+def test_authorization_response_includes_reason_and_identifiers(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert isinstance(data.get("authorization_reason_code", ""), str)
+    assert isinstance(data.get("authorization_reason_detail", ""), str)
+    assert data["authorization_operator_id"] == payload["operator_id"]
+    assert data["authorization_approval_action"] == payload["approval_action"]
+    assert data["authorization_operation_id"] == payload["operation_id"]
+    assert isinstance(data.get("authorization_evaluated_at_utc", ""), str)
+    assert data.get("authorization_evaluated_at_utc", "")
+
+
+def test_no_mutation_surfaces_even_when_authorized_eligible(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["authorized"] is True
+    assert data["save_performed"] is False
+    assert data["database_write_performed"] is False
+    assert data["accuracy_ledger_mutation_performed"] is False
+    assert data["learning_apply_performed"] is False
+    assert data["calibration_write_performed"] is False
+    assert data["gcid_write_performed"] is False
+    assert data["customer_output_changed"] is False
+    assert data["customer_report_generated"] is False
+    assert data["queue_write_performed"] is False
+    assert data["button3_mutation_performed"] is False
 
 
 def test_preview_endpoint_invokes_hardened_preview_module(client):
