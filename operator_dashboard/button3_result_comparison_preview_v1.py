@@ -42,6 +42,24 @@ _AUTHORIZATION_REASON_DETAILS = {
 }
 
 
+_ACCURACY_LEDGER_REASON_DETAILS = {
+    "missing_contract_gates": "contract_gates object is required",
+    "source_trust_gate_not_passed": "Source Trust gate must be passed",
+    "identity_match_gate_not_passed": "Identity Match gate must be passed",
+    "apply_authorization_gate_not_passed": "Apply Authorization gate must be passed",
+    "accuracy_ledger_contract_gate_not_passed": "Accuracy-Ledger contract gate must be passed",
+    "apply_authorization_not_eligible": "apply authorization must be eligible before ledger evaluation",
+    "comparison_status_not_eligible": "comparison_status must be ready_to_compare",
+    "incomplete_evidence": "complete outcome/method/timing/structural evidence is required",
+    "contradictory_evidence": "conflicting result evidence detected",
+    "stale_evidence": "stale result evidence detected",
+    "winner_only_signal": "winner-only reinforcement is blocked",
+    "lucky_prediction_signal": "lucky-prediction reinforcement is blocked",
+    "unknown_state": "unknown state detected",
+    "eligible": "accuracy-ledger evaluation passed with separated dimensions",
+}
+
+
 def _clean_str(value: Any) -> str:
     if value is None:
         return ""
@@ -368,6 +386,239 @@ def _evaluate_apply_authorization(
     }
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _build_accuracy_dimensions(
+    *,
+    predicted_winner: str,
+    predicted_method: str,
+    predicted_round: str,
+    predicted_time: str,
+    actual_winner: str,
+    actual_method: str,
+    actual_round: str,
+    actual_time: str,
+    result_source_url: str,
+    source_tier: str,
+    contradiction_detected: bool,
+    stale_evidence: bool,
+    structural_evidence_score: float,
+) -> Dict[str, Any]:
+    outcome_state = _match_value(predicted_winner, actual_winner)
+    method_state = _match_value(predicted_method, actual_method)
+
+    round_state = _match_value(predicted_round, actual_round)
+    time_state = _match_value(predicted_time, actual_time)
+    if round_state == "unavailable" and time_state == "unavailable":
+        timing_state = "unavailable"
+    elif round_state == "miss" or time_state == "miss":
+        timing_state = "miss"
+    elif round_state == "hit" or time_state == "hit":
+        timing_state = "hit"
+    else:
+        timing_state = "unavailable"
+
+    normalized_tier = source_tier.lower()
+    trusted_tier = normalized_tier in {"official", "tier_a", "tier_b"}
+    has_source_url = bool(result_source_url)
+    structural_score = max(0.0, min(1.0, structural_evidence_score))
+
+    if stale_evidence or contradiction_detected:
+        structural_state = "fail"
+    elif has_source_url and trusted_tier and structural_score >= 0.8:
+        structural_state = "pass"
+    elif has_source_url and structural_score > 0.0:
+        structural_state = "fail"
+    else:
+        structural_state = "unavailable"
+
+    return {
+        "outcome_accuracy_state": outcome_state,
+        "method_accuracy_state": method_state,
+        "timing_accuracy_state": timing_state,
+        "structural_accuracy_state": structural_state,
+        "structural_evidence_score": structural_score,
+    }
+
+
+def _accuracy_ledger_deny_payload(
+    *,
+    reason_code: str,
+    dimensions: Dict[str, Any],
+    winner_only_signal: bool,
+    lucky_prediction_signal: bool,
+) -> Dict[str, Any]:
+    return {
+        "accuracy_ledger_state": "denied",
+        "accuracy_ledger_eligible": False,
+        "reason_code": reason_code,
+        "reason_detail": _ACCURACY_LEDGER_REASON_DETAILS.get(reason_code, "accuracy-ledger evaluation denied"),
+        "dimensions": dimensions,
+        "winner_only_reinforcement_blocked": winner_only_signal,
+        "lucky_prediction_reinforcement_blocked": lucky_prediction_signal,
+        "ledger_write_executed": False,
+    }
+
+
+def _evaluate_accuracy_ledger(
+    payload: Dict[str, Any],
+    *,
+    comparison_status: str,
+    apply_authorization: Dict[str, Any],
+    predicted_winner: str,
+    predicted_method: str,
+    predicted_round: str,
+    actual_winner: str,
+    actual_method: str,
+    actual_round: str,
+    result_source_url: str,
+    source_tier: str,
+) -> Dict[str, Any]:
+    predicted_time = _clean_str(payload.get("predicted_time", ""))
+    actual_time = _clean_str(payload.get("actual_time", ""))
+    contradiction_detected = _detect_conflict(payload)
+    stale_evidence = _has_stale_result_evidence(payload)
+    structural_evidence_score = _safe_float(payload.get("structural_evidence_score", 0.0), 0.0)
+
+    dimensions = _build_accuracy_dimensions(
+        predicted_winner=predicted_winner,
+        predicted_method=predicted_method,
+        predicted_round=predicted_round,
+        predicted_time=predicted_time,
+        actual_winner=actual_winner,
+        actual_method=actual_method,
+        actual_round=actual_round,
+        actual_time=actual_time,
+        result_source_url=result_source_url,
+        source_tier=source_tier,
+        contradiction_detected=contradiction_detected,
+        stale_evidence=stale_evidence,
+        structural_evidence_score=structural_evidence_score,
+    )
+
+    winner_only_signal = (
+        dimensions["outcome_accuracy_state"] == "hit"
+        and dimensions["method_accuracy_state"] in {"unavailable", "miss"}
+        and dimensions["timing_accuracy_state"] in {"unavailable", "miss"}
+    )
+    lucky_prediction_signal = bool(payload.get("lucky_prediction_signal", False)) or (
+        dimensions["outcome_accuracy_state"] == "hit"
+        and dimensions["structural_accuracy_state"] != "pass"
+    )
+
+    if comparison_status != "ready_to_compare":
+        return _accuracy_ledger_deny_payload(
+            reason_code="comparison_status_not_eligible",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if not bool(apply_authorization.get("authorized", False)):
+        return _accuracy_ledger_deny_payload(
+            reason_code="apply_authorization_not_eligible",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    contract_gates = payload.get("contract_gates")
+    if not isinstance(contract_gates, dict):
+        return _accuracy_ledger_deny_payload(
+            reason_code="missing_contract_gates",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if not bool(contract_gates.get("source_trust_gate_passed", False)):
+        return _accuracy_ledger_deny_payload(
+            reason_code="source_trust_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("identity_match_gate_passed", False)):
+        return _accuracy_ledger_deny_payload(
+            reason_code="identity_match_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("apply_authorization_gate_passed", False)):
+        return _accuracy_ledger_deny_payload(
+            reason_code="apply_authorization_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if not bool(contract_gates.get("accuracy_ledger_contract_gate_passed", False)):
+        return _accuracy_ledger_deny_payload(
+            reason_code="accuracy_ledger_contract_gate_not_passed",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if contradiction_detected:
+        return _accuracy_ledger_deny_payload(
+            reason_code="contradictory_evidence",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if stale_evidence:
+        return _accuracy_ledger_deny_payload(
+            reason_code="stale_evidence",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if winner_only_signal:
+        return _accuracy_ledger_deny_payload(
+            reason_code="winner_only_signal",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+    if lucky_prediction_signal:
+        return _accuracy_ledger_deny_payload(
+            reason_code="lucky_prediction_signal",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    if (
+        dimensions["outcome_accuracy_state"] == "unavailable"
+        or dimensions["method_accuracy_state"] == "unavailable"
+        or dimensions["timing_accuracy_state"] == "unavailable"
+        or dimensions["structural_accuracy_state"] != "pass"
+    ):
+        return _accuracy_ledger_deny_payload(
+            reason_code="incomplete_evidence",
+            dimensions=dimensions,
+            winner_only_signal=winner_only_signal,
+            lucky_prediction_signal=lucky_prediction_signal,
+        )
+
+    return {
+        "accuracy_ledger_state": "eligible",
+        "accuracy_ledger_eligible": True,
+        "reason_code": "eligible",
+        "reason_detail": _ACCURACY_LEDGER_REASON_DETAILS["eligible"],
+        "dimensions": dimensions,
+        "winner_only_reinforcement_blocked": False,
+        "lucky_prediction_reinforcement_blocked": False,
+        "ledger_write_executed": False,
+    }
+
+
 def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str, Any]:
     body = payload if isinstance(payload, dict) else {}
 
@@ -395,6 +646,19 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
     )
 
     apply_authorization = _evaluate_apply_authorization(body, comparison_status)
+    accuracy_ledger_evaluation = _evaluate_accuracy_ledger(
+        body,
+        comparison_status=comparison_status,
+        apply_authorization=apply_authorization,
+        predicted_winner=predicted_winner,
+        predicted_method=predicted_method,
+        predicted_round=predicted_round,
+        actual_winner=actual_winner,
+        actual_method=actual_method,
+        actual_round=actual_round,
+        result_source_url=result_source_url,
+        source_tier=source_tier,
+    )
 
     evaluation_timestamp_utc = _clean_str(body.get("evaluation_timestamp_utc", ""))
     if not evaluation_timestamp_utc:
@@ -427,11 +691,28 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "authorization_approval_action": apply_authorization.get("approval_action", ""),
         "authorization_operation_id": apply_authorization.get("operation_id", ""),
         "authorization_evaluated_at_utc": evaluation_timestamp_utc,
+        "accuracy_ledger_evaluation": accuracy_ledger_evaluation,
+        "accuracy_ledger_state": accuracy_ledger_evaluation.get("accuracy_ledger_state", "denied"),
+        "accuracy_ledger_eligible": bool(accuracy_ledger_evaluation.get("accuracy_ledger_eligible", False)),
+        "accuracy_ledger_reason_code": accuracy_ledger_evaluation.get("reason_code", "unknown_state"),
+        "accuracy_ledger_reason_detail": accuracy_ledger_evaluation.get("reason_detail", "accuracy-ledger evaluation denied"),
+        "outcome_accuracy_state": accuracy_ledger_evaluation.get("dimensions", {}).get("outcome_accuracy_state", "unavailable"),
+        "method_accuracy_state": accuracy_ledger_evaluation.get("dimensions", {}).get("method_accuracy_state", "unavailable"),
+        "timing_accuracy_state": accuracy_ledger_evaluation.get("dimensions", {}).get("timing_accuracy_state", "unavailable"),
+        "structural_accuracy_state": accuracy_ledger_evaluation.get("dimensions", {}).get("structural_accuracy_state", "unavailable"),
+        "structural_evidence_score": accuracy_ledger_evaluation.get("dimensions", {}).get("structural_evidence_score", 0.0),
+        "winner_only_reinforcement_blocked": bool(
+            accuracy_ledger_evaluation.get("winner_only_reinforcement_blocked", False)
+        ),
+        "lucky_prediction_reinforcement_blocked": bool(
+            accuracy_ledger_evaluation.get("lucky_prediction_reinforcement_blocked", False)
+        ),
         "operator_review_required": True,
         "mutation_performed": False,
         "save_performed": False,
         "database_write_performed": False,
         "accuracy_ledger_mutation_performed": False,
+        "accuracy_ledger_write_performed": False,
         "learning_apply_performed": False,
         "calibration_write_performed": False,
         "gcid_write_performed": False,

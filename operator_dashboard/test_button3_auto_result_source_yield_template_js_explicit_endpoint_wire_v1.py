@@ -82,6 +82,9 @@ class TestResultComparisonPreviewEndpointContract:
     def _with_authorization_context(self, payload):
         data = dict(payload)
         data.update({
+            "predicted_time": "03:10",
+            "actual_time": "03:10",
+            "structural_evidence_score": 0.9,
             "operator_id": "op_101",
             "approval_action": "apply_official_result",
             "request_id": "req_101",
@@ -93,6 +96,12 @@ class TestResultComparisonPreviewEndpointContract:
                 "conflict_detected": False,
                 "stale_context": False,
                 "unknown_state_detected": False,
+            },
+            "contract_gates": {
+                "source_trust_gate_passed": True,
+                "identity_match_gate_passed": True,
+                "apply_authorization_gate_passed": True,
+                "accuracy_ledger_contract_gate_passed": True,
             },
         })
         return data
@@ -219,15 +228,73 @@ class TestResultComparisonPreviewEndpointContract:
         assert "authorization_operation_id" in data
         assert "authorization_evaluated_at_utc" in data
         assert "apply_authorization" in data
+        assert "accuracy_ledger_evaluation" in data
+        assert "accuracy_ledger_state" in data
+        assert "accuracy_ledger_reason_code" in data
 
     def test_eligible_state_response_shape_consistency(self, client):
         payload = self._with_authorization_context(self._base_payload())
         data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
         auth = data.get("apply_authorization", {})
+        ledger = data.get("accuracy_ledger_evaluation", {})
         assert data["authorization_state"] == "eligible"
         assert data["authorized"] is True
         assert auth.get("authorization_state") == "eligible"
         assert auth.get("authorized") is True
+        assert data["accuracy_ledger_state"] == "eligible"
+        assert data["accuracy_ledger_eligible"] is True
+        assert ledger.get("accuracy_ledger_state") == "eligible"
+        assert ledger.get("accuracy_ledger_eligible") is True
+
+    def test_accuracy_separation_fields_present(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["outcome_accuracy_state"] == "hit"
+        assert data["method_accuracy_state"] == "hit"
+        assert data["timing_accuracy_state"] == "hit"
+        assert data["structural_accuracy_state"] == "pass"
+
+    def test_winner_only_reinforcement_is_blocked(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["comparison_status"] = "ready_to_compare"
+        payload["actual_method"] = ""
+        payload["actual_round"] = ""
+        payload["actual_time"] = ""
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["accuracy_ledger_state"] == "denied"
+        assert data["accuracy_ledger_reason_code"] == "winner_only_signal"
+        assert data["winner_only_reinforcement_blocked"] is True
+
+    def test_lucky_prediction_reinforcement_is_blocked(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["lucky_prediction_signal"] = True
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["accuracy_ledger_state"] == "denied"
+        assert data["accuracy_ledger_reason_code"] == "lucky_prediction_signal"
+        assert data["lucky_prediction_reinforcement_blocked"] is True
+
+    def test_missing_contract_gates_denies_accuracy_ledger(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop("contract_gates", None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["accuracy_ledger_state"] == "denied"
+        assert data["accuracy_ledger_reason_code"] == "missing_contract_gates"
+
+    @pytest.mark.parametrize(
+        "gate_key,reason_code",
+        [
+            ("source_trust_gate_passed", "source_trust_gate_not_passed"),
+            ("identity_match_gate_passed", "identity_match_gate_not_passed"),
+            ("apply_authorization_gate_passed", "apply_authorization_gate_not_passed"),
+            ("accuracy_ledger_contract_gate_passed", "accuracy_ledger_contract_gate_not_passed"),
+        ],
+    )
+    def test_prerequisite_contract_gates_required_for_eligibility(self, client, gate_key, reason_code):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["contract_gates"][gate_key] = False
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["accuracy_ledger_state"] == "denied"
+        assert data["accuracy_ledger_reason_code"] == reason_code
 
     def test_unknown_state_mapping_returns_deny(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -280,6 +347,7 @@ class TestResultComparisonPreviewEndpointContract:
         assert data.get("customer_output_changed", False) is False
         assert data.get("customer_report_generated", False) is False
         assert data.get("queue_write_performed", False) is False
+        assert data.get("accuracy_ledger_write_performed", False) is False
 
     def test_operator_approval_not_consumed_as_execution_authority(self, client):
         payload = self._base_payload()

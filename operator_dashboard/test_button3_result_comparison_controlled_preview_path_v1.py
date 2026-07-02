@@ -34,6 +34,9 @@ def _base_payload():
 def _with_apply_authorization_context(payload):
     data = dict(payload)
     data.update({
+        "predicted_time": "04:12",
+        "actual_time": "04:12",
+        "structural_evidence_score": 0.92,
         "operator_id": "op_001",
         "approval_action": "apply_official_result",
         "operation_id": "operation_001",
@@ -45,6 +48,12 @@ def _with_apply_authorization_context(payload):
             "conflict_detected": False,
             "stale_context": False,
             "unknown_state_detected": False,
+        },
+        "contract_gates": {
+            "source_trust_gate_passed": True,
+            "identity_match_gate_passed": True,
+            "apply_authorization_gate_passed": True,
+            "accuracy_ledger_contract_gate_passed": True,
         },
     })
     return data
@@ -208,6 +217,79 @@ def test_apply_authorization_allows_only_when_all_preconditions_pass(client):
     assert data["authorization_state"] == "eligible"
     assert data["authorized"] is True
     assert data["authorization_reason_code"] == "eligible"
+    assert data["accuracy_ledger_state"] == "eligible"
+    assert data["accuracy_ledger_eligible"] is True
+
+
+def test_accuracy_dimension_separation_fields_present(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["outcome_accuracy_state"] == "hit"
+    assert data["method_accuracy_state"] == "hit"
+    assert data["timing_accuracy_state"] == "hit"
+    assert data["structural_accuracy_state"] == "pass"
+
+
+def test_accuracy_dimension_method_miss_does_not_change_outcome_state(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["actual_method"] = "Decision"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["outcome_accuracy_state"] == "hit"
+    assert data["method_accuracy_state"] == "miss"
+
+
+def test_accuracy_dimension_timing_miss_does_not_change_outcome_state(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["actual_round"] = "1"
+    payload["actual_time"] = "00:22"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["outcome_accuracy_state"] == "hit"
+    assert data["timing_accuracy_state"] == "miss"
+
+
+def test_winner_only_signal_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["comparison_status"] = "ready_to_compare"
+    payload["actual_method"] = ""
+    payload["actual_round"] = ""
+    payload["actual_time"] = ""
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["accuracy_ledger_state"] == "denied"
+    assert data["accuracy_ledger_reason_code"] == "winner_only_signal"
+    assert data["winner_only_reinforcement_blocked"] is True
+
+
+def test_lucky_prediction_signal_is_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["lucky_prediction_signal"] = True
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["accuracy_ledger_state"] == "denied"
+    assert data["accuracy_ledger_reason_code"] == "lucky_prediction_signal"
+    assert data["lucky_prediction_reinforcement_blocked"] is True
+
+
+def test_missing_contract_gates_is_denied_for_accuracy_ledger(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("contract_gates", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["accuracy_ledger_state"] == "denied"
+    assert data["accuracy_ledger_reason_code"] == "missing_contract_gates"
+
+
+def test_prerequisite_gate_failures_are_denied_for_accuracy_ledger(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["contract_gates"]["apply_authorization_gate_passed"] = False
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["accuracy_ledger_state"] == "denied"
+    assert data["accuracy_ledger_reason_code"] == "apply_authorization_gate_not_passed"
+
+
+def test_no_ledger_write_execution_even_when_eligible(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["accuracy_ledger_eligible"] is True
+    assert data["accuracy_ledger_write_performed"] is False
+    assert data["accuracy_ledger_mutation_performed"] is False
 
 
 def test_missing_operator_id_is_denied(client):
