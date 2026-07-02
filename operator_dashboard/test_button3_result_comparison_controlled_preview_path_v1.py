@@ -55,6 +55,38 @@ def _with_apply_authorization_context(payload):
             "apply_authorization_gate_passed": True,
             "accuracy_ledger_contract_gate_passed": True,
             "controlled_learning_contract_gate_passed": True,
+            "gcid_write_design_gate_passed": True,
+            "gcid_write_design_review_gate_passed": True,
+        },
+        "canonical_fight_identity_key": "fight_key::anthony_joshua_vs_daniel_dubois",
+        "source_result_record_id": "result_record::001",
+        "source_lineage": {
+            "source_url": "https://www.example.com/result",
+            "source_tier": "tier_a",
+        },
+        "gate_state_lineage": {
+            "source_trust_state": "passed",
+            "identity_match_state": "passed",
+            "apply_authorization_state": "eligible",
+        },
+        "gcid_operator_approval": {
+            "operator_id": "op_001",
+            "approval_action": "evaluate_gcid_write_eligibility",
+            "operation_id": "operation_001",
+            "approval_state": "approved",
+            "scope": {
+                "fight_key": "fight_key::anthony_joshua_vs_daniel_dubois",
+                "source_result_record_id": "result_record::001",
+                "operation_id": "operation_001",
+            },
+        },
+        "audit_metadata": {
+            "denial_reason_trace_id": "deny-trace-001",
+            "operator_trace_id": "op-trace-001",
+        },
+        "rollback_metadata": {
+            "rollback_operation_id": "rollback-001",
+            "rollback_strategy": "manual_operator_rollback",
         },
     })
     return data
@@ -222,6 +254,9 @@ def test_apply_authorization_allows_only_when_all_preconditions_pass(client):
     assert data["accuracy_ledger_eligible"] is True
     assert data["controlled_learning_candidate_state"] == "eligible"
     assert data["controlled_learning_candidate_eligible"] is True
+    assert data["gcid_write_eligibility_state"] == "eligible"
+    assert data["gcid_write_eligible"] is True
+    assert data["gcid_write_reason_code"] == "eligible"
 
 
 def test_candidate_creation_remains_separate_from_learning_application(client):
@@ -340,6 +375,10 @@ def test_no_ledger_write_execution_even_when_eligible(client):
     assert data["accuracy_ledger_mutation_performed"] is False
     assert data["controlled_learning_candidate_write_performed"] is False
     assert data["controlled_learning_application_performed"] is False
+    assert data["gcid_write_authorized"] is False
+    assert data["gcid_write_execution_authority_issued"] is False
+    assert data["gcid_write_executed"] is False
+    assert data["durable_gcid_persistence_executed"] is False
 
 
 def test_missing_operator_id_is_denied(client):
@@ -453,6 +492,111 @@ def test_no_mutation_surfaces_even_when_authorized_eligible(client):
     assert data["customer_report_generated"] is False
     assert data["queue_write_performed"] is False
     assert data["button3_mutation_performed"] is False
+
+
+def test_gcid_response_includes_provenance_audit_rollback_outputs(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert "gcid_write_eligibility_evaluation" in data
+    assert "gcid_write_eligibility_state" in data
+    assert "gcid_write_reason_code" in data
+    assert "gcid_write_evaluated_at_utc" in data
+    assert "gcid_provenance_complete" in data
+    assert "gcid_audit_metadata_complete" in data
+    assert "gcid_rollback_metadata_complete" in data
+    assert "gcid_scope_match" in data
+    assert data["gcid_provenance_complete"] is True
+    assert data["gcid_audit_metadata_complete"] is True
+    assert data["gcid_rollback_metadata_complete"] is True
+    assert data["gcid_scope_match"] is True
+
+
+def test_gcid_missing_canonical_fight_identity_key_denies(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("canonical_fight_identity_key", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_canonical_fight_identity_key"
+
+
+def test_gcid_missing_source_result_record_id_denies(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("source_result_record_id", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_source_result_record_id"
+
+
+def test_gcid_missing_source_lineage_denies(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("source_lineage", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_source_lineage"
+
+
+def test_gcid_missing_gate_state_lineage_denies(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("gate_state_lineage", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_gate_state_lineage"
+
+
+@pytest.mark.parametrize(
+    "approval_state,reason_code",
+    [
+        ("expired", "approval_expired"),
+        ("revoked", "approval_revoked"),
+        ("replayed", "approval_replayed"),
+    ],
+)
+def test_gcid_replayed_revoked_expired_approval_denied(client, approval_state, reason_code):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["gcid_operator_approval"]["approval_state"] = approval_state
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == reason_code
+
+
+def test_gcid_scope_mismatch_fight_key_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["gcid_operator_approval"]["scope"]["fight_key"] = "fight_key::other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "fight_key_scope_mismatch"
+
+
+def test_gcid_scope_mismatch_source_record_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["gcid_operator_approval"]["scope"]["source_result_record_id"] = "result_record::other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "source_record_scope_mismatch"
+
+
+def test_gcid_scope_mismatch_operation_id_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["gcid_operator_approval"]["scope"]["operation_id"] = "operation_other"
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "operation_scope_mismatch"
+
+
+def test_gcid_missing_audit_metadata_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("audit_metadata", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_audit_metadata"
+
+
+def test_gcid_missing_rollback_metadata_denied(client):
+    payload = _with_apply_authorization_context(_base_payload())
+    payload.pop("rollback_metadata", None)
+    data = client.post(ENDPOINT, json=payload).get_json()
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_reason_code"] == "missing_rollback_metadata"
 
 
 def test_preview_endpoint_invokes_hardened_preview_module(client):

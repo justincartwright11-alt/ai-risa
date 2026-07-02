@@ -103,6 +103,38 @@ class TestResultComparisonPreviewEndpointContract:
                 "apply_authorization_gate_passed": True,
                 "accuracy_ledger_contract_gate_passed": True,
                 "controlled_learning_contract_gate_passed": True,
+                "gcid_write_design_gate_passed": True,
+                "gcid_write_design_review_gate_passed": True,
+            },
+            "canonical_fight_identity_key": "fight_key::f-200",
+            "source_result_record_id": "source_record::f-200",
+            "source_lineage": {
+                "source_url": "https://example.com/result",
+                "source_tier": "official",
+            },
+            "gate_state_lineage": {
+                "source_trust_state": "passed",
+                "identity_match_state": "passed",
+                "apply_authorization_state": "eligible",
+            },
+            "gcid_operator_approval": {
+                "operator_id": "op_101",
+                "approval_action": "evaluate_gcid_write_eligibility",
+                "operation_id": "req_101",
+                "approval_state": "approved",
+                "scope": {
+                    "fight_key": "fight_key::f-200",
+                    "source_result_record_id": "source_record::f-200",
+                    "operation_id": "req_101",
+                },
+            },
+            "audit_metadata": {
+                "denial_reason_trace_id": "deny-trace-101",
+                "operator_trace_id": "op-trace-101",
+            },
+            "rollback_metadata": {
+                "rollback_operation_id": "rollback-101",
+                "rollback_strategy": "manual_operator_rollback",
             },
         })
         return data
@@ -235,6 +267,16 @@ class TestResultComparisonPreviewEndpointContract:
         assert "controlled_learning_candidate_evaluation" in data
         assert "controlled_learning_candidate_state" in data
         assert "controlled_learning_candidate_reason_code" in data
+        assert "gcid_write_eligibility_evaluation" in data
+        assert "gcid_write_eligibility_state" in data
+        assert "gcid_write_eligible" in data
+        assert "gcid_write_reason_code" in data
+        assert "gcid_write_reason_detail" in data
+        assert "gcid_write_evaluated_at_utc" in data
+        assert "gcid_provenance_complete" in data
+        assert "gcid_audit_metadata_complete" in data
+        assert "gcid_rollback_metadata_complete" in data
+        assert "gcid_scope_match" in data
 
     def test_eligible_state_response_shape_consistency(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -242,6 +284,7 @@ class TestResultComparisonPreviewEndpointContract:
         auth = data.get("apply_authorization", {})
         ledger = data.get("accuracy_ledger_evaluation", {})
         candidate = data.get("controlled_learning_candidate_evaluation", {})
+        gcid = data.get("gcid_write_eligibility_evaluation", {})
         assert data["authorization_state"] == "eligible"
         assert data["authorized"] is True
         assert auth.get("authorization_state") == "eligible"
@@ -254,6 +297,14 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["controlled_learning_candidate_eligible"] is True
         assert candidate.get("controlled_learning_candidate_state") == "eligible"
         assert candidate.get("controlled_learning_candidate_eligible") is True
+        assert data["gcid_write_eligibility_state"] == "eligible"
+        assert data["gcid_write_eligible"] is True
+        assert gcid.get("gcid_write_eligibility_state") == "eligible"
+        assert gcid.get("gcid_write_eligible") is True
+        assert data["gcid_provenance_complete"] is True
+        assert data["gcid_audit_metadata_complete"] is True
+        assert data["gcid_rollback_metadata_complete"] is True
+        assert data["gcid_scope_match"] is True
 
     def test_candidate_creation_stays_separate_from_learning_application(self, client):
         payload = self._with_authorization_context(self._base_payload())
@@ -371,6 +422,57 @@ class TestResultComparisonPreviewEndpointContract:
         assert data["authorization_state"] == "denied"
         assert data["authorization_reason_code"] == reason_code
 
+    @pytest.mark.parametrize(
+        "approval_state,reason_code",
+        [
+            ("expired", "approval_expired"),
+            ("revoked", "approval_revoked"),
+            ("replayed", "approval_replayed"),
+        ],
+    )
+    def test_gcid_approval_state_matrix_denies(self, client, approval_state, reason_code):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["gcid_operator_approval"]["approval_state"] = approval_state
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["gcid_write_eligibility_state"] == "denied"
+        assert data["gcid_write_reason_code"] == reason_code
+
+    @pytest.mark.parametrize(
+        "field,reason_code",
+        [
+            ("canonical_fight_identity_key", "missing_canonical_fight_identity_key"),
+            ("source_result_record_id", "missing_source_result_record_id"),
+            ("source_lineage", "missing_source_lineage"),
+            ("gate_state_lineage", "missing_gate_state_lineage"),
+        ],
+    )
+    def test_gcid_provenance_completeness_matrix_denies_missing_fields(self, client, field, reason_code):
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop(field, None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["gcid_write_eligibility_state"] == "denied"
+        assert data["gcid_write_reason_code"] == reason_code
+
+    def test_gcid_scope_mismatch_denies_out_of_scope_approval(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload["gcid_operator_approval"]["scope"]["fight_key"] = "fight_key::other"
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["gcid_write_eligibility_state"] == "denied"
+        assert data["gcid_write_reason_code"] == "fight_key_scope_mismatch"
+
+    def test_gcid_missing_audit_or_rollback_metadata_denies(self, client):
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop("audit_metadata", None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["gcid_write_eligibility_state"] == "denied"
+        assert data["gcid_write_reason_code"] == "missing_audit_metadata"
+
+        payload = self._with_authorization_context(self._base_payload())
+        payload.pop("rollback_metadata", None)
+        data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
+        assert data["gcid_write_eligibility_state"] == "denied"
+        assert data["gcid_write_reason_code"] == "missing_rollback_metadata"
+
     def test_no_mutation_safety_matrix_flags_false(self, client):
         payload = self._with_authorization_context(self._base_payload())
         data = client.post(PREVIEW_ENDPOINT, json=payload).get_json()
@@ -386,6 +488,10 @@ class TestResultComparisonPreviewEndpointContract:
         assert data.get("accuracy_ledger_write_performed", False) is False
         assert data.get("controlled_learning_candidate_write_performed", False) is False
         assert data.get("controlled_learning_application_performed", False) is False
+        assert data.get("gcid_write_authorized", False) is False
+        assert data.get("gcid_write_execution_authority_issued", False) is False
+        assert data.get("gcid_write_executed", False) is False
+        assert data.get("durable_gcid_persistence_executed", False) is False
 
     def test_operator_approval_not_consumed_as_execution_authority(self, client):
         payload = self._base_payload()
