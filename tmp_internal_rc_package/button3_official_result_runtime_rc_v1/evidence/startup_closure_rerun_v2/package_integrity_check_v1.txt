@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T13:50:12.5035515+10:00
+baseline_head_commit=10e446d
+baseline_tag=button3-official-result-runtime-internal-release-candidate-startup-closure-rerun-gate-proof-and-review-v2
+baseline_tag_commit=10e446d
+tag_at_head=True
+runtime_working_directory_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+copied_file_exists=True
+evidence_root_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_closure_rerun_v2
+integrity_pass=True

@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T13:55:48.6699960+10:00
+first_blocking_exception_type=
+first_blocking_exception_message=
+missing_module_if_module_not_found=
+stdout_bytes=47
+stderr_bytes=275
+exit_code=-1
