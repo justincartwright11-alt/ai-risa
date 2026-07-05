@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T02:27:22.6865047Z
+copy_evidence_tag_resolved=bba9175
+package_root_exists=True
+runtime_root_exists=True
+startup_entry_exists=True
+copy_evidence_exists_pre_hash=True
+copy_evidence_exists_post_hash=True
+copy_evidence_exists_scope=True
+copy_evidence_exists_stop=True

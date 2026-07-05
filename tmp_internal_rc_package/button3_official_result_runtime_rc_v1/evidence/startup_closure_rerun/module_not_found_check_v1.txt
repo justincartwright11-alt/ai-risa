@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T02:27:40.8848415Z
+startup_exit_code=1
+module_not_found_detected=True
+missing_module_name=operator_dashboard.approved_combat_sport_source_registry
+startup_import_time_pass=False

@@ -1,0 +1,31 @@
+﻿python : Traceback (most recent call last):
+At line:1 char:2080
++ ... _runtime_rc_v1/runtime"; $startupOutput = (python app.py 2>&1 | Out-S ...
++                                                ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_
+rc_package\button3_official_result_runtime_rc_v1\runtime\app.py", line 36, in 
+<module>
+    from 
+operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader 
+import (
+    ...<2 lines>...
+    )
+  File "C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_
+rc_package\button3_official_result_runtime_rc_v1\runtime\operator_dashboard\loc
+al_ai_orchestrator_readonly_runtime_context_loader.py", line 24, in <module>
+    from operator_dashboard.button1_auto_discovery_readiness_ranking_v1 import 
+(
+        build_button1_auto_discovery_readiness_ranking,
+    )
+  File "C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_
+rc_package\button3_official_result_runtime_rc_v1\runtime\operator_dashboard\but
+ton1_auto_discovery_readiness_ranking_v1.py", line 12, in <module>
+    from operator_dashboard.approved_combat_sport_source_registry import 
+classify_source_url, get_source_governance
+ModuleNotFoundError: No module named 
+'operator_dashboard.approved_combat_sport_source_registry'
+
