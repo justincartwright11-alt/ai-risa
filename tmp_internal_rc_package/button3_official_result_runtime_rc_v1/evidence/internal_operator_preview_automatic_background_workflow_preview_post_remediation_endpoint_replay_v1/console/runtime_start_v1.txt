@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T16:52:47.4563255+10:00
+startup_command=C:/Users/jusin/AppData/Local/Python/pythoncore-3.14-64/python.exe app.py
+working_directory=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+startup_attempt_count=1
+stdout_log=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\internal_operator_preview_automatic_background_workflow_preview_post_remediation_endpoint_replay_v1/console/runtime_stdout_combined_20260705165247456.txt
+stderr_log=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\internal_operator_preview_automatic_background_workflow_preview_post_remediation_endpoint_replay_v1/console/runtime_stderr_combined_20260705165247456.txt

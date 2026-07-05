@@ -1,0 +1,3 @@
+﻿timestamp_utc=2026-07-05T16:52:47.8769143+10:00
+runtime_ready=True
+ready_probe=combined_stdout_stderr_contains_running_on_127.0.0.1:5050
