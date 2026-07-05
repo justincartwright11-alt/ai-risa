@@ -1,0 +1,4 @@
+﻿timestamp_utc=2026-07-05T01:32:02.3236627Z
+session_state=stopped
+stop_reason=runtime_startup_failed
+fail_closed=True

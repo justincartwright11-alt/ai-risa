@@ -1,0 +1,17 @@
+﻿timestamp_utc=2026-07-05T01:32:02.3216623Z
+runtime_startup_failed=True
+stop_condition_triggered=runtime_startup_failed
+abort_status=FAIL_CLOSED
+forbidden_control_checks_executed=False
+forbidden_control_checks_reason=runtime_not_running
+screenshots_captured=False
+screenshots_reason=runtime_not_running
+governance_denial_evidence_captured=False
+governance_denial_reason=runtime_not_running
+production_release_executed=False
+write_authority_executed=False
+customer_output_release_executed=False
+gcid_mutation_executed=False
+learning_mutation_executed=False
+calibration_mutation_executed=False
+authority_elevation_executed=False

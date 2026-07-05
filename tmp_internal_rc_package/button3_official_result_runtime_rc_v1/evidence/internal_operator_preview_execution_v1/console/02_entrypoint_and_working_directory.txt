@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T01:32:01.8973537Z
+working_directory=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+entry_file=app.py
+launch_command=python app.py
+launch_path_boundary=package_root_runtime

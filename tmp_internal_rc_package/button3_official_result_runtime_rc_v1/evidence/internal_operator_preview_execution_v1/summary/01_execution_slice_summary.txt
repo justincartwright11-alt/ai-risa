@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T01:32:02.3249037Z
+execution_slice=bounded_internal_operator_preview
+launch_attempted=True
+launch_success=False
+failure_signature=ModuleNotFoundError: No module named 'button3_auto_result_source_yield_live_executor_preview'
+workflow_advanced_past_launch=False
+abort_condition=runtime_startup_failed
+final_state=FAIL_CLOSED_ABORT
+execution_now_effective=DENIED_AFTER_ABORT
+note=No production/write/customer_output/mutation/elevation actions executed
