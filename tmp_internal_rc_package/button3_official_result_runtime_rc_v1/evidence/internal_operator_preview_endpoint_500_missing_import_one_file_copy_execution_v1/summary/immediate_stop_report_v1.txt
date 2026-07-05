@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T04:53:45Z
+immediate_stop_executed=True
+endpoint_rerun_performed=False
+workflow_rerun_performed=False
+additional_copy_performed=False
+broader_remediation_performed=False
