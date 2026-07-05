@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T14:01:46.2077238+10:00
+baseline_head_commit=ea50f7b
+baseline_tag=button3-official-result-runtime-internal-release-candidate-live-startup-state-confirmation-gate-proof-and-review-v1
+baseline_tag_commit=ea50f7b
+tag_at_head=True
+runtime_working_directory_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+copied_file_exists=True
+evidence_root_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\live_startup_state_confirmation
+integrity_pass=True

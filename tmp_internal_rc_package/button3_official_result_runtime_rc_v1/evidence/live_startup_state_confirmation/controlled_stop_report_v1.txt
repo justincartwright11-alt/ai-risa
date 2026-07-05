@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T14:01:46.8389216+10:00
+controlled_stop_method=Stop-Process -Force
+controlled_stop_succeeded=True
+process_has_exited_after_stop=True
+final_exit_code=

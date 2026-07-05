@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T14:01:46.8214161+10:00
+startup_attempt_executed_count=1
+bind_ready_detected=True
+bind_line=* Running on http://127.0.0.1:5050
+serve_line=* Serving Flask app 'app'
+process_running_before_controlled_stop=True
+process_id=1796

@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T14:01:46.8264170+10:00
+process_id=1796
+process_has_exited_pre_stop=False
+stdout_bytes=47
+stderr_bytes=275
