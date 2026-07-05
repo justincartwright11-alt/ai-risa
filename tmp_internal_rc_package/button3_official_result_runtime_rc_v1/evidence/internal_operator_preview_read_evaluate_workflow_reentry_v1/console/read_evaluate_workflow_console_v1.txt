@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T05:12:41Z console_entry=approved_read_evaluate_workflow_calls_executed endpoint_statuses=200,200,200,500 call_3_response_snippet={
+  "accuracy_ledger_eligible": false,
+  "accuracy_ledger_evaluation": {
+    "accuracy_ledger_eligible": false,
+    "accuracy_ledger_state": "denied",
+    "dimensions": {
+      "method_accuracy_state": "unavailable",
+      "outcome_accuracy_state": "unavailable",
+      "structural_accuracy_state": "

@@ -1,0 +1,11 @@
+﻿timestamp_utc=2026-07-05T05:14:08Z denial_check_scope=apply,ledger,learning,calibration,gcid,customer_output,production,authority
+check=timestamp_utc=2026-07-05T05:13:52Z
+check=apply_execution:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=ledger_writes:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=learning_application:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=calibration_writes:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=gcid_mutation:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=customer_output_release:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=production_release:status==denied_or_unavailable:error=Unable to connect to the remote server
+check=authority_elevation:status==denied_or_unavailable:error=Unable to connect to the remote server
+unexpected_allow_detected=
