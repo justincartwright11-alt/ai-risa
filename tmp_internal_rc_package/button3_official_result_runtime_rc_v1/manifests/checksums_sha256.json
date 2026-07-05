@@ -1,0 +1,72 @@
+﻿[
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_implementation_chain_final_rollup_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "1CEA33A036EA5F801B2DE0F1C6180A767E92CA78F24523EC17449F4FCE704D40"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_internal_release_candidate_assembly_execution_plan_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "3FF25227F7AA557B376D2C9C8E26BB05980DC9519F9D2D612B7B21FCDAF06C49"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_internal_release_candidate_assembly_plan_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "72A8176ED3E7FEBABDDFB1D5FBBBB94AC6980609D85A916017C5F57FA5AD7B0F"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_internal_release_candidate_assembly_proof_gate_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "DCA494765D7345583B17D551E5C61032A938A9F8F029841C92AC1EE3B4E082A6"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_packaging_release_plan_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "949A859A22CCF4260C51733A9DD8D275A1643EBE53F0E302A445E878B5D736C2"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_release_candidate_review_gate_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "B12E324A072573220D54301C0F857B81B126462CE591011DC93FDADAF4BEE040"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_release_readiness_index_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "83D0712BFCB9A750F24FA8155CAE546DB7283D28BA6E951B336489E8A6916CE8"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\governance_docs\\button3_official_result_runtime_release_readiness_review_v1.md",
+        "Algorithm":  "SHA256",
+        "Hash":  "9BACA97F53BC589BF472A9E88CD3E00F0AE36FE69D0B086CA3E30C4BF5011B06"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\manifests\\package_manifest.json",
+        "Algorithm":  "SHA256",
+        "Hash":  "A75D2841D2FDF3ADAD4D36EAAD56A71A384E4F87E506F3B74E3BE930DD21CCC8"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\runtime\\app.py",
+        "Algorithm":  "SHA256",
+        "Hash":  "C38F90261BBD4BD263C80D573C9D2E7279C280A1BBFD6C02E147F71DDBD2D69F"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\runtime\\button3_result_comparison_preview_v1.py",
+        "Algorithm":  "SHA256",
+        "Hash":  "8C56609ADC041770259664FB359CEFF59C2871A74EA5EFEB2B667C863058591F"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\runtime\\index.html",
+        "Algorithm":  "SHA256",
+        "Hash":  "C0E47291FBF092D27BADF5365623BD497138926D80C043850122C54974BF7538"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\tests\\test_button3_auto_result_source_yield_template_js_explicit_endpoint_wire_v1.py",
+        "Algorithm":  "SHA256",
+        "Hash":  "91B3E729BD92FC09BA5C00AE1AEA2123291B805B97BDE4BEEF4C825BF6F487ED"
+    },
+    {
+        "Path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\tmp_internal_rc_package\\button3_official_result_runtime_rc_v1\\tests\\test_button3_result_comparison_controlled_preview_path_v1.py",
+        "Algorithm":  "SHA256",
+        "Hash":  "7B4212DA65AB607F77B19C2886D5983367077FB9EC15CF57C802837AB62793FA"
+    }
+]
