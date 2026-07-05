@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T01:56:40.2247911Z
+scope_type=analysis_only
+package_runtime_file_modification_performed=False
+package_dependency_copy_performed=False
+preview_rerun_performed=False
+prohibited_authority_or_mutation_performed=False
+allowed_outputs_root=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/evidence/dependency_remediation/
+status=BOUNDARY_COMPLIANT

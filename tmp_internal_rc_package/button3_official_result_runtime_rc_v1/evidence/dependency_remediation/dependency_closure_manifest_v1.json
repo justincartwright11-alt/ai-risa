@@ -1,0 +1,530 @@
+﻿[
+    {
+        "module_name":  "button3_auto_result_source_yield_live_executor_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\button3_auto_result_source_yield_live_executor_preview.py",
+        "parent_module":  "execution_gate_overlay",
+        "reason":  "bounded_workflow_seed",
+        "required_status":  "required",
+        "classification":  "project_local_top_level"
+    },
+    {
+        "module_name":  "button3_improved_source_yield_engine",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\button3_improved_source_yield_engine.py",
+        "parent_module":  "button3_auto_result_source_yield_live_executor_preview",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_top_level"
+    },
+    {
+        "module_name":  "operator_dashboard.approved_combat_sport_source_registry",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\approved_combat_sport_source_registry.py",
+        "parent_module":  "operator_dashboard.button1_auto_discovery_readiness_ranking_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_approved_provider_config_registration_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_approved_provider_config_registration_v1.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_approved_provider_config_validator_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_approved_provider_config_validator_v1.py",
+        "parent_module":  "operator_dashboard.button1_approved_provider_config_registration_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_auto_discovery_readiness_ranking_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_auto_discovery_readiness_ranking_v1.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_config_registration_to_orchestrator_registry_adapter_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_config_registration_to_orchestrator_registry_adapter_v1.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_live_source_provider_orchestrator_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_live_source_provider_orchestrator_v1.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_provider_adapter_execution_gate_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_provider_adapter_execution_gate_v1.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button1_to_button2_readonly_dossier_handoff_preview.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_controlled_delivery_scaffold",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_controlled_delivery_scaffold.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_customer_flow_dry_run_contract_preview_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_customer_flow_dry_run_contract_preview_v1.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_customer_pdf_typography_tokens_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_customer_pdf_typography_tokens_v1.py",
+        "parent_module":  "operator_dashboard.button2_html_composition_entry_point_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_dossier_handoff_report_context_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_dossier_handoff_report_context_preview.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_html_composition_entry_point_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_html_composition_entry_point_v1.py",
+        "parent_module":  "operator_dashboard.button2_report_generation_route_render_gate_integration_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_jbalia_direct_template_renderer_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_jbalia_direct_template_renderer_v1.py",
+        "parent_module":  "operator_dashboard.button2_report_generation_route_render_gate_integration_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_pdf_output_root_config_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_pdf_output_root_config_v1.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_pdf_render_gate_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_pdf_render_gate_v1.py",
+        "parent_module":  "operator_dashboard.button2_report_generation_route_render_gate_integration_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_queue_loader_readonly_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_queue_loader_readonly_v1.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_readonly_dossier_handoff_ingest_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_readonly_dossier_handoff_ingest_preview.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_report_generation_route_render_gate_integration_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_report_generation_route_render_gate_integration_v1.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_template_pack_asset_renderer_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_template_pack_asset_renderer_v1.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_visual_intelligence_overlap_offpage_proof_instrumentation_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_visual_intelligence_overlap_offpage_proof_instrumentation_v1.py",
+        "parent_module":  "operator_dashboard.button2_dossier_handoff_report_context_preview",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button2_visual_intelligence_weasyprint_geometry_extractor_preview_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button2_visual_intelligence_weasyprint_geometry_extractor_preview_v1.py",
+        "parent_module":  "operator_dashboard.button2_pdf_render_gate_v1",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.button3_auto_result_source_yield_live_executor_preview",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_engine_adapter_registry",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "unresolved_project_local"
+    },
+    {
+        "module_name":  "operator_dashboard.button3_result_comparison_preview_v1",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\button3_result_comparison_preview_v1.py",
+        "parent_module":  "execution_gate_overlay",
+        "reason":  "bounded_workflow_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.global_fighter_identity_resolver_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\global_fighter_identity_resolver_preview.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.global_fighter_known_records_readonly_loader",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\global_fighter_known_records_readonly_loader.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.global_fighter_known_records_source_pack_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\global_fighter_known_records_source_pack_preview.py",
+        "parent_module":  "operator_dashboard.global_fighter_known_records_readonly_loader",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.global_fighter_record_readonly_projection_ledger_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\global_fighter_record_readonly_projection_ledger_preview.py",
+        "parent_module":  "operator_dashboard.global_fighter_known_records_source_pack_preview",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_engine_adapter_registry",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_engine_adapter_registry.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_preview_runner",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_gate1_approved_save_writer",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_gate1_approved_save_writer.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_gate1_save_storage_adapter",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_gate1_save_storage_adapter.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_gate1_token_check",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_gate1_token_check.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_input_context_pack",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_input_context_pack.py",
+        "parent_module":  "execution_gate_overlay",
+        "reason":  "bounded_workflow_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_job_schema",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_job_schema.py",
+        "parent_module":  "execution_gate_overlay",
+        "reason":  "bounded_workflow_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_preview_runner",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_preview_runner.py",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_workflow_plan",
+        "reason":  "transitive_import",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_readonly_runtime_context_loader.py",
+        "parent_module":  "execution_gate_overlay",
+        "reason":  "bounded_workflow_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "operator_dashboard.local_ai_orchestrator_workflow_plan",
+        "source_path":  "C:\\Users\\jusin\\OneDrive\\Documents\\Custom Office Templates\\operator_dashboard\\local_ai_orchestrator_workflow_plan.py",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "required",
+        "classification":  "project_local_operator_dashboard"
+    },
+    {
+        "module_name":  "__future__",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_input_context_pack",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "abc",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_gate1_save_storage_adapter",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "copy",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.approved_combat_sport_source_registry",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "csv",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "dataclasses",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_input_context_pack",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "datetime",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "enum",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.global_fighter_identity_resolver_preview",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "flask",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "html",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "importlib.util",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button2_template_pack_asset_renderer_v1",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "io",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button2_report_generation_route_render_gate_integration_v1",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "json",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "os",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "pathlib",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button2_template_pack_asset_renderer_v1",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "PIL",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button2_template_pack_asset_renderer_v1",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "pypdf",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "re",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "reportlab.lib.pagesizes",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "reportlab.pdfgen",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "sys",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "time",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "typing",
+        "source_path":  "",
+        "parent_module":  "operator_dashboard.button3_result_comparison_preview_v1",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "unicodedata",
+        "source_path":  "",
+        "parent_module":  "button3_improved_source_yield_engine",
+        "reason":  "transitive_import",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "urllib.parse",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "uuid",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    },
+    {
+        "module_name":  "weasyprint",
+        "source_path":  "",
+        "parent_module":  "__seed__.package_app",
+        "reason":  "import_from_seed",
+        "required_status":  "optional",
+        "classification":  "external_or_stdlib"
+    }
+]

@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T01:56:40.2177750Z
+ordering_key_1=required_before_optional_then_module_name_lower
+ordering_key_2=source_path_lower
+ordering_key_3=parent_module_lower
+manifest_sha256=56a05e4c04f00829899d87ebbd51c06d9a09c827457e5083a51c09eb06ef5138
+ordered_entry_count=66
+reproducibility_status=DETERMINISTIC_SINGLE_RUN_PROOF

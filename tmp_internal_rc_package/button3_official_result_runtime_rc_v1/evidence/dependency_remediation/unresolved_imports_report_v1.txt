@@ -1,0 +1,4 @@
+﻿timestamp_utc=2026-07-05T01:56:40.2167691Z
+required_unresolved_count=1
+status=REQUIRED_UNRESOLVED_IMPORTS_PRESENT
+module=operator_dashboard.button3_auto_result_source_yield_live_executor_preview | parent=operator_dashboard.local_ai_orchestrator_engine_adapter_registry | reason=transitive_import

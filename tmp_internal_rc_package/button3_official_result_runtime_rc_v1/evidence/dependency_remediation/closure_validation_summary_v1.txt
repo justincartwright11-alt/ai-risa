@@ -1,0 +1,11 @@
+﻿timestamp_utc=2026-07-05T01:56:40.2257819Z
+execution_gate_commit=61f062e
+analysis_sequence_executed=closure_manifest;unresolved_report;ordering_proof;copy_plan;evidence_capture
+stop_after_analysis=True
+required_unresolved_count=1
+copy_candidate_count=40
+package_repair_executed=False
+package_runtime_modified=False
+preview_rerun_executed=False
+production_or_write_or_mutation_actions=False
+execution_now_effective=STOPPED_AFTER_BOUNDED_ANALYSIS
