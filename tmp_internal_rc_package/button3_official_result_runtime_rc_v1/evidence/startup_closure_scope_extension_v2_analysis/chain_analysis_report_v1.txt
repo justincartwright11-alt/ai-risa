@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T13:28:40.1954180+10:00
+baseline_head_commit=c65fd0a
+baseline_tag=button3-official-result-runtime-internal-release-candidate-startup-closure-scope-extension-proof-and-review-v2
+baseline_tag_commit=c65fd0a
+tag_at_head=True
+root_missing_module=operator_dashboard.button1_approved_provider_config_validator_v1
+root_module_path=operator_dashboard/button1_approved_provider_config_validator_v1.py
+project_local_chain_count=1
+chain_member=operator_dashboard/button1_approved_provider_config_validator_v1.py
+closure_complete=True

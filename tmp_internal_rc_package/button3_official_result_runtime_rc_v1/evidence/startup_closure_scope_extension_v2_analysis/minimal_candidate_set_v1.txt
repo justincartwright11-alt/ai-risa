@@ -1,0 +1,3 @@
+﻿timestamp_utc=2026-07-05T13:28:40.2046318+10:00
+minimal_candidate_set_count=1
+candidate=operator_dashboard/button1_approved_provider_config_validator_v1.py
