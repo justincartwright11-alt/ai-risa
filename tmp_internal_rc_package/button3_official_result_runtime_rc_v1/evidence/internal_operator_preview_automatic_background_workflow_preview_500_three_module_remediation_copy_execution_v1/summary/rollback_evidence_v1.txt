@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T06:37:12Z
+rollback_strategy=restore_or_remove_three_destination_modules_to_pre_copy_state
+dest_1_pre_state=ABSENT
+dest_2_pre_state=ABSENT
+dest_3_pre_state=ABSENT
+rollback_execution_in_this_slice=False
+rollback_artifacts=pre_copy_presence_hashes_v1.txt;post_copy_parity_verification_v1.txt
