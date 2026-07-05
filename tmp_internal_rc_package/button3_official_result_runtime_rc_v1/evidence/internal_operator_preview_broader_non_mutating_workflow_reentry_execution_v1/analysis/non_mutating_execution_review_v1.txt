@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T17:19:26.0642998+10:00
+execute_preview_used=False
+workflow_calls_read_only=True
+apply_execution_performed=False
+durable_write_performed=False
+mutation_performed=False
+non_mutating_execution_pass=True
+console_auto_background_preview_posts_observed=True
+console_auto_background_nuance=UI_surface_load_triggers_workflow_preview
+bounded_run_classification=NON_MUTATING_WITH_AUTO_BACKGROUND_PREVIEW_CALLS

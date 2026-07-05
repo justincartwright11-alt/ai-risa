@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T17:19:26.0623012+10:00
+approved_ui_surface_1=GET /
+approved_ui_surface_1_status=200
+approved_ui_surface_2=GET /advanced-dashboard
+approved_ui_surface_2_status=200
+approved_ui_surfaces_pass=
+True

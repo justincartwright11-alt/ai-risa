@@ -1,0 +1,3 @@
+﻿timestamp_utc=2026-07-05T17:19:25.3245662+10:00
+runtime_ready=True
+ready_probe=flask_running_on_127.0.0.1:5050_seen

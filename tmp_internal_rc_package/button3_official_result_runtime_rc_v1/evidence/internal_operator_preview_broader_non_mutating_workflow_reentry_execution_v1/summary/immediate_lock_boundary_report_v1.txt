@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T17:20:42.1232229+10:00
+authorized_sequence_completed=True
+immediate_lock_after_stage_guard=True
+additional_execution_after_stage_guard=False
+final_staged_file_count=15

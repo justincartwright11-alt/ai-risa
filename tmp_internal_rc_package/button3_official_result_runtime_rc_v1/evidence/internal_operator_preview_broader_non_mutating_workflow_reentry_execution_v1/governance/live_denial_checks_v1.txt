@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T17:19:52.0144693+10:00
+check_1=POST /api/operator/button3/apply-result
+check_1_status=403
+check_1_denial_pass=
+True
+check_1_body=

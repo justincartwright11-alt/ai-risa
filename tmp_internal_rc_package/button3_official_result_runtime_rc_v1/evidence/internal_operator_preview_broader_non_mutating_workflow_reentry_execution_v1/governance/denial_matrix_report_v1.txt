@@ -1,0 +1,13 @@
+﻿timestamp_utc=2026-07-05T17:19:52.0164644+10:00
+apply_execution_denied=
+True
+ledger_writes_denied=True
+learning_application_denied=True
+calibration_writes_denied=True
+gcid_mutation_denied=True
+customer_output_release_denied=True
+production_release_denied=True
+copy_remediation_denied=True
+authority_elevation_denied=True
+live_denial_matrix_pass=
+True

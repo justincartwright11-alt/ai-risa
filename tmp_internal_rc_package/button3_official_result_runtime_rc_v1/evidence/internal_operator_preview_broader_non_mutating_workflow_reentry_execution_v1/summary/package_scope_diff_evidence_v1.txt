@@ -1,0 +1,13 @@
+﻿timestamp_utc=2026-07-05T17:20:41.9694207+10:00
+scope_basis=global_staged_set_plus_worktree_observation
+authorized_file_count=15
+global_staged_file_count=15
+out_of_scope_staged_count=0
+missing_authorized_count=0
+unexpected_artifact_candidates_detected=
+True
+out_of_scope_untracked_left_untouched=True
+out_of_scope_untracked_excluded_from_staging=
+True
+out_of_scope_cleanup_performed=False
+out_of_scope_mutation_performed=False

@@ -1,0 +1,12 @@
+﻿timestamp_utc=2026-07-05T17:19:01.8230181+10:00
+baseline_head=e32aad6
+expected_head=e32aad6
+gate_commit=10e355d
+proof_commit=e32aad6
+runtime_root_exists=
+True
+integrity_pass=True
+runtime_start_in_this_slice=False
+workflow_execution_in_this_slice=False
+endpoint_replay_in_this_slice=False
+mutation_in_this_slice=False

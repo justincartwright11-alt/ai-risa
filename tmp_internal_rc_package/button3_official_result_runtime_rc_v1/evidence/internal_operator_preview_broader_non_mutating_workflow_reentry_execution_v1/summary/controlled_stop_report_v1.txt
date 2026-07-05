@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T17:20:29.4988124+10:00
+controlled_stop_attempted=True
+runtime_process_still_running=False
+controlled_stop_pass=
+True
