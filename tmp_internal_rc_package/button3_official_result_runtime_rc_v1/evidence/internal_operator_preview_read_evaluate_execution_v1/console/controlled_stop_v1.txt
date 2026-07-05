@@ -1,0 +1,1 @@
+﻿timestamp_utc=2026-07-05T04:25:52Z controlled_stop_target_port=5050 before_listener_pids=6100 after_listener_pids= process_exited_after_stop=True

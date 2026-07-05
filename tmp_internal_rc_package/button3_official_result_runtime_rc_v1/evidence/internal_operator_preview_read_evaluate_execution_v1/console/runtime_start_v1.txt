@@ -1,0 +1,6 @@
+﻿startup_command=Set-Location tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime ; python app.py
+startup_launch_count=1
+path_safe_startup=True
+timestamp_utc=
+2026-07-05T04:17:36
+Z

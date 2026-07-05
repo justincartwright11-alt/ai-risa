@@ -1,0 +1,1 @@
+﻿timestamp_utc=2026-07-05T04:25:52Z controlled_stop_performed=True target_port=5050 listener_count_before=1 listener_count_after=0 process_exited_after_stop=True one_launch_boundary_maintained=True

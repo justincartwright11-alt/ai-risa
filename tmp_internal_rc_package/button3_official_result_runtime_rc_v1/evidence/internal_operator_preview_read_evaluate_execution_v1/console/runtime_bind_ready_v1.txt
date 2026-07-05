@@ -1,0 +1,6 @@
+﻿bind_ready_signal=* Running on http://127.0.0.1:5050
+serving_signal=* Serving Flask app 'app'
+debugger_active_signal=* Debugger is active!
+timestamp_utc=
+2026-07-05T04:17:36
+Z

@@ -1,0 +1,30 @@
+﻿timestamp_utc=2026-07-05T04:25:01Z exact_path=Button3 read/evaluate preview endpoints only call_1_response={
+  "compared_results": [],
+  "ok": true,
+  "summary_metrics": {},
+  "waiting_for_results": []
+}
+ call_2_response={
+  "executor_version": "button3-auto-result-source-yield-live-executor-preview-v1",
+  "ok": true,
+  "preview_only": true,
+  "row_states": {},
+  "summary": {
+    "Conflict": 0,
+    "Needs Source": 0,
+    "No Result Yet": 0,
+    "Ready to Compare": 0,
+    "Results Found": 0,
+    "total_rows": 0
+  },
+  "telemetry": {
+    "auto_apply_performed": false,
+    "calibration_write_performed": false,
+    "durable_write_performed": false,
+    "learning_apply_performed": false,
+    "mutation_performed": false,
+    "preview_only": true,
+    "queue_write_performed": false
+  }
+}
+ call_3_response= call_1_error= call_2_error= call_3_error=The remote server returned an error: (500) Internal Server Error.

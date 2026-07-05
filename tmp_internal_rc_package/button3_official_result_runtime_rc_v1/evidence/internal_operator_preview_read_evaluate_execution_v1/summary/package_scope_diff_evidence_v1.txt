@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T14:26:48.3098631+10:00
+scope_basis=allowed_paths_only
+allowed_file_count=17
+observed_status_lines=1
+status_line=?? tmp_internal_rc_package/button3_official_result_runtime_rc_v1/evidence/internal_operator_preview_read_evaluate_execution_v1/
+out_of_scope_count=1
+scope_compliant=False
