@@ -1,0 +1,12 @@
+﻿timestamp_utc=2026-07-05T06:04:43Z
+gate_commit=69ee791
+gate_tag=button3-official-result-runtime-internal-operator-preview-ui-template-surface-gap-two-template-remediation-copy-execution-gate-v1
+gate_proof_commit=396d23d
+gate_proof_tag=button3-official-result-runtime-internal-operator-preview-ui-template-surface-gap-two-template-remediation-copy-execution-gate-proof-and-review-v1
+analysis_evidence_commit=3e63a99
+analysis_evidence_proof_commit=5e8b9b1
+authorized_mapping_1=operator_dashboard/templates/index.html -> tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/index.html
+authorized_mapping_2=operator_dashboard/templates/advanced_dashboard.html -> tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/advanced_dashboard.html
+execution_mode=copy_only_bounded
+endpoint_rerun_performed=False
+workflow_rerun_performed=False

@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T06:04:43Z
+rollback_strategy=restore_destinations_from_pre_copy_state
+dest_1_pre_state=ABSENT
+dest_2_pre_state=ABSENT
+rollback_actions_if_needed=delete_created_dest_files_and_remove_empty_runtime_templates_dir
+rollback_artifacts_source=pre_copy_hashes_v1.txt;post_copy_hash_verification_v1.txt
+rollback_execution_in_this_slice=False

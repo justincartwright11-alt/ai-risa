@@ -1,0 +1,4 @@
+﻿timestamp_utc=2026-07-05T06:04:43Z
+copy_sequence_completed=True
+immediate_stop_after_evidence_write=True
+post_stop_additional_execution=False

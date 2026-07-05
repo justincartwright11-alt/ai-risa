@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T06:04:43Z
+dest_dir_created_if_absent=True
+copy_performed=True
+copied=operator_dashboard/templates/index.html -> tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/index.html
+copied=operator_dashboard/templates/advanced_dashboard.html -> tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/advanced_dashboard.html
+runtime_root_index_modified=False
