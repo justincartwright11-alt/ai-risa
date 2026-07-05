@@ -1,0 +1,6 @@
+timestamp_utc=2026-07-05T06:30:04Z
+root_module=operator_dashboard.local_ai_orchestrator_workflow_plan
+root_source_file=operator_dashboard/local_ai_orchestrator_workflow_plan.py
+root_source_exists=True
+root_import=operator_dashboard.local_ai_orchestrator_job_schema;optional_guarded=False
+root_import=operator_dashboard.local_ai_orchestrator_preview_runner;optional_guarded=False

@@ -1,0 +1,7 @@
+timestamp_utc=2026-07-05T06:30:04Z
+proof_criterion_1=root module inspection identifies direct project-local imports and optional guards
+proof_criterion_2=transitive import closure is explicit with edge-level optional_guarded marking
+proof_criterion_3=minimal candidate set includes all non-optional missing package modules needed for root import closure
+proof_criterion_4=deterministic destination mapping is explicit for each required candidate
+proof_criterion_5=no runtime reproduction, endpoint replay, copy/remediation, or mutation performed in this slice
+proof_criterion_6=strict staged-set guard pass required before lock

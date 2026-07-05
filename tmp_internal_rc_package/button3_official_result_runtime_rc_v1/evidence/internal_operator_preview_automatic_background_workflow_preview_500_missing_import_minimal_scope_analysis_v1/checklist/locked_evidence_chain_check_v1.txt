@@ -1,0 +1,11 @@
+timestamp_utc=2026-07-05T06:30:04Z
+gate_commit=b962509
+gate_tag=button3-official-result-runtime-internal-operator-preview-automatic-background-workflow-preview-500-missing-import-minimal-remediation-scope-analysis-gate-v1
+gate_proof_commit=f7894bb
+gate_proof_tag=button3-official-result-runtime-internal-operator-preview-automatic-background-workflow-preview-500-missing-import-minimal-remediation-scope-analysis-gate-proof-and-review-v1
+identity_capture_evidence_commit=ffb91f3
+identity_capture_evidence_proof_commit=4f9e06f
+root_module=operator_dashboard.local_ai_orchestrator_workflow_plan
+runtime_reproduction_performed=False
+endpoint_replay_performed=False
+copy_or_remediation_performed=False

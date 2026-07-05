@@ -1,0 +1,15 @@
+timestamp_utc=2026-07-05T06:30:04Z
+copy_remediation=False
+runtime_reproduction=False
+endpoint_replay=False
+broader_workflow_execution=False
+apply_execution=False
+ledger_writes=False
+learning_application=False
+calibration_writes=False
+gcid_mutation=False
+customer_output_release=False
+production_release=False
+mutation=False
+authority_elevation=False
+prohibition_preservation_pass=True
