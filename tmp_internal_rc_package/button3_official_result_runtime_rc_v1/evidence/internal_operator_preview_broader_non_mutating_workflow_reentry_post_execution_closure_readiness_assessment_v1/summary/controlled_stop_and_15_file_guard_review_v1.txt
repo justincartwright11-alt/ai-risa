@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1704549+10:00
+controlled_stop_pass=True
+previous_guard_authorized_file_count=15
+previous_guard_staged_file_count=15
+previous_guard_out_of_scope_staged_count=0
+previous_guard_missing_authorized_count=0
+previous_guard_unexpected_artifact_pattern_staged=False
+previous_guard_stage_guard_pass=True
+controlled_stop_and_15_file_guard_review_pass=True

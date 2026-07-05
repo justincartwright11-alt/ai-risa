@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1651419+10:00
+approved_ui_surface_root_status=200
+approved_ui_surface_advanced_status=200
+screenshot_root_present=True
+screenshot_advanced_present=True
+ui_success_and_screenshot_proof_pass=True

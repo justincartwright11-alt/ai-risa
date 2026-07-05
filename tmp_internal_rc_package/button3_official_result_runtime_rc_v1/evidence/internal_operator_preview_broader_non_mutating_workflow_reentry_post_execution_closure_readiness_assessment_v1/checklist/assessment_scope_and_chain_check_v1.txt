@@ -1,0 +1,13 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1133688+10:00
+assessment_type=docs_read_only_post_execution_closure_readiness
+baseline_head=6927aa8
+expected_head=6927aa8
+closure_gate_commit=c3cfa23
+closure_gate_proof_review_commit=6927aa8
+execution_evidence_commit=405487e
+execution_evidence_proof_review_commit=f79ff58
+runtime_start_in_this_slice=False
+workflow_execution_in_this_slice=False
+endpoint_replay_in_this_slice=False
+mutation_in_this_slice=False
+scope_check_pass=True

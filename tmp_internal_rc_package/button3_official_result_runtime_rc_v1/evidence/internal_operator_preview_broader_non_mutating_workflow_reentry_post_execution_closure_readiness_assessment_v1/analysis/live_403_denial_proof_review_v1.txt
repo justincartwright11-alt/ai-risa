@@ -1,0 +1,4 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1661414+10:00
+protected_apply_path_status=403
+live_403_denial_proof_pass=True
+apply_execution_denied=True

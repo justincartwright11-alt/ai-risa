@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1606788+10:00
+execution_evidence_commit=405487e
+execution_evidence_proof_review_commit=f79ff58
+execution_evidence_root=internal_operator_preview_broader_non_mutating_workflow_reentry_execution_v1
+execution_evidence_integrity_pass=True

@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1684545+10:00
+auto_background_calls_observed=True
+auto_background_call_classification=NON_MUTATING_UI_LOAD_SIDE_EFFECT
+auto_background_call_reclassified_as_defect=False
+governance_boundary_preserved=True

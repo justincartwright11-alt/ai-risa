@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T17:32:16.1724540+10:00
+out_of_scope_class_1=__pycache__
+out_of_scope_class_2=runtime_stdout_combined_*.txt
+out_of_scope_class_3=runtime_stderr_combined_*.txt
+out_of_scope_state_preserved=True
+out_of_scope_cleanup_performed=False
+out_of_scope_mutation_performed=False
+out_of_scope_artifact_preservation_pass=True
