@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T04:42:39Z
+immediate_stop_executed=True
+runtime_execution_performed=False
+endpoint_rerun_performed=False
+copy_performed=False
+remediation_performed=False
+authority_elevation_performed=False

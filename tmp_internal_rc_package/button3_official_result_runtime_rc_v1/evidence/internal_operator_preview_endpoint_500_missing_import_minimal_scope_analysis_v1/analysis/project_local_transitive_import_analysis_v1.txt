@@ -1,0 +1,9 @@
+﻿timestamp_utc=2026-07-05T04:42:39Z
+analysis_mode=project_local_transitive_only
+root_module=operator_dashboard.button3_result_comparison_preview_v1
+direct_project_local_dependencies=[]
+transitive_project_local_dependencies=[]
+transitive_closure_count=0
+deterministic_traversal_order=[operator_dashboard.button3_result_comparison_preview_v1]
+stdlib_or_external_excluded=[datetime,typing]
+conclusion=no_project_local_transitive_dependencies_detected

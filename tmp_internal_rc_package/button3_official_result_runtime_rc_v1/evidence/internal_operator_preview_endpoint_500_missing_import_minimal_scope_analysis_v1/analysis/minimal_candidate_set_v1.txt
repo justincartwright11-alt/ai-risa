@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T04:42:39Z
+candidate_module_count=1
+candidate_modules_deterministic_order=[operator_dashboard.button3_result_comparison_preview_v1]
+one_file_only_verdict=True
+non_candidate_exclusions=stdlib_or_external_modules_not_packaged_as_project_local_files
+smallest_safe_repair_set=one_file_root_module_only

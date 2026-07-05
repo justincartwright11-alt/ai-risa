@@ -1,0 +1,12 @@
+﻿timestamp_utc=2026-07-05T04:42:39Z
+module_identity=operator_dashboard.button3_result_comparison_preview_v1
+source_path=operator_dashboard/button3_result_comparison_preview_v1.py
+source_exists=True
+package_path=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/operator_dashboard/button3_result_comparison_preview_v1.py
+package_exists=False
+import_line_8=from datetime import datetime, timezone
+import_line_9=from typing import Any, Dict
+project_local_import_detected=False
+external_or_stdlib_import_count=2
+project_local_import_count=0
+parse_blocker_detected=False
