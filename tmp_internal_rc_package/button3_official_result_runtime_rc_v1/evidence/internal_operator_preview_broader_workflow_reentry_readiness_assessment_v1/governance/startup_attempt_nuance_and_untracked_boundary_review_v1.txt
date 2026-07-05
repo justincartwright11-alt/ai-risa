@@ -1,0 +1,11 @@
+﻿timestamp_utc=2026-07-05T17:07:07.5849648+10:00
+startup_attempt_nuance=ABORTED_STARTUP_MECHANICS_NOT_REPLAY_CONSUMPTION
+allowed_claim=EXACT_OPERATOR_INVOKED_ENDPOINT_REPLAY_COUNT:1
+denied_claim=TOTAL_SERVER_START_ATTEMPT_COUNT:1
+untracked_artifacts_out_of_scope=True
+untracked_artifact_class_1=__pycache__
+untracked_artifact_class_2=runtime_stdout_combined_*.txt
+untracked_artifact_class_3=runtime_stderr_combined_*.txt
+untracked_artifacts_touched=False
+untracked_artifacts_staged=False
+untracked_artifact_boundary_preserved=True

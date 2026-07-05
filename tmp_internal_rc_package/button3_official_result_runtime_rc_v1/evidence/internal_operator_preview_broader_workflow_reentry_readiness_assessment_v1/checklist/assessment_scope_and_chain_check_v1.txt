@@ -1,0 +1,13 @@
+﻿timestamp_utc=2026-07-05T17:07:07.5374695+10:00
+assessment_type=docs_read_only_readiness_assessment
+baseline_head=bd788b5
+expected_head=bd788b5
+gate_commit=0e94237
+gate_proof_review_commit=bd788b5
+replay_evidence_commit=1288ea1
+replay_evidence_proof_review_commit=66b001f
+runtime_start_in_this_slice=False
+workflow_execution_in_this_slice=False
+endpoint_replay_in_this_slice=False
+mutation_in_this_slice=False
+chain_check_pass=True

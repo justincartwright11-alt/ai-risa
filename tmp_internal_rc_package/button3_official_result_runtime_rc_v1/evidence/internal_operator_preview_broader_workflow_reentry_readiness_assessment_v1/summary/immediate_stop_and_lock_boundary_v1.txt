@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T17:07:24.6386850+10:00
+assessment_sequence_completed=True
+immediate_stop_after_assessment=True
+additional_runtime_or_endpoint_actions=False
+final_staged_file_count=10

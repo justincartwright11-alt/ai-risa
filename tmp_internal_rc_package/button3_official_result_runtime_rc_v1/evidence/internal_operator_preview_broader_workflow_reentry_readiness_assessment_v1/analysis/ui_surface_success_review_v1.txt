@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T17:07:07.5786681+10:00
+source_review_commit=9875738
+source_review_tag=button3-official-result-runtime-internal-operator-preview-ui-surface-post-remediation-rerun-evidence-v1
+root_surface_status=200
+advanced_dashboard_status=200
+template_not_found_absent=True
+ui_surface_success=True
+note=auto_background_request_nuance_already_locked_separately
