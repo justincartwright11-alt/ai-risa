@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T13:12:10.2547590+10:00
+first_blocking_exception_identity_resolved=False
+exception_type=
+exception_message=
+module_name_if_module_not_found=
+module_path_if_module_not_found=
+exit_code=1
+raw_stream_capture_complete=False
+identity_resolution_status=FAIL_CLOSED_UNRESOLVED
+identity_resolution_note=startup command failed at shell redirection path resolution before full application traceback capture

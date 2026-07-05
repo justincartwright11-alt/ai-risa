@@ -1,0 +1,4 @@
+timestamp_utc=2026-07-05T13:12:10.2610000+10:00
+capture_status=PARTIAL
+observed_stderr_line=The system cannot find the path specified.
+note=stderr content is from startup command shell-level failure to resolve redirection target path

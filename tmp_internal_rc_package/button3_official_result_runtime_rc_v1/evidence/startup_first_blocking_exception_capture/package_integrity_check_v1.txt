@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T13:12:10.1761522+10:00
+baseline_head_commit=7044ee8
+baseline_tag=button3-official-result-runtime-internal-release-candidate-startup-first-blocking-exception-capture-gate-proof-and-review-v1
+baseline_tag_commit=7044ee8
+tag_at_head=True
+package_root=tmp_internal_rc_package/button3_official_result_runtime_rc_v1
+runtime_root_exists=True
+copied_module_exists=True
+evidence_dir_writable=True
+integrity_pass=True

@@ -1,0 +1,6 @@
+﻿timestamp_utc=2026-07-05T13:12:10.2101498+10:00
+command=Set-Location tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime ; python app.py
+stdout_path=tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_first_blocking_exception_capture\raw_stdout_v1.txt
+stderr_path=tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_first_blocking_exception_capture\raw_stderr_v1.txt
+startup_exit_code=1
+startup_attempt_count=1

@@ -1,0 +1,4 @@
+timestamp_utc=2026-07-05T13:12:10.2600000+10:00
+capture_status=INCOMPLETE
+raw_stdout_bytes=0
+note=stdout redirection target path was unresolved from runtime-root command context; no application stdout captured
