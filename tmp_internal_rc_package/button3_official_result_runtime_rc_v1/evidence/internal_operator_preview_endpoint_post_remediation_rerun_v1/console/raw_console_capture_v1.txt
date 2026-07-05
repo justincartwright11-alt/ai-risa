@@ -1,0 +1,1 @@
+﻿timestamp_utc=2026-07-05T05:02:48Z console_line=* Serving Flask app 'app' console_line=* Running on http://127.0.0.1:5050 console_line=127.0.0.1 - - [05/Jul/2026 15:02:12] "POST /api/button3/result-comparison/preview-v1 HTTP/1.1" 200 -

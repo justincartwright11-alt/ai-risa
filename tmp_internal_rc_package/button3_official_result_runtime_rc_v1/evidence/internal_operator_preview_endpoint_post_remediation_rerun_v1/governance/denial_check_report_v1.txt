@@ -1,0 +1,11 @@
+﻿timestamp_utc=2026-07-05T05:02:56Z denial_check_scope=apply,ledger,learning,calibration,gcid,customer_output,production,authority
+check=timestamp_utc=2026-07-05T05:02:56Z
+check=apply_execution:status==denied_or_unavailable:error=The remote server returned an error: (403) Forbidden.
+check=ledger_writes:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=learning_application:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=calibration_writes:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=gcid_mutation:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=customer_output_release:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=production_release:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+check=authority_elevation:status==denied_or_unavailable:error=The remote server returned an error: (404) Not Found.
+unexpected_allow_detected=
