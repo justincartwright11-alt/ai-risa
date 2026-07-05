@@ -1,0 +1,13 @@
+timestamp_utc=2026-07-05T05:49:46Z
+target_route=/;target_template=index.html
+target_route=/advanced-dashboard;target_template=advanced_dashboard.html
+packaged_template_folder_expected=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates
+packaged_template_folder_exists=False
+packaged_runtime_root_html_count=1
+packaged_runtime_root_html=index.html
+template=advanced_dashboard.html;source_exists=True;package_exists=False
+template=button2_pdf_library.html;source_exists=True;package_exists=False
+template=index.html;source_exists=True;package_exists=False
+app_render_template_line=1394:return render_template(
+app_render_template_line=1404:return render_template("advanced_dashboard.html")
+app_render_template_line=2731:response = make_response(render_template(

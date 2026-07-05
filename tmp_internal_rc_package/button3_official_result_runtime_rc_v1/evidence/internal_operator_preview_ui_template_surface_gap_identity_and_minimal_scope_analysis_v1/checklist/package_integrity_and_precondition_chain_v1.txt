@@ -1,0 +1,12 @@
+timestamp_utc=2026-07-05T05:49:46Z
+gate_commit=3fc7f71
+gate_tag=button3-official-result-runtime-internal-operator-preview-ui-template-surface-gap-identity-and-minimal-scope-analysis-gate-v1
+gate_proof_commit=e49fd7b
+gate_proof_tag=button3-official-result-runtime-internal-operator-preview-ui-template-surface-gap-identity-and-minimal-scope-analysis-gate-proof-and-review-v1
+app_py_exists=True
+source_templates_dir_exists=True
+packaged_templates_dir_exists=False
+packaged_static_dir_exists=False
+execution_mode=read_only_analysis_only
+runtime_start_performed=False
+endpoint_or_workflow_rerun_performed=False

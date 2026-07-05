@@ -1,0 +1,7 @@
+timestamp_utc=2026-07-05T05:49:46Z
+packaged_static_dir_expected=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/static
+packaged_static_dir_exists=False
+asset_ref=index.html:NONE (no local static url_for/script-src/link/img/source/video/audio refs)
+api_ref=index.html@L4160:fetch('/api/button2/queue-ready', { method: 'GET', headers: { 'Cache-Control': 'no-store' } })
+asset_ref=advanced_dashboard.html:NONE (no local static url_for/script-src/link/img/source/video/audio refs)
+api_ref=advanced_dashboard.html:NONE

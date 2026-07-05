@@ -1,0 +1,5 @@
+timestamp_utc=2026-07-05T05:49:46Z
+flask_template_folder_contract=app=Flask(__name__, template_folder="templates")
+packaged_template_destination_root=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates
+map_source=operator_dashboard/templates/index.html;map_destination=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/index.html;source_exists=True;destination_exists_now=False
+map_source=operator_dashboard/templates/advanced_dashboard.html;map_destination=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/templates/advanced_dashboard.html;source_exists=True;destination_exists_now=False

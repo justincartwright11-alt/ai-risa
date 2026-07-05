@@ -1,0 +1,6 @@
+timestamp_utc=2026-07-05T05:49:46Z
+analysis_scope=index.html,advanced_dashboard.html
+template=index.html;source_exists=True
+edge=index.html:NONE (no extends/include/import/from)
+template=advanced_dashboard.html;source_exists=True
+edge=advanced_dashboard.html:NONE (no extends/include/import/from)

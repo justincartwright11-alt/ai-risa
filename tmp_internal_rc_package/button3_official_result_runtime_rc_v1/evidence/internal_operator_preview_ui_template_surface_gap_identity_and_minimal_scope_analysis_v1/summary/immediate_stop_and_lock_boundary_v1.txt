@@ -1,0 +1,5 @@
+timestamp_utc=2026-07-05T05:49:46Z
+analysis_completed=True
+runtime_started_in_this_slice=False
+stop_boundary=immediate_after_analysis_artifact_write
+additional_actions_after_stop=False

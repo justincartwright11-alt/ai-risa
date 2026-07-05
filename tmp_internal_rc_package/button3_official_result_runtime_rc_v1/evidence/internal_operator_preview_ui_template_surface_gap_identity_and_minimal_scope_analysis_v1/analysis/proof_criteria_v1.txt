@@ -1,0 +1,8 @@
+timestamp_utc=2026-07-05T05:49:46Z
+proof_criterion_1=identity matrix must show source_exists=True and package_exists=False for index.html and advanced_dashboard.html in templates destination
+proof_criterion_2=closure graph must show no unresolved jinja dependency edges beyond target templates
+proof_criterion_3=static boundary matrix must enumerate all target-template asset refs and prove no omitted local static dependencies
+proof_criterion_4=minimal candidate set must contain only required templates for target routes
+proof_criterion_5=deterministic mapping must bind each candidate to runtime/templates/<name>.html
+proof_criterion_6=no remediation/copy/rerun/mutation performed in this slice
+proof_criterion_7=immediate stop and strict staged guard pass required for lock

@@ -1,0 +1,8 @@
+timestamp_utc=2026-07-05T05:49:46Z
+goal=smallest_complete_ui_packaging_set_for_/and_/advanced-dashboard_render
+jinja_dependency_expansion_required=False
+candidate_count=2
+candidate_template=index.html
+candidate_template=advanced_dashboard.html
+excluded_template=button2_pdf_library.html (not required for target routes)
+excluded_static_assets=all (no target-template local static refs detected)
