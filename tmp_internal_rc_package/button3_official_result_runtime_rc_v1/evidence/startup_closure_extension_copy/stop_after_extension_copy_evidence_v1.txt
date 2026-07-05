@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T02:38:59.6139650Z
+extension_copy_completed=True
+evidence_capture_completed=True
+immediate_stop_after_copy_evidence=True
+startup_rerun_executed=False
+workflow_or_endpoint_actions_executed=False
+production_write_customer_output_mutation_actions=False
+execution_state=STOPPED_PENDING_EXTENSION_COPY_EVIDENCE_LOCK_AND_REVIEW
