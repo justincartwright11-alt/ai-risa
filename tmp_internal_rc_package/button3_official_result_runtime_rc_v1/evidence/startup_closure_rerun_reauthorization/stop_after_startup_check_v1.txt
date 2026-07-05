@@ -1,0 +1,15 @@
+timestamp_utc=2026-07-05T12:59:23.0000000+10:00
+startup_check_sequence_completed=True
+immediate_stop_after_startup_check=True
+startup_check_executed_count=1
+startup_rerun_executed=False
+workflow_actions_executed=False
+endpoint_actions_executed=False
+denial_control_actions_executed=False
+production_release_actions_executed=False
+write_authority_actions_executed=False
+customer_output_actions_executed=False
+gcid_mutation_actions_executed=False
+learning_mutation_actions_executed=False
+calibration_mutation_actions_executed=False
+execution_state=STOPPED_PENDING_RERUN_EVIDENCE_LOCK_AND_PROOF_REVIEW

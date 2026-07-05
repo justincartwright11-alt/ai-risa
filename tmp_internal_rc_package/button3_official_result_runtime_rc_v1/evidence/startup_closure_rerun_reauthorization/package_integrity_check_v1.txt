@@ -1,0 +1,12 @@
+﻿timestamp_utc=2026-07-05T12:59:21.3786483+10:00
+baseline_head_commit=8c8de15
+baseline_tag=button3-official-result-runtime-internal-release-candidate-startup-closure-rerun-reauthorization-gate-proof-and-review-v1
+baseline_tag_commit=8c8de15
+tag_at_head=True
+baseline_chain_commit_3aea8a5=3aea8a5
+baseline_chain_commit_6194993=6194993
+package_root=tmp_internal_rc_package/button3_official_result_runtime_rc_v1
+runtime_root_exists=True
+copied_file_exists=True
+evidence_dir_writable=True
+integrity_pass=True

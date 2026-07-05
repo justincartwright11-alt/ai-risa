@@ -1,0 +1,7 @@
+timestamp_utc=2026-07-05T12:59:22.0000000+10:00
+module_not_found_error_present=UNDETERMINED_FROM_PARTIAL_CAPTURE
+first_blocking_exception=Traceback observed; terminal surfaced NativeCommandError wrapper event
+import_time_startup_pass=False
+import_time_startup_fail=True
+check_status=FAIL_CLOSED_INCOMPLETE_TRACEBACK_CAPTURE
+note=no rerun performed; first-blocking-exception identity remains unresolved from available excerpt

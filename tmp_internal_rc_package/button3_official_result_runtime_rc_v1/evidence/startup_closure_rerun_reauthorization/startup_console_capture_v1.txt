@@ -1,0 +1,14 @@
+timestamp_utc=2026-07-05T12:59:21.0000000+10:00
+command=Set-Location tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime ; python app.py
+startup_exit_code=1
+capture_mode=single_run_wrapper_observed_output
+---BEGIN_STARTUP_OUTPUT_EXCERPT---
+python.exe : Traceback (most recent call last):
+At line:1 char:2213
++ ... -Location $runtimeRoot; $startupOutput = & python app.py 2>&1; $start ...
++                                              ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+---END_STARTUP_OUTPUT_EXCERPT---
+note=single startup execution occurred once; wrapper terminated on native stderr handling before full traceback persistence
