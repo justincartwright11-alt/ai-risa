@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T04:34:14Z
+endpoint_path=/api/button3/result-comparison/preview-v1
+http_status=500
+exception_type=ModuleNotFoundError
+missing_module_identity_exact=operator_dashboard.button3_result_comparison_preview_v1
+traceback_source_file=tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/app.py
+traceback_source_line=154
+identity_basis=locked_500_evidence_plus_project_local_import_boundary

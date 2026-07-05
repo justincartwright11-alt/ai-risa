@@ -1,0 +1,5 @@
+﻿timestamp_utc=2026-07-05T04:34:14Z
+lock_boundary=immediate_after_identity_capture
+authority_expansion_performed=False
+mutation_authority_exercised=False
+further_actions_after_lock=False
