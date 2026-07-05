@@ -1,0 +1,1 @@
+﻿timestamp_utc=2026-07-05T06:13:34Z runtime_line=* Running on http://127.0.0.1:5050 runtime_line=GET / 200 runtime_line=GET /advanced-dashboard 200 runtime_line=observed_auto_request=POST /api/local-ai/orchestrator/workflow-preview 500 (frontend auto-call after / load) runtime_line=template_not_found_index_observed=False runtime_line=template_not_found_advanced_observed=False

@@ -1,0 +1,1 @@
+﻿timestamp_utc=2026-07-05T06:14:24Z controlled_stop_performed=True target_port=5050 listener_count_after=0 process_exited_after_stop=True stop_state_reconciled_after_terminal_cleanup=True
