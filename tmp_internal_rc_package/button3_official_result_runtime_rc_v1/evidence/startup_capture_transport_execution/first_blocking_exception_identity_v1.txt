@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T13:21:23.1865517+10:00
+first_blocking_exception_identity_resolved=True
+exception_type=ModuleNotFoundError
+exception_message=ModuleNotFoundError: No module named 'operator_dashboard.button1_approved_provider_config_validator_v1'
+module_name_if_module_not_found=operator_dashboard.button1_approved_provider_config_validator_v1
+module_path_if_module_not_found=operator_dashboard.button1_approved_provider_config_validator_v1
+stdout_bytes=0
+stderr_bytes=1184
+raw_stream_capture_complete=True
+exit_code=1

@@ -1,0 +1,8 @@
+﻿timestamp_utc=2026-07-05T13:21:23.1745600+10:00
+command=python app.py
+invocation_method=Start-Process
+runtime_working_directory_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+stdout_path_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_capture_transport_execution\raw_stdout_v1.txt
+stderr_path_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_capture_transport_execution\raw_stderr_v1.txt
+startup_exit_code=1
+startup_attempt_count=1

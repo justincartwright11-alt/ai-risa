@@ -1,0 +1,12 @@
+﻿timestamp_utc=2026-07-05T13:21:22.1031061+10:00
+baseline_head_commit=3fe9831
+baseline_tag=button3-official-result-runtime-internal-release-candidate-startup-capture-transport-execution-gate-proof-and-review-v1
+baseline_tag_commit=3fe9831
+tag_at_head=True
+workspace_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates
+runtime_working_directory_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\runtime
+evidence_root_abs=C:\Users\jusin\OneDrive\Documents\Custom Office Templates\tmp_internal_rc_package\button3_official_result_runtime_rc_v1\evidence\startup_capture_transport_execution
+runtime_root_exists=True
+copied_module_exists=True
+evidence_dir_writable=True
+integrity_pass=True
