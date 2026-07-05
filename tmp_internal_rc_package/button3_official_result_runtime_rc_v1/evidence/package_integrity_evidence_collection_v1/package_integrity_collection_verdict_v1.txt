@@ -1,0 +1,3 @@
+﻿verdict,COLLECTION_FAIL_CLOSED
+baseline_status,PASS
+stage_guard_pass,False

@@ -1,0 +1,6 @@
+﻿asset_path,exists,item_type
+tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/app.py,True,file
+tmp_internal_rc_package/button3_official_result_runtime_rc_v1/runtime/__init__.py,False,missing
+tmp_internal_rc_package/button3_official_result_runtime_rc_v1/manifests,True,directory
+tmp_internal_rc_package/button3_official_result_runtime_rc_v1/governance_docs,True,directory
+tmp_internal_rc_package/button3_official_result_runtime_rc_v1/tests,True,directory

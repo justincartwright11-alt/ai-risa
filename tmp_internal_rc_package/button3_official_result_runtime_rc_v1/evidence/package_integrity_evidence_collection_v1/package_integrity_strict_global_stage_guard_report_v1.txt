@@ -1,0 +1,10 @@
+﻿expected_count,13
+actual_count,10
+baseline_status,PASS
+missing_count,3
+extra_count,0
+empty_required_count,0
+stage_guard_pass,False
+missing_file,package_integrity_collection_verdict_v1.txt
+missing_file,package_integrity_immediate_lock_stop_report_v1.txt
+missing_file,package_integrity_strict_global_stage_guard_report_v1.txt

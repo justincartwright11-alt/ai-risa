@@ -1,0 +1,3 @@
+﻿stop_status,FAIL_CLOSED_STOP_EXECUTED
+rerun_authorized,NO
+post_lock_mutation_authorized,NO

@@ -1,0 +1,47 @@
+﻿[
+    {
+        "file":  "package_integrity_baseline_integrity_check_v1.txt",
+        "sha256":  "C9F93C78D5789635D9CED59048BE6AA2727B4FBC65EDD3B6F2B0F96F603696D3",
+        "size_bytes":  77
+    },
+    {
+        "file":  "package_integrity_readonly_package_inventory_v1.csv",
+        "sha256":  "91CFAAD0810933B35A1004DA180EA5490DEEF2DDF08B98612A7086095A19F046",
+        "size_bytes":  72505
+    },
+    {
+        "file":  "package_integrity_readonly_source_package_parity_checks_v1.csv",
+        "sha256":  "04C3551F8079947D615184EC75317C4C414CF0230CC957D39C33D2BFBC7111BC",
+        "size_bytes":  133810
+    },
+    {
+        "file":  "package_integrity_required_runtime_asset_presence_checks_v1.csv",
+        "sha256":  "2369EFDCFCDDFD4962B392B3DE0BC6DC50D94D11FA9F91FDA5E81ED936F39A87",
+        "size_bytes":  483
+    },
+    {
+        "file":  "package_integrity_missing_unexpected_asset_detection_v1.csv",
+        "sha256":  "510D210AFDB13F726AD1AC112E100171F2D178F8EE85A9FDDCADB2A5FBFB163E",
+        "size_bytes":  80860
+    },
+    {
+        "file":  "package_integrity_dependency_surface_inspection_v1.csv",
+        "sha256":  "C854A0B89F118E37C3ABD99F90833E258EA6EF45B81E79ED8CC55781997F767E",
+        "size_bytes":  25305
+    },
+    {
+        "file":  "package_integrity_template_surface_inspection_v1.csv",
+        "sha256":  "08092095730EF5D2473F2660685379E6F9D5B296BFB917709BC1BE01A08FE5D0",
+        "size_bytes":  2197
+    },
+    {
+        "file":  "package_integrity_evidence_surface_inspection_v1.csv",
+        "sha256":  "AD897A53FB8B2154FDF932136FA35A68D6D439B0FC6D03F5A100327FCC6EF39F",
+        "size_bytes":  64179
+    },
+    {
+        "file":  "package_integrity_out_of_scope_exclusion_verification_v1.txt",
+        "sha256":  "5B5BB7D56F03B33FF25D66C294E6B10FAE073FCD9E81E5509ECF92C162F1B28C",
+        "size_bytes":  129
+    }
+]
