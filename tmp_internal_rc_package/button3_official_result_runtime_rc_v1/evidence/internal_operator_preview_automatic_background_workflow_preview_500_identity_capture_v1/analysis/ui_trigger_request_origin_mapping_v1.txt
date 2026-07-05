@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T06:22:55Z
+ui_template=operator_dashboard/templates/index.html
+endpoint_constant_line=1340-1341
+endpoint_constant=/api/local-ai/orchestrator/workflow-preview
+post_function_line=1656-1667
+request_wrapper_line=1698-1715
+dashboard_hydration_line=1911-1915
+load_trigger=document.addEventListener('DOMContentLoaded', ...) then hydrateDashboardCardsOnLoad() at line 4651
+auto_refresh_trigger=setInterval(hydrateDashboardCardsOnLoad, 30000) at line 4652
+request_origin_summary=page-load hydration invokes requestLocalAiWorkflowPreviewWithRuntimeContext which posts to workflow-preview endpoint

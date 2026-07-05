@@ -1,0 +1,4 @@
+﻿timestamp_utc=2026-07-05T06:22:55Z
+analysis_completed=True
+immediate_stop_after_bounded_readonly_analysis=True
+additional_actions_after_stop=False

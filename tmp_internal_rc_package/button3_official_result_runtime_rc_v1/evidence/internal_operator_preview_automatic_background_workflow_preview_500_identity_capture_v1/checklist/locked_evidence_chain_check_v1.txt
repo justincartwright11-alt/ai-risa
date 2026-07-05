@@ -1,0 +1,10 @@
+﻿timestamp_utc=2026-07-05T06:22:55Z
+gate_commit=2c7b71e
+gate_tag=button3-official-result-runtime-internal-operator-preview-automatic-background-workflow-preview-500-identity-capture-gate-v1
+gate_proof_commit=67115f8
+gate_proof_tag=button3-official-result-runtime-internal-operator-preview-automatic-background-workflow-preview-500-identity-capture-gate-proof-and-review-v1
+ui_rerun_evidence_commit=9875738
+ui_rerun_evidence_proof_commit=40ee915
+runtime_execution_performed=False
+endpoint_replay_performed=False
+remediation_performed=False
