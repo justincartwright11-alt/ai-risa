@@ -1,0 +1,7 @@
+﻿timestamp_utc=2026-07-05T02:22:11.5150365Z
+copy_execution_completed=True
+evidence_capture_completed=True
+stop_after_copy_evidence_capture=True
+preview_rerun_executed=False
+production_or_write_or_customer_output_or_mutation_actions=False
+execution_state=STOPPED_PENDING_COPY_EVIDENCE_LOCK_AND_REVIEW
