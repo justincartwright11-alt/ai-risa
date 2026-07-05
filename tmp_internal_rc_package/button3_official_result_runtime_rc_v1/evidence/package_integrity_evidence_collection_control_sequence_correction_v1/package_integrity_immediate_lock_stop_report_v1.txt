@@ -1,0 +1,4 @@
+﻿stop_status,IMMEDIATE_LOCK_AND_STOP_EXECUTED
+rerun_authorized,NO
+second_attempt_authority,NOT_AUTHORIZED
+post_terminal_mutation_authorized,NO

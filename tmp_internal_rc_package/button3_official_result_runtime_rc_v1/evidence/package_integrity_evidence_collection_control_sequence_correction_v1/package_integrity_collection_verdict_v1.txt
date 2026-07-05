@@ -1,0 +1,5 @@
+﻿verdict,COLLECTION_PASS_LOCK_READY
+baseline_status,PASS
+stage_guard_pass,True
+failure_classification,
+NONE

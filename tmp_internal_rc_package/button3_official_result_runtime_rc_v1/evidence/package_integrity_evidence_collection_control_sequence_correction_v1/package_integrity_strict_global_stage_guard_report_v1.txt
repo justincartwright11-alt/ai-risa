@@ -1,0 +1,8 @@
+﻿stage_guard_phase,FINAL
+expected_count,13
+actual_count,13
+missing_count,0
+extra_count,0
+empty_core_count,0
+manifest_payload_hash_valid,True
+stage_guard_pass,True
