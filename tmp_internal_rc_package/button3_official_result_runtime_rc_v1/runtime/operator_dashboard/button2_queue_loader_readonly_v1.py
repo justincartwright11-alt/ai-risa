@@ -1,0 +1,242 @@
+"""
+button2_queue_loader_readonly_v1.py
+
+Button 2 queue loader: load and normalize approved fight queue rows from canonical source.
+
+This module provides read-only access to the operator-approved fight queue for Button 2
+PDF generation. Queue rows are loaded from the canonical source (JSON file), never from
+browser localStorage or preview objects.
+
+Requirements:
+- Load rows from canonical source only (ops/prf_queue/button2_approved_fight_queue.json)
+- Normalize rows to standard schema
+- Support single/multiple/all-ready/event-card selection
+- Never use stale preview objects or browser-persisted data
+- Server-side resolution of matchup_ids from canonical queue
+"""
+
+import os
+import json
+import re
+from typing import Dict, List, Tuple, Optional, Any
+
+
+_CANONICAL_QUEUE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "ops",
+    "prf_queue",
+    "button2_approved_fight_queue.json"
+)
+
+
+def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, Any]]:
+    """Normalize a queue row to standard schema. Return None if invalid."""
+    if not isinstance(row, dict):
+        return None
+
+    # Extract matchup ID (required)
+    matchup_id = row.get("matchup_id") or row.get("candidate_id") or row.get("fight_id")
+    if not isinstance(matchup_id, str) or not matchup_id.strip():
+        return None
+    matchup_id = matchup_id.strip()
+
+    # Extract fighters
+    fighter_a = str(row.get("fighter_a", "")).strip()
+    fighter_b = str(row.get("fighter_b", "")).strip()
+    if not fighter_a or not fighter_b:
+        return None
+
+    # Extract event info
+    event_name = str(row.get("event_name") or row.get("event") or row.get("event_title") or "").strip()
+    event_id = str(row.get("event_id") or "").strip()
+    if not event_id and event_name:
+        event_id = re.sub(r"[^a-z0-9]+", "_", event_name.strip().lower()).strip("_")
+
+    event_date = str(row.get("event_date", "")).strip()
+    promotion = str(row.get("promotion", "")).strip()
+
+    # Extract source
+    source_url = str(
+        row.get("source_url")
+        or row.get("canonical_source_url")
+        or row.get("event_url")
+        or row.get("provenance_url")
+        or row.get("official_url")
+        or row.get("url")
+        or ""
+    ).strip()
+    source_type = str(row.get("source_type", "official")).strip()
+
+    # Button 2 readiness
+    report_ready_status = str(
+        row.get("report_ready_status")
+        or row.get("button2_readiness_status")
+        or row.get("readiness")
+        or row.get("button2_readiness")
+        or ""
+    ).strip()
+    if not report_ready_status:
+        report_ready_status = "ready_for_button2_generation"
+
+    # Optional fields
+    weight_class = str(row.get("weight_class", "")).strip()
+    bout_order = row.get("bout_order")
+    if isinstance(bout_order, int):
+        bout_order = bout_order
+    else:
+        bout_order = None
+
+    provenance_status = str(row.get("provenance_status", "source_backed")).strip()
+    customer_ready_possible = bool(row.get("customer_ready_possible", True))
+    blocked_reason = str(row.get("blocked_reason", "")).strip()
+
+    return {
+        "matchup_id": matchup_id,
+        "event_id": event_id,
+        "event_name": event_name,
+        "event_date": event_date,
+        "promotion": promotion,
+        "fighter_a": fighter_a,
+        "fighter_b": fighter_b,
+        "weight_class": weight_class,
+        "bout_order": bout_order,
+        "source_url": source_url,
+        "source_type": source_type,
+        "provenance_status": provenance_status,
+        "button2_readiness_status": report_ready_status,
+        "customer_ready_possible": customer_ready_possible,
+        "blocked_reason": blocked_reason,
+        "report_ready_status": report_ready_status,
+        "queue_index": index,
+    }
+
+
+def load_button2_queue_readonly() -> List[Dict[str, Any]]:
+    """
+    Load approved fight queue from canonical source.
+
+    Returns list of normalized rows, or empty list if source not found/invalid.
+    """
+    rows = []
+
+    if not os.path.isfile(_CANONICAL_QUEUE_PATH):
+        return rows
+
+    try:
+        with open(_CANONICAL_QUEUE_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return rows
+
+    if not isinstance(data, dict):
+        return rows
+
+    queue_data = data.get("queue", data.get("rows", []))
+    if not isinstance(queue_data, list):
+        return rows
+
+    seen_ids = set()
+    for idx, row in enumerate(queue_data):
+        normalized = _normalize_queue_row(row, idx)
+        if not normalized:
+            continue
+        matchup_id = normalized.get("matchup_id")
+        if matchup_id in seen_ids:
+            continue
+        seen_ids.add(matchup_id)
+        rows.append(normalized)
+
+    return rows
+
+
+def get_queue_ready_rows() -> List[Dict[str, Any]]:
+    """
+    Get all ready rows from canonical queue.
+
+    A row is "ready" if button2_readiness_status indicates it can be used for generation.
+    """
+    all_rows = load_button2_queue_readonly()
+    ready_statuses = {
+        "ready",
+        "ready_for_button2_generation",
+        "ready_for_button2_preview",
+        "ready_for_button2",
+        "customer_ready",
+        "customer_ready_verified",
+    }
+    ready_rows = []
+    for row in all_rows:
+        status = str(row.get("button2_readiness_status") or row.get("report_ready_status") or "").strip().lower()
+        if status not in ready_statuses:
+            continue
+        if str(row.get("blocked_reason") or "").strip():
+            continue
+        if not bool(row.get("customer_ready_possible", True)):
+            continue
+        ready_rows.append(row)
+    return ready_rows
+
+
+def resolve_matchup_id_from_queue(
+    matchup_id: str,
+    queue_rows: Optional[List[Dict[str, Any]]] = None
+) -> Tuple[Optional[Dict[str, Any]], Optional[str], int]:
+    """
+    Resolve a matchup_id to a queue row using canonical source.
+
+    Returns:
+      (row_dict, error_reason, status_code)
+
+    On success: (row, None, 200)
+    On error: (None, reason, error_code)
+    """
+    if not isinstance(matchup_id, str) or not matchup_id.strip():
+        return None, "invalid_matchup_id", 400
+
+    matchup_id = matchup_id.strip()
+
+    # If queue_rows provided, use those (server-side approved list)
+    # Otherwise load from canonical source
+    if queue_rows is None or not isinstance(queue_rows, list):
+        queue_rows = load_button2_queue_readonly()
+
+    if not queue_rows:
+        return None, "queue_empty", 404
+
+    matching = [r for r in queue_rows if r.get("matchup_id") == matchup_id]
+
+    if not matching:
+        return None, "matchup_id_not_found", 404
+
+    if len(matching) > 1:
+        return None, "matchup_id_duplicated", 409
+
+    row = matching[0]
+
+    return row, None, 200
+
+
+def get_rows_for_event(
+    event_name: str,
+    queue_rows: Optional[List[Dict[str, Any]]] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get all ready rows for a specific event.
+    """
+    if not isinstance(event_name, str) or not event_name.strip():
+        return []
+
+    event_name = event_name.strip()
+
+    if queue_rows is None:
+        queue_rows = load_button2_queue_readonly()
+
+    event_name_lower = event_name.lower()
+    event_rows = []
+    for row in queue_rows:
+        row_event_name = str(row.get("event_name") or "").strip()
+        row_event_id = str(row.get("event_id") or "").strip()
+        if row_event_name == event_name or row_event_name.lower() == event_name_lower or row_event_id.lower() == event_name_lower:
+            event_rows.append(row)
+
+    return event_rows

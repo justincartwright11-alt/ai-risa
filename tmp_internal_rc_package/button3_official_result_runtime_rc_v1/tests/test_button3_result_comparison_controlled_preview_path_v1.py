@@ -1,7 +1,11 @@
 import pytest
 from unittest.mock import Mock, patch
+import os
+import sys
 
-from operator_dashboard.app import app as flask_app
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime"))
+
+from app import app as flask_app
 
 
 ENDPOINT = "/api/button3/result-comparison/preview-v1"
@@ -738,7 +742,7 @@ def test_preview_endpoint_invokes_hardened_preview_module(client):
         "button3_mutation_performed": False,
     })
 
-    with patch("operator_dashboard.app._lazy_button3_result_comparison_preview", return_value=fake_builder):
+    with patch("app._lazy_button3_result_comparison_preview", return_value=fake_builder):
         payload = _base_payload()
         resp = client.post(ENDPOINT, json=payload)
         data = resp.get_json()

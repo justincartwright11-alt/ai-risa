@@ -1,11 +1,11 @@
 """Focused tests for Button 3 result-comparison preview endpoint dashboard wire."""
 
 import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime"))
 
 import re
 import pytest
-from operator_dashboard.app import app as flask_app
+from app import app as flask_app
 
 PREVIEW_ENDPOINT = "/api/button3/result-comparison/preview-v1"
 
