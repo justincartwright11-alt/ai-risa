@@ -1,0 +1,5 @@
+# Runtime dependency
+Flask
+
+# Test dependency
+pytest
