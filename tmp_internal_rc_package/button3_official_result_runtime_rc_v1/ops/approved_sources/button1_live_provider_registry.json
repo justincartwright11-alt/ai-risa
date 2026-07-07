@@ -1,0 +1,33 @@
+{
+  "schema_version": "button1_live_provider_registry_v1",
+  "providers": [
+    {
+      "provider_id": "ufc_official_events",
+      "provider_name": "UFC Official Events",
+      "provider_type": "official_event_pages",
+      "enabled": true,
+      "source_tier": "official_promotion",
+      "allowed_domains": [
+        "ufc.com",
+        "www.ufc.com"
+      ],
+      "endpoint_or_feed_location": "https://www.ufc.com/events",
+      "auth_required": false,
+      "refresh_cadence_minutes": 60,
+      "max_feed_age_hours": 24,
+      "ruleset_scope": [
+        "mma"
+      ],
+      "promotion_scope": [
+        "ufc"
+      ],
+      "region_scope": [
+        "global"
+      ],
+      "output_schema_version": "button1_live_provider_registry_v1",
+      "operator_approved_by": "private_operator",
+      "approval_timestamp_utc": "2026-07-07T00:00:00Z",
+      "provenance_notes": "Private production approved provider for Button 1 live discovery."
+    }
+  ]
+}

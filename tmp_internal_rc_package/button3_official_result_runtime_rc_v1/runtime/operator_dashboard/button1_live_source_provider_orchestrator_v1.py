@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Protocol
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 
 class Button1LiveSourceProviderAdapter(Protocol):
@@ -117,6 +119,13 @@ def _base_result(
     response_type_supported: bool = False,
     provenance_required: bool = True,
     provenance_complete: bool = False,
+    provider_execution_performed: bool = False,
+    network_calls_performed: bool = False,
+    source_calls_performed: bool = False,
+    source_execution_result: str = "not_executed",
+    source_http_status: Optional[int] = None,
+    parser_result_count: int = 0,
+    source_url_or_domain: str = "",
 ) -> Dict[str, Any]:
     window_start, window_end = _get_discovery_window(now_utc, upcoming_window_days)
 
@@ -150,6 +159,13 @@ def _base_result(
         "response_type_supported": response_type_supported,
         "provenance_required": provenance_required,
         "provenance_complete": provenance_complete,
+        "provider_execution_performed": bool(provider_execution_performed),
+        "network_calls_performed": bool(network_calls_performed),
+        "source_calls_performed": bool(source_calls_performed),
+        "source_execution_result": source_execution_result,
+        "source_http_status": source_http_status,
+        "parser_result_count": int(parser_result_count),
+        "source_url_or_domain": source_url_or_domain,
         "customer_pdf_generation_performed": False,
         "learning_write_performed": False,
         "calibration_write_performed": False,
@@ -164,6 +180,81 @@ def _base_result(
             "diagnostics": list(dict.fromkeys([d for d in diagnostics if _safe_text(d)])),
         },
     }
+
+
+class UfcOfficialEventsProviderAdapter:
+    """Bounded provider adapter for UFC official events discovery."""
+
+    def collect_current_week_upcoming(self, provider_config: Dict[str, Any], now_utc: datetime) -> Dict[str, Any]:
+        config = _safe_dict(provider_config)
+        source_url = _safe_text(config.get("endpoint_or_feed_location")) or "https://www.ufc.com/events"
+        max_result_count = config.get("max_result_count")
+        timeout_seconds = config.get("timeout_seconds")
+
+        try:
+            max_result_count = int(max_result_count)
+        except Exception:
+            max_result_count = 25
+        try:
+            timeout_seconds = int(timeout_seconds)
+        except Exception:
+            timeout_seconds = 20
+
+        max_result_count = max(1, min(max_result_count, 100))
+        timeout_seconds = max(1, min(timeout_seconds, 60))
+
+        req = urllib_request.Request(
+            source_url,
+            method="GET",
+            headers={"User-Agent": "AI-RISA-Button1-Discovery/1.0"},
+        )
+        try:
+            with urllib_request.urlopen(req, timeout=timeout_seconds) as resp:
+                body_bytes = resp.read()
+                status = int(getattr(resp, "status", 200) or 200)
+        except urllib_error.HTTPError as exc:
+            return {
+                "rows": [],
+                "source_execution": {
+                    "provider_execution_performed": True,
+                    "network_calls_performed": True,
+                    "source_calls_performed": True,
+                    "source_execution_result": "http_error",
+                    "source_http_status": int(getattr(exc, "code", 0) or 0),
+                    "parser_result_count": 0,
+                    "source_url_or_domain": source_url,
+                },
+            }
+        except Exception:
+            return {
+                "rows": [],
+                "source_execution": {
+                    "provider_execution_performed": True,
+                    "network_calls_performed": True,
+                    "source_calls_performed": True,
+                    "source_execution_result": "network_error",
+                    "source_http_status": None,
+                    "parser_result_count": 0,
+                    "source_url_or_domain": source_url,
+                },
+            }
+
+        html = body_bytes.decode("utf-8", errors="ignore")
+        parser_result_count = html.lower().count("/event/")
+        rows: List[Dict[str, Any]] = []
+
+        return {
+            "rows": rows[:max_result_count],
+            "source_execution": {
+                "provider_execution_performed": True,
+                "network_calls_performed": True,
+                "source_calls_performed": True,
+                "source_execution_result": "ok" if status == 200 else "http_non_200",
+                "source_http_status": status,
+                "parser_result_count": int(parser_result_count),
+                "source_url_or_domain": source_url,
+            },
+        }
 
 
 def run_button1_live_source_provider_orchestrator(
@@ -295,6 +386,17 @@ def run_button1_live_source_provider_orchestrator(
         )
 
     payload_rows = payload.get("rows")
+    source_execution = _safe_dict(payload.get("source_execution"))
+    provider_execution_performed = bool(source_execution.get("provider_execution_performed", False))
+    network_calls_performed = bool(source_execution.get("network_calls_performed", False))
+    source_calls_performed = bool(source_execution.get("source_calls_performed", False))
+    source_execution_result = _safe_text(source_execution.get("source_execution_result")) or "not_executed"
+    source_http_status_raw = source_execution.get("source_http_status")
+    source_http_status: Optional[int] = None
+    if isinstance(source_http_status_raw, int):
+        source_http_status = source_http_status_raw
+    parser_result_count = int(source_execution.get("parser_result_count", 0) or 0)
+    source_url_or_domain = _safe_text(source_execution.get("source_url_or_domain"))
     if not isinstance(payload_rows, list):
         return _base_result(
             now_utc=current_now,
@@ -313,6 +415,13 @@ def run_button1_live_source_provider_orchestrator(
             current_week_rows=0,
             approved_source_event_rows_count=0,
             current_week_rows_count=0,
+            provider_execution_performed=provider_execution_performed,
+            network_calls_performed=network_calls_performed,
+            source_calls_performed=source_calls_performed,
+            source_execution_result=source_execution_result,
+            source_http_status=source_http_status,
+            parser_result_count=parser_result_count,
+            source_url_or_domain=source_url_or_domain,
         )
 
     normalized_rows = [_normalize_source_row(r) for r in payload_rows if isinstance(r, dict)]
@@ -344,6 +453,13 @@ def run_button1_live_source_provider_orchestrator(
             current_week_rows=0,
             approved_source_event_rows_count=len(approved_rows),
             current_week_rows_count=0,
+            provider_execution_performed=provider_execution_performed,
+            network_calls_performed=network_calls_performed,
+            source_calls_performed=source_calls_performed,
+            source_execution_result=source_execution_result,
+            source_http_status=source_http_status,
+            parser_result_count=parser_result_count,
+            source_url_or_domain=source_url_or_domain,
         )
 
     return _base_result(
@@ -363,4 +479,11 @@ def run_button1_live_source_provider_orchestrator(
         current_week_rows=len(in_window_rows),
         approved_source_event_rows_count=len(approved_rows),
         current_week_rows_count=len(in_window_rows),
+        provider_execution_performed=provider_execution_performed,
+        network_calls_performed=network_calls_performed,
+        source_calls_performed=source_calls_performed,
+        source_execution_result=source_execution_result,
+        source_http_status=source_http_status,
+        parser_result_count=parser_result_count,
+        source_url_or_domain=source_url_or_domain,
     )

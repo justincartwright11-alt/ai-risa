@@ -25,6 +25,7 @@ from operator_dashboard.button1_auto_discovery_readiness_ranking_v1 import (
     build_button1_auto_discovery_readiness_ranking,
 )
 from operator_dashboard.button1_live_source_provider_orchestrator_v1 import (
+    UfcOfficialEventsProviderAdapter,
     run_button1_live_source_provider_orchestrator,
 )
 from operator_dashboard.button1_approved_provider_config_registration_v1 import (
@@ -132,9 +133,15 @@ def _build_button1_orchestrator_registry_preview(adapter_status: Dict[str, Any])
                 "provider_id": provider_id,
                 "name": provider_name,
                 "enabled": bool(candidate.get("enabled", False)),
-                # Keep preview config-only context and do not bind execution adapters.
-                "config": {"provider_id": provider_id},
-                "adapter": None,
+                "config": {
+                    "provider_id": provider_id,
+                    "endpoint_or_feed_location": "https://www.ufc.com/events"
+                    if provider_id == "ufc_official_events"
+                    else "",
+                    "max_result_count": 25,
+                    "timeout_seconds": 20,
+                },
+                "adapter": UfcOfficialEventsProviderAdapter() if provider_id == "ufc_official_events" else None,
             }
         )
 
@@ -163,28 +170,36 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
     provider_id = enabled_ids[0] if enabled_ids else (registered_ids[0] if registered_ids else "")
     provider_enabled = bool(provider_id and provider_id in set(enabled_ids))
 
+    selected_provider = None
+    for provider in _safe_list_of_dict(state_dict.get("provider_registry", [])):
+        if _safe_text(provider.get("provider_id")) == provider_id:
+            selected_provider = provider
+            break
+
+    provider_config = _safe_dict((selected_provider or {}).get("config", {}))
+    requested_source_url_or_domain = _safe_text(provider_config.get("endpoint_or_feed_location"))
+
     gate_status = evaluate_button1_provider_adapter_execution_gate(
         {
             "source_button": "button1_find_fights",
             "provider_id": provider_id,
             "provider_enabled": provider_enabled,
-            # Runtime preview is deny-by-default and non-executing.
-            "operator_approval_present": False,
-            "operator_approval_valid": False,
-            "source_call_authorization_present": False,
-            "source_call_authorization_valid": False,
-            "requested_http_method": "",
-            "requested_source_url_or_domain": "",
-            "expected_response_type": "",
-            "max_result_count": 0,
-            "timeout_seconds": 0,
+            "operator_approval_present": provider_enabled,
+            "operator_approval_valid": provider_enabled,
+            "source_call_authorization_present": provider_enabled,
+            "source_call_authorization_valid": provider_enabled,
+            "requested_http_method": "GET",
+            "requested_source_url_or_domain": requested_source_url_or_domain,
+            "expected_response_type": "html",
+            "max_result_count": int(provider_config.get("max_result_count", 25) or 25),
+            "timeout_seconds": int(provider_config.get("timeout_seconds", 20) or 20),
             "provenance_required": True,
-            "provenance_complete": False,
+            "provenance_complete": provider_enabled,
             "save_requested": False,
             "customer_output_requested": False,
             "learning_update_requested": False,
             "button2_promotion_requested": False,
-            "enable_preview_allow_decision": False,
+            "enable_preview_allow_decision": provider_enabled,
         }
     )
 
@@ -204,11 +219,13 @@ def _load_button1_execution_gate_status_preview(state: Dict[str, Any]) -> Dict[s
 
     reason_codes = _normalized_gate_reason_codes(_safe_list(gate_status.get("execution_gate_reason_codes", [])))
 
-    gate_status["execution_gate_allowed"] = False
-    gate_status["execution_gate_decision"] = "deny"
+    decision = _safe_text(gate_status.get("execution_gate_decision") or gate_status.get("decision")) or "deny"
+    allowed = bool(gate_status.get("execution_gate_allowed", gate_status.get("allowed", False)))
+    gate_status["execution_gate_allowed"] = allowed
+    gate_status["execution_gate_decision"] = decision
     gate_status["execution_gate_reason_codes"] = list(reason_codes)
-    gate_status["allowed"] = False
-    gate_status["decision"] = "deny"
+    gate_status["allowed"] = allowed
+    gate_status["decision"] = decision
     gate_status["reason_codes"] = list(reason_codes)
     gate_status["preview_only"] = True
     gate_status["operator_approval_required"] = True
@@ -1007,6 +1024,7 @@ def load_button1_runtime_state_preview(
     preview_state = dict(state)
     preview_state["registry_adapter_status"] = _load_button1_registry_adapter_status_preview(root)
     provider_registry = _build_button1_orchestrator_registry_preview(preview_state["registry_adapter_status"])
+    preview_state["provider_registry"] = provider_registry
     preview_state["live_source_status"] = run_button1_live_source_provider_orchestrator(
         provider_registry=provider_registry
     )
