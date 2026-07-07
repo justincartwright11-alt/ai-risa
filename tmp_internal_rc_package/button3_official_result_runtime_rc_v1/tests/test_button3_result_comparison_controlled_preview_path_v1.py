@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch
+import importlib.util
 import os
 import sys
 
@@ -7,6 +8,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from app import app as flask_app
 from button3_result_comparison_preview_v1 import build_button3_result_comparison_preview
+
+_RUNTIME_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime")
+_LIVE_MODULE_PATH = os.path.join(_RUNTIME_ROOT, "operator_dashboard", "button3_result_comparison_preview_v1.py")
+_LIVE_MODULE_SPEC = importlib.util.spec_from_file_location(
+    "packaged_runtime_operator_dashboard_button3_result_comparison_preview_v1",
+    _LIVE_MODULE_PATH,
+)
+_LIVE_MODULE = importlib.util.module_from_spec(_LIVE_MODULE_SPEC)
+assert _LIVE_MODULE_SPEC is not None and _LIVE_MODULE_SPEC.loader is not None
+_LIVE_MODULE_SPEC.loader.exec_module(_LIVE_MODULE)
+build_button3_result_comparison_preview_live = _LIVE_MODULE.build_button3_result_comparison_preview
 
 
 ENDPOINT = "/api/button3/result-comparison/preview-v1"
@@ -656,6 +668,40 @@ def test_gcid_runtime_proof_review_gate_blocks_gcid_eligibility_and_downstream_r
     assert data["customer_output_release_eligibility_state"] == "denied"
     assert data["customer_output_release_eligible"] is False
     assert data["customer_output_release_reason_code"] == "gcid_not_eligible"
+
+    assert data["mutation_performed"] is False
+    assert data["button3_mutation_performed"] is False
+    assert data["queue_write_performed"] is False
+    assert data["learning_apply_performed"] is False
+    assert data["calibration_write_performed"] is False
+    assert data["database_write_performed"] is False
+    assert data["accuracy_ledger_mutation_performed"] is False
+    assert data["gcid_write_performed"] is False
+    assert data["gcid_write_executed"] is False
+    assert data["gcid_write_authorized"] is False
+    if "customer_output_release_performed" in data:
+        assert data["customer_output_release_performed"] is False
+
+
+def test_live_module_gcid_runtime_proof_review_gate_blocks_gcid_eligibility_and_downstream_release():
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["contract_gates"]["gcid_write_runtime_proof_review_gate_passed"] = False
+
+    data = build_button3_result_comparison_preview_live(payload)
+
+    assert data["authorization_state"] == "eligible"
+    assert data["authorization_reason_code"] == "eligible"
+    assert data["accuracy_ledger_state"] == "eligible"
+    assert data["accuracy_ledger_eligible"] is True
+    assert data["controlled_learning_candidate_state"] == "eligible"
+    assert data["controlled_learning_candidate_eligible"] is True
+
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_eligible"] is False
+    assert data["gcid_write_reason_code"] == "gcid_runtime_proof_review_gate_not_passed"
+
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_eligible"] is False
 
     assert data["mutation_performed"] is False
     assert data["button3_mutation_performed"] is False
