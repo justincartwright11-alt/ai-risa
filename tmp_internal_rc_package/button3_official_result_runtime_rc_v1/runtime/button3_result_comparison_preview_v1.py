@@ -1031,6 +1031,8 @@ def _evaluate_gcid_write_eligibility(
         return _deny("gcid_design_gate_not_passed")
     if not bool(contract_gates.get("gcid_write_design_review_gate_passed", False)):
         return _deny("gcid_design_review_gate_not_passed")
+    if not bool(contract_gates.get("gcid_write_runtime_proof_review_gate_passed", False)):
+        return _deny("gcid_runtime_proof_review_gate_not_passed")
     if bool(contract_gates.get("unknown_state_detected", False)):
         return _deny("unknown_state")
 

@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runtime"))
 
 from app import app as flask_app
+from button3_result_comparison_preview_v1 import build_button3_result_comparison_preview
 
 
 ENDPOINT = "/api/button3/result-comparison/preview-v1"
@@ -633,6 +634,41 @@ def test_gcid_missing_rollback_metadata_denied(client):
     data = client.post(ENDPOINT, json=payload).get_json()
     assert data["gcid_write_eligibility_state"] == "denied"
     assert data["gcid_write_reason_code"] == "missing_rollback_metadata"
+
+
+def test_gcid_runtime_proof_review_gate_blocks_gcid_eligibility_and_downstream_release():
+    payload = _with_apply_authorization_context(_base_payload())
+    payload["contract_gates"]["gcid_write_runtime_proof_review_gate_passed"] = False
+
+    data = build_button3_result_comparison_preview(payload)
+
+    assert data["authorization_state"] == "eligible"
+    assert data["authorization_reason_code"] == "eligible"
+    assert data["accuracy_ledger_state"] == "eligible"
+    assert data["accuracy_ledger_eligible"] is True
+    assert data["controlled_learning_candidate_state"] == "eligible"
+    assert data["controlled_learning_candidate_eligible"] is True
+
+    assert data["gcid_write_eligibility_state"] == "denied"
+    assert data["gcid_write_eligible"] is False
+    assert data["gcid_write_reason_code"] == "gcid_runtime_proof_review_gate_not_passed"
+
+    assert data["customer_output_release_eligibility_state"] == "denied"
+    assert data["customer_output_release_eligible"] is False
+    assert data["customer_output_release_reason_code"] == "gcid_not_eligible"
+
+    assert data["mutation_performed"] is False
+    assert data["button3_mutation_performed"] is False
+    assert data["queue_write_performed"] is False
+    assert data["learning_apply_performed"] is False
+    assert data["calibration_write_performed"] is False
+    assert data["database_write_performed"] is False
+    assert data["accuracy_ledger_mutation_performed"] is False
+    assert data["gcid_write_performed"] is False
+    assert data["gcid_write_executed"] is False
+    assert data["gcid_write_authorized"] is False
+    if "customer_output_release_performed" in data:
+        assert data["customer_output_release_performed"] is False
 
 
 def test_customer_output_response_includes_provenance_audit_rollback_release_outputs(client):
