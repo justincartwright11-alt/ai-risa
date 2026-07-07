@@ -6,10 +6,13 @@ It does not perform queue/database writes and keeps operator approval required.
 
 from __future__ import annotations
 
+import json
+import re
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Callable, Dict, List, Optional, Protocol
 from urllib import error as urllib_error
 from urllib import request as urllib_request
+from urllib.parse import urljoin, urlparse
 
 
 class Button1LiveSourceProviderAdapter(Protocol):
@@ -29,6 +32,21 @@ def _safe_dict(value: Any) -> Dict[str, Any]:
 
 def _safe_list(value: Any) -> List[Any]:
     return list(value) if isinstance(value, list) else []
+
+
+def _safe_int(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        txt = value.strip()
+        if txt.isdigit():
+            try:
+                return int(txt)
+            except Exception:
+                return None
+    return None
 
 
 def _utc_now(now_utc: Optional[datetime] = None) -> datetime:
@@ -58,6 +76,367 @@ def _parse_event_date(row: Dict[str, Any]) -> Optional[date]:
         return datetime.strptime(txt, "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _is_ufc_event_url(url: str) -> bool:
+    txt = _safe_text(url)
+    if not txt:
+        return False
+    parsed = urlparse(txt)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    host = (parsed.netloc or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return host == "ufc.com" and "/event/" in (parsed.path or "").lower()
+
+
+_MONTHS = {
+    "jan": 1,
+    "january": 1,
+    "feb": 2,
+    "february": 2,
+    "mar": 3,
+    "march": 3,
+    "apr": 4,
+    "april": 4,
+    "may": 5,
+    "jun": 6,
+    "june": 6,
+    "jul": 7,
+    "july": 7,
+    "aug": 8,
+    "august": 8,
+    "sep": 9,
+    "sept": 9,
+    "september": 9,
+    "oct": 10,
+    "october": 10,
+    "nov": 11,
+    "november": 11,
+    "dec": 12,
+    "december": 12,
+}
+
+
+def _normalize_ufc_event_url(url: str, base_url: str) -> str:
+    txt = _safe_text(url)
+    if not txt:
+        return ""
+    absolute = urljoin(base_url, txt)
+    parsed = urlparse(absolute)
+    if parsed.scheme not in {"http", "https"}:
+        return ""
+    host = (parsed.netloc or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if host != "ufc.com":
+        return ""
+    path = parsed.path or ""
+    if "/event/" not in path.lower():
+        return ""
+    normalized_path = path.rstrip("/")
+    if not normalized_path:
+        return ""
+    return f"https://www.ufc.com{normalized_path}"
+
+
+def _extract_json_blocks(html: str) -> List[str]:
+    if not html:
+        return []
+    blocks = re.findall(
+        r"<script[^>]*>(.*?)</script>",
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    return [block.strip() for block in blocks if _safe_text(block)]
+
+
+def _iter_nested_values(node: Any):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from _iter_nested_values(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from _iter_nested_values(item)
+
+
+def _parse_any_date_to_iso(value: Any, default_year: int) -> str:
+    if isinstance(value, dict):
+        for key in ("value", "date", "startDate", "datetime", "raw"):
+            normalized = _parse_any_date_to_iso(value.get(key), default_year=default_year)
+            if normalized:
+                return normalized
+        return ""
+    if isinstance(value, list):
+        for item in value:
+            normalized = _parse_any_date_to_iso(item, default_year=default_year)
+            if normalized:
+                return normalized
+        return ""
+
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+
+    txt = _safe_text(value)
+    if not txt:
+        return ""
+
+    try:
+        return datetime.fromisoformat(txt.replace("Z", "+00:00")).date().isoformat()
+    except Exception:
+        pass
+
+    m = re.search(r"(?P<month>[A-Za-z]{3,9})\s+(?P<day>\d{1,2})(?:,\s*(?P<year>\d{4}))?", txt)
+    if m:
+        month_txt = _safe_text(m.group("month")).lower()
+        day = _safe_int(m.group("day"))
+        year = _safe_int(m.group("year")) or default_year
+        month = _MONTHS.get(month_txt)
+        if month and day and year:
+            try:
+                return date(year, month, day).isoformat()
+            except Exception:
+                return ""
+    return ""
+
+
+def _extract_event_date(candidate: Dict[str, Any], default_year: int) -> str:
+    date_keys = (
+        "event_date",
+        "eventDate",
+        "event_date_value",
+        "event_date_iso",
+        "startDate",
+        "start_date",
+        "dateTime",
+        "datetime",
+        "date",
+        "field_date",
+        "field_event_date",
+        "field_event_datetime",
+        "event_date_text",
+        "display_date",
+    )
+    for key in date_keys:
+        normalized = _parse_any_date_to_iso(candidate.get(key), default_year=default_year)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _extract_event_name(candidate: Dict[str, Any]) -> str:
+    name_keys = (
+        "event_name",
+        "name",
+        "title",
+        "event",
+        "headline",
+        "label",
+        "card_title",
+        "event_title",
+    )
+    for key in name_keys:
+        value = candidate.get(key)
+        if isinstance(value, dict):
+            txt = _safe_text(value.get("rendered") or value.get("value") or value.get("text"))
+        else:
+            txt = _safe_text(value)
+        if txt:
+            return txt
+    return ""
+
+
+def _extract_event_url(candidate: Dict[str, Any], base_url: str) -> str:
+    url_keys = (
+        "source_url",
+        "url",
+        "event_url",
+        "canonical_source_url",
+        "canonical_url",
+        "path",
+        "link",
+        "href",
+        "alias",
+        "slug",
+    )
+    for key in url_keys:
+        value = candidate.get(key)
+        if isinstance(value, dict):
+            value = value.get("url") or value.get("href") or value.get("path") or value.get("value")
+        normalized = _normalize_ufc_event_url(_safe_text(value), base_url)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _extract_ufc_candidates_from_json(html: str) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    for block in _extract_json_blocks(html):
+        parsed: Any = None
+        try:
+            parsed = json.loads(block)
+        except Exception:
+            continue
+        for item in _iter_nested_values(parsed):
+            if not isinstance(item, dict):
+                continue
+            maybe_url = _safe_text(item.get("url") or item.get("event_url") or item.get("path") or item.get("link"))
+            if "/event/" not in maybe_url.lower():
+                continue
+            candidates.append(dict(item))
+    return candidates
+
+
+def _extract_ufc_candidates_from_html_links(html: str) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    anchor_pattern = re.compile(
+        r"<a[^>]*href=[\"'](?P<href>[^\"']+)[\"'][^>]*>(?P<label>.*?)</a>",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    for match in anchor_pattern.finditer(html):
+        href_txt = _safe_text(match.group("href"))
+        if "/event/" not in href_txt.lower():
+            continue
+        label_raw = re.sub(r"<[^>]+>", " ", _safe_text(match.group("label")))
+        label = re.sub(r"\s+", " ", label_raw).strip()
+        start = max(0, match.start() - 300)
+        end = min(len(html), match.end() + 300)
+        context = html[start:end]
+
+        context_date = ""
+        for pattern in (
+            r"datetime=[\"']([^\"']+)[\"']",
+            r"data(?:-|_)event(?:-|_)date=[\"']([^\"']+)[\"']",
+            r"\b(\d{4}-\d{2}-\d{2})\b",
+            r"\b([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})\b",
+        ):
+            m = re.search(pattern, context, flags=re.IGNORECASE)
+            if m:
+                context_date = _safe_text(m.group(1))
+                break
+
+        candidate: Dict[str, Any] = {"url": href_txt}
+        if label:
+            candidate["name"] = label
+        if context_date:
+            candidate["event_date_text"] = context_date
+        candidates.append(candidate)
+    return candidates
+
+
+def _extract_ufc_event_date_from_detail_html(html: str, default_year: int) -> str:
+    if not html:
+        return ""
+
+    # Prefer structured metadata first.
+    for block in _extract_json_blocks(html):
+        parsed: Any = None
+        try:
+            parsed = json.loads(block)
+        except Exception:
+            continue
+        for item in _iter_nested_values(parsed):
+            if not isinstance(item, dict):
+                continue
+            if _safe_text(item.get("@type")).lower() not in {"event", "sports event", "sportsevent"}:
+                continue
+            for key in ("startDate", "eventDate", "date", "datePublished"):
+                normalized = _parse_any_date_to_iso(item.get(key), default_year=default_year)
+                if normalized:
+                    return normalized
+
+    # Then look for metadata attributes and <time datetime="...">.
+    for pattern in (
+        r"(?:itemprop|property|name)=[\"'](?:startDate|eventDate|date|article:published_time)[\"'][^>]*content=[\"']([^\"']+)[\"']",
+        r"<time[^>]*datetime=[\"']([^\"']+)[\"']",
+        r"\bdata-[a-z0-9_-]*date[a-z0-9_-]*=[\"']([^\"']+)[\"']",
+    ):
+        for raw in re.findall(pattern, html, flags=re.IGNORECASE):
+            normalized = _parse_any_date_to_iso(raw, default_year=default_year)
+            if normalized:
+                return normalized
+
+    # Finally allow visible canonical date strings in detail page text.
+    visible_text = re.sub(r"<[^>]+>", " ", html)
+    visible_text = re.sub(r"\s+", " ", visible_text).strip()
+    for pattern in (
+        r"\b20\d{2}-\d{2}-\d{2}\b",
+        r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2},\s*20\d{2}\b",
+    ):
+        for raw in re.findall(pattern, visible_text, flags=re.IGNORECASE):
+            normalized = _parse_any_date_to_iso(raw, default_year=default_year)
+            if normalized:
+                return normalized
+    return ""
+
+
+def _parse_ufc_event_rows(
+    html: str,
+    source_url: str,
+    now_utc: datetime,
+    max_result_count: int,
+    detail_date_resolver: Optional[Callable[[str], str]] = None,
+) -> List[Dict[str, Any]]:
+    default_year = now_utc.year
+    merged_candidates = _extract_ufc_candidates_from_json(html)
+    if not merged_candidates:
+        merged_candidates = _extract_ufc_candidates_from_html_links(html)
+
+    listing_records: List[Dict[str, Any]] = []
+    seen_urls = set()
+
+    for candidate in merged_candidates:
+        if len(listing_records) >= max_result_count:
+            break
+        normalized_url = _extract_event_url(candidate, source_url)
+        if not normalized_url or normalized_url in seen_urls:
+            continue
+        event_name = _extract_event_name(candidate)
+        if not event_name:
+            slug = normalized_url.rsplit("/", 1)[-1].replace("-", " ").strip()
+            event_name = slug.title() if slug else ""
+        if not event_name:
+            continue
+
+        event_date = _extract_event_date(candidate, default_year=default_year)
+
+        listing_records.append(
+            {
+                "event_name": event_name,
+                "event_date": event_date,
+                "source_url": normalized_url,
+            }
+        )
+        seen_urls.add(normalized_url)
+
+    rows: List[Dict[str, Any]] = []
+    for record in listing_records:
+        if len(rows) >= max_result_count:
+            break
+        event_date = _safe_text(record.get("event_date"))
+        if not event_date and callable(detail_date_resolver):
+            event_date = _safe_text(detail_date_resolver(_safe_text(record.get("source_url"))))
+        if not event_date:
+            continue
+
+        rows.append(
+            {
+                "event_name": _safe_text(record.get("event_name")),
+                "event_date": event_date,
+                "source_url": _safe_text(record.get("source_url")),
+                "source_name": "ufc_official_events",
+                "source_type": "official",
+                "provider_id": "ufc_official_events",
+                "source_urls": [_safe_text(record.get("source_url"))],
+            }
+        )
+
+    return rows
 
 
 def _normalize_source_row(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -203,6 +582,51 @@ class UfcOfficialEventsProviderAdapter:
         max_result_count = max(1, min(max_result_count, 100))
         timeout_seconds = max(1, min(timeout_seconds, 60))
 
+        listing_request_performed = False
+        unique_event_url_count = 0
+        detail_requests_attempted = 0
+        detail_requests_succeeded = 0
+        detail_dates_extracted = 0
+        detail_date_cache: Dict[str, str] = {}
+
+        def _resolve_detail_date(event_url: str) -> str:
+            nonlocal detail_requests_attempted, detail_requests_succeeded, detail_dates_extracted
+            normalized_event_url = _normalize_ufc_event_url(event_url, source_url)
+            if not normalized_event_url or not _is_ufc_event_url(normalized_event_url):
+                return ""
+            if normalized_event_url in detail_date_cache:
+                return detail_date_cache[normalized_event_url]
+            if detail_requests_attempted >= max_result_count:
+                return ""
+
+            detail_requests_attempted += 1
+            detail_req = urllib_request.Request(
+                normalized_event_url,
+                method="GET",
+                headers={"User-Agent": "AI-RISA-Button1-Discovery/1.0"},
+            )
+            try:
+                with urllib_request.urlopen(detail_req, timeout=timeout_seconds) as detail_resp:
+                    final_url = _safe_text(detail_resp.geturl())
+                    if not _is_ufc_event_url(final_url):
+                        detail_date_cache[normalized_event_url] = ""
+                        return ""
+                    detail_status = int(getattr(detail_resp, "status", 200) or 200)
+                    if detail_status != 200:
+                        detail_date_cache[normalized_event_url] = ""
+                        return ""
+                    detail_html = detail_resp.read().decode("utf-8", errors="ignore")
+            except Exception:
+                detail_date_cache[normalized_event_url] = ""
+                return ""
+
+            detail_requests_succeeded += 1
+            extracted = _extract_ufc_event_date_from_detail_html(detail_html, default_year=now_utc.year)
+            if extracted:
+                detail_dates_extracted += 1
+            detail_date_cache[normalized_event_url] = extracted
+            return extracted
+
         req = urllib_request.Request(
             source_url,
             method="GET",
@@ -212,6 +636,7 @@ class UfcOfficialEventsProviderAdapter:
             with urllib_request.urlopen(req, timeout=timeout_seconds) as resp:
                 body_bytes = resp.read()
                 status = int(getattr(resp, "status", 200) or 200)
+                listing_request_performed = True
         except urllib_error.HTTPError as exc:
             return {
                 "rows": [],
@@ -223,6 +648,11 @@ class UfcOfficialEventsProviderAdapter:
                     "source_http_status": int(getattr(exc, "code", 0) or 0),
                     "parser_result_count": 0,
                     "source_url_or_domain": source_url,
+                    "listing_request_performed": listing_request_performed,
+                    "unique_event_url_count": 0,
+                    "detail_requests_attempted": 0,
+                    "detail_requests_succeeded": 0,
+                    "detail_dates_extracted": 0,
                 },
             }
         except Exception:
@@ -236,12 +666,34 @@ class UfcOfficialEventsProviderAdapter:
                     "source_http_status": None,
                     "parser_result_count": 0,
                     "source_url_or_domain": source_url,
+                    "listing_request_performed": listing_request_performed,
+                    "unique_event_url_count": 0,
+                    "detail_requests_attempted": 0,
+                    "detail_requests_succeeded": 0,
+                    "detail_dates_extracted": 0,
                 },
             }
 
         html = body_bytes.decode("utf-8", errors="ignore")
-        parser_result_count = html.lower().count("/event/")
-        rows: List[Dict[str, Any]] = []
+        merged_candidates = _extract_ufc_candidates_from_json(html)
+        if not merged_candidates:
+            merged_candidates = _extract_ufc_candidates_from_html_links(html)
+        unique_urls = set()
+        for candidate in merged_candidates:
+            if not isinstance(candidate, dict):
+                continue
+            normalized = _extract_event_url(candidate, source_url)
+            if normalized:
+                unique_urls.add(normalized)
+        unique_event_url_count = len(unique_urls)
+
+        rows = _parse_ufc_event_rows(
+            html,
+            source_url=source_url,
+            now_utc=now_utc,
+            max_result_count=max_result_count,
+            detail_date_resolver=_resolve_detail_date,
+        )
 
         return {
             "rows": rows[:max_result_count],
@@ -251,8 +703,13 @@ class UfcOfficialEventsProviderAdapter:
                 "source_calls_performed": True,
                 "source_execution_result": "ok" if status == 200 else "http_non_200",
                 "source_http_status": status,
-                "parser_result_count": int(parser_result_count),
+                "parser_result_count": int(len(rows)),
                 "source_url_or_domain": source_url,
+                "listing_request_performed": listing_request_performed,
+                "unique_event_url_count": int(unique_event_url_count),
+                "detail_requests_attempted": int(detail_requests_attempted),
+                "detail_requests_succeeded": int(detail_requests_succeeded),
+                "detail_dates_extracted": int(detail_dates_extracted),
             },
         }
 
