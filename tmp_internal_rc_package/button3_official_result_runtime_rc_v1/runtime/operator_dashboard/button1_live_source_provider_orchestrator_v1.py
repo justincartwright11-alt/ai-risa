@@ -333,7 +333,7 @@ def _extract_ufc_event_date_from_detail_html(html: str, default_year: int) -> st
     if not html:
         return ""
 
-    # Prefer structured metadata first.
+    # Priority A: structured Event schedule fields.
     for block in _extract_json_blocks(html):
         parsed: Any = None
         try:
@@ -350,10 +350,16 @@ def _extract_ufc_event_date_from_detail_html(html: str, default_year: int) -> st
                 if normalized:
                     return normalized
 
-    # Then look for metadata attributes and <time datetime="...">.
+    # Priority B: event-associated schedule time on the detail page.
+    for raw in re.findall(r"<time[^>]*datetime=[\"']([^\"']+)[\"']", html, flags=re.IGNORECASE):
+        normalized = _parse_any_date_to_iso(raw, default_year=default_year)
+        if normalized:
+            return normalized
+
+    # Priority C: explicit event-date metadata only.
+    # Do not treat generic content/publication metadata as authoritative schedule date.
     for pattern in (
-        r"(?:itemprop|property|name)=[\"'](?:startDate|eventDate|date|article:published_time)[\"'][^>]*content=[\"']([^\"']+)[\"']",
-        r"<time[^>]*datetime=[\"']([^\"']+)[\"']",
+        r"(?:itemprop|property|name)=[\"'](?:startDate|eventDate|event_start_date|event-date|eventDateTime)[\"'][^>]*content=[\"']([^\"']+)[\"']",
         r"\bdata-[a-z0-9_-]*date[a-z0-9_-]*=[\"']([^\"']+)[\"']",
     ):
         for raw in re.findall(pattern, html, flags=re.IGNORECASE):
