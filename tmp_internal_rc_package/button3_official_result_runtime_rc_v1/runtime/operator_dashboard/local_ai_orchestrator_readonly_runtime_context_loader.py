@@ -40,7 +40,8 @@ from operator_dashboard.button1_provider_adapter_execution_gate_v1 import (
 
 
 def _default_workspace_root() -> str:
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # loader.py -> operator_dashboard -> runtime -> package root
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def _safe_dict(value: Any) -> Dict[str, Any]:
@@ -879,6 +880,97 @@ def _propagate_event_provenance(
     return out_rows
 
 
+def _bind_source_backed_event_cards_to_candidate_rows(
+    existing_candidate_rows: List[Dict[str, Any]],
+    live_source_status: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """Bind live source-backed event cards into the existing candidate_rows contract.
+
+    This keeps the live-source payload authoritative while preserving the existing
+    operator-review row model consumed by the Button 1 selector.
+    """
+
+    bound_rows: List[Dict[str, Any]] = _safe_list_of_dict(existing_candidate_rows)
+    source_status = _safe_dict(live_source_status)
+    source_cards = _safe_list_of_dict(source_status.get("source_backed_event_cards", []))
+    if not source_cards:
+        return bound_rows
+
+    current_week_ready = bool(source_status.get("current_week_ready", False))
+    save_allowed = bool(source_status.get("save_allowed", False))
+    readiness_state = "ready_for_button2_preview" if save_allowed else "review_only"
+    save_state = "eligible" if save_allowed else "blocked"
+
+    seen = set()
+    for row in bound_rows:
+        event_name = _safe_text(row.get("event_name") or row.get("event") or row.get("event_title"))
+        event_date = _safe_text(row.get("event_date"))
+        source_url = _safe_text(
+            row.get("source_url")
+            or row.get("event_url")
+            or row.get("canonical_source_url")
+            or row.get("official_url")
+            or row.get("url")
+        )
+        seen.add((event_name.lower(), event_date, source_url))
+
+    for card in source_cards:
+        event_name = _safe_text(card.get("event_name") or card.get("event") or card.get("event_title"))
+        event_date = _safe_text(card.get("event_date"))
+        source_url = _safe_text(
+            card.get("source_url")
+            or card.get("event_url")
+            or card.get("canonical_source_url")
+            or card.get("official_url")
+            or card.get("url")
+        )
+
+        dedupe_key = (event_name.lower(), event_date, source_url)
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+
+        row = dict(card)
+        if event_name and not _safe_text(row.get("event_name")):
+            row["event_name"] = event_name
+        if event_name and not _safe_text(row.get("event")):
+            row["event"] = event_name
+        if event_date and not _safe_text(row.get("event_date")):
+            row["event_date"] = event_date
+        if source_url and not _safe_text(row.get("source_url")):
+            row["source_url"] = source_url
+        if source_url and not _safe_text(row.get("event_url")):
+            row["event_url"] = source_url
+        if source_url and not _safe_text(row.get("canonical_source_url")):
+            row["canonical_source_url"] = source_url
+        if source_url and not _safe_text(row.get("official_url")):
+            row["official_url"] = source_url
+
+        if not isinstance(row.get("provenance"), dict):
+            row["provenance"] = {}
+        row["provenance"] = dict(row["provenance"])
+        if source_url and not _safe_text(row["provenance"].get("source_url")):
+            row["provenance"]["source_url"] = source_url
+        if source_url:
+            row["provenance"]["source_urls"] = [source_url]
+        if not _safe_text(row["provenance"].get("source_type")):
+            row["provenance"]["source_type"] = _safe_text(row.get("source_type") or "official")
+
+        row["source_backed"] = True
+        row["provenance_status"] = _safe_text(row.get("provenance_status") or "source_backed")
+        row["current_week_ready"] = current_week_ready
+        row["save_allowed"] = save_allowed
+        row["report_ready_status"] = _safe_text(row.get("report_ready_status") or readiness_state)
+        row["readiness_state"] = _safe_text(row.get("readiness_state") or readiness_state)
+        row["save_eligibility_state"] = _safe_text(row.get("save_eligibility_state") or save_state)
+        row["operator_selection_required"] = True
+        row["auto_save_performed"] = False
+
+        bound_rows.append(row)
+
+    return bound_rows
+
+
 def _build_fight_ref_from_row(row: Dict[str, Any]) -> str:
     if not isinstance(row, dict):
         return ""
@@ -1049,7 +1141,10 @@ def load_button1_runtime_state_preview(
 
     preview_state["execution_gate_status"] = _load_button1_execution_gate_status_preview(preview_state)
     preview_state["approved_source_preview_rows"] = []
-    preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
+    preview_state["discovered_candidate_rows"] = _bind_source_backed_event_cards_to_candidate_rows(
+        [],
+        live_source_status,
+    )
     return preview_state
 
 
