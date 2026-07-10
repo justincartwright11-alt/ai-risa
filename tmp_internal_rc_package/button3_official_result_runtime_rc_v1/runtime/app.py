@@ -24,8 +24,8 @@ import uuid
 from urllib.parse import quote
 from urllib.parse import urlparse
 
-# Allow imports from workspace root
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Allow imports from the packaged runtime root only.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
 
