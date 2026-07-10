@@ -1,0 +1,58 @@
+{
+  "waiting_for_results": [
+    {
+      "selected_key": "joshua_vs_dubois_anthony_joshua_vs_daniel_dubois",
+      "fight_id": "joshua_vs_dubois_anthony_joshua_vs_daniel_dubois",
+      "fight_name": "Anthony Joshua vs Daniel Dubois",
+      "event_name": "Joshua vs Dubois",
+      "event_date": "2024-09-21",
+      "promotion": "Matchroom Boxing",
+      "fighter_a": "Anthony Joshua",
+      "fighter_b": "Daniel Dubois",
+      "canonical_fight_identity_key": "fight_key::anthony_joshua_vs_daniel_dubois",
+      "button1_source_fight_id": "live_boxing_event_card_001_mu_0",
+      "button2_fight_id": "joshua_vs_dubois_anthony_joshua_vs_daniel_dubois",
+      "button2_prediction_source": "actual_system_output",
+      "predicted_winner": "Anthony Joshua",
+      "predicted_method": "Decision",
+      "predicted_round": "Full Distance",
+      "predicted_time": "",
+      "button2_pdf_path": "reports/anthony_joshua_vs_daniel_dubois_joshua_vs_dubois_premium_20260710T081022Z_df3d943212a2.pdf",
+      "button2_pdf_generated_at_utc": "2026-07-10T08:10:22Z",
+      "source_result_record_id": "result_record::anthony_joshua_vs_daniel_dubois::2024-09-21"
+    }
+  ],
+  "result_records": [
+    {
+      "record_id": "result_record::anthony_joshua_vs_daniel_dubois::2024-09-21",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::anthony_joshua_vs_daniel_dubois",
+      "fight_id": "joshua_vs_dubois_anthony_joshua_vs_daniel_dubois",
+      "fight_name": "Anthony Joshua vs Daniel Dubois",
+      "fighter_a": "Anthony Joshua",
+      "fighter_b": "Daniel Dubois",
+      "event_name": "Joshua vs Dubois",
+      "event_date": "2024-09-21",
+      "venue": "Wembley Stadium, London",
+      "actual_winner": "Daniel Dubois",
+      "actual_method": "KO",
+      "actual_round": 5,
+      "actual_time": "0:59",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "Reuters",
+      "source_type": "authoritative_media",
+      "source_tier": "tier_b",
+      "source_url": "https://www.reuters.com/sports/dubois-demolishes-joshua-retain-ibf-heavyweight-title-2024-09-21/"
+    }
+  ],
+  "compared_results": [],
+  "summary_metrics": {
+    "waiting_for_results_count": 1,
+    "compared_results_count": 0,
+    "result_records_count": 1
+  }
+}
