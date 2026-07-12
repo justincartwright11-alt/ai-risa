@@ -197,12 +197,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-300"
+    },
+    {
+      "record_id": "result_record::arman_tsarukyan_vs_charles_oliveira::2024-04-13",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::arman_tsarukyan_vs_charles_oliveira",
+      "fight_id": "arman_tsarukyan_vs_charles_oliveira_ufc_300",
+      "fight_name": "Arman Tsarukyan vs Charles Oliveira",
+      "fighter_a": "Arman Tsarukyan",
+      "fighter_b": "Charles Oliveira",
+      "event_name": "UFC 300",
+      "event_date": "2024-04-13",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Arman Tsarukyan",
+      "actual_method": "Decision (split)",
+      "actual_round": 3,
+      "actual_time": "5:00",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-300"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 7
+    "result_records_count": 8
   }
 }
