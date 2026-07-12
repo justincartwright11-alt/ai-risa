@@ -172,12 +172,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-303"
+    },
+    {
+      "record_id": "result_record::zhang_weili_vs_yan_xiaonan::2024-04-13",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::zhang_weili_vs_yan_xiaonan",
+      "fight_id": "zhang_weili_vs_yan_xiaonan_ufc_300",
+      "fight_name": "Zhang Weili vs Yan Xiaonan",
+      "fighter_a": "Zhang Weili",
+      "fighter_b": "Yan Xiaonan",
+      "event_name": "UFC 300",
+      "event_date": "2024-04-13",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Zhang Weili",
+      "actual_method": "Decision (unanimous)",
+      "actual_round": 5,
+      "actual_time": "5:00",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-300"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 6
+    "result_records_count": 7
   }
 }
