@@ -147,12 +147,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-302"
+    },
+    {
+      "record_id": "result_record::alex_pereira_vs_jiri_prochazka::2024-06-29",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::alex_pereira_vs_jiri_prochazka",
+      "fight_id": "alex_pereira_vs_jiri_prochazka_ufc_300",
+      "fight_name": "Alex Pereira vs Jiri Prochazka",
+      "fighter_a": "Alex Pereira",
+      "fighter_b": "Jiri Prochazka",
+      "event_name": "UFC 303",
+      "event_date": "2024-06-29",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Alex Pereira",
+      "actual_method": "KO/TKO",
+      "actual_round": 2,
+      "actual_time": "0:13",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-303"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 5
+    "result_records_count": 6
   }
 }
