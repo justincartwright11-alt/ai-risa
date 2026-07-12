@@ -1,0 +1,21 @@
+{
+  "status": "identity_scope_mismatch_documented",
+  "prior_pilot_fight_4": {
+    "technical_loop_executed": true,
+    "counted_as_clean_pass": false,
+    "reason": "event_identity_mismatch",
+    "button1_event": "UFC 300",
+    "result_event": "UFC 302",
+    "protected_writes_remained_zero": true
+  },
+  "prior_pilot_fight_5": {
+    "technical_loop_executed": true,
+    "counted_as_clean_pass": false,
+    "reason": "event_identity_mismatch",
+    "button1_event": "UFC 300",
+    "result_event": "UFC 303",
+    "protected_writes_remained_zero": true
+  },
+  "clean_pilot_batch_progress": "3_of_5",
+  "note": "Fight 4 and Fight 5 remain recorded as technical executions only and do not count toward clean pilot pass totals."
+}
