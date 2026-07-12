@@ -122,12 +122,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-300"
+    },
+    {
+      "record_id": "result_record::islam_makhachev_vs_dustin_poirier::2024-06-01",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::islam_makhachev_vs_dustin_poirier",
+      "fight_id": "islam_makhachev_vs_dustin_poirier_ufc_300",
+      "fight_name": "Islam Makhachev vs Dustin Poirier",
+      "fighter_a": "Islam Makhachev",
+      "fighter_b": "Dustin Poirier",
+      "event_name": "UFC 302",
+      "event_date": "2024-06-01",
+      "venue": "Prudential Center, Newark",
+      "actual_winner": "Islam Makhachev",
+      "actual_method": "Submission (D'Arce choke)",
+      "actual_round": 5,
+      "actual_time": "2:42",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-302"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 4
+    "result_records_count": 5
   }
 }
