@@ -72,12 +72,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-300"
+    },
+    {
+      "record_id": "result_record::kayla_harrison_vs_holly_holm::2024-04-13",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::kayla_harrison_vs_holly_holm",
+      "fight_id": "kayla_harrison_vs_holly_holm_ufc_300",
+      "fight_name": "Kayla Harrison vs Holly Holm",
+      "fighter_a": "Kayla Harrison",
+      "fighter_b": "Holly Holm",
+      "event_name": "UFC 300",
+      "event_date": "2024-04-13",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Kayla Harrison",
+      "actual_method": "Submission (rear-naked choke)",
+      "actual_round": 2,
+      "actual_time": "1:47",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-300"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 2
+    "result_records_count": 3
   }
 }
