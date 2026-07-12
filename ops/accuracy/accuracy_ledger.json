@@ -47,12 +47,37 @@
       "source_type": "authoritative_media",
       "source_tier": "tier_b",
       "source_url": "https://www.reuters.com/sports/dubois-demolishes-joshua-retain-ibf-heavyweight-title-2024-09-21/"
+    },
+    {
+      "record_id": "result_record::max_holloway_vs_justin_gaethje::2024-04-13",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::max_holloway_vs_justin_gaethje",
+      "fight_id": "max_holloway_vs_justin_gaethje_max_holloway_vs_justin_gaethje",
+      "fight_name": "Max Holloway vs Justin Gaethje",
+      "fighter_a": "Max Holloway",
+      "fighter_b": "Justin Gaethje",
+      "event_name": "UFC 300",
+      "event_date": "2024-04-13",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Max Holloway",
+      "actual_method": "KO/TKO",
+      "actual_round": 5,
+      "actual_time": "4:59",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-300"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 1
+    "result_records_count": 2
   }
 }
