@@ -97,12 +97,37 @@
       "source_type": "official",
       "source_tier": "tier_a",
       "source_url": "https://www.ufc.com/event/ufc-300"
+    },
+    {
+      "record_id": "result_record::bo_nickal_vs_cody_brundage::2024-04-13",
+      "read_only": true,
+      "immutable": true,
+      "non_customer": true,
+      "mutation_allowed": false,
+      "canonical_fight_identity_key": "fight_key::bo_nickal_vs_cody_brundage",
+      "fight_id": "bo_nickal_vs_cody_brundage_ufc_300",
+      "fight_name": "Bo Nickal vs Cody Brundage",
+      "fighter_a": "Bo Nickal",
+      "fighter_b": "Cody Brundage",
+      "event_name": "UFC 300",
+      "event_date": "2024-04-13",
+      "venue": "T-Mobile Arena, Las Vegas",
+      "actual_winner": "Bo Nickal",
+      "actual_method": "TKO (doctor stoppage)",
+      "actual_round": 2,
+      "actual_time": "5:00",
+      "result_normalized": true,
+      "source_backed": true,
+      "source_publisher": "UFC",
+      "source_type": "official",
+      "source_tier": "tier_a",
+      "source_url": "https://www.ufc.com/event/ufc-300"
     }
   ],
   "compared_results": [],
   "summary_metrics": {
     "waiting_for_results_count": 1,
     "compared_results_count": 0,
-    "result_records_count": 3
+    "result_records_count": 4
   }
 }
