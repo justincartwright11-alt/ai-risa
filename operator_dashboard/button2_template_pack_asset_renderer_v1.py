@@ -2514,6 +2514,20 @@ def render_button2_template_pack_asset_pdf(report_context_preview):
             if selected_matchup_present
             else "premium_template_pack_v29_asset_backed_v1"
         ),
+        "prediction_context": {
+            "predicted_winner": module.DATA.get("winner", ""),
+            "predicted_method": module.DATA.get("method", ""),
+            "predicted_round": module.DATA.get("round", ""),
+            "confidence": module.DATA.get("confidence", ""),
+            "structural_reasoning": blocks.get("decision_structure", ""),
+            "tactical_pathway": blocks.get("tactical_thesis", ""),
+            "evidence_notes": blocks.get("source_summary", ""),
+            "scenario": blocks.get("scenario", ""),
+            "method_probability": blocks.get("method_probability", ""),
+            "round_band": blocks.get("round_band", ""),
+            "final_projection": blocks.get("final_projection", ""),
+            "confidence_display": blocks.get("confidence_display", ""),
+        },
         "page_count": 24,
         "layout_safety": layout_safety,
     }

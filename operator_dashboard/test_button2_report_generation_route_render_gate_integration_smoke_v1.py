@@ -579,24 +579,33 @@ def test_structured_prediction_contract_present_without_pdf_text_parsing(tmp_pat
                 "fighter_a": "Fighter Alpha",
                 "fighter_b": "Fighter Beta",
             },
+            "prediction_context": {
+                "predicted_winner": "Fighter Beta",
+                "predicted_method": "Decision",
+                "predicted_round": "R5",
+                "confidence": 61.3,
+                "structural_reasoning": "Beta controls second-exchange timing in open stance pivots.",
+                "tactical_pathway": "Use layered resets to deny Alpha's pocket surges.",
+                "evidence_notes": "source:https://example.test/fight-card",
+            },
         },
     })
-    mock_html = MagicMock(return_value={
-        "ok": True,
-        "html_content": "<html><body>Contract test</body></html>",
-    })
-    # Intentionally non-PDF bytes: contract should still be emitted from generation context.
-    mock_render = MagicMock(return_value={
+    mock_render_template_pack = MagicMock(return_value={
         "pdf_bytes": b"NOT_A_REAL_PDF_BUT_WRITABLE",
-        "geometry_data": None,
+        "renderer_profile": "premium_template_pack_v29_asset_backed_v1",
+        "template_pack_root": "C:/tmp/template_pack",
+        "template_pack_asset_backed": True,
+        "template_pack_assets": {},
+        "page_count": 24,
+        "layout_safety": {},
+        "prediction_context": {},
     })
 
     with patch.dict(os.environ, {"BUTTON2_PDF_OUTPUT_ROOT": str(output_root)}):
         with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_readonly_dossier_handoff_ingest_preview", mock_ingest):
             with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_dossier_handoff_report_context_preview", mock_context):
-                with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_report_html", mock_html):
-                    with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.render_button2_pdf", mock_render):
-                        result = generate_button2_report_render_gate_integration(req)
+                with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.render_button2_template_pack_asset_pdf", mock_render_template_pack):
+                    result = generate_button2_report_render_gate_integration(req)
 
     assert result["ok"] is True
     assert result["file_write_performed"] is True
@@ -617,3 +626,10 @@ def test_structured_prediction_contract_present_without_pdf_text_parsing(tmp_pat
     assert required_keys.issubset(set(structured.keys()))
     assert structured["source"] == "button2_generation_context"
     assert structured["contract_version"] == "button2_structured_prediction_v1"
+    assert structured["predicted_winner"] == "Fighter Beta"
+    assert structured["predicted_method"] == "Decision"
+    assert structured["predicted_round"] == "R5"
+    assert structured["confidence"] == 61.3
+    assert "second-exchange timing" in structured["structural_reasoning"]
+    assert "layered resets" in structured["tactical_pathway"]
+    assert structured["evidence_notes"].startswith("source:")

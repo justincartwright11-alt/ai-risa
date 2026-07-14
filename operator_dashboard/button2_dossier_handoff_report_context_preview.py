@@ -177,6 +177,20 @@ def build_button2_dossier_handoff_report_context_preview(ingest_payload):
         "off_page_text_proof": "unavailable",
         "visual_certification_status": "not_certified",
     }
+    prediction_context = {
+        "predicted_winner": selected_matchup.get("predicted_winner"),
+        "predicted_method": selected_matchup.get("predicted_method"),
+        "predicted_round": selected_matchup.get("predicted_round"),
+        "confidence": selected_matchup.get("confidence"),
+        "structural_reasoning": selected_matchup.get("structural_reasoning"),
+        "tactical_pathway": selected_matchup.get("tactical_pathway"),
+        "evidence_notes": selected_matchup.get("evidence_notes"),
+        "method_probability": selected_matchup.get("method_probability"),
+        "round_band": selected_matchup.get("round_band"),
+        "final_projection": selected_matchup.get("final_projection"),
+    }
+    if any(str(value).strip() for value in prediction_context.values() if value is not None):
+        report_context_preview["prediction_context"] = prediction_context
 
     # Optional: run real geometry proof if caller provides geometry_data in the ingest context.
     # No layout changes, no PDF writes, no certification without operator_approval=True.

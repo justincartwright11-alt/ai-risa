@@ -158,61 +158,119 @@ def _safe_optional_float(value):
     return None
 
 
-def _build_button2_structured_prediction_contract(report_context_preview: Dict[str, Any]) -> Dict[str, Any]:
+def _first_non_empty_str(*values: Any) -> str:
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return ""
+
+
+def _as_dict(value: Any) -> Dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _build_button2_structured_prediction_contract(
+    report_context_preview: Dict[str, Any],
+    generated_prediction_context: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
     context = report_context_preview if isinstance(report_context_preview, dict) else {}
-    selected_matchup = context.get("selected_matchup")
-    if not isinstance(selected_matchup, dict):
-        selected_matchup = {}
+    selected_matchup = _as_dict(context.get("selected_matchup"))
+    context_prediction = _as_dict(context.get("prediction_context"))
+    generated_prediction = _as_dict(generated_prediction_context)
 
-    predicted_winner = str(
-        selected_matchup.get("predicted_winner")
-        or context.get("predicted_winner")
-        or selected_matchup.get("fighter_a")
-        or ""
-    ).strip()
+    predicted_winner = _first_non_empty_str(
+        generated_prediction.get("predicted_winner"),
+        generated_prediction.get("winner"),
+        context_prediction.get("predicted_winner"),
+        context_prediction.get("winner"),
+        selected_matchup.get("predicted_winner"),
+        context.get("predicted_winner"),
+        selected_matchup.get("fighter_a"),
+    )
 
-    method_candidate = str(
-        selected_matchup.get("predicted_method")
-        or context.get("predicted_method")
-        or ""
-    ).strip()
-    round_candidate = str(
-        selected_matchup.get("predicted_round")
-        or context.get("predicted_round")
-        or ""
-    ).strip()
+    method_candidate = _first_non_empty_str(
+        generated_prediction.get("predicted_method"),
+        generated_prediction.get("method"),
+        context_prediction.get("predicted_method"),
+        context_prediction.get("method"),
+        selected_matchup.get("predicted_method"),
+        context.get("predicted_method"),
+    )
+    round_candidate = _first_non_empty_str(
+        generated_prediction.get("predicted_round"),
+        generated_prediction.get("round"),
+        context_prediction.get("predicted_round"),
+        context_prediction.get("round"),
+        selected_matchup.get("predicted_round"),
+        context.get("predicted_round"),
+    )
 
     confidence_candidate = (
-        selected_matchup.get("confidence")
+        generated_prediction.get("confidence")
+        or generated_prediction.get("confidence_value")
+        or generated_prediction.get("confidence_score")
+        or context_prediction.get("confidence")
+        or context_prediction.get("confidence_value")
+        or context_prediction.get("confidence_score")
+        or selected_matchup.get("confidence")
         or context.get("confidence")
         or context.get("confidence_value")
         or context.get("confidence_score")
     )
     confidence_value = _safe_optional_float(confidence_candidate)
 
-    structural_reasoning = str(
-        selected_matchup.get("structural_reasoning")
-        or context.get("structural_reasoning")
-        or ""
-    ).strip()
-    tactical_pathway = str(
-        selected_matchup.get("tactical_pathway")
-        or context.get("tactical_pathway")
-        or ""
-    ).strip()
-    evidence_notes = str(
-        selected_matchup.get("evidence_notes")
-        or context.get("evidence_notes")
-        or ""
-    ).strip()
+    structural_reasoning = _first_non_empty_str(
+        generated_prediction.get("structural_reasoning"),
+        context_prediction.get("structural_reasoning"),
+        selected_matchup.get("structural_reasoning"),
+        context.get("structural_reasoning"),
+        generated_prediction.get("decision_structure"),
+        context_prediction.get("decision_structure"),
+        context.get("decision_structure"),
+        generated_prediction.get("final_projection"),
+        context_prediction.get("final_projection"),
+        context.get("final_projection"),
+    )
+    tactical_pathway = _first_non_empty_str(
+        generated_prediction.get("tactical_pathway"),
+        context_prediction.get("tactical_pathway"),
+        selected_matchup.get("tactical_pathway"),
+        context.get("tactical_pathway"),
+        generated_prediction.get("tactical_thesis"),
+        context_prediction.get("tactical_thesis"),
+        context.get("tactical_thesis"),
+        generated_prediction.get("method_pathway"),
+        context_prediction.get("method_pathway"),
+        context.get("method_pathway"),
+        generated_prediction.get("scenario"),
+        context_prediction.get("scenario"),
+        context.get("scenario"),
+    )
+    evidence_notes = _first_non_empty_str(
+        generated_prediction.get("evidence_notes"),
+        context_prediction.get("evidence_notes"),
+        selected_matchup.get("evidence_notes"),
+        context.get("evidence_notes"),
+        generated_prediction.get("source_summary"),
+        context_prediction.get("source_summary"),
+        context.get("source_summary"),
+        selected_matchup.get("source_url"),
+    )
 
-    structural_fields_available = bool(structural_reasoning or tactical_pathway or evidence_notes)
-    if not method_candidate or not round_candidate or not structural_fields_available:
+    if not method_candidate:
         method_candidate = "unknown"
+    if not round_candidate:
         round_candidate = "unknown"
+    if not confidence_value and confidence_value != 0.0:
         confidence_value = None
+    if not structural_reasoning:
         structural_reasoning = ""
+    if not tactical_pathway:
         tactical_pathway = ""
+    if not evidence_notes:
         evidence_notes = "structured fallback; source field unavailable in current Button 2 context"
 
     return {
@@ -383,6 +441,7 @@ def generate_button2_report_render_gate_integration(request_data):
         "template_pack_assets": None,
         "page_count": None,
     }
+    generated_prediction_context = {}
 
     geometry_data = None
     renderer_route_used = "template_pack_asset_renderer" if use_asset_backed_renderer else ("template_pack_jbalia_direct_renderer" if use_direct_jbalia_renderer else "html_fallback_renderer")
@@ -459,6 +518,7 @@ def generate_button2_report_render_gate_integration(request_data):
                 "template_pack_assets": render_result.get("template_pack_assets"),
                 "page_count": render_result.get("page_count"),
             })
+            generated_prediction_context = render_result.get("prediction_context", {}) if isinstance(render_result, dict) else {}
         except TemplatePackResolverError as e:
             return {
                 "ok": False,
@@ -634,7 +694,10 @@ def generate_button2_report_render_gate_integration(request_data):
         "file_size_bytes": file_size_bytes,
         "file_overwritten": existed_before_write,
         "stale_file_reused": stale_file_reused,
-        "structured_prediction": _build_button2_structured_prediction_contract(report_context_preview),
+        "structured_prediction": _build_button2_structured_prediction_contract(
+            report_context_preview,
+            generated_prediction_context,
+        ),
         "generation_request_id": str(request_data.get("generation_request_id", "") or ""),
         "qa_summary": qa_summary,
         **telemetry,
