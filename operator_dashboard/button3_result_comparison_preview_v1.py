@@ -547,6 +547,64 @@ def _resolve_predicted_fields_from_payload(body: Dict[str, Any]) -> Dict[str, An
     }
 
 
+def _build_structural_evidence_preview(body: Dict[str, Any]) -> Dict[str, Any]:
+    structured = body.get("structured_prediction")
+    if not isinstance(structured, dict):
+        return {
+            "score": 0.0,
+            "state": "unavailable",
+            "reason_code": "no_structured_prediction_contract",
+            "non_mutating": True,
+            "learning_eligibility_effect": "none",
+        }
+
+    contract_version = _clean_str(structured.get("contract_version", ""))
+    if contract_version != _BUTTON2_STRUCTURED_PREDICTION_CONTRACT_VERSION:
+        return {
+            "score": 0.0,
+            "state": "unavailable",
+            "reason_code": "no_structured_prediction_contract",
+            "non_mutating": True,
+            "learning_eligibility_effect": "none",
+        }
+
+    structural_reasoning = _clean_str(structured.get("structural_reasoning", ""))
+    tactical_pathway = _clean_str(structured.get("tactical_pathway", ""))
+    evidence_notes = _clean_str(structured.get("evidence_notes", ""))
+    present_count = sum(
+        1
+        for value in (structural_reasoning, tactical_pathway, evidence_notes)
+        if bool(value)
+    )
+
+    score_by_count = {
+        0: 0.0,
+        1: 0.33,
+        2: 0.66,
+        3: 1.0,
+    }
+    state_by_count = {
+        0: "unavailable",
+        1: "weak",
+        2: "partial",
+        3: "supported",
+    }
+    reason_by_count = {
+        0: "no_structural_fields_present",
+        1: "one_structural_field_present",
+        2: "two_structural_fields_present",
+        3: "all_structural_fields_present",
+    }
+
+    return {
+        "score": score_by_count[present_count],
+        "state": state_by_count[present_count],
+        "reason_code": reason_by_count[present_count],
+        "non_mutating": True,
+        "learning_eligibility_effect": "none",
+    }
+
+
 def _build_accuracy_dimensions(
     *,
     predicted_winner: str,
@@ -1463,6 +1521,7 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
     predicted_method = predicted_resolution["predicted_method"]
     predicted_round = predicted_resolution["predicted_round"]
     structured_prediction_context = predicted_resolution["structured_prediction_context"]
+    structural_evidence_preview = _build_structural_evidence_preview(body)
 
     actual_winner = _clean_str(body.get("actual_winner", ""))
     actual_method = _clean_str(body.get("actual_method", ""))
@@ -1536,6 +1595,7 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "predicted_method": predicted_method,
         "predicted_round": predicted_round,
         "structured_prediction_context": structured_prediction_context,
+        "structural_evidence_preview": structural_evidence_preview,
         "actual_winner": actual_winner,
         "actual_method": actual_method,
         "actual_round": actual_round,

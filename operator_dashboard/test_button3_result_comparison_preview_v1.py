@@ -213,9 +213,66 @@ def test_structured_prediction_contract_override_and_backward_compatibility() ->
     assert response_without_contract["predicted_method"] == "Top Method"
     assert response_without_contract["predicted_round"] == "Top Round"
     assert response_without_contract["structured_prediction_context"] is None
+    assert response_without_contract["structural_evidence_preview"] == {
+        "score": 0.0,
+        "state": "unavailable",
+        "reason_code": "no_structured_prediction_contract",
+        "non_mutating": True,
+        "learning_eligibility_effect": "none",
+    }
+    assert response_without_contract["accuracy_preview"]["overall"] == "miss"
+
+    payload_one_structural = _base_payload()
+    payload_one_structural["structured_prediction"] = {
+        "predicted_winner": "Fighter A",
+        "predicted_method": "decision",
+        "predicted_round": "3",
+        "contract_version": "button2_structured_prediction_v1",
+        "structural_reasoning": "only one",
+        "tactical_pathway": "",
+        "evidence_notes": "",
+    }
+    response_one_structural = _build(payload_one_structural)
+    assert response_one_structural["structural_evidence_preview"]["score"] == 0.33
+    assert response_one_structural["structural_evidence_preview"]["state"] == "weak"
+    assert response_one_structural["structural_evidence_preview"]["reason_code"] == "one_structural_field_present"
+    assert response_one_structural["accuracy_preview"]["overall"] == "hit"
+
+    payload_two_structural = _base_payload()
+    payload_two_structural["structured_prediction"] = {
+        "predicted_winner": "Fighter A",
+        "predicted_method": "decision",
+        "predicted_round": "3",
+        "contract_version": "button2_structured_prediction_v1",
+        "structural_reasoning": "present",
+        "tactical_pathway": "present",
+        "evidence_notes": "",
+    }
+    response_two_structural = _build(payload_two_structural)
+    assert response_two_structural["structural_evidence_preview"]["score"] == 0.66
+    assert response_two_structural["structural_evidence_preview"]["state"] == "partial"
+    assert response_two_structural["structural_evidence_preview"]["reason_code"] == "two_structural_fields_present"
+    assert response_two_structural["accuracy_preview"]["overall"] == "hit"
+
+    payload_three_structural = _base_payload()
+    payload_three_structural["structured_prediction"] = {
+        "predicted_winner": "Fighter A",
+        "predicted_method": "decision",
+        "predicted_round": "3",
+        "contract_version": "button2_structured_prediction_v1",
+        "structural_reasoning": "present",
+        "tactical_pathway": "present",
+        "evidence_notes": "present",
+    }
+    response_three_structural = _build(payload_three_structural)
+    assert response_three_structural["structural_evidence_preview"]["score"] == 1.0
+    assert response_three_structural["structural_evidence_preview"]["state"] == "supported"
+    assert response_three_structural["structural_evidence_preview"]["reason_code"] == "all_structural_fields_present"
+    assert response_three_structural["accuracy_preview"]["overall"] == "hit"
 
     assert response_with_contract["mutation_performed"] is False
     assert response_with_contract["database_write_performed"] is False
     assert response_with_contract["queue_write_performed"] is False
     assert response_with_contract["button3_mutation_performed"] is False
     assert response_with_contract["controlled_learning_candidate_eligible"] is False
+    assert response_with_contract["structural_evidence_preview"]["learning_eligibility_effect"] == "none"
