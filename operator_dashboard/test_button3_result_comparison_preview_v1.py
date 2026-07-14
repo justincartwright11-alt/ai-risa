@@ -172,3 +172,50 @@ def test_provenance_and_comparison_status_remain_operator_visible() -> None:
     assert "source_tier" in response
     assert "comparison_status" in response
     assert response["operator_review_required"] is True
+
+
+def test_structured_prediction_contract_override_and_backward_compatibility() -> None:
+    payload = _base_payload()
+    payload["predicted_winner"] = "Top Winner"
+    payload["predicted_method"] = "Top Method"
+    payload["predicted_round"] = "Top Round"
+    payload["structured_prediction"] = {
+        "predicted_winner": "Structured Winner",
+        "predicted_method": "Structured Method",
+        "predicted_round": "Structured Round",
+        "confidence": None,
+        "structural_reasoning": "reasoning present",
+        "tactical_pathway": "",
+        "evidence_notes": "notes present",
+        "source": "button2_generation_context",
+        "contract_version": "button2_structured_prediction_v1",
+    }
+
+    response_with_contract = _build(payload)
+    assert response_with_contract["predicted_winner"] == "Structured Winner"
+    assert response_with_contract["predicted_method"] == "Structured Method"
+    assert response_with_contract["predicted_round"] == "Structured Round"
+    assert response_with_contract["structured_prediction_context"] == {
+        "source": "button2_structured_prediction_contract",
+        "contract_version": "button2_structured_prediction_v1",
+        "structural_reasoning_present": True,
+        "tactical_pathway_present": False,
+        "evidence_notes_present": True,
+    }
+
+    payload_without_contract = _base_payload()
+    payload_without_contract["predicted_winner"] = "Top Winner"
+    payload_without_contract["predicted_method"] = "Top Method"
+    payload_without_contract["predicted_round"] = "Top Round"
+
+    response_without_contract = _build(payload_without_contract)
+    assert response_without_contract["predicted_winner"] == "Top Winner"
+    assert response_without_contract["predicted_method"] == "Top Method"
+    assert response_without_contract["predicted_round"] == "Top Round"
+    assert response_without_contract["structured_prediction_context"] is None
+
+    assert response_with_contract["mutation_performed"] is False
+    assert response_with_contract["database_write_performed"] is False
+    assert response_with_contract["queue_write_performed"] is False
+    assert response_with_contract["button3_mutation_performed"] is False
+    assert response_with_contract["controlled_learning_candidate_eligible"] is False

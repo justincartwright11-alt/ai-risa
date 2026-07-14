@@ -18,6 +18,8 @@ _SUPPORTED_STATUSES = {
     "needs_manual_review",
 }
 
+_BUTTON2_STRUCTURED_PREDICTION_CONTRACT_VERSION = "button2_structured_prediction_v1"
+
 
 _AUTHORIZATION_ALLOWED_COMPARISON_STATUSES = {"ready_to_compare"}
 
@@ -498,6 +500,51 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _resolve_predicted_fields_from_payload(body: Dict[str, Any]) -> Dict[str, Any]:
+    predicted_winner_top = _clean_str(body.get("predicted_winner", ""))
+    predicted_method_top = _clean_str(body.get("predicted_method", ""))
+    predicted_round_top = _normalize_round(body.get("predicted_round", ""))
+
+    structured = body.get("structured_prediction")
+    if not isinstance(structured, dict):
+        return {
+            "predicted_winner": predicted_winner_top,
+            "predicted_method": predicted_method_top,
+            "predicted_round": predicted_round_top,
+            "structured_prediction_context": None,
+        }
+
+    contract_version = _clean_str(structured.get("contract_version", ""))
+    if contract_version != _BUTTON2_STRUCTURED_PREDICTION_CONTRACT_VERSION:
+        return {
+            "predicted_winner": predicted_winner_top,
+            "predicted_method": predicted_method_top,
+            "predicted_round": predicted_round_top,
+            "structured_prediction_context": None,
+        }
+
+    predicted_winner_structured = _clean_str(structured.get("predicted_winner", ""))
+    predicted_method_structured = _clean_str(structured.get("predicted_method", ""))
+    predicted_round_structured = _normalize_round(structured.get("predicted_round", ""))
+
+    structural_reasoning = _clean_str(structured.get("structural_reasoning", ""))
+    tactical_pathway = _clean_str(structured.get("tactical_pathway", ""))
+    evidence_notes = _clean_str(structured.get("evidence_notes", ""))
+
+    return {
+        "predicted_winner": predicted_winner_structured or predicted_winner_top,
+        "predicted_method": predicted_method_structured or predicted_method_top,
+        "predicted_round": predicted_round_structured or predicted_round_top,
+        "structured_prediction_context": {
+            "source": "button2_structured_prediction_contract",
+            "contract_version": _BUTTON2_STRUCTURED_PREDICTION_CONTRACT_VERSION,
+            "structural_reasoning_present": bool(structural_reasoning),
+            "tactical_pathway_present": bool(tactical_pathway),
+            "evidence_notes_present": bool(evidence_notes),
+        },
+    }
 
 
 def _build_accuracy_dimensions(
@@ -1411,9 +1458,11 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
     result_source_url = _clean_str(body.get("result_source_url", ""))
     source_tier = _clean_str(body.get("source_tier", "")) or "unknown"
 
-    predicted_winner = _clean_str(body.get("predicted_winner", ""))
-    predicted_method = _clean_str(body.get("predicted_method", ""))
-    predicted_round = _normalize_round(body.get("predicted_round", ""))
+    predicted_resolution = _resolve_predicted_fields_from_payload(body)
+    predicted_winner = predicted_resolution["predicted_winner"]
+    predicted_method = predicted_resolution["predicted_method"]
+    predicted_round = predicted_resolution["predicted_round"]
+    structured_prediction_context = predicted_resolution["structured_prediction_context"]
 
     actual_winner = _clean_str(body.get("actual_winner", ""))
     actual_method = _clean_str(body.get("actual_method", ""))
@@ -1486,6 +1535,7 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "predicted_winner": predicted_winner,
         "predicted_method": predicted_method,
         "predicted_round": predicted_round,
+        "structured_prediction_context": structured_prediction_context,
         "actual_winner": actual_winner,
         "actual_method": actual_method,
         "actual_round": actual_round,
