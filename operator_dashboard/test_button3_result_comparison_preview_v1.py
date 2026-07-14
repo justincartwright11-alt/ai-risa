@@ -276,3 +276,61 @@ def test_structured_prediction_contract_override_and_backward_compatibility() ->
     assert response_with_contract["button3_mutation_performed"] is False
     assert response_with_contract["controlled_learning_candidate_eligible"] is False
     assert response_with_contract["structural_evidence_preview"]["learning_eligibility_effect"] == "none"
+
+
+def test_method_round_normalization_preview_scoring_contract() -> None:
+    payload = _base_payload()
+    payload["predicted_method"] = "Decision"
+    payload["actual_method"] = "Decision (unanimous)"
+    payload["predicted_round"] = "Full Distance"
+    payload["actual_round"] = "5"
+    payload["scheduled_rounds"] = 5
+
+    response = _build(payload)
+    preview = response["method_round_normalization_preview"]
+
+    # Method and round should score as matched after normalization.
+    assert response["accuracy_preview"]["method"] == "hit"
+    assert response["accuracy_preview"]["round"] == "hit"
+    assert preview["predicted_method_normalized"] == "decision"
+    assert preview["actual_method_normalized"] == "decision"
+    assert preview["predicted_round_normalized"] == "5"
+    assert preview["actual_round_normalized"] == "5"
+    assert preview["scheduled_rounds"] == 5
+    assert preview["full_distance_resolved"] is True
+    assert preview["learning_eligibility_effect"] == "none"
+
+    # Raw fields remain unchanged in the response payload.
+    assert response["predicted_method"] == "Decision"
+    assert response["predicted_round"] == "Full Distance"
+    assert response["actual_method"] == "Decision (unanimous)"
+    assert response["actual_round"] == "5"
+
+    # Without scheduled rounds, full distance must not be forced to round 5.
+    payload_without_schedule = _base_payload()
+    payload_without_schedule["predicted_method"] = "Decision"
+    payload_without_schedule["actual_method"] = "Decision (unanimous)"
+    payload_without_schedule["predicted_round"] = "Full Distance"
+    payload_without_schedule["actual_round"] = "5"
+    response_without_schedule = _build(payload_without_schedule)
+    preview_without_schedule = response_without_schedule["method_round_normalization_preview"]
+    assert preview_without_schedule["predicted_round_normalized"] == "full_distance"
+    assert preview_without_schedule["full_distance_resolved"] is False
+    assert response_without_schedule["accuracy_preview"]["round"] == "miss"
+
+    # R5 should normalize to 5.
+    payload_r5 = _base_payload()
+    payload_r5["predicted_round"] = "R5"
+    payload_r5["actual_round"] = "5"
+    response_r5 = _build(payload_r5)
+    preview_r5 = response_r5["method_round_normalization_preview"]
+    assert preview_r5["predicted_round_normalized"] == "5"
+    assert response_r5["accuracy_preview"]["round"] == "hit"
+
+    # Non-mutating and policy boundaries remain unchanged.
+    assert response["mutation_performed"] is False
+    assert response["database_write_performed"] is False
+    assert response["queue_write_performed"] is False
+    assert response["learning_apply_performed"] is False
+    assert response["button3_mutation_performed"] is False
+    assert response["controlled_learning_candidate_eligible"] is False

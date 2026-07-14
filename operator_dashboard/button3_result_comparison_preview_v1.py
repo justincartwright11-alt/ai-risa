@@ -6,6 +6,7 @@ No apply path, no mutation path, no learning/calibration writes.
 """
 
 from datetime import datetime, timezone
+import re
 from typing import Any, Dict
 
 
@@ -500,6 +501,100 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _parse_scheduled_rounds(value: Any) -> int | None:
+    if isinstance(value, int) and value in {3, 5}:
+        return value
+    cleaned = _clean_str(value)
+    if cleaned in {"3", "5"}:
+        return int(cleaned)
+    return None
+
+
+def _normalize_method_value(value: Any) -> str:
+    cleaned = _clean_str(value)
+    lowered = cleaned.lower()
+    if not lowered:
+        return ""
+
+    if lowered in {"doctor stoppage", "doctor"} or "doctor stoppage" in lowered:
+        return "doctor_stoppage"
+
+    if "decision" in lowered or lowered in {"ud", "sd", "md"}:
+        return "decision"
+
+    if (
+        lowered in {"ko", "tko", "ko/tko", "knockout", "technical knockout"}
+        or "ko/tko" in lowered
+        or "technical knockout" in lowered
+    ):
+        return "ko_tko"
+
+    if (
+        lowered in {"submission", "sub", "tapout", "rear-naked choke", "armbar", "guillotine"}
+        or "rear-naked choke" in lowered
+        or "armbar" in lowered
+        or "guillotine" in lowered
+    ):
+        return "submission"
+
+    return lowered
+
+
+def _normalize_round_value(value: Any, scheduled_rounds: int | None) -> tuple[str, bool]:
+    cleaned = _clean_str(value)
+    lowered = cleaned.lower()
+    if not lowered:
+        return "", False
+
+    if lowered.isdigit():
+        return str(int(lowered)), False
+
+    r_match = re.match(r"^r\s*([1-9]\d*)$", lowered)
+    if r_match:
+        return str(int(r_match.group(1))), False
+
+    round_match = re.match(r"^round\s*([1-9]\d*)$", lowered)
+    if round_match:
+        return str(int(round_match.group(1))), False
+
+    if lowered in {
+        "full distance",
+        "full time",
+        "goes distance",
+        "distance",
+        "full fight",
+    }:
+        if scheduled_rounds is not None:
+            return str(scheduled_rounds), True
+        return "full_distance", False
+
+    return lowered, False
+
+
+def _build_method_round_normalization_preview(
+    predicted_method: str,
+    actual_method: str,
+    predicted_round: str,
+    actual_round: str,
+    scheduled_rounds: int | None,
+) -> Dict[str, Any]:
+    predicted_method_normalized = _normalize_method_value(predicted_method)
+    actual_method_normalized = _normalize_method_value(actual_method)
+    predicted_round_normalized, full_distance_resolved = _normalize_round_value(predicted_round, scheduled_rounds)
+    actual_round_normalized, _ = _normalize_round_value(actual_round, scheduled_rounds)
+
+    return {
+        "predicted_method_normalized": predicted_method_normalized,
+        "actual_method_normalized": actual_method_normalized,
+        "predicted_round_normalized": predicted_round_normalized,
+        "actual_round_normalized": actual_round_normalized,
+        "scheduled_rounds": scheduled_rounds,
+        "full_distance_resolved": full_distance_resolved,
+        "non_mutating": True,
+        "learning_eligibility_effect": "none",
+    }
 
 
 def _resolve_predicted_fields_from_payload(body: Dict[str, Any]) -> Dict[str, Any]:
@@ -1526,17 +1621,31 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
     actual_winner = _clean_str(body.get("actual_winner", ""))
     actual_method = _clean_str(body.get("actual_method", ""))
     actual_round = _normalize_round(body.get("actual_round", ""))
+    scheduled_rounds = _parse_scheduled_rounds(body.get("scheduled_rounds"))
+
+    method_round_normalization_preview = _build_method_round_normalization_preview(
+        predicted_method=predicted_method,
+        actual_method=actual_method,
+        predicted_round=predicted_round,
+        actual_round=actual_round,
+        scheduled_rounds=scheduled_rounds,
+    )
+
+    predicted_method_normalized = method_round_normalization_preview["predicted_method_normalized"]
+    actual_method_normalized = method_round_normalization_preview["actual_method_normalized"]
+    predicted_round_normalized = method_round_normalization_preview["predicted_round_normalized"]
+    actual_round_normalized = method_round_normalization_preview["actual_round_normalized"]
 
     comparison_status = _resolve_status(body, result_source_url, actual_winner, predicted_winner)
 
     accuracy_preview = _build_accuracy_preview(
         comparison_status=comparison_status,
         predicted_winner=predicted_winner,
-        predicted_method=predicted_method,
-        predicted_round=predicted_round,
+        predicted_method=predicted_method_normalized,
+        predicted_round=predicted_round_normalized,
         actual_winner=actual_winner,
-        actual_method=actual_method,
-        actual_round=actual_round,
+        actual_method=actual_method_normalized,
+        actual_round=actual_round_normalized,
     )
 
     apply_authorization = _evaluate_apply_authorization(body, comparison_status)
@@ -1545,11 +1654,11 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         comparison_status=comparison_status,
         apply_authorization=apply_authorization,
         predicted_winner=predicted_winner,
-        predicted_method=predicted_method,
-        predicted_round=predicted_round,
+        predicted_method=predicted_method_normalized,
+        predicted_round=predicted_round_normalized,
         actual_winner=actual_winner,
-        actual_method=actual_method,
-        actual_round=actual_round,
+        actual_method=actual_method_normalized,
+        actual_round=actual_round_normalized,
         result_source_url=result_source_url,
         source_tier=source_tier,
     )
@@ -1596,6 +1705,7 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "predicted_round": predicted_round,
         "structured_prediction_context": structured_prediction_context,
         "structural_evidence_preview": structural_evidence_preview,
+        "method_round_normalization_preview": method_round_normalization_preview,
         "actual_winner": actual_winner,
         "actual_method": actual_method,
         "actual_round": actual_round,
