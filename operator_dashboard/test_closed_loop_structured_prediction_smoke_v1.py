@@ -1,0 +1,135 @@
+from __future__ import annotations
+
+import os
+from unittest.mock import MagicMock, patch
+
+from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
+    generate_button2_report_render_gate_integration,
+)
+from operator_dashboard.button3_result_comparison_preview_v1 import (
+    build_button3_result_comparison_preview,
+)
+
+
+def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
+    output_root = tmp_path / "pdf_output"
+    output_root.mkdir()
+
+    button2_request = {
+        "operator_approved": True,
+        "fight_id": "closed_loop_contract_fight",
+        "ingest_payload": {"destination_marker": "button2_report_generation_preview"},
+    }
+
+    mock_ingest = MagicMock(
+        return_value={
+            "ok": True,
+            "button2_ingest_preview_context": {
+                "destination_marker": "button2_report_generation_preview",
+                "selected_matchup_payload": {
+                    "fighter_a": "Fighter Alpha",
+                    "fighter_b": "Fighter Beta",
+                },
+            },
+        }
+    )
+
+    mock_context = MagicMock(
+        return_value={
+            "ok": True,
+            "report_context_preview": {
+                "destination_marker": "button2_report_generation_preview",
+                "selected_matchup": {
+                    "fighter_a": "Fighter Alpha",
+                    "fighter_b": "Fighter Beta",
+                },
+                "prediction_context": {
+                    "predicted_winner": "Fighter Beta",
+                    "predicted_method": "Decision",
+                    "predicted_round": "R5",
+                    "confidence": 64.2,
+                    "structural_reasoning": "Beta wins second-phase exchanges by forcing reset reads.",
+                    "tactical_pathway": "Pressure to fence breaks, then exit on angle before counters set.",
+                    "evidence_notes": "source:https://example.test/closed-loop-proof",
+                },
+            },
+        }
+    )
+
+    mock_render_template_pack = MagicMock(
+        return_value={
+            "pdf_bytes": b"SMOKE_TEST_NON_PDF_BYTES_OK",
+            "renderer_profile": "premium_template_pack_v29_asset_backed_v1",
+            "template_pack_root": "C:/tmp/template_pack",
+            "template_pack_asset_backed": True,
+            "template_pack_assets": {},
+            "page_count": 24,
+            "layout_safety": {},
+            "prediction_context": {},
+        }
+    )
+
+    with patch.dict(os.environ, {"BUTTON2_PDF_OUTPUT_ROOT": str(output_root)}):
+        with patch(
+            "operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_readonly_dossier_handoff_ingest_preview",
+            mock_ingest,
+        ):
+            with patch(
+                "operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_dossier_handoff_report_context_preview",
+                mock_context,
+            ):
+                with patch(
+                    "operator_dashboard.button2_report_generation_route_render_gate_integration_v1.render_button2_template_pack_asset_pdf",
+                    mock_render_template_pack,
+                ):
+                    button2_result = generate_button2_report_render_gate_integration(button2_request)
+
+    assert button2_result["ok"] is True
+    assert "structured_prediction" in button2_result
+    structured_prediction = button2_result["structured_prediction"]
+    assert structured_prediction["contract_version"] == "button2_structured_prediction_v1"
+
+    button3_payload = {
+        "fight_id": "closed_loop_contract_fight",
+        "event_name": "Closed Loop Smoke Event",
+        "fighter_a": "Fighter Alpha",
+        "fighter_b": "Fighter Beta",
+        "predicted_winner": "Top Level Winner Should Be Overridden",
+        "predicted_method": "Top Level Method Should Be Overridden",
+        "predicted_round": "Top Level Round Should Be Overridden",
+        "actual_winner": "Fighter Beta",
+        "actual_method": "Decision",
+        "actual_round": "5",
+        "result_source_url": "https://example.test/official-result",
+        "source_tier": "official",
+        "structured_prediction": structured_prediction,
+    }
+
+    button3_result = build_button3_result_comparison_preview(button3_payload)
+
+    assert button3_result["ok"] is True
+    assert button3_result["predicted_winner"] == structured_prediction["predicted_winner"]
+    assert button3_result["predicted_method"] == structured_prediction["predicted_method"]
+    assert button3_result["predicted_round"] == "R5"
+
+    assert button3_result["structured_prediction_context"] == {
+        "source": "button2_structured_prediction_contract",
+        "contract_version": "button2_structured_prediction_v1",
+        "structural_reasoning_present": True,
+        "tactical_pathway_present": True,
+        "evidence_notes_present": True,
+    }
+
+    structural_evidence_preview = button3_result["structural_evidence_preview"]
+    assert structural_evidence_preview["state"] == "supported"
+    assert structural_evidence_preview["score"] == 1.0
+    assert structural_evidence_preview["reason_code"] == "all_structural_fields_present"
+    assert structural_evidence_preview["learning_eligibility_effect"] == "none"
+    assert structural_evidence_preview["non_mutating"] is True
+
+    assert button3_result["mutation_performed"] is False
+    assert button3_result["database_write_performed"] is False
+    assert button3_result["queue_write_performed"] is False
+    assert button3_result["learning_apply_performed"] is False
+    assert button3_result["button3_mutation_performed"] is False
+    assert button3_result["controlled_learning_candidate_eligible"] is False
