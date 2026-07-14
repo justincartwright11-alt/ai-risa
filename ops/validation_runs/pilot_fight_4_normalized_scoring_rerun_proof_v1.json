@@ -1,0 +1,58 @@
+{
+  "fight_identity": {
+    "fight_id": "ufc_300_zhang_weili_vs_yan_xiaonan",
+    "fighter_a": "Zhang Weili",
+    "fighter_b": "Yan Xiaonan",
+    "event_name": "UFC 300",
+    "event_date": "2024-04-13",
+    "promotion": "UFC",
+    "source_url": "https://www.ufc.com/event/ufc-300"
+  },
+  "source_artifact": "ops/validation_runs/pilot_fight_4_structured_contract_rerun_proof_v1.json",
+  "structured_prediction_contract_version": "button2_structured_prediction_v1",
+  "predicted_winner": "Zhang Weili",
+  "predicted_method_raw": "Decision",
+  "predicted_round_raw": "Full Distance",
+  "actual_winner": "Zhang Weili",
+  "actual_method_raw": "Decision",
+  "actual_round_raw": "5",
+  "scheduled_rounds": 5,
+  "method_round_normalization_preview": {
+    "predicted_method_normalized": "decision",
+    "actual_method_normalized": "decision",
+    "predicted_round_normalized": "5",
+    "actual_round_normalized": "5",
+    "scheduled_rounds": 5,
+    "full_distance_resolved": true,
+    "non_mutating": true,
+    "learning_eligibility_effect": "none"
+  },
+  "structural_evidence_preview_state": "supported",
+  "structural_evidence_preview_score": 1.0,
+  "accuracy_outcome_before_normalization": "partial",
+  "accuracy_outcome_after_normalization": "hit",
+  "method_score_after_normalization": "hit",
+  "round_score_after_normalization": "hit",
+  "old_vs_new_delta": {
+    "scheduled_rounds_applied": 5,
+    "full_distance_resolved": true,
+    "predicted_round_normalized": "5",
+    "actual_round_normalized": "5",
+    "predicted_method_normalized": "decision",
+    "actual_method_normalized": "decision",
+    "accuracy_before": "partial",
+    "accuracy_after": "hit"
+  },
+  "learning_policy_changed": false,
+  "protected_write_counts": {
+    "database_write_count": 0,
+    "queue_write_count": 0,
+    "gcid_write_count": 0,
+    "learning_write_count": 0,
+    "calibration_write_count": 0,
+    "accuracy_ledger_write_count": 0
+  },
+  "customer_release_count": 0,
+  "auto_learning_count": 0,
+  "improvement_verdict": "improved"
+}
