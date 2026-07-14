@@ -548,3 +548,72 @@ class TestSmokeTelemetryFlags:
         assert result["pdf_generation_performed"] is False
         assert result["file_write_performed"] is False
         assert result["gate2_approval_required"] is True
+
+
+def test_structured_prediction_contract_present_without_pdf_text_parsing(tmp_path):
+    """Successful generation returns structured_prediction from context contract fields, not PDF text extraction."""
+    output_root = tmp_path / "pdf_output"
+    output_root.mkdir()
+
+    req = {
+        "operator_approved": True,
+        "fight_id": "contract_test_fight",
+        "ingest_payload": {"destination_marker": "button2_report_generation_preview"},
+    }
+
+    mock_ingest = MagicMock(return_value={
+        "ok": True,
+        "button2_ingest_preview_context": {
+            "destination_marker": "button2_report_generation_preview",
+            "selected_matchup_payload": {
+                "fighter_a": "Fighter Alpha",
+                "fighter_b": "Fighter Beta",
+            },
+        },
+    })
+    mock_context = MagicMock(return_value={
+        "ok": True,
+        "report_context_preview": {
+            "destination_marker": "button2_report_generation_preview",
+            "selected_matchup": {
+                "fighter_a": "Fighter Alpha",
+                "fighter_b": "Fighter Beta",
+            },
+        },
+    })
+    mock_html = MagicMock(return_value={
+        "ok": True,
+        "html_content": "<html><body>Contract test</body></html>",
+    })
+    # Intentionally non-PDF bytes: contract should still be emitted from generation context.
+    mock_render = MagicMock(return_value={
+        "pdf_bytes": b"NOT_A_REAL_PDF_BUT_WRITABLE",
+        "geometry_data": None,
+    })
+
+    with patch.dict(os.environ, {"BUTTON2_PDF_OUTPUT_ROOT": str(output_root)}):
+        with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_readonly_dossier_handoff_ingest_preview", mock_ingest):
+            with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_dossier_handoff_report_context_preview", mock_context):
+                with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.build_button2_report_html", mock_html):
+                    with patch("operator_dashboard.button2_report_generation_route_render_gate_integration_v1.render_button2_pdf", mock_render):
+                        result = generate_button2_report_render_gate_integration(req)
+
+    assert result["ok"] is True
+    assert result["file_write_performed"] is True
+    assert "structured_prediction" in result
+
+    structured = result["structured_prediction"]
+    required_keys = {
+        "predicted_winner",
+        "predicted_method",
+        "predicted_round",
+        "confidence",
+        "structural_reasoning",
+        "tactical_pathway",
+        "evidence_notes",
+        "source",
+        "contract_version",
+    }
+    assert required_keys.issubset(set(structured.keys()))
+    assert structured["source"] == "button2_generation_context"
+    assert structured["contract_version"] == "button2_structured_prediction_v1"

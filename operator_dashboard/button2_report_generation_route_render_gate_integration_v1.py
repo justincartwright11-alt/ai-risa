@@ -22,6 +22,7 @@ import io
 import os
 import re
 from datetime import datetime, timezone
+from typing import Any, Dict
 
 from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
     build_button2_readonly_dossier_handoff_ingest_preview,
@@ -139,6 +140,92 @@ def _derive_pdf_page_count(pdf_bytes):
         return len(PdfReader(io.BytesIO(pdf_bytes)).pages)
     except Exception:
         return None
+
+
+def _safe_optional_float(value):
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        match = re.search(r"-?\d+(?:\.\d+)?", text)
+        if match:
+            try:
+                return float(match.group(0))
+            except Exception:
+                return None
+    return None
+
+
+def _build_button2_structured_prediction_contract(report_context_preview: Dict[str, Any]) -> Dict[str, Any]:
+    context = report_context_preview if isinstance(report_context_preview, dict) else {}
+    selected_matchup = context.get("selected_matchup")
+    if not isinstance(selected_matchup, dict):
+        selected_matchup = {}
+
+    predicted_winner = str(
+        selected_matchup.get("predicted_winner")
+        or context.get("predicted_winner")
+        or selected_matchup.get("fighter_a")
+        or ""
+    ).strip()
+
+    method_candidate = str(
+        selected_matchup.get("predicted_method")
+        or context.get("predicted_method")
+        or ""
+    ).strip()
+    round_candidate = str(
+        selected_matchup.get("predicted_round")
+        or context.get("predicted_round")
+        or ""
+    ).strip()
+
+    confidence_candidate = (
+        selected_matchup.get("confidence")
+        or context.get("confidence")
+        or context.get("confidence_value")
+        or context.get("confidence_score")
+    )
+    confidence_value = _safe_optional_float(confidence_candidate)
+
+    structural_reasoning = str(
+        selected_matchup.get("structural_reasoning")
+        or context.get("structural_reasoning")
+        or ""
+    ).strip()
+    tactical_pathway = str(
+        selected_matchup.get("tactical_pathway")
+        or context.get("tactical_pathway")
+        or ""
+    ).strip()
+    evidence_notes = str(
+        selected_matchup.get("evidence_notes")
+        or context.get("evidence_notes")
+        or ""
+    ).strip()
+
+    structural_fields_available = bool(structural_reasoning or tactical_pathway or evidence_notes)
+    if not method_candidate or not round_candidate or not structural_fields_available:
+        method_candidate = "unknown"
+        round_candidate = "unknown"
+        confidence_value = None
+        structural_reasoning = ""
+        tactical_pathway = ""
+        evidence_notes = "structured fallback; source field unavailable in current Button 2 context"
+
+    return {
+        "predicted_winner": predicted_winner,
+        "predicted_method": method_candidate,
+        "predicted_round": round_candidate,
+        "confidence": confidence_value,
+        "structural_reasoning": structural_reasoning,
+        "tactical_pathway": tactical_pathway,
+        "evidence_notes": evidence_notes,
+        "source": "button2_generation_context",
+        "contract_version": "button2_structured_prediction_v1",
+    }
 
 
 def generate_button2_report_render_gate_integration(request_data):
@@ -547,6 +634,7 @@ def generate_button2_report_render_gate_integration(request_data):
         "file_size_bytes": file_size_bytes,
         "file_overwritten": existed_before_write,
         "stale_file_reused": stale_file_reused,
+        "structured_prediction": _build_button2_structured_prediction_contract(report_context_preview),
         "generation_request_id": str(request_data.get("generation_request_id", "") or ""),
         "qa_summary": qa_summary,
         **telemetry,
