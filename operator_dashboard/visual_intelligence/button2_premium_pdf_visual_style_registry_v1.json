@@ -1,0 +1,440 @@
+{
+  "schema_version": "1.0.0",
+  "registry_id": "button2_premium_pdf_visual_style_registry_v1",
+  "registry_scope": "button2_premium_pdf_visual_intelligence",
+  "release_boundary": {
+    "release_scope_decision": "INTERNAL_ONLY",
+    "customer_release_authorized": false,
+    "public_publishing_authorized": false,
+    "production_launch_authorized": false,
+    "automated_delivery_authorized": false,
+    "learning_activation_authorized": false
+  },
+  "color_tokens": {
+    "red_primary_meaning": "severity_risk_exposure_failure_before_fighter_identity",
+    "core_interface_colors": {
+      "midnight_black": {
+        "value": "#0A0A0A",
+        "usage": "primary_background"
+      },
+      "near_black_panel": {
+        "value": "#111111",
+        "usage": "panel_surface"
+      },
+      "combat_gold": {
+        "value": "#D4AF37",
+        "usage": "headings_frames_primary_accents"
+      },
+      "muted_gold": {
+        "value": "#A88A2E",
+        "usage": "secondary_gold_accent"
+      },
+      "steel_grey": {
+        "value": "#2E2E2E",
+        "usage": "secondary_panels_and_dividers"
+      },
+      "grid_grey": {
+        "value": "#4A4A4A",
+        "usage": "chart_gridlines"
+      },
+      "text_primary": {
+        "value": "#F2F2F2",
+        "usage": "primary_readable_text"
+      },
+      "text_secondary": {
+        "value": "#C7C7C7",
+        "usage": "secondary_readable_text"
+      },
+      "tactical_red": {
+        "value": "#8B0000",
+        "usage": "risk_and_failure_marker"
+      }
+    },
+    "fighter_identity_colors": {
+      "fighter_a_identity_blue": {
+        "value": "#4B78FF",
+        "usage": "fighter_a_identity"
+      },
+      "fighter_b_identity_red": {
+        "value": "#A52A2A",
+        "usage": "fighter_b_identity_only_when_needed"
+      },
+      "neutral_identity_grey": {
+        "value": "#8A8A8A",
+        "usage": "neutral_identity"
+      },
+      "shared_information_gold": {
+        "value": "#D4AF37",
+        "usage": "shared_neutral_information"
+      }
+    },
+    "severity_colors": {
+      "severity_very_low": {
+        "value": "#2E8B57",
+        "usage": "0_20"
+      },
+      "severity_low": {
+        "value": "#7AA874",
+        "usage": "21_40"
+      },
+      "severity_moderate": {
+        "value": "#C9A227",
+        "usage": "41_60"
+      },
+      "severity_high": {
+        "value": "#C46A1C",
+        "usage": "61_80"
+      },
+      "severity_very_high": {
+        "value": "#B22222",
+        "usage": "81_100"
+      },
+      "severity_critical": {
+        "value": "#7A0000",
+        "usage": "domain_specific_critical_only"
+      }
+    }
+  },
+  "typography_tokens": {
+    "report_title": {
+      "purpose": "primary_report_title",
+      "relative_size": "1.00",
+      "weight": "700",
+      "readability_rule": "large_title_must_remain_legible_in_print_and_mobile"
+    },
+    "section_title": {
+      "purpose": "major_section_heading",
+      "relative_size": "0.72",
+      "weight": "700",
+      "readability_rule": "section_headings_must_be_distinct_from_panel_titles"
+    },
+    "panel_title": {
+      "purpose": "panel_header",
+      "relative_size": "0.60",
+      "weight": "600",
+      "readability_rule": "panel_titles_must_not_compete_with_report_title"
+    },
+    "chart_axis_label": {
+      "purpose": "chart_axis_and_scale_label",
+      "relative_size": "0.42",
+      "weight": "500",
+      "readability_rule": "axis_labels_must_stay_readable_without_zooming"
+    },
+    "table_header": {
+      "purpose": "table_column_header",
+      "relative_size": "0.44",
+      "weight": "600",
+      "readability_rule": "headers_must_anchor_numeric_tables"
+    },
+    "table_body": {
+      "purpose": "table_cell_text",
+      "relative_size": "0.36",
+      "weight": "400",
+      "readability_rule": "body_text_must_support_dense_comparison_without_clutter"
+    },
+    "score_number_large": {
+      "purpose": "hero_score_display",
+      "relative_size": "0.92",
+      "weight": "700",
+      "readability_rule": "primary_score_numbers_must_be_immediately_visible"
+    },
+    "score_number_medium": {
+      "purpose": "supporting_score_display",
+      "relative_size": "0.58",
+      "weight": "600",
+      "readability_rule": "secondary_scores_must_remain_clear_next_to_context"
+    },
+    "evidence_label": {
+      "purpose": "evidence_metadata_label",
+      "relative_size": "0.34",
+      "weight": "500",
+      "readability_rule": "evidence_labels_must_not_overpower_analysis_content"
+    },
+    "disclaimer_text": {
+      "purpose": "tactical_non_medical_footer_or_note",
+      "relative_size": "0.30",
+      "weight": "400",
+      "readability_rule": "disclaimer_text_must_stay_readable_in_print_and_mobile"
+    },
+    "footnote_text": {
+      "purpose": "secondary_note_or_source_note",
+      "relative_size": "0.28",
+      "weight": "400",
+      "readability_rule": "footnotes_must_remain_legible_and_non_intrusive"
+    }
+  },
+  "border_tokens": {
+    "outer_report_frame": {
+      "stroke_color": "combat_gold",
+      "stroke_width": "2px",
+      "corner_style": "sharp_frame"
+    },
+    "hero_visual_frame": {
+      "stroke_color": "combat_gold",
+      "stroke_width": "2px",
+      "corner_style": "sharp_frame"
+    },
+    "chart_panel_frame": {
+      "stroke_color": "steel_grey",
+      "stroke_width": "1px",
+      "corner_style": "subtle_frame"
+    },
+    "evidence_panel_frame": {
+      "stroke_color": "grid_grey",
+      "stroke_width": "1px",
+      "corner_style": "subtle_frame"
+    },
+    "insight_panel_frame": {
+      "stroke_color": "muted_gold",
+      "stroke_width": "1px",
+      "corner_style": "subtle_frame"
+    },
+    "score_table_frame": {
+      "stroke_color": "steel_grey",
+      "stroke_width": "1px",
+      "corner_style": "structured_frame"
+    },
+    "callout_box_frame": {
+      "stroke_color": "combat_gold",
+      "stroke_width": "1px",
+      "corner_style": "callout_frame"
+    },
+    "warning_box_frame": {
+      "stroke_color": "severity_very_high",
+      "stroke_width": "1px",
+      "corner_style": "warning_frame"
+    }
+  },
+  "spacing_tokens": {
+    "page_margin": "24px",
+    "panel_gap": "14px",
+    "title_to_content_gap": "10px",
+    "chart_padding": "12px",
+    "table_cell_padding": "8px",
+    "callout_line_clearance": "10px",
+    "footer_clearance": "16px",
+    "minimum_mobile_text_size": "12px",
+    "minimum_print_text_size": "10px"
+  },
+  "severity_scales": {
+    "default_0_100_scale": {
+      "scale_name": "default_0_100_scale",
+      "interpretation_rule": "higher_scores_indicate_greater_severity_risk_or_exposure",
+      "very_low": {
+        "range": [0, 20],
+        "label": "very_low"
+      },
+      "low": {
+        "range": [21, 40],
+        "label": "low"
+      },
+      "moderate": {
+        "range": [41, 60],
+        "label": "moderate"
+      },
+      "high": {
+        "range": [61, 80],
+        "label": "high"
+      },
+      "very_high": {
+        "range": [81, 100],
+        "label": "very_high"
+      },
+      "critical_policy": "critical_allowed_only_when_domain_specific_threshold_rules_apply"
+    }
+  },
+  "fighter_identity_tokens": {
+    "fighter_a": {
+      "name_label_rule": "fighter_a_must_also_be_named_in_text",
+      "identity_color": "fighter_a_identity_blue",
+      "usage_rule": "reserved_for_fighter_a_identity"
+    },
+    "fighter_b": {
+      "name_label_rule": "fighter_b_must_also_be_named_in_text",
+      "identity_color": "fighter_b_identity_red",
+      "usage_rule": "restricted_to_identity_when_risk_confusion_is_not_created"
+    },
+    "neutral_identity": {
+      "name_label_rule": "neutral_labels_must_use_text_not_colour_only",
+      "identity_color": "neutral_identity_grey",
+      "usage_rule": "shared_neutral_information"
+    },
+    "shared_information": {
+      "name_label_rule": "shared_info_must_use_gold_or_grey_structure",
+      "identity_color": "shared_information_gold",
+      "usage_rule": "shared_neutral_dashboard_information"
+    }
+  },
+  "visual_family_ids": [
+    {
+      "visual_family_id": "anatomical_target_exposure_heat_map",
+      "purpose": "target_exposure_analysis",
+      "anatomical_treatment_allowed": true,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "fatigue_structural_decay_heat_map",
+      "purpose": "fatigue_and_structural_decay_analysis",
+      "anatomical_treatment_allowed": true,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "tactical_vulnerability_map",
+      "purpose": "tactical_vulnerability_overview",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "fighter_architecture_radar",
+      "purpose": "fighter_architecture_profile",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "tactical_edge_bar_chart",
+      "purpose": "tactical_edge_comparison",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "round_control_projection_line_graph",
+      "purpose": "round_control_projection",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "scenario_method_pathway_tree",
+      "purpose": "scenario_and_method_pathway_analysis",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "ring_geography_pressure_map",
+      "purpose": "ring_geography_and_pressure_analysis",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "decision_structure_map",
+      "purpose": "decision_process_flow_analysis",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "pace_energy_fatigue_curve",
+      "purpose": "pace_energy_fatigue_trend_analysis",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "training_priority_heat_map",
+      "purpose": "training_priority_and_camp_focus",
+      "anatomical_treatment_allowed": true,
+      "requires_severity_scale": true,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "scorecard_probability_table",
+      "purpose": "score_and_probability_summary",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    },
+    {
+      "visual_family_id": "button3_result_comparison_visual",
+      "purpose": "predicted_vs_verified_result_comparison",
+      "anatomical_treatment_allowed": false,
+      "requires_severity_scale": false,
+      "requires_evidence_panel": true,
+      "requires_disclaimer_footer": true
+    }
+  ],
+  "evidence_panel_tokens": {
+    "required_fields": [
+      "analysis_id",
+      "report_version",
+      "data_basis",
+      "sample_size",
+      "source_quality",
+      "observed_vs_modelled",
+      "confidence_score",
+      "uncertainty_flags",
+      "limitation_note",
+      "operator_review_status"
+    ],
+    "panel_rule": "every_visual_family_requires_a_matching_evidence_panel"
+  },
+  "disclaimer_footer_tokens": {
+    "footer_variants": [
+      "tactical_non_medical",
+      "projected_modelled_estimate",
+      "internal_draft_only",
+      "result_comparison_verified"
+    ],
+    "anatomical_required_wording": "TACTICAL ANALYSIS — NOT A MEDICAL DIAGNOSIS"
+  },
+  "page_density_rules": {
+    "max_level_1_hero_visuals_per_page": 1,
+    "max_level_2_analytical_visuals_per_page": 1,
+    "max_level_3_evidence_panels_per_page": 3,
+    "dense_master_dashboard_allowed_only_for_summary_page": true,
+    "mobile_readability_required": true,
+    "print_readability_required": true
+  },
+  "overload_prohibitions": [
+    "two anatomical skeletons on every page",
+    "excessive glowing effects",
+    "full rainbow heat scales on non-heat-map charts",
+    "dense labels around every object",
+    "decorative interface elements without analytical purpose",
+    "tiny text unreadable on mobile",
+    "cluttered dashboards replacing clear report pages",
+    "red used as a fighter identity colour when it creates severity confusion",
+    "unlabeled heat colours",
+    "medical-looking injury implications without tactical/non-medical disclaimer"
+  ],
+  "accessibility_rules": {
+    "no_colour_only_meaning": true,
+    "severity_requires_label_and_colour": true,
+    "important_scores_require_numeric_value": true,
+    "fighter_identity_requires_name_label": true,
+    "callout_text_must_remain_readable": true,
+    "charts_must_avoid_overflow_and_clipping": true,
+    "table_numbers_must_not_sit_on_glowing_backgrounds": true
+  },
+  "prohibited_states": [
+    "customer_release_authorized=true",
+    "public_publishing_authorized=true",
+    "production_launch_authorized=true",
+    "automated_delivery_authorized=true",
+    "learning_activation_authorized=true",
+    "visual_family_id without evidence panel rules",
+    "heat map without severity scale",
+    "anatomical heat map without non-medical disclaimer",
+    "red used as Fighter B identity where it conflicts with risk meaning",
+    "unlabeled heat colours",
+    "PDF visual marked delivery-ready without visual QA gate"
+  ]
+}
