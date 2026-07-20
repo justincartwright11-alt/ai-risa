@@ -90,7 +90,10 @@ def test_dry_run_contract_does_not_call_generation_render_write_or_network(clien
 
     monkeypatch.setattr("builtins.open", guarded_open)
     monkeypatch.setattr(socket, "create_connection", blocked_connect)
-    monkeypatch.setattr("operator_dashboard.app.generate_button2_report_render_gate_integration", blocked_generation)
+    monkeypatch.setattr(
+        "operator_dashboard.app._lazy_button2_report_generation_route_render_gate_integration",
+        lambda: blocked_generation,
+    )
 
     resp = client.post(ROUTE, json=_payload())
     data = resp.get_json()
