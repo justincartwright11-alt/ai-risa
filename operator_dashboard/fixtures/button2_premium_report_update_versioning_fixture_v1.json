@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "fixture_id": "button2_premium_report_update_versioning_fixture_v1",
+  "report_id": "rpt_internal_ares300_maincard_001",
+  "fight_id": "fight_ares300_co_main_001",
+  "event_name": "ARES 300 Synthetic Main Card",
+  "fighter_a": "Alex Mercer",
+  "fighter_b": "Jordan Vale",
+  "report_version_before": "DRAFT_INTERNAL_v1",
+  "report_version_after": "DRAFT_INTERNAL_UPDATED_v2",
+  "update_event": {
+    "update_id": "upd_evt_20260720_083950_001",
+    "update_timestamp": "2026-07-20T08:39:50Z",
+    "update_source_type": "official_weigh_in_results",
+    "update_source_tier": "tier_1_verified",
+    "update_classification": "event status update",
+    "materiality": "LEVEL_3_SECTION_RECALCULATION_REQUIRED",
+    "affected_report_sections": [
+      "weight_cut_outlook",
+      "fight_week_intel",
+      "risk_flags"
+    ],
+    "requires_report_regeneration": true,
+    "requires_operator_review": true,
+    "customer_delivery_hold_reason": "operator_review_pending"
+  },
+  "changed_section_map": [
+    {
+      "section_id": "sec_weight_cut_outlook",
+      "section_name": "Weight Cut Outlook",
+      "prior_status": "STALE",
+      "updated_status": "REFRESHED_PENDING_REVIEW",
+      "change_reason": "Verified weigh-in delta updated the conditioning risk note.",
+      "evidence_reference": "src_weighin_ares300_official_20260720",
+      "uncertainty_note": "Hydration recovery trend still requires operator context review.",
+      "delivery_impact": "BLOCK_DELIVERY"
+    },
+    {
+      "section_id": "sec_fight_week_intel",
+      "section_name": "Fight Week Intelligence",
+      "prior_status": "CURRENT",
+      "updated_status": "REFRESHED_PENDING_REVIEW",
+      "change_reason": "New official media notes introduced updated behavioral context.",
+      "evidence_reference": "src_media_day_ares300_20260720",
+      "uncertainty_note": "Behavioral interpretation remains confidence-limited until operator review.",
+      "delivery_impact": "BLOCK_DELIVERY"
+    },
+    {
+      "section_id": "sec_risk_flags",
+      "section_name": "Risk Flags",
+      "prior_status": "CURRENT",
+      "updated_status": "RECALCULATED_PENDING_REVIEW",
+      "change_reason": "Compound update from weigh-in and fight-week evidence raised short-notice risk sensitivity.",
+      "evidence_reference": "src_risk_rollup_ares300_20260720",
+      "uncertainty_note": "Composite risk remains provisional pending source-map confirmation.",
+      "delivery_impact": "BLOCK_DELIVERY"
+    }
+  ],
+  "source_map_refresh": {
+    "source_map_status": "REFRESHED_PENDING_REVIEW",
+    "sources_added": [
+      "src_weighin_ares300_official_20260720",
+      "src_media_day_ares300_20260720"
+    ],
+    "sources_removed": [],
+    "sources_changed": [
+      "src_risk_rollup_ares300_20260718"
+    ],
+    "source_traceability_preserved": true,
+    "stale_source_detected": true,
+    "unresolved_source_conflict": false,
+    "source_review_required": true
+  },
+  "confidence_uncertainty": {
+    "confidence_before": "MEDIUM",
+    "confidence_after": "MEDIUM_GUARDED",
+    "confidence_delta": "DECREASED",
+    "uncertainty_flags": [
+      "fight_week_conditioning_variance",
+      "late_evidence_context_pending"
+    ],
+    "uncertainty_summary": "Updated fight-week evidence was incorporated, but operator review is still required before any delivery-ready transition.",
+    "report_hold_required": true
+  },
+  "delivery_status": {
+    "internal_draft_status": "DRAFT_INTERNAL_UPDATED",
+    "delivery_ready_status": "BLOCKED_PENDING_OPERATOR_REVIEW",
+    "customer_delivery_authorized": false,
+    "automated_delivery_authorized": false,
+    "public_publishing_authorized": false,
+    "production_launch_authorized": false,
+    "delivery_blockers": [
+      "operator_review_pending",
+      "final_pdf_visual_qa_pending",
+      "customer_release_not_authorized"
+    ]
+  },
+  "operator_review": {
+    "operator_review_required": true,
+    "operator_review_status": "PENDING",
+    "operator_id": null,
+    "operator_decision": "NONE",
+    "operator_decision_timestamp": null,
+    "approval_scope": "NONE",
+    "rejection_reason": null
+  },
+  "final_pdf_integrity": {
+    "pdf_render_required": true,
+    "pdf_render_status": "NOT_RENDERED",
+    "pdf_visual_qa_required": true,
+    "pdf_visual_qa_status": "PENDING",
+    "final_pdf_sha256": null,
+    "final_pdf_page_count": null,
+    "final_pdf_delivery_ready": false
+  },
+  "release_boundary": {
+    "release_scope_decision": "INTERNAL_ONLY",
+    "customer_release_authorized": false,
+    "public_publishing_authorized": false,
+    "production_launch_authorized": false,
+    "automated_delivery_authorized": false,
+    "learning_activation_authorized": false
+  },
+  "prohibited_states": [
+    "customer_delivery_authorized=true",
+    "automated_delivery_authorized=true",
+    "public_publishing_authorized=true",
+    "production_launch_authorized=true",
+    "learning_activation_authorized=true",
+    "operator_review_status=APPROVED without operator_id",
+    "final_pdf_delivery_ready=true without pdf_visual_qa_status=PASS",
+    "delivery_ready_status=READY without source_traceability_preserved=true"
+  ]
+}
