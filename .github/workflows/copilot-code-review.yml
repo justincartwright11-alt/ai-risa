@@ -1,0 +1,201 @@
+name: AI-RISA Copilot Review Advisory
+
+# AI-RISA advisory workflow only.
+# No merge, release, delivery, deployment, learning, calibration, GCID, or ledger authority.
+# Human/operator approval remains final.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  advisory-governance-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build advisory governance summary
+        shell: bash
+        run: |
+          set +e
+
+          EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            HEAD_SHA="$(git rev-parse HEAD)"
+            if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              BASE_SHA="$(git rev-parse HEAD^)"
+            else
+              BASE_SHA="$EMPTY_TREE"
+            fi
+          fi
+
+          mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+
+          protected_patterns=(
+            ".github/copilot-instructions.md"
+            ".github/instructions/"
+            "AGENTS.md"
+            "REVIEW.md"
+            "GEMINI.md"
+            "CLAUDE.md"
+            ".github/workflows/copilot-code-review.yml"
+          )
+
+          authority_yes_keys=(
+            "CUSTOMER_RELEASE_AUTHORIZED"
+            "PUBLIC_PUBLISHING_AUTHORIZED"
+            "PRODUCTION_LAUNCH_AUTHORIZED"
+            "AUTOMATED_DELIVERY_AUTHORIZED"
+            "LEARNING_ACTIVATION_AUTHORIZED"
+          )
+
+          authority_label_keys=(
+            "CUSTOMER_RELEASE_APPROVED"
+            "PRODUCTION_APPROVED"
+            "LEARNING_APPROVED"
+            "APPROVED_FOR_PRODUCTION"
+            "APPROVED_FOR_CUSTOMER_RELEASE"
+          )
+
+          is_ignored_generated_file() {
+            local path="$1"
+            case "$path" in
+              *__pycache__/*|.pytest_cache/*|.mypy_cache/*|.ruff_cache/*|*.pyc|*.pyo|*.pdf|*.png|*.jpg|*.jpeg|*.gif|*.webp)
+                return 0
+                ;;
+            esac
+            return 1
+          }
+
+          is_protected_file() {
+            local path="$1"
+            case "$path" in
+              .github/copilot-instructions.md|AGENTS.md|REVIEW.md|GEMINI.md|CLAUDE.md|.github/workflows/copilot-code-review.yml)
+                return 0
+                ;;
+              .github/instructions/*)
+                return 0
+                ;;
+            esac
+            return 1
+          }
+
+          changed_count=${#changed_files[@]}
+          protected_files=()
+          ignored_generated_files=()
+          scannable_files=()
+          authority_hits=()
+
+          for path in "${changed_files[@]}"; do
+            [[ -z "$path" ]] && continue
+
+            if is_protected_file "$path"; then
+              protected_files+=("$path")
+            fi
+
+            if is_ignored_generated_file "$path"; then
+              ignored_generated_files+=("$path")
+              continue
+            fi
+
+            if [[ -f "$path" ]]; then
+              scannable_files+=("$path")
+            fi
+          done
+
+          for path in "${scannable_files[@]}"; do
+            for key in "${authority_yes_keys[@]}"; do
+              while IFS=: read -r line_number matched; do
+                [[ -z "$line_number" ]] && continue
+                authority_hits+=("$path:$line_number:$matched")
+              done < <(grep -nF "${key}=YES" "$path" 2>/dev/null || true)
+            done
+
+            for key in "${authority_label_keys[@]}"; do
+              while IFS=: read -r line_number matched; do
+                [[ -z "$line_number" ]] && continue
+                authority_hits+=("$path:$line_number:$matched")
+              done < <(grep -nF "$key" "$path" 2>/dev/null || true)
+            done
+          done
+
+          {
+            echo "# AI-RISA Copilot Review Advisory"
+            echo
+            echo "Advisory-only workflow summary. No approval, merge, release, deployment, delivery, learning, calibration, GCID, or ledger authority is granted here."
+            echo
+            echo "## Trigger"
+            echo "- Event: ${{ github.event_name }}"
+            echo "- Base SHA: $BASE_SHA"
+            echo "- Head SHA: $HEAD_SHA"
+            echo
+            echo "## Changed Files"
+            if (( changed_count == 0 )); then
+              echo "- No changed files detected in the compared range."
+            else
+              for path in "${changed_files[@]}"; do
+                [[ -z "$path" ]] && continue
+                echo "- $path"
+              done
+            fi
+            echo
+            echo "## Protected File Review"
+            if (( ${#protected_files[@]} == 0 )); then
+              echo "- Protected files changed: NO"
+            else
+              echo "- Protected files changed: YES"
+              for path in "${protected_files[@]}"; do
+                echo "- $path"
+              done
+            fi
+            echo
+            echo "## Authority Escalation String Review"
+            if (( ${#authority_hits[@]} == 0 )); then
+              echo "- Escalation strings found: NO"
+            else
+              echo "- Escalation strings found: YES"
+              for hit in "${authority_hits[@]}"; do
+                echo "- $hit"
+              done
+            fi
+            echo
+            echo "## Generated And Cache Artifact Handling"
+            echo "- Ignored patterns during content scan: __pycache__/, .pytest_cache/, .mypy_cache/, .ruff_cache/, *.pyc, *.pyo, *.pdf, *.png, *.jpg, *.jpeg, *.gif, *.webp"
+            if (( ${#ignored_generated_files[@]} == 0 )); then
+              echo "- Ignored changed generated/cache artifacts: NONE"
+            else
+              echo "- Ignored changed generated/cache artifacts:"
+              for path in "${ignored_generated_files[@]}"; do
+                echo "- $path"
+              done
+            fi
+            echo
+            echo "## Advisory Boundary"
+            echo "- Advisory only: YES"
+            echo "- Pull request approval granted: NO"
+            echo "- Merge authority granted: NO"
+            echo "- Deployment authority granted: NO"
+            echo "- Workflow exits with success for governance findings in v1: YES"
+            echo
+            echo "## Detection Configuration"
+            echo "- Protected file patterns: ${protected_patterns[*]}"
+            echo "- Authority escalation pattern families: *_AUTHORIZED=YES and explicit approval/release labels"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit 0
