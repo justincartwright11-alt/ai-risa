@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+import importlib.util
 import json
 from pathlib import Path
 
@@ -422,6 +424,85 @@ def test_button2_visual_renderer_scaffold_does_not_generate_pdf_or_image_outputs
     assert before_snapshot == after_snapshot
 
 
-def test_button2_visual_renderer_scaffold_module_not_created_yet() -> None:
+def test_button2_visual_renderer_scaffold_module_exists_and_exposes_contract_functions() -> None:
     renderer_module_path = Path(__file__).resolve().parent / "visual_intelligence" / "button2_premium_pdf_visual_renderer_v1.py"
-    assert renderer_module_path.exists() is False
+    assert renderer_module_path.exists() is True
+
+    spec = importlib.util.spec_from_file_location("button2_visual_renderer_scaffold", renderer_module_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    required_functions = [
+        "load_visual_style_registry",
+        "list_supported_visual_families",
+        "build_visual_render_contract",
+        "validate_visual_render_contract",
+    ]
+    missing_functions = [name for name in required_functions if not hasattr(module, name)]
+    assert not missing_functions, missing_functions
+
+    registry = module.load_visual_style_registry(REGISTRY_PATH)
+    families = module.list_supported_visual_families(registry)
+    assert "fighter_architecture_radar" in families
+
+    release = {
+        "release_scope_decision": "INTERNAL_ONLY",
+        "customer_release_authorized": False,
+        "public_publishing_authorized": False,
+        "production_launch_authorized": False,
+        "automated_delivery_authorized": False,
+        "learning_activation_authorized": False,
+    }
+
+    payload = {
+        "visual_family_id": "fighter_architecture_radar",
+        "report_id": "internal_report_v1",
+        "analysis_id": "analysis_v1",
+        "report_version": "v1",
+        "fighter_a_label": "Fighter A",
+        "fighter_b_label": "Fighter B",
+        "visual_title": "Architecture Radar",
+        "visual_subtitle": "Internal contract validation",
+        "data_basis": "synthetic_internal_contract",
+        "sample_size": "synthetic",
+        "source_quality": "internal_fixture",
+        "observed_vs_modelled": "modelled",
+        "confidence_score": 0.72,
+        "uncertainty_flags": [],
+        "limitation_note": "Internal scaffold validation only. No medical or customer use.",
+        "operator_review_status": "INTERNAL_REVIEW_PENDING",
+        "release_boundary": release,
+        "visual_data": {"severity_scale_present": False, "labels": ["stance", "range", "tempo"]},
+        "page_density_level": "level_2_analytical",
+        "disclaimer_variant": "projected_modelled_estimate",
+        "visual_qa_required": True,
+    }
+
+    contract = module.build_visual_render_contract(payload, registry)
+    assert contract["render_status"] == "CONTRACT_VALIDATED_INTERNAL_ONLY", contract
+    assert contract["output_type"] == "CONTRACT_OBJECT_ONLY"
+    assert contract["output_path"] is None
+    assert contract["delivery_ready"] is False
+    assert contract["visual_qa_status"] == "PENDING"
+    assert module.validate_visual_render_contract(contract, registry) is True
+
+    bad = copy.deepcopy(payload)
+    bad["visual_family_id"] = "unknown_visual_family"
+    blocked = module.build_visual_render_contract(bad, registry)
+    assert blocked["render_status"] == "BLOCKED" and blocked["delivery_ready"] is False and blocked["blocked_reasons"]
+
+    bad2 = copy.deepcopy(payload)
+    bad2["release_boundary"]["customer_release_authorized"] = True
+    blocked2 = module.build_visual_render_contract(bad2, registry)
+    assert blocked2["render_status"] == "BLOCKED" and blocked2["delivery_ready"] is False and blocked2["blocked_reasons"]
+
+    bad3 = copy.deepcopy(payload)
+    bad3["visual_family_id"] = "anatomical_target_exposure_heat_map"
+    bad3["disclaimer_variant"] = "projected_modelled_estimate"
+    bad3["visual_data"]["severity_scale_present"] = True
+    blocked3 = module.build_visual_render_contract(bad3, registry)
+    assert blocked3["render_status"] == "BLOCKED" and blocked3["delivery_ready"] is False and blocked3["blocked_reasons"]
+
+    print("VISUAL_RENDERER_SCAFFOLD_MODULE_VALIDATION=PASS")
