@@ -108,6 +108,12 @@ def _safe_input() -> tuple[dict, str, str]:
     return page, "RA_0001", "internal_visual_page_preview"
 
 
+def _blocked_case(page_mutator, render_attempt_id: str = "RA_0001", artifact_kind: str = "internal_visual_page_preview"):
+    page, _run_id, _kind = _safe_input()
+    page_mutator(page)
+    return _build(page, render_attempt_id, artifact_kind)
+
+
 def test_button2_internal_artifact_path_contract_imports_real_module():
     mod = _load_module()
     for name in _required_public_functions():
@@ -203,11 +209,130 @@ def test_button2_internal_artifact_path_contract_rejects_customer_release_true()
     assert out["artifact_contract_status"] == "BLOCKED"
 
 
+def test_button2_internal_artifact_path_contract_rejects_public_publishing_true_with_module():
+    out = _blocked_case(lambda page: page["release_boundary"].__setitem__("public_publishing_authorized", True))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_production_launch_true_with_module():
+    out = _blocked_case(lambda page: page["release_boundary"].__setitem__("production_launch_authorized", True))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_automated_delivery_true_with_module():
+    out = _blocked_case(lambda page: page["release_boundary"].__setitem__("automated_delivery_authorized", True))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
 def test_button2_internal_artifact_path_contract_rejects_learning_activation_true():
     page, run_id, kind = _safe_input()
     page["release_boundary"]["learning_activation_authorized"] = True
     out = _build(page, run_id, kind)
     assert out["artifact_contract_status"] == "BLOCKED"
+
+
+def test_button2_internal_artifact_path_contract_rejects_missing_required_field_with_module():
+    page, run_id, kind = _safe_input()
+    page.pop("contract_only")
+    out = _build(page, run_id, kind)
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_missing_render_attempt_id_with_module():
+    out = _blocked_case(lambda page: None, render_attempt_id="")
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_qa_gate_blocked_reasons_with_module():
+    out = _blocked_case(lambda page: page["qa_gate_output"].__setitem__("blocked_reasons", ["x"]))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_required_operator_review_false_with_module():
+    out = _blocked_case(lambda page: page.__setitem__("operator_review_status", ""))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_missing_render_contract_with_module():
+    out = _blocked_case(lambda page: page.pop("render_contract"))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_invalid_render_status_with_module():
+    out = _blocked_case(lambda page: page["render_contract"].__setitem__("render_status", "BAD"))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_render_delivery_ready_true_with_module():
+    out = _blocked_case(lambda page: page["render_contract"].__setitem__("delivery_ready", True))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_evidence_panel_not_rendered_with_module():
+    out = _blocked_case(lambda page: page["render_contract"].__setitem__("evidence_panel_rendered", False))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_disclaimer_footer_not_rendered_with_module():
+    out = _blocked_case(lambda page: page["render_contract"].__setitem__("disclaimer_footer_rendered", False))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
+
+
+def test_button2_internal_artifact_path_contract_rejects_severity_scale_not_rendered_with_module():
+    out = _blocked_case(lambda page: page["render_contract"].__setitem__("severity_scale_rendered", False))
+    assert out["artifact_contract_status"] == "BLOCKED"
+    assert out["blocked_reasons"]
+    assert out["delivery_ready"] is False
+    assert out["customer_facing_authorized"] is False
+    assert out["learning_activation_authorized"] is False
 
 
 def test_button2_internal_artifact_path_contract_requires_pass_internal_only_qa_gate():
