@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
@@ -250,3 +251,22 @@ def validate_visual_render_contract(render_contract: dict, registry: dict) -> No
     if render_contract["style_registry_id"] != registry["registry_id"]:
         raise AssertionError("style_registry_id must match the locked registry")
     return True
+
+
+def _load_renderer_artifact_path_integration_module():
+    module_path = Path(__file__).resolve().parent / "button2_premium_pdf_visual_renderer_artifact_path_integration_v1.py"
+    spec = importlib.util.spec_from_file_location("button2_renderer_artifact_path_integration_v1", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError("Unable to load renderer artifact path integration module")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def build_renderer_artifact_path_wiring_contract(render_contract, artifact_path_contract, qa_gate_output):
+    integration_module = _load_renderer_artifact_path_integration_module()
+    return integration_module.build_renderer_artifact_path_integration_contract(
+        render_contract,
+        artifact_path_contract,
+        qa_gate_output,
+    )
