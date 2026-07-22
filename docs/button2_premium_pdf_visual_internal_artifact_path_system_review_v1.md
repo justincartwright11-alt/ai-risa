@@ -48,6 +48,14 @@ References:
 - operator_dashboard/test_button2_premium_pdf_visual_internal_artifact_path_contract_v1.py
 - operator_dashboard/visual_intelligence/button2_premium_pdf_visual_internal_page_prototype_v1.json
 
+Normalized evidence:
+
+ARTIFACT_PATH_DESIGN_CHAIN_REVIEWED=YES
+ARTIFACT_PATH_CONTRACT_TEST_CHAIN_REVIEWED=YES
+ARTIFACT_PATH_MODULE_CHAIN_REVIEWED=YES
+ARTIFACT_PATH_MODULE_ALIGNMENT_CHAIN_REVIEWED=YES
+ARTIFACT_PATH_NEGATIVE_BACKFILL_CHAIN_REVIEWED=YES
+
 Confirm:
 
 - chain remains internal-only throughout
@@ -76,6 +84,8 @@ TARGETED_ARTIFACT_PATH_CONTRACT_TEST_RESULT=PASS
 TARGETED_PAGE_PROTOTYPE_CONTRACT_TEST_RESULT=PASS
 TARGETED_QA_GATE_CONTRACT_TEST_RESULT=PASS
 TARGETED_PROTOTYPE_CONTRACT_TEST_RESULT=PASS
+TARGETED_RENDERER_SCAFFOLD_CONTRACT_TEST_RESULT=PASS
+TARGETED_STYLE_REGISTRY_CONTRACT_TEST_RESULT=PASS
 MODULE_IMPORT_VALIDATION_RESULT=PASS
 
 Confirm:
@@ -84,9 +94,20 @@ Confirm:
 - the companion page prototype contract test passed
 - the companion QA gate contract test passed
 - the companion internal prototype contract test passed
+- the renderer scaffold contract test passed
+- the style registry contract test passed
 - module import and behavior validation passed
 
-## 7. Artifact Path Behavior Review
+## 7. System Review Evidence
+Confirm:
+
+FAIL_CLOSED_SYSTEM_REVIEWED=YES
+CONTRACT_OBJECT_SYSTEM_REVIEWED=YES
+NO_DIRECTORIES_CREATED_REVIEWED=YES
+NO_OUTPUT_ARTIFACTS_REVIEWED=YES
+INTERNAL_ONLY_READINESS_REVIEWED=YES
+
+## 8. Artifact Path Behavior Review
 Confirm:
 
 - safe internal artifact path contract returns PASS_INTERNAL_ONLY
@@ -112,7 +133,7 @@ Confirm:
 - delivery_ready=false
 - source_traceability exists
 
-## 8. No Output Artifact Review
+## 9. No Output Artifact Review
 Confirm:
 
 - no directories created
@@ -124,7 +145,7 @@ Confirm:
 - no previews created
 - no delivery packages created
 
-## 9. Source and Output Dependency Review
+## 10. Source and Output Dependency Review
 Confirm:
 
 - forbidden source-token scan returned no matches for the backfilled test
@@ -135,7 +156,7 @@ Confirm:
 - no output artifacts created
 - pre-existing unrelated PDF/image artifacts were not staged
 
-## 10. Dirty Worktree Handling
+## 11. Dirty Worktree Handling
 Record:
 
 PRE_EXISTING_UNRELATED_WORKTREE_CHANGES=YES
@@ -148,7 +169,7 @@ State:
 - they were not staged
 - they were not modified by this review slice
 
-## 11. Governance Safety Review
+## 12. Governance Safety Review
 Confirm:
 
 - customer release remains unauthorized
@@ -161,7 +182,7 @@ Confirm:
 - accuracy-ledger writes remain unauthorized
 - human/operator approval remains final
 
-## 12. Review Decision
+## 13. Review Decision
 Use:
 
 APPROVED_FOR_BUTTON2_VISUAL_INTERNAL_ARTIFACT_PATH_SYSTEM_LOCK_INTERNAL_ONLY
@@ -175,16 +196,19 @@ Do not use:
 - IMAGE_GENERATION_APPROVED
 - PDF_RENDERING_APPROVED
 
-## 13. Recommended Next Slice
+## 14. Recommended Next Slice
 Recommend:
 
-button2_premium_pdf_visual_internal_artifact_path_governance_refresh_v1
+button2_premium_pdf_visual_renderer_artifact_path_integration_design_v1
 
 State:
 
-The next slice should be a docs-only governance refresh for the internal artifact path chain. It must not edit tests, edit modules, create folders, PDFs, images, manifests, previews, delivery packages, or artifacts.
+The next slice should be a docs-only renderer artifact path integration design for the internal artifact path chain. It must not edit tests, edit modules, create folders, PDFs, images, manifests, previews, delivery packages, or artifacts.
 
-## 14. Slice Integrity
+## 15. Evidence Repair Note
+This repair adds fresh targeted validation evidence and normalizes the system-review carry-forward fields after the initial system-review commit.
+
+## 16. Slice Integrity
 State:
 
 DOCS_CHANGED=YES
