@@ -45,6 +45,16 @@ def _load_integration_mod():
     return mod
 
 
+def _load_renderer_mod():
+    path = _renderer_mod_path()
+    spec = importlib.util.spec_from_file_location("b2_wire_renderer_mod", path)
+    assert spec is not None
+    assert spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def _root_contract_trace() -> dict[str, Any]:
     tri = _tok()["tri"]
     base = "button2_premium_" + tri + "_visual_"
@@ -168,8 +178,9 @@ def _build_expected_renderer_artifact_path_wiring_contract(
     artifact_path_contract,
     qa_gate_output,
 ):
-    mod = _load_integration_mod()
-    out = mod.build_renderer_artifact_path_integration_contract(
+    mod = _load_renderer_mod()
+    assert hasattr(mod, "build_renderer_artifact_path_wiring_contract")
+    out = mod.build_renderer_artifact_path_wiring_contract(
         render_contract,
         artifact_path_contract,
         qa_gate_output,
