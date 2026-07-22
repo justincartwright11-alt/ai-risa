@@ -1,0 +1,284 @@
+{
+  "page_prototype_id": "B2-INT-PAGE-PROTOTYPE-0001",
+  "report_id": "B2-INT-CONTRACT-0001",
+  "analysis_id": "ANL-20260721-INT-CONTRACT-0001",
+  "report_version": "DRAFT_INTERNAL_v1",
+  "visual_family_id": "anatomical_target_exposure_heat_map",
+  "page_number": 1,
+  "page_role": "LEVEL_1_HERO_VISUAL_PAGE",
+  "page_density_level": "level_1_hero",
+  "style_registry_id": "button2_premium_visual_style_registry_v1",
+  "render_contract": {
+    "render_status": "CONTRACT_VALIDATED_INTERNAL_ONLY",
+    "visual_family_id": "anatomical_target_exposure_heat_map",
+    "output_type": "CONTRACT_OBJECT_ONLY",
+    "output_path": null,
+    "page_component_id": "B2-INT-CONTRACT-0001-component",
+    "style_registry_id": "button2_premium_visual_style_registry_v1",
+    "evidence_panel_rendered": true,
+    "disclaimer_footer_rendered": true,
+    "severity_scale_rendered": true,
+    "accessibility_checks_passed": true,
+    "page_density_checks_passed": true,
+    "visual_qa_required": true,
+    "visual_qa_status": "PENDING",
+    "delivery_ready": false,
+    "release_boundary": {
+      "release_scope_decision": "INTERNAL_ONLY",
+      "customer_release_authorized": false,
+      "public_publishing_authorized": false,
+      "production_launch_authorized": false,
+      "automated_delivery_authorized": false,
+      "learning_activation_authorized": false
+    },
+    "blocked_reasons": []
+  },
+  "qa_gate_output": {
+    "qa_status": "PASS_INTERNAL_ONLY",
+    "qa_gate_id": "B2-VQA-GATE-PAGE-0001",
+    "visual_family_id": "anatomical_target_exposure_heat_map",
+    "page_component_id": "B2-INT-CONTRACT-0001-component",
+    "artifact_type": null,
+    "delivery_ready": false,
+    "release_boundary": {
+      "release_scope_decision": "INTERNAL_ONLY",
+      "customer_release_authorized": false,
+      "public_publishing_authorized": false,
+      "production_launch_authorized": false,
+      "automated_delivery_authorized": false,
+      "learning_activation_authorized": false
+    },
+    "checks": [
+      "accessibility_failure_not_true",
+      "anatomical_disclaimer_variant_ok",
+      "artifact_path_not_present",
+      "colour_only_meaning_not_true",
+      "confidence_score_present",
+      "delivery_ready_false_before_qa",
+      "disallowed_medical_language_not_detected",
+      "heat_regions_contract_ok",
+      "internal_only_release_boundary",
+      "limitation_note_present",
+      "observed_vs_modelled_present",
+      "operator_review_status_present",
+      "page_density_level_allowed",
+      "reference_folder_dependency_not_detected",
+      "render_contract_delivery_ready_ok",
+      "render_contract_disclaimer_footer_rendered_ok",
+      "render_contract_evidence_panel_rendered_ok",
+      "render_contract_not_blocked",
+      "render_contract_output_path_ok",
+      "render_contract_output_type_ok",
+      "render_contract_present",
+      "render_contract_render_status_ok",
+      "required_input_fields_present",
+      "severity_scale_rendered_for_anatomical",
+      "visual_data_severity_scale_present",
+      "visual_payload_present",
+      "visual_qa_required_true"
+    ],
+    "failed_checks": [],
+    "warning_checks": [],
+    "required_operator_review": true,
+    "visual_qa_timestamp_policy": "OPERATOR_CONTROLLED_TIMESTAMP_REQUIRED",
+    "blocked_reasons": []
+  },
+  "visual_payload": {
+    "visual_family_id": "anatomical_target_exposure_heat_map",
+    "report_id": "B2-INT-CONTRACT-0001",
+    "analysis_id": "ANL-20260721-INT-CONTRACT-0001",
+    "report_version": "DRAFT_INTERNAL_v1",
+    "fighter_a_label": "Fighter A",
+    "fighter_b_label": "Fighter B",
+    "visual_title": "Anatomical Target Exposure Heat Map",
+    "visual_subtitle": "Internal tactical exposure contract payload",
+    "data_basis": "internal tactical modelling dataset",
+    "sample_size": 12,
+    "source_quality": "internal_multi_source_reviewed",
+    "observed_vs_modelled": "modelled",
+    "confidence_score": 0.86,
+    "uncertainty_flags": [
+      "opponent_style_variance",
+      "round_context_sensitivity"
+    ],
+    "limitation_note": "Internal contract prototype only; tactical analysis only; not a medical diagnostic determination; not an injury diagnostic determination; not treatment guidance; not customer-facing output.",
+    "operator_review_status": "INTERNAL_REVIEW_PENDING",
+    "release_boundary": {
+      "release_scope_decision": "INTERNAL_ONLY",
+      "customer_release_authorized": false,
+      "public_publishing_authorized": false,
+      "production_launch_authorized": false,
+      "automated_delivery_authorized": false,
+      "learning_activation_authorized": false
+    },
+    "visual_data": {
+      "severity_scale_present": true,
+      "severity_scale_name": "default_0_100_scale",
+      "heat_map_regions": [
+        {
+          "region_id": "head_entry_line",
+          "region_label": "Head Entry Line",
+          "exposure_score": 74,
+          "severity_band": "high",
+          "tactical_meaning": "Lead-side head entry remains repeatedly available under pressure feints.",
+          "evidence_basis": "tagged exchange sequence review",
+          "observed_vs_modelled": "modelled",
+          "confidence_score": 0.84,
+          "uncertainty_flags": [
+            "feint_reaction_variance"
+          ]
+        },
+        {
+          "region_id": "lead_shoulder_line",
+          "region_label": "Lead Shoulder Line",
+          "exposure_score": 62,
+          "severity_band": "high",
+          "tactical_meaning": "Lead shoulder line opens during reset transitions.",
+          "evidence_basis": "transition timing review",
+          "observed_vs_modelled": "modelled",
+          "confidence_score": 0.82,
+          "uncertainty_flags": [
+            "stance_switch_timing"
+          ]
+        },
+        {
+          "region_id": "rear_shoulder_line",
+          "region_label": "Rear Shoulder Line",
+          "exposure_score": 49,
+          "severity_band": "moderate",
+          "tactical_meaning": "Rear shoulder line exposure increases during lateral retreat entries.",
+          "evidence_basis": "lateral movement sequence review",
+          "observed_vs_modelled": "modelled",
+          "confidence_score": 0.8,
+          "uncertainty_flags": [
+            "retreat_path_variance"
+          ]
+        },
+        {
+          "region_id": "midline_body_channel",
+          "region_label": "Midline Body Channel",
+          "exposure_score": 57,
+          "severity_band": "moderate",
+          "tactical_meaning": "Midline channel becomes available after failed double-level feints.",
+          "evidence_basis": "midline sequence clustering",
+          "observed_vs_modelled": "modelled",
+          "confidence_score": 0.83,
+          "uncertainty_flags": [
+            "counter_feint_adaptation"
+          ]
+        },
+        {
+          "region_id": "lead_leg_entry_line",
+          "region_label": "Lead Leg Entry Line",
+          "exposure_score": 38,
+          "severity_band": "low",
+          "tactical_meaning": "Lead leg entry line appears primarily in long-range exchanges.",
+          "evidence_basis": "range-segmented sequence review",
+          "observed_vs_modelled": "modelled",
+          "confidence_score": 0.79,
+          "uncertainty_flags": [
+            "distance_management_shift"
+          ]
+        }
+      ],
+      "labels": [
+        "entry line",
+        "shoulder line",
+        "midline channel",
+        "defensive opening",
+        "range exposure"
+      ],
+      "prototype_status": "INTERNAL_CONTRACT_ONLY",
+      "contract_only": true,
+      "non_medical_status": "TACTICAL_ANALYSIS_NOT_MEDICAL_DIAGNOSIS"
+    },
+    "page_density_level": "level_1_hero",
+    "disclaimer_variant": "tactical_non_medical",
+    "visual_qa_required": true
+  },
+  "evidence_panel": {
+    "analysis_id": "ANL-20260721-INT-CONTRACT-0001",
+    "report_version": "DRAFT_INTERNAL_v1",
+    "data_basis": "internal tactical modelling dataset",
+    "sample_size": 12,
+    "source_quality": "internal_multi_source_reviewed",
+    "observed_vs_modelled": "modelled",
+    "confidence_score": 0.86,
+    "uncertainty_flags": [
+      "opponent_style_variance",
+      "round_context_sensitivity"
+    ],
+    "limitation_note": "Internal contract prototype only; tactical analysis only; not a medical diagnostic determination; not an injury diagnostic determination; not treatment guidance; not customer-facing output.",
+    "operator_review_status": "INTERNAL_REVIEW_PENDING"
+  },
+  "disclaimer_footer": {
+    "disclaimer_variant": "tactical_non_medical",
+    "disclaimer_text": "TACTICAL ANALYSIS - NOT A MEDICAL DIAGNOSIS. Internal prototype only; tactical analysis only; not customer-facing output; not treatment guidance.",
+    "visible_required": true,
+    "customer_facing_authorized": false
+  },
+  "accessibility_requirements": {
+    "region_labels_required": true,
+    "numeric_scores_required": true,
+    "severity_labels_required": true,
+    "confidence_labels_required": true,
+    "colour_only_meaning_allowed": false,
+    "readable_type_required": true,
+    "contrast_required": true,
+    "clipped_labels_allowed": false,
+    "overcrowded_callouts_allowed": false
+  },
+  "release_boundary": {
+    "release_scope_decision": "INTERNAL_ONLY",
+    "customer_release_authorized": false,
+    "public_publishing_authorized": false,
+    "production_launch_authorized": false,
+    "automated_delivery_authorized": false,
+    "learning_activation_authorized": false
+  },
+  "operator_review_status": "INTERNAL_REVIEW_PENDING",
+  "page_layout_contract": {
+    "top_title_band": {
+      "zone_required": true,
+      "purpose": "Layout contract only for page heading context; not a rendered visual zone.",
+      "density_role": "level_1_hero_primary_context"
+    },
+    "primary_visual_field": {
+      "zone_required": true,
+      "purpose": "Layout contract only for the anatomical heat-map hero field; not a rendered visual zone.",
+      "density_role": "level_1_hero_primary_visual"
+    },
+    "fighter_context_label_band": {
+      "zone_required": true,
+      "purpose": "Layout contract only for fighter and context labels; not a rendered visual zone.",
+      "density_role": "level_1_hero_supporting_context"
+    },
+    "severity_scale_legend": {
+      "zone_required": true,
+      "purpose": "Layout contract only for severity legend readability; not a rendered visual zone.",
+      "density_role": "level_1_hero_supporting_scale"
+    },
+    "evidence_panel": {
+      "zone_required": true,
+      "purpose": "Layout contract only for evidence metadata panel; not a rendered visual zone.",
+      "density_role": "level_3_evidence_support"
+    },
+    "tactical_limitation_note": {
+      "zone_required": true,
+      "purpose": "Layout contract only for tactical limitation language; not a rendered visual zone.",
+      "density_role": "level_3_evidence_support"
+    },
+    "disclaimer_footer": {
+      "zone_required": true,
+      "purpose": "Layout contract only for tactical non-medical footer; not a rendered visual zone.",
+      "density_role": "level_3_evidence_support"
+    },
+    "internal_only_status_marker": {
+      "zone_required": true,
+      "purpose": "Layout contract only for internal-only governance marker; not a rendered visual zone.",
+      "density_role": "internal_governance_status"
+    }
+  },
+  "prototype_status": "INTERNAL_PAGE_CONTRACT_ONLY",
+  "contract_only": true
+}
