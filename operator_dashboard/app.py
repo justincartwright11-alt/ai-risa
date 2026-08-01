@@ -2392,6 +2392,14 @@ def button2_governed_internal_pdf_inspect_v1():
         )
         return response
     response_body = {key: value for key, value in result.items() if key not in {"proposed_output_directory", "proposed_output_path"}}
+    expected_filename = response_body.get("expected_filename") or plan.get("proposed_filename")
+    if (
+        isinstance(expected_filename, str)
+        and expected_filename.strip()
+        and os.path.basename(expected_filename) == expected_filename
+        and not any(separator in expected_filename for separator in ("/", "\\"))
+    ):
+        response_body["expected_filename"] = expected_filename
     response = make_response(jsonify(response_body), 200)
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"

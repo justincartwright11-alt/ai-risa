@@ -1,7 +1,16 @@
 from pathlib import Path
+import copy
+import hashlib
+import json
+
+from operator_dashboard.app import app
+from operator_dashboard.button2_governed_internal_pdf_preflight_adapter_v1 import build_button2_governed_internal_pdf_preflight_v1
+from operator_dashboard.button2_governed_internal_pdf_render_adapter_v1 import render_button2_governed_internal_pdf_v1
 
 
 TEMPLATE = Path(__file__).parent / "templates" / "index.html"
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "closed_loop_governed_local_fixture_v1.json"
+ROUTE = "/api/button2/governed-internal-pdf/inspect-v1"
 
 
 def test_governed_internal_pdf_inspection_dashboard_contract():
@@ -126,3 +135,42 @@ def test_governed_internal_pdf_inspection_dashboard_contract():
     assert "button3" not in inspection.lower()
     assert "archive" in html
     assert "permanent_mutation_performed: false" in html
+
+
+def test_governed_internal_pdf_inspection_present_filename_endpoint_contract(tmp_path, monkeypatch):
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    row = copy.deepcopy(fixture["button2"])
+    row.update(fixture_id=fixture["fixture_id"], fixture_only=True)
+    plan = build_button2_governed_internal_pdf_preflight_v1(row, tmp_path, fixture_mode=True)
+    assert plan["ok"] is True
+    generated = render_button2_governed_internal_pdf_v1(plan, row)
+    assert generated["ok"] is True
+    target = Path(generated["output_path"])
+    expected_filename = target.name
+    expected_size = target.stat().st_size
+    expected_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
+
+    monkeypatch.setenv("AI_RISA_LOCAL_FIXTURE_MODE", "1")
+    monkeypatch.setenv("AI_RISA_BUTTON2_QUEUE_PATH", str(FIXTURE_PATH))
+    monkeypatch.setenv("AI_RISA_INTERNAL_PDF_OUTPUT_ROOT", str(tmp_path))
+    payload = {
+        "fixture_id": fixture["fixture_id"],
+        "report_id": row["report_id"],
+        "report_version": row["report_version"],
+    }
+    before_bytes = target.read_bytes()
+    response = app.test_client().post(ROUTE, json=payload)
+    result = response.get_json()
+
+    assert response.status_code == 200
+    assert result["status"] == "present_valid"
+    assert result["artifact_state"] == "ACTIVE_INTERNAL_TEST_ARTIFACT"
+    assert result["expected_filename"] == expected_filename
+    assert "/" not in result["expected_filename"] and "\\" not in result["expected_filename"]
+    assert not Path(result["expected_filename"]).is_absolute()
+    assert result["file_size_bytes"] == expected_size
+    assert result["sha256"] == expected_sha256
+    assert result["page_count"] == 1
+    assert "proposed_output_path" not in result
+    assert "proposed_output_directory" not in result
+    assert target.read_bytes() == before_bytes
