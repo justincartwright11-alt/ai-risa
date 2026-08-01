@@ -27,7 +27,13 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button2_fixture["provenance_status"] == "fixture_only_immutable"
     assert button2_fixture["customer_release_authorized"] is False
 
-    with patch("operator_dashboard.button2_queue_loader_readonly_v1._CANONICAL_QUEUE_PATH", str(FIXTURE_PATH)):
+    with patch.dict(
+        os.environ,
+        {
+            "AI_RISA_LOCAL_FIXTURE_MODE": "1",
+            "AI_RISA_BUTTON2_QUEUE_PATH": str(FIXTURE_PATH),
+        },
+    ):
         with app.test_client() as client:
             queue_result = client.get("/api/button2/queue-ready")
     assert queue_result.status_code == 200
@@ -35,6 +41,38 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert queue_data["ready_count"] == 0
     assert queue_data["total_rows"] == 1
     assert queue_data["queue_rows"][0]["provenance_status"] == "fixture_only_immutable"
+    assert queue_data["queue_rows"][0]["customer_release_authorized"] is False
+    assert queue_data["queue_rows"][0]["read_only"] is True
+
+    from operator_dashboard.button2_queue_loader_readonly_v1 import (
+        get_button2_queue_loader_metadata,
+        load_button2_queue_readonly,
+    )
+
+    metadata = get_button2_queue_loader_metadata()
+    assert metadata["mode"] == "governed_local_fixture"
+    assert metadata["fixture_id"] == fixture["fixture_id"]
+    assert metadata["row_count"] == 1
+    assert metadata["read_only"] is True
+
+    with patch.dict(os.environ, {}, clear=True):
+        assert isinstance(load_button2_queue_readonly(), list)
+        assert get_button2_queue_loader_metadata()["mode"] == "canonical_queue"
+
+    with patch.dict(
+        os.environ,
+        {
+            "AI_RISA_LOCAL_FIXTURE_MODE": "1",
+            "AI_RISA_BUTTON2_QUEUE_PATH": str(tmp_path / "outside.json"),
+        },
+        clear=False,
+    ):
+        assert load_button2_queue_readonly() == []
+        assert get_button2_queue_loader_metadata()["blocked_reason"] == "local_fixture_path_outside_fixtures"
+
+    with patch.dict(os.environ, {"AI_RISA_LOCAL_FIXTURE_MODE": "1"}, clear=True):
+        assert load_button2_queue_readonly() == []
+        assert get_button2_queue_loader_metadata()["blocked_reason"] == "local_fixture_path_required"
 
     output_root = tmp_path / "pdf_output"
     output_root.mkdir()

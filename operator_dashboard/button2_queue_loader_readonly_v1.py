@@ -18,6 +18,7 @@ Requirements:
 import os
 import json
 import re
+from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
 
 
@@ -27,6 +28,89 @@ _CANONICAL_QUEUE_PATH = os.path.join(
     "prf_queue",
     "button2_approved_fight_queue.json"
 )
+_FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
+_LAST_LOAD_METADATA: Dict[str, Any] = {
+    "mode": "canonical_queue",
+    "source_path": _CANONICAL_QUEUE_PATH,
+    "fixture_id": None,
+    "row_count": 0,
+    "blocked_reason": None,
+    "read_only": True,
+}
+
+
+def get_button2_queue_loader_metadata() -> Dict[str, Any]:
+    """Return bounded metadata for the most recent read-only queue load."""
+    return dict(_LAST_LOAD_METADATA)
+
+
+def _set_load_metadata(**values: Any) -> None:
+    _LAST_LOAD_METADATA.clear()
+    _LAST_LOAD_METADATA.update(values)
+
+
+def _resolve_queue_source() -> Optional[Path]:
+    """Resolve the canonical queue or a governed local fixture override."""
+    if os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") != "1":
+        return Path(_CANONICAL_QUEUE_PATH)
+
+    raw_path = os.environ.get("AI_RISA_BUTTON2_QUEUE_PATH", "").strip()
+    if not raw_path:
+        _set_load_metadata(
+            mode="governed_local_fixture",
+            source_path=None,
+            fixture_id=None,
+            row_count=0,
+            blocked_reason="local_fixture_path_required",
+            read_only=True,
+        )
+        return None
+
+    resolved_path = Path(raw_path).expanduser().resolve()
+    fixtures_root = _FIXTURES_ROOT.resolve()
+    try:
+        resolved_path.relative_to(fixtures_root)
+    except ValueError:
+        reason = "local_fixture_path_outside_fixtures"
+    else:
+        reason = None
+    if reason is None and resolved_path.suffix.lower() != ".json":
+        reason = "local_fixture_path_must_be_json"
+    if reason is None and not resolved_path.is_file():
+        reason = "local_fixture_path_not_found"
+    if reason:
+        _set_load_metadata(
+            mode="governed_local_fixture",
+            source_path=None,
+            fixture_id=None,
+            row_count=0,
+            blocked_reason=reason,
+            read_only=True,
+        )
+        return None
+    return resolved_path
+
+
+def _fixture_is_governed(data: Dict[str, Any]) -> bool:
+    if data.get("fixture_only") is not True:
+        return False
+    if data.get("customer_release_authorized") is True:
+        return False
+    for authority_key in ("learning_authorized", "calibration_write_authorized", "queue_write_authorized"):
+        if data.get(authority_key) is True:
+            return False
+    queue_data = data.get("queue", data.get("rows", []))
+    if not isinstance(queue_data, list):
+        return False
+    for row in queue_data:
+        if not isinstance(row, dict):
+            continue
+        if row.get("customer_release_authorized") is True:
+            return False
+        for authority_key in ("learning_authorized", "calibration_write_authorized", "queue_write_authorized"):
+            if row.get(authority_key) is True:
+                return False
+    return True
 
 
 def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, Any]]:
@@ -105,6 +189,9 @@ def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, 
         "provenance_status": provenance_status,
         "button2_readiness_status": report_ready_status,
         "customer_ready_possible": customer_ready_possible,
+        "customer_release_authorized": row.get("customer_release_authorized") is True,
+        "fixture_only": row.get("fixture_only") is True,
+        "read_only": True,
         "blocked_reason": blocked_reason,
         "report_ready_status": report_ready_status,
         "queue_index": index,
@@ -118,17 +205,37 @@ def load_button2_queue_readonly() -> List[Dict[str, Any]]:
     Returns list of normalized rows, or empty list if source not found/invalid.
     """
     rows = []
-
-    if not os.path.isfile(_CANONICAL_QUEUE_PATH):
+    source_path = _resolve_queue_source()
+    local_fixture_mode = os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") == "1"
+    if source_path is None:
         return rows
 
     try:
-        with open(_CANONICAL_QUEUE_PATH, "r", encoding="utf-8") as f:
+        with open(source_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except (json.JSONDecodeError, IOError):
+        _set_load_metadata(
+            mode="governed_local_fixture" if local_fixture_mode else "canonical_queue",
+            source_path=str(source_path) if not local_fixture_mode else None,
+            fixture_id=None,
+            row_count=0,
+            blocked_reason="queue_source_invalid",
+            read_only=True,
+        )
         return rows
 
     if not isinstance(data, dict):
+        return rows
+
+    if local_fixture_mode and not _fixture_is_governed(data):
+        _set_load_metadata(
+            mode="governed_local_fixture",
+            source_path=None,
+            fixture_id=None,
+            row_count=0,
+            blocked_reason="fixture_governance_metadata_invalid",
+            read_only=True,
+        )
         return rows
 
     queue_data = data.get("queue", data.get("rows", []))
@@ -145,6 +252,15 @@ def load_button2_queue_readonly() -> List[Dict[str, Any]]:
             continue
         seen_ids.add(matchup_id)
         rows.append(normalized)
+
+    _set_load_metadata(
+        mode="governed_local_fixture" if local_fixture_mode else "canonical_queue",
+        source_path=str(source_path),
+        fixture_id=data.get("fixture_id") if local_fixture_mode else None,
+        row_count=len(rows),
+        blocked_reason=None,
+        read_only=True,
+    )
 
     return rows
 
