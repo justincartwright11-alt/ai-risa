@@ -27,7 +27,28 @@
     "provenance_status": "fixture_only_immutable",
     "button2_readiness_status": "READY_FOR_BUTTON_2",
     "customer_ready_possible": false,
-    "customer_release_authorized": false
+    "customer_release_authorized": false,
+    "internal_preview_selectable": true,
+    "internal_test_only": true,
+    "read_only": true,
+    "report_id": "internal_fixture_report_closed_loop_v1",
+    "report_version": "DRAFT_INTERNAL_FIXTURE_v1",
+    "prediction_schema_version": "button2_structured_prediction_v1",
+    "structured_prediction": {
+      "predicted_winner": "Fictional Fighter Beta",
+      "predicted_method": "Decision",
+      "predicted_round": "R5",
+      "confidence": 64.2,
+      "structural_reasoning": "Beta wins second-phase exchanges by forcing reset reads.",
+      "tactical_pathway": "Pressure to fence breaks, then exit on angle before counters set.",
+      "evidence_notes": "source:https://example.test/ai-risa/closed-loop-fixture",
+      "contract_version": "button2_structured_prediction_v1"
+    },
+    "prediction_provenance": "fixture_only_immutable",
+    "source_provenance": "fixture_only_immutable",
+    "queue_write_performed": false,
+    "pdf_generation_performed": false,
+    "permanent_mutation_performed": false
   },
   "queue": [
     {
@@ -42,7 +63,28 @@
       "provenance_status": "fixture_only_immutable",
       "button2_readiness_status": "READY_FOR_BUTTON_2",
       "customer_ready_possible": false,
-      "customer_release_authorized": false
+      "customer_release_authorized": false,
+      "internal_preview_selectable": true,
+      "internal_test_only": true,
+      "read_only": true,
+      "report_id": "internal_fixture_report_closed_loop_v1",
+      "report_version": "DRAFT_INTERNAL_FIXTURE_v1",
+      "prediction_schema_version": "button2_structured_prediction_v1",
+      "structured_prediction": {
+        "predicted_winner": "Fictional Fighter Beta",
+        "predicted_method": "Decision",
+        "predicted_round": "R5",
+        "confidence": 64.2,
+        "structural_reasoning": "Beta wins second-phase exchanges by forcing reset reads.",
+        "tactical_pathway": "Pressure to fence breaks, then exit on angle before counters set.",
+        "evidence_notes": "source:https://example.test/ai-risa/closed-loop-fixture",
+        "contract_version": "button2_structured_prediction_v1"
+      },
+      "prediction_provenance": "fixture_only_immutable",
+      "source_provenance": "fixture_only_immutable",
+      "queue_write_performed": false,
+      "pdf_generation_performed": false,
+      "permanent_mutation_performed": false
     }
   ]
 }

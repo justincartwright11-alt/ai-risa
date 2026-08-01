@@ -2135,6 +2135,13 @@ def button2_queue_ready_v1():
         and not str(r.get("blocked_reason") or "").strip()
         and bool(r.get("customer_ready_possible", True))
     ]
+    internal_preview_rows = [
+        r for r in queue_rows
+        if bool(r.get("internal_preview_selectable"))
+        and bool(r.get("internal_test_only"))
+        and bool(r.get("read_only"))
+        and not bool(r.get("customer_release_authorized"))
+    ]
     blocked_rows = [r for r in queue_rows if r not in ready_rows]
 
     response = {
@@ -2142,6 +2149,8 @@ def button2_queue_ready_v1():
         "queue_rows": queue_rows,
         "total_rows": len(queue_rows),
         "ready_count": len(ready_rows),
+        "internal_preview_rows": internal_preview_rows,
+        "internal_preview_count": len(internal_preview_rows),
         "blocked_count": len(blocked_rows),
         "canonical_source_used": True,
         "browser_seeding_bypassed": True,

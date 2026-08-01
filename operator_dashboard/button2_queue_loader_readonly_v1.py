@@ -113,7 +113,31 @@ def _fixture_is_governed(data: Dict[str, Any]) -> bool:
     return True
 
 
-def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, Any]]:
+def _fixture_internal_preview_is_valid(row: Dict[str, Any]) -> bool:
+    prediction = row.get("structured_prediction")
+    return (
+        row.get("internal_preview_selectable") is True
+        and row.get("internal_test_only") is True
+        and row.get("read_only") is True
+        and row.get("customer_ready_possible") is False
+        and row.get("customer_release_authorized") is False
+        and isinstance(row.get("report_id"), str)
+        and bool(row["report_id"].strip())
+        and isinstance(row.get("report_version"), str)
+        and bool(row["report_version"].strip())
+        and isinstance(row.get("prediction_schema_version"), str)
+        and bool(row["prediction_schema_version"].strip())
+        and isinstance(prediction, dict)
+        and prediction.get("contract_version") == row.get("prediction_schema_version")
+        and bool(str(row.get("prediction_provenance", "")).strip())
+        and bool(str(row.get("source_provenance", "")).strip())
+        and row.get("queue_write_performed") is False
+        and row.get("pdf_generation_performed") is False
+        and row.get("permanent_mutation_performed") is False
+    )
+
+
+def _normalize_queue_row(row: Dict[str, Any], index: int, *, local_fixture_mode: bool = False) -> Optional[Dict[str, Any]]:
     """Normalize a queue row to standard schema. Return None if invalid."""
     if not isinstance(row, dict):
         return None
@@ -128,6 +152,8 @@ def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, 
     fighter_a = str(row.get("fighter_a", "")).strip()
     fighter_b = str(row.get("fighter_b", "")).strip()
     if not fighter_a or not fighter_b:
+        return None
+    if local_fixture_mode and not _fixture_internal_preview_is_valid(row):
         return None
 
     # Extract event info
@@ -195,6 +221,17 @@ def _normalize_queue_row(row: Dict[str, Any], index: int) -> Optional[Dict[str, 
         "blocked_reason": blocked_reason,
         "report_ready_status": report_ready_status,
         "queue_index": index,
+        "internal_preview_selectable": row.get("internal_preview_selectable") is True,
+        "internal_test_only": row.get("internal_test_only") is True,
+        "report_id": str(row.get("report_id", "")).strip(),
+        "report_version": str(row.get("report_version", "")).strip(),
+        "prediction_schema_version": str(row.get("prediction_schema_version", "")).strip(),
+        "structured_prediction": row.get("structured_prediction") if isinstance(row.get("structured_prediction"), dict) else {},
+        "prediction_provenance": str(row.get("prediction_provenance", "")).strip(),
+        "source_provenance": str(row.get("source_provenance", "")).strip(),
+        "queue_write_performed": row.get("queue_write_performed") is True,
+        "pdf_generation_performed": row.get("pdf_generation_performed") is True,
+        "permanent_mutation_performed": row.get("permanent_mutation_performed") is True,
     }
 
 
@@ -244,7 +281,7 @@ def load_button2_queue_readonly() -> List[Dict[str, Any]]:
 
     seen_ids = set()
     for idx, row in enumerate(queue_data):
-        normalized = _normalize_queue_row(row, idx)
+        normalized = _normalize_queue_row(row, idx, local_fixture_mode=local_fixture_mode)
         if not normalized:
             continue
         matchup_id = normalized.get("matchup_id")

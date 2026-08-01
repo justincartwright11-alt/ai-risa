@@ -29,6 +29,14 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button1_fixture["button2_readiness_status"] == "READY_FOR_BUTTON_2"
     assert button2_fixture["provenance_status"] == "fixture_only_immutable"
     assert button2_fixture["customer_release_authorized"] is False
+    assert button2_fixture["internal_preview_selectable"] is True
+    assert button2_fixture["report_id"] == "internal_fixture_report_closed_loop_v1"
+    assert button2_fixture["report_version"] == "DRAFT_INTERNAL_FIXTURE_v1"
+    assert button2_fixture["prediction_schema_version"] == "button2_structured_prediction_v1"
+    assert button2_fixture["structured_prediction"]["predicted_winner"] == button2_fixture["fighter_b"]
+    assert button2_fixture["structured_prediction"]["contract_version"] == button2_fixture["prediction_schema_version"]
+    assert button2_fixture["prediction_provenance"] == "fixture_only_immutable"
+    assert button2_fixture["source_provenance"] == "fixture_only_immutable"
 
     with patch.dict(
         os.environ,
@@ -56,6 +64,19 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert queue_result.status_code == 200
     queue_data = queue_result.json
     assert queue_data["ready_count"] == 0
+    assert queue_data["internal_preview_count"] == 1
+    internal_preview = queue_data["internal_preview_rows"][0]
+    assert internal_preview["internal_preview_selectable"] is True
+    assert internal_preview["customer_ready_possible"] is False
+    assert internal_preview["report_id"] == button2_fixture["report_id"]
+    assert internal_preview["report_version"] == button2_fixture["report_version"]
+    assert internal_preview["prediction_schema_version"] == button2_fixture["prediction_schema_version"]
+    assert internal_preview["structured_prediction"] == button2_fixture["structured_prediction"]
+    assert internal_preview["prediction_provenance"] == button2_fixture["prediction_provenance"]
+    assert internal_preview["source_provenance"] == button2_fixture["source_provenance"]
+    assert internal_preview["queue_write_performed"] is False
+    assert internal_preview["pdf_generation_performed"] is False
+    assert internal_preview["permanent_mutation_performed"] is False
     assert queue_data["total_rows"] == 1
     assert queue_data["queue_rows"][0]["provenance_status"] == "fixture_only_immutable"
     assert queue_data["queue_rows"][0]["customer_release_authorized"] is False
@@ -71,6 +92,18 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert metadata["fixture_id"] == fixture["fixture_id"]
     assert metadata["row_count"] == 1
     assert metadata["read_only"] is True
+
+    with patch.dict(
+        os.environ,
+        {
+            "AI_RISA_LOCAL_FIXTURE_MODE": "1",
+            "AI_RISA_BUTTON2_QUEUE_PATH": str(FIXTURE_PATH),
+        },
+    ):
+        loaded_preview = load_button2_queue_readonly()[0]
+    assert loaded_preview["report_id"] == button2_fixture["report_id"]
+    assert loaded_preview["report_version"] == button2_fixture["report_version"]
+    assert loaded_preview["structured_prediction"] == button2_fixture["structured_prediction"]
 
     with patch.dict(os.environ, {}, clear=True):
         assert isinstance(load_button2_queue_readonly(), list)
