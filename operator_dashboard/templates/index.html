@@ -4114,6 +4114,7 @@ function button2UpdateGovernedInternalPdfControl() {
   status.textContent = configured ? 'Internal output location configured' : 'Internal output location unavailable';
   button.disabled = !button2GovernedInternalPdfRowIsValid(window.button2GovernedInternalPdfRow) ||
     !ack.checked || !configured || window.button2GovernedInternalPdfInProgress || window.button2GovernedInternalPdfGenerated;
+  button2UpdateGovernedInternalPdfInspectionControl();
 }
 
 function button2SelectGovernedInternalPdfPreview(index) {

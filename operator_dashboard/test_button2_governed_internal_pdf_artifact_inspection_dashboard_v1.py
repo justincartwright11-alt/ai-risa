@@ -9,18 +9,43 @@ def test_governed_internal_pdf_inspection_dashboard_contract():
     preview_start = html.index("Governed Internal Report Preview")
     preview_end = html.index('id="b2-internal-preview-details"', preview_start)
     preview = html[preview_start:preview_end]
+    inspection_control_start = html.index("function button2UpdateGovernedInternalPdfInspectionControl")
+    inspection_control_end = html.index("function button2InspectionField", inspection_control_start)
+    inspection_control = html[inspection_control_start:inspection_control_end]
+    governed_control_start = html.index("function button2UpdateGovernedInternalPdfControl")
+    governed_control_end = html.index("function button2SelectGovernedInternalPdfPreview", governed_control_start)
+    governed_control = html[governed_control_start:governed_control_end]
+    selection_start = html.index("function button2SelectGovernedInternalPdfPreview")
+    selection_end = html.index("function button2RenderGovernedInternalPdfResult", selection_start)
+    selection = html[selection_start:selection_end]
+    refresh_start = html.index("function button2RefreshQueue")
+    refresh_end = html.index("function button2ApplyEventFilter", refresh_start)
+    refresh = html[refresh_start:refresh_end]
     inspect_start = html.index("function button2InspectGovernedInternalPdf")
     inspect_end = html.index("function button2RenderInternalPreview", inspect_start)
     inspection = html[inspect_start:inspect_end]
 
+    ids = {
+        "b2-governed-internal-pdf-inspection",
+        "b2-governed-internal-pdf-inspect",
+        "b2-governed-internal-pdf-inspection-result",
+    }
+    assert all(preview.count(f'id="{element_id}"') == 1 for element_id in ids)
+    assert html.index('id="b2-governed-internal-pdf-inspection"', preview_start) < html.index('id="b2-internal-preview-details"', preview_start)
     assert "Check Internal PDF Status" in preview
     assert "b2-governed-internal-pdf-inspection" in preview
     assert "This checks the existing internal test PDF only." in preview
     assert "Generate Internal Test PDF" in preview
     assert "button3" not in preview.lower()
     assert "b2-governed-internal-pdf-ack" not in preview[preview.index("b2-governed-internal-pdf-inspection"):]
+    assert 'style="margin:10px 0;padding:12px;border:1px solid #6b7280;background:#171a21;display:none;"' in preview
+    assert 'id="b2-governed-internal-pdf-inspect"' in preview and 'disabled>Check Internal PDF Status' in preview
 
     assert "window.button2GovernedInternalPdfInspectionState = 'idle'" in html
+    assert "panel.style.display = button2GovernedInternalPdfRowIsValid(row) ? 'block' : 'none';" in inspection_control
+    assert "button.disabled = !button2GovernedInternalPdfRowIsValid(row) || !configured || checking;" in inspection_control
+    assert "ack" not in inspection_control
+    assert "ack.checked" not in inspection_control
     assert "'checking'" in inspection
     assert "'absent'" in html
     assert "'present_valid'" in html
@@ -30,6 +55,16 @@ def test_governed_internal_pdf_inspection_dashboard_contract():
     assert "Checking internal PDF status…" in html
     assert "window.button2GovernedInternalPdfInspectionIdentity" in html
     assert "button2ClearGovernedInternalPdfInspection" in html
+    assert "button2UpdateGovernedInternalPdfInspectionControl();" in governed_control
+    assert "!ack.checked" in governed_control
+    assert governed_control.index("!ack.checked") < governed_control.index("button2UpdateGovernedInternalPdfInspectionControl();")
+    assert selection.index("window.button2GovernedInternalPdfRow = row;") < selection.index("button2ClearGovernedInternalPdfInspection();")
+    assert selection.index("button2ClearGovernedInternalPdfInspection();") < selection.index("button2UpdateGovernedInternalPdfControl();")
+    assert selection.count("button2UpdateGovernedInternalPdfInspectionControl();") == 1
+    assert "/api/button2/governed-internal-pdf/inspect-v1" not in selection
+    assert "window.button2GovernedInternalPdfRow = null;" in refresh
+    assert "button2ClearGovernedInternalPdfInspection();" in refresh
+    assert "button2UpdateGovernedInternalPdfInspectionControl();" in refresh
 
     assert "fetch('/api/button2/governed-internal-pdf/inspect-v1'" in inspection
     inspection_call = html[inspect_start:html.index("function button2GenerateGovernedInternalPdf", inspect_start)]
