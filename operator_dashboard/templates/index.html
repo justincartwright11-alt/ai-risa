@@ -1157,6 +1157,10 @@
       <select id="b3-generated-report-selector" onchange="button3SelectGeneratedReport()">
         <option value="">No generated report selected</option>
       </select>
+      <button type="button" class="btn-secondary" onclick="button3LoadVerifiedResultPreviews()">Load verified result previews</button>
+      <select id="b3-verified-result-selector" onchange="button3SelectVerifiedResultPreview()">
+        <option value="">No verified result preview selected</option>
+      </select>
     </div>
     <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;align-items:end;">
       <label>Official winner<input id="b3-official-winner" type="text" autocomplete="off"></label>
@@ -3939,6 +3943,8 @@ window.button2CanonicalQueueRows = [];
 window.button2SelectedMatchupIds = {};
 window.button2GenerationByMatchupId = {};
 window.button3SelectedGeneratedReportPreview = null;
+window.button3VerifiedResultPreviews = [];
+window.button3SelectedVerifiedResultPreview = null;
 window.button2LastRunStats = {
   generated_count: 0,
   failed_count: 0,
@@ -4356,19 +4362,40 @@ function button3PreviewSelectedGeneratedReport() {
     setStatus('b3-status', 'Select a generated Button 2 report before starting comparison preview.', 'error');
     return;
   }
-  const officialResult = {
-    official_winner: String(document.getElementById('b3-official-winner')?.value || '').trim(),
-    official_method: String(document.getElementById('b3-official-method')?.value || '').trim(),
-    official_round: String(document.getElementById('b3-official-round')?.value || '').trim(),
-    official_time: String(document.getElementById('b3-official-time')?.value || '').trim(),
-    official_result_source: String(document.getElementById('b3-official-result-source')?.value || '').trim(),
-    result_verification_status: String(document.getElementById('b3-result-verification-status')?.value || '').trim()
-  };
-  const comparisonPayload = Object.assign({}, preview, officialResult);
+  const verifiedResult = window.button3SelectedVerifiedResultPreview;
+  if (!verifiedResult || typeof verifiedResult !== 'object') {
+    setStatus('b3-status', 'Select a verified result-search preview before comparison. No changes were made.', 'error');
+    return;
+  }
+  fetch('/api/button3/result-comparison/handoff-preview-v1', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ report_preview: preview, verified_result_preview: verifiedResult })
+  }).then(r => r.json()).then(handoff => {
+    if (!handoff.ok) throw new Error(handoff.reason || 'handoff_blocked');
+    const comparisonPayload = handoff.comparison_payload;
   setStatus('b3-status', '<span class="spinner"></span>Running read-only comparison preview for selected generated report…');
-  postButton3ResultComparisonPreview(comparisonPayload)
-    .then(data => renderButton3ResultComparisonPreview(data))
-    .catch(() => setStatus('b3-status', 'Could not run generated-report comparison preview. No changes were made.', 'error'));
+    return postButton3ResultComparisonPreview(comparisonPayload);
+  }).then(data => renderButton3ResultComparisonPreview(data))
+    .catch(() => setStatus('b3-status', 'Result handoff blocked for operator review. No changes were made.', 'error'));
+}
+
+function button3LoadVerifiedResultPreviews() {
+  fetch('/api/operator/button3/auto-result-source-yield-live-executor-preview', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ limit: 200 })
+  }).then(r => r.json()).then(data => {
+    const rows = Array.isArray(data.row_states) ? data.row_states : (Array.isArray(data.rows) ? data.rows : []);
+    window.button3VerifiedResultPreviews = rows;
+    const selector = document.getElementById('b3-verified-result-selector');
+    if (selector) selector.innerHTML = '<option value="">No verified result preview selected</option>' + rows.map((row, index) => '<option value="' + index + '">' + escapeHtml(String(row.fight_name || row.fight_id || row.selected_key || ('Result ' + (index + 1)))) + '</option>').join('');
+    setStatus('b3-status', 'Verified result previews loaded. Select one for the comparison handoff.', 'ok');
+  }).catch(() => setStatus('b3-status', 'Could not load verified result previews. No changes were made.', 'error'));
+}
+
+function button3SelectVerifiedResultPreview() {
+  const selector = document.getElementById('b3-verified-result-selector');
+  const index = selector ? Number(selector.value) : NaN;
+  window.button3SelectedVerifiedResultPreview = Number.isInteger(index) ? (window.button3VerifiedResultPreviews[index] || null) : null;
 }
 
 function renderButton3ResultComparisonPreview(data) {

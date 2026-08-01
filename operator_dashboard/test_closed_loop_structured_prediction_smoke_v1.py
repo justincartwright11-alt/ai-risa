@@ -9,7 +9,7 @@ from operator_dashboard.button2_report_generation_route_render_gate_integration_
 from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
-from operator_dashboard.app import app, _build_button3_preview_input_from_generated_report
+from operator_dashboard.app import app, _build_button3_preview_input_from_generated_report, _build_button3_verified_result_handoff
 
 
 def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
@@ -102,13 +102,26 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_payload["report_path"] == button2_result["output_path"]
     assert button3_payload["structured_prediction"] == structured_prediction
 
-    button3_payload.update({
-        "actual_winner": "Fighter Beta",
-        "actual_method": "Decision",
-        "actual_round": "5",
-        "result_source_url": "https://example.test/official-result",
+    verified_result_preview = {
+        "fight_id": "closed_loop_contract_fight",
+        "matchup_id": "closed_loop_contract_matchup",
+        "fighter_a": "Fighter Alpha",
+        "fighter_b": "Fighter Beta",
+        "official_winner": "Fighter Beta",
+        "official_method": "Decision",
+        "official_round": "5",
+        "official_time": "25:00",
+        "official_result_source": "https://example.test/official-result",
+        "result_verification_status": "verified",
         "source_tier": "official",
-    })
+    }
+    handoff = _build_button3_verified_result_handoff(button3_payload, verified_result_preview)
+    assert handoff["ok"] is True
+    assert handoff["report_provenance_preserved"] is True
+    assert handoff["comparison_payload"]["structured_prediction"] == structured_prediction
+    assert handoff["comparison_payload"]["actual_winner"] == "Fighter Beta"
+
+    button3_payload = handoff["comparison_payload"]
 
     button3_result = build_button3_result_comparison_preview(button3_payload)
 
@@ -149,6 +162,11 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
         "gCID_write_authorized": False,
         "operator_approval_required": True,
     }
+    assert button3_result["accuracy_preview"]["overall"] == "hit"
+    assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "source_conflict": True})["ok"] is False
+    assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "fighter_a": "Other Fighter"})["ok"] is False
+    for flag in ("calibration_write_performed", "gcid_write_performed", "accuracy_ledger_mutation_performed", "customer_output_changed"):
+        assert button3_result[flag] is False
 
     with app.test_client() as client:
         route_result = client.post(

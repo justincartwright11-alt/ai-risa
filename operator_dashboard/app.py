@@ -220,6 +220,62 @@ def _build_button3_preview_input_from_generated_report(
         "gcid_write_performed": False,
     }
 
+
+def _build_button3_verified_result_handoff(report_preview, verified_result_preview):
+    """Join two governed previews without allowing result data to replace prediction data."""
+    report = report_preview if isinstance(report_preview, dict) else {}
+    result = verified_result_preview if isinstance(verified_result_preview, dict) else {}
+    prediction = report.get("structured_prediction")
+    if not report.get("report_id") or not isinstance(prediction, dict):
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "missing_or_invalid_report"}
+    if not prediction.get("predicted_winner") or not prediction.get("predicted_method"):
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "incomplete_prediction"}
+
+    def text(*keys):
+        for key in keys:
+            value = result.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+        return ""
+
+    source = text("official_result_source", "result_source_url", "source_url")
+    verification = text("result_verification_status", "verification_status")
+    winner = text("official_winner", "actual_winner")
+    method = text("official_method", "actual_method")
+    if not source:
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "missing_result_source"}
+    if not verification or verification.lower() in {"unverified", "incomplete", "unknown", "pending"}:
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "incomplete_result_verification"}
+    if not winner or not method:
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "incomplete_official_result"}
+    if result.get("source_conflict") or result.get("conflict_detected") or result.get("conflicting_sources"):
+        return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "result_source_conflict"}
+
+    report_identity = tuple(str(report.get(key, "")).strip().lower() for key in ("fight_id", "matchup_id", "fighter_a", "fighter_b"))
+    result_identity = tuple(text(key).lower() for key in ("fight_id", "matchup_id", "fighter_a", "fighter_b"))
+    for report_value, result_value in zip(report_identity, result_identity):
+        if report_value and result_value and report_value != result_value:
+            return {"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "identity_conflict"}
+
+    payload = dict(report)
+    payload.update({
+        "actual_winner": winner,
+        "actual_method": method,
+        "actual_round": text("official_round", "actual_round"),
+        "actual_time": text("official_time", "actual_time"),
+        "result_source_url": source,
+        "result_verification_status": verification,
+        "source_tier": text("source_tier") or "verified_preview",
+    })
+    return {
+        "ok": True,
+        "handoff_status": "READY_FOR_COMPARISON_PREVIEW",
+        "comparison_preview_only": True,
+        "report_provenance_preserved": True,
+        "verified_result_preview_preserved": True,
+        "comparison_payload": payload,
+    }
+
 _LOCAL_AI_SAFE_TELEMETRY = {
     "preview_only": True,
     "mutation_performed": False,
@@ -3041,6 +3097,17 @@ def button3_result_comparison_preview_v1():
             preview_body[preview_key] = preview_body[official_key]
 
     response = build_button3_result_comparison_preview(preview_body)
+    return jsonify(response), 200
+
+
+@app.route("/api/button3/result-comparison/handoff-preview-v1", methods=["POST"])
+def button3_result_comparison_handoff_preview_v1():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"ok": False, "handoff_status": "OPERATOR_REVIEW_REQUIRED", "reason": "invalid_request"}), 400
+    response = _build_button3_verified_result_handoff(
+        body.get("report_preview"), body.get("verified_result_preview")
+    )
     return jsonify(response), 200
 
 
