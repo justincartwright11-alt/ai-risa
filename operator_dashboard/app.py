@@ -1475,6 +1475,52 @@ def _build_waiting_row_selected_key(row):
     )
 
 
+def _load_governed_local_fixture_result_previews():
+    """Return only an explicitly governed local fixture result preview."""
+    if os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") != "1":
+        return []
+
+    from operator_dashboard.button2_queue_loader_readonly_v1 import (
+        get_button2_queue_loader_metadata,
+        load_button2_queue_readonly,
+    )
+
+    queue_rows = load_button2_queue_readonly()
+    metadata = get_button2_queue_loader_metadata()
+    if metadata.get("mode") != "governed_local_fixture" or not queue_rows:
+        return []
+    fixture_path = metadata.get("source_path") or os.environ.get("AI_RISA_BUTTON2_QUEUE_PATH", "")
+    try:
+        with open(fixture_path, "r", encoding="utf-8") as fixture_file:
+            fixture = json.load(fixture_file)
+    except (OSError, json.JSONDecodeError, TypeError):
+        return []
+
+    result = fixture.get("button3")
+    if not isinstance(result, dict) or fixture.get("fixture_only") is not True:
+        return []
+    required = (
+        "result_preview_id", "matchup_id", "fight_id", "fighter_a", "fighter_b",
+        "official_winner", "official_method", "official_result_source",
+        "result_verification_status", "immutable_result_provenance", "fixture_id",
+    )
+    if any(not str(result.get(key, "")).strip() for key in required):
+        return []
+    if result.get("fixture_id") != fixture.get("fixture_id"):
+        return []
+    if result.get("fixture_only") is not True or result.get("internal_test_only") is not True or result.get("read_only") is not True:
+        return []
+    if result.get("result_verification_status") != "verified" or result.get("immutable_result_provenance") != "fixture_only_immutable":
+        return []
+    queue_row = queue_rows[0]
+    for key in ("matchup_id", "fighter_a", "fighter_b"):
+        if result.get(key) != queue_row.get(key):
+            return []
+    if result.get("fight_id") != queue_row.get("fight_id", queue_row.get("matchup_id")):
+            return []
+    return [{**result, "selected_key": result["result_preview_id"], "fight_name": f"{result['fighter_a']} vs {result['fighter_b']} -- Governed fictional internal preview"}]
+
+
 # ─── Normal Dashboard ──────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -3020,6 +3066,9 @@ def button3_auto_result_source_yield_live_executor_preview():
         waiting_rows = summary.get("waiting_for_results", [])
         if not isinstance(waiting_rows, list):
             waiting_rows = []
+        fixture_result_rows = _load_governed_local_fixture_result_previews()
+        if fixture_result_rows:
+            waiting_rows = fixture_result_rows
     except Exception as e:
         return jsonify({
             "ok": False,
@@ -3053,6 +3102,9 @@ def button3_auto_result_source_yield_live_executor_preview():
             provider=None,
             include_diagnostics=include_diagnostics,
         )
+        if fixture_result_rows:
+            response["row_states"] = fixture_result_rows
+            response["rows"] = fixture_result_rows
         return jsonify(response)
     except Exception as e:
         return jsonify({

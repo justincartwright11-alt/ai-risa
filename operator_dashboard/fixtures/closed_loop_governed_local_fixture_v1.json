@@ -50,6 +50,33 @@
     "pdf_generation_performed": false,
     "permanent_mutation_performed": false
   },
+  "button3": {
+    "result_preview_id": "verified_fixture_result_closed_loop_v1",
+    "matchup_id": "fixture_only_closed_loop_matchup_v1",
+    "fight_id": "fixture_only_closed_loop_matchup_v1",
+    "event_name": "Fictional Internal Smoke Event",
+    "fighter_a": "Fictional Fighter Alpha",
+    "fighter_b": "Fictional Fighter Beta",
+    "official_winner": "Fictional Fighter Beta",
+    "official_method": "Decision",
+    "official_round": "5",
+    "official_time": "25:00",
+    "official_result_source": "https://example.test/ai-risa/closed-loop-fixture-result",
+    "source_tier": "fixture_official",
+    "result_verification_status": "verified",
+    "verified_at": "2099-01-02T00:00:00Z",
+    "immutable_result_provenance": "fixture_only_immutable",
+    "fixture_id": "closed_loop_governed_local_fixture_v1",
+    "fixture_only": true,
+    "internal_test_only": true,
+    "read_only": true,
+    "comparison_preview_only": true,
+    "learning_applied": false,
+    "calibration_applied": false,
+    "accuracy_ledger_written": false,
+    "gcid_written": false,
+    "permanent_mutation_performed": false
+  },
   "queue": [
     {
       "matchup_id": "fixture_only_closed_loop_matchup_v1",

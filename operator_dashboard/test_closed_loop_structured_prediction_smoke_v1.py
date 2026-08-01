@@ -25,6 +25,7 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
     button1_fixture = fixture["button1"]
     button2_fixture = fixture["button2"]
+    button3_fixture = fixture["button3"]
     assert fixture["fixture_only"] is True
     assert button1_fixture["operator_approved"] is True
     assert button1_fixture["button2_readiness_status"] == "READY_FOR_BUTTON_2"
@@ -38,6 +39,9 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button2_fixture["structured_prediction"]["contract_version"] == button2_fixture["prediction_schema_version"]
     assert button2_fixture["prediction_provenance"] == "fixture_only_immutable"
     assert button2_fixture["source_provenance"] == "fixture_only_immutable"
+    assert button3_fixture["fixture_only"] is True
+    assert button3_fixture["internal_test_only"] is True
+    assert button3_fixture["read_only"] is True
 
     with patch.dict(
         os.environ,
@@ -102,6 +106,9 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert "accuracy_ledger_written: false" in template
     assert "gcid_written: false" in template
     assert "panel.style.display = 'none'" in template
+    assert "b3-verified-result-selector" in template
+    assert "button3LoadVerifiedResultPreviews" in template
+    assert "button3VerifiedResultPreviews" in template
 
     from operator_dashboard.button2_queue_loader_readonly_v1 import (
         get_button2_queue_loader_metadata,
@@ -125,6 +132,26 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert loaded_preview["report_id"] == button2_fixture["report_id"]
     assert loaded_preview["report_version"] == button2_fixture["report_version"]
     assert loaded_preview["structured_prediction"] == button2_fixture["structured_prediction"]
+
+    with patch.dict(os.environ, {"AI_RISA_LOCAL_FIXTURE_MODE": "1", "AI_RISA_BUTTON2_QUEUE_PATH": str(FIXTURE_PATH)}):
+        with app.test_client() as client:
+            result_preview_response = client.post(
+                "/api/operator/button3/auto-result-source-yield-live-executor-preview",
+                json={"limit": 200},
+            )
+    assert result_preview_response.status_code == 200
+    result_preview_rows = result_preview_response.json["rows"]
+    assert len(result_preview_rows) == 1
+    result_preview = result_preview_rows[0]
+    assert result_preview["result_preview_id"] == button3_fixture["result_preview_id"]
+    assert result_preview["matchup_id"] == button2_fixture["matchup_id"]
+    assert result_preview["fighter_a"] == button2_fixture["fighter_a"]
+    assert result_preview["fighter_b"] == button2_fixture["fighter_b"]
+    assert result_preview["official_result_source"] == button3_fixture["official_result_source"]
+    assert result_preview["result_verification_status"] == "verified"
+    assert result_preview["immutable_result_provenance"] == "fixture_only_immutable"
+    assert result_preview["internal_test_only"] is True
+    assert result_preview["read_only"] is True
 
     with patch.dict(os.environ, {}, clear=True):
         assert isinstance(load_button2_queue_readonly(), list)
@@ -189,7 +216,7 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
                     "fighter_b": "Fighter Beta",
                 },
                 "prediction_context": {
-                    "predicted_winner": "Fighter Beta",
+                    "predicted_winner": button2_fixture["fighter_b"],
                     "predicted_method": "Decision",
                     "predicted_round": "R5",
                     "confidence": 64.2,
@@ -255,26 +282,14 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_payload["fighter_a"] == button2_fixture["fighter_a"]
     assert button3_payload["fighter_b"] == button2_fixture["fighter_b"]
 
-    verified_result_preview = {
-        "fight_id": button2_request["fight_id"],
-        "matchup_id": button2_request["matchup_id"],
-        "fighter_a": button2_fixture["fighter_a"],
-        "fighter_b": button2_fixture["fighter_b"],
-        "official_winner": "Fighter Beta",
-        "official_method": "Decision",
-        "official_round": "5",
-        "official_time": "25:00",
-        "official_result_source": "https://example.test/official-result",
-        "result_verification_status": "verified",
-        "source_tier": "official",
-    }
+    verified_result_preview = result_preview
     handoff = _build_button3_verified_result_handoff(button3_payload, verified_result_preview)
     assert handoff["ok"] is True
     assert handoff["comparison_preview_only"] is True
     assert handoff["report_provenance_preserved"] is True
     assert handoff["verified_result_preview_preserved"] is True
     assert handoff["comparison_payload"]["structured_prediction"] == structured_prediction
-    assert handoff["comparison_payload"]["actual_winner"] == "Fighter Beta"
+    assert handoff["comparison_payload"]["actual_winner"] == button3_fixture["official_winner"]
 
     button3_payload = handoff["comparison_payload"]
 
@@ -353,7 +368,7 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
             },
         )
     assert route_result.status_code == 200
-    assert route_result.json["actual_winner"] == "Fighter Beta"
+    assert route_result.json["actual_winner"] == button3_fixture["official_winner"]
     assert route_result.json["actual_method"] == "Decision"
     assert route_result.json["actual_round"] == "5"
     assert route_result.json["mutation_performed"] is False
