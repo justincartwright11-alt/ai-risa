@@ -19,6 +19,8 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     button2_request = {
         "operator_approved": True,
         "fight_id": "closed_loop_contract_fight",
+        "matchup_id": "closed_loop_contract_matchup",
+        "event_name": "Closed Loop Smoke Event",
         "ingest_payload": {"destination_marker": "button2_report_generation_preview"},
     }
 
@@ -86,9 +88,14 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
                     button2_result = generate_button2_report_render_gate_integration(button2_request)
 
     assert button2_result["ok"] is True
+    assert button2_request["operator_approved"] is True
+    assert button2_request["fight_id"] == "closed_loop_contract_fight"
+    assert button2_request["matchup_id"] == "closed_loop_contract_matchup"
     assert "structured_prediction" in button2_result
     structured_prediction = button2_result["structured_prediction"]
     assert structured_prediction["contract_version"] == "button2_structured_prediction_v1"
+    assert button2_result["generation_request_id"] or button2_result["output_path"]
+    assert button2_result["customer_approved"] is True
 
     button3_payload = _build_button3_preview_input_from_generated_report(
         button2_result,
@@ -101,6 +108,10 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_payload["report_id"]
     assert button3_payload["report_path"] == button2_result["output_path"]
     assert button3_payload["structured_prediction"] == structured_prediction
+    assert button3_payload["prediction_provenance"] == "button2_generated_report"
+    assert button3_payload["fight_id"] == button2_request["fight_id"]
+    assert button3_payload["fighter_a"] == "Fighter Alpha"
+    assert button3_payload["fighter_b"] == "Fighter Beta"
 
     verified_result_preview = {
         "fight_id": "closed_loop_contract_fight",
@@ -117,7 +128,9 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     }
     handoff = _build_button3_verified_result_handoff(button3_payload, verified_result_preview)
     assert handoff["ok"] is True
+    assert handoff["comparison_preview_only"] is True
     assert handoff["report_provenance_preserved"] is True
+    assert handoff["verified_result_preview_preserved"] is True
     assert handoff["comparison_payload"]["structured_prediction"] == structured_prediction
     assert handoff["comparison_payload"]["actual_winner"] == "Fighter Beta"
 
@@ -163,10 +176,25 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
         "operator_approval_required": True,
     }
     assert button3_result["accuracy_preview"]["overall"] == "hit"
+    assert button3_result["learning_recommendation_preview"]["what_ai_risa_got_right"]["winner_correctness"] is True
+    assert button3_result["learning_recommendation_preview"]["operator_facing_summary"]
     assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "source_conflict": True})["ok"] is False
     assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "fighter_a": "Other Fighter"})["ok"] is False
+    assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "official_result_source": ""})["reason"] == "missing_result_source"
+    assert _build_button3_verified_result_handoff(button3_payload, {**verified_result_preview, "result_verification_status": "pending"})["reason"] == "incomplete_result_verification"
     for flag in ("calibration_write_performed", "gcid_write_performed", "accuracy_ledger_mutation_performed", "customer_output_changed"):
         assert button3_result[flag] is False
+    assert button3_result["preview_only"] is True
+    assert button3_result["learning_apply_performed"] is False
+    assert button3_result["calibration_write_performed"] is False
+    assert button3_result["accuracy_ledger_write_performed"] is False
+    assert button3_result["gcid_write_performed"] is False
+    assert button3_result["customer_output_release_authorized"] is False
+    assert button3_result["mutation_performed"] is False
+    assert button3_result.get("model_weights_changed", False) is False
+    assert button3_result.get("fighter_ratings_changed", False) is False
+    assert button3_result.get("prediction_logic_changed", False) is False
+    assert button3_result.get("permanent_mutation_performed", False) is False
 
     with app.test_client() as client:
         route_result = client.post(
