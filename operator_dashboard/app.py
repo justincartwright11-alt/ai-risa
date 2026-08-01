@@ -2289,6 +2289,115 @@ def button2_governed_internal_pdf_generate_v1():
     return jsonify(result), 200
 
 
+@app.route("/api/button2/governed-internal-pdf/inspect-v1", methods=["POST"])
+def button2_governed_internal_pdf_inspect_v1():
+    """Inspect only the deterministic governed fictional local PDF target."""
+    safety_flags = {
+        "customer_ready_possible": False,
+        "customer_release_authorized": False,
+        "queue_write_performed": False,
+        "pdf_generation_performed": False,
+        "learning_applied": False,
+        "calibration_applied": False,
+        "accuracy_ledger_written": False,
+        "gcid_written": False,
+        "model_weights_changed": False,
+        "fighter_ratings_changed": False,
+        "prediction_logic_changed": False,
+        "artifact_archived": False,
+        "artifact_removed": False,
+        "artifact_overwritten": False,
+        "permanent_mutation_performed": False,
+    }
+
+    def blocked(reason, status_code, *, artifact_exists=False, inspection_performed=False):
+        response = {
+            "ok": False,
+            "status": "blocked",
+            "blocked_reason": reason,
+            "artifact_exists": artifact_exists,
+            "inspection_performed": inspection_performed,
+            **safety_flags,
+        }
+        result = make_response(jsonify(response), status_code)
+        result.headers["Cache-Control"] = "no-store"
+        result.headers["Pragma"] = "no-cache"
+        return result
+
+    if os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") != "1":
+        return blocked("fixture_mode_disabled", 403)
+
+    output_root, output_root_error = _button2_governed_internal_pdf_output_root()
+    if output_root_error:
+        reason = "internal_output_root_missing" if output_root_error == "approved_internal_output_root_invalid" else output_root_error
+        return blocked(reason, 422)
+
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return blocked("request_json_required", 400)
+    permitted_fields = {"fixture_id", "report_id", "report_version"}
+    if set(body) - permitted_fields:
+        return blocked("unexpected_request_fields", 400)
+    if any(not isinstance(body.get(field), str) or not body[field].strip() for field in permitted_fields):
+        return blocked("fixture_report_identity_required", 400)
+
+    from operator_dashboard.button2_governed_internal_pdf_artifact_inspection_adapter_v1 import (
+        inspect_button2_governed_internal_pdf_artifact_v1,
+    )
+    from operator_dashboard.button2_governed_internal_pdf_preflight_adapter_v1 import (
+        build_button2_governed_internal_pdf_inspection_plan_v1,
+    )
+    from operator_dashboard.button2_queue_loader_readonly_v1 import (
+        get_button2_queue_loader_metadata,
+        load_button2_queue_readonly,
+    )
+
+    try:
+        rows = load_button2_queue_readonly()
+        metadata = get_button2_queue_loader_metadata()
+        if metadata.get("mode") != "governed_local_fixture" or not metadata.get("fixture_id"):
+            return blocked("invalid_fixture_source", 403)
+        fixture_path = metadata.get("source_path")
+        if os.path.abspath(str(fixture_path or "")) != os.path.abspath(_button2_governed_internal_pdf_fixture_path()):
+            return blocked("invalid_fixture_source", 403)
+        with open(fixture_path, "r", encoding="utf-8") as fixture_file:
+            fixture = json.load(fixture_file)
+    except (OSError, json.JSONDecodeError, TypeError):
+        return blocked("invalid_fixture_source", 403)
+
+    if fixture.get("fixture_id") != metadata.get("fixture_id") or fixture.get("fixture_only") is not True:
+        return blocked("fixture_identity_mismatch", 409)
+    fixture_row = fixture.get("button2")
+    if not isinstance(fixture_row, dict) or not rows:
+        return blocked("invalid_fixture_source", 403)
+    fixture_row = dict(fixture_row)
+    fixture_row.update(fixture_id=fixture.get("fixture_id"), fixture_only=fixture.get("fixture_only"))
+    identity_fields = (("fixture_id", "fixture_identity_mismatch"), ("report_id", "report_identity_mismatch"), ("report_version", "report_version_mismatch"))
+    for field, reason in identity_fields:
+        if fixture_row.get(field, "").strip() != body[field].strip():
+            return blocked(reason, 409)
+
+    plan = build_button2_governed_internal_pdf_inspection_plan_v1(
+        fixture_row, output_root, fixture_mode=True
+    )
+    if plan.get("ok") is not True:
+        return blocked("invalid_preflight_plan", 422)
+    result = inspect_button2_governed_internal_pdf_artifact_v1(plan, fixture_row)
+    if result.get("ok") is not True:
+        response = blocked(
+            result.get("blocked_reason", "invalid_preflight_plan"),
+            422,
+            artifact_exists=bool(result.get("artifact_exists", False)),
+            inspection_performed=bool(result.get("inspection_performed", False)),
+        )
+        return response
+    response_body = {key: value for key, value in result.items() if key not in {"proposed_output_directory", "proposed_output_path"}}
+    response = make_response(jsonify(response_body), 200)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 @app.route("/api/button2/queue-ready", methods=["GET"])
 def button2_queue_ready_v1():
     """Load real approved fight queue from canonical source for Button 2."""

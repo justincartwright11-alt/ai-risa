@@ -59,12 +59,14 @@ def _root_path(value: Any) -> Path | None:
     return root
 
 
-def build_button2_governed_internal_pdf_preflight_v1(
+def _build_button2_governed_internal_pdf_plan_v1(
     report_row: Mapping[str, Any],
     approved_internal_output_root: str | os.PathLike[str],
     *,
     fixture_mode: bool,
     generation_timestamp: str | None = None,
+    reject_existing_target: bool,
+    status: str,
 ) -> dict[str, Any]:
     """Validate a governed fixture and propose, but never create, an internal PDF path."""
     if not fixture_mode:
@@ -112,14 +114,15 @@ def build_button2_governed_internal_pdf_preflight_v1(
         proposed.relative_to(root)
     except ValueError:
         return _blocked("proposed_output_path_escapes_root")
-    if proposed.exists():
+    artifact_exists = proposed.exists()
+    if reject_existing_target and artifact_exists:
         return _blocked("proposed_output_target_exists")
     if generation_timestamp is not None and not _text(generation_timestamp):
         return _blocked("generation_timestamp_invalid")
 
     return {
         "ok": True,
-        "status": "preflight_valid",
+        "status": status,
         "preflight_only": True,
         "fixture_id": identities["fixture_id"], "matchup_id": identities["matchup_id"],
         "report_id": identities["report_id"], "report_version": identities["report_version"],
@@ -136,5 +139,48 @@ def build_button2_governed_internal_pdf_preflight_v1(
         "permanent_mutation_performed": False,
         "proposed_output_directory": str(root), "proposed_filename": filename,
         "proposed_output_path": str(proposed), "overwrite_allowed": False,
+        "artifact_exists_at_plan_time": artifact_exists,
         "validation_reasons": ["governed fixture validated", "output path proposed without filesystem mutation"],
     }
+
+
+def build_button2_governed_internal_pdf_preflight_v1(
+    report_row: Mapping[str, Any],
+    approved_internal_output_root: str | os.PathLike[str],
+    *,
+    fixture_mode: bool,
+    generation_timestamp: str | None = None,
+) -> dict[str, Any]:
+    """Validate a governed fixture and reject an existing generation target."""
+    return _build_button2_governed_internal_pdf_plan_v1(
+        report_row,
+        approved_internal_output_root,
+        fixture_mode=fixture_mode,
+        generation_timestamp=generation_timestamp,
+        reject_existing_target=True,
+        status="preflight_valid",
+    )
+
+
+def build_button2_governed_internal_pdf_inspection_plan_v1(
+    row: Mapping[str, Any],
+    output_root: str | os.PathLike[str],
+    *,
+    fixture_mode: bool = False,
+) -> dict[str, Any]:
+    """Build a pure read-only inspection plan without collision authority."""
+    plan = _build_button2_governed_internal_pdf_plan_v1(
+        row,
+        output_root,
+        fixture_mode=fixture_mode,
+        reject_existing_target=False,
+        status="inspection_plan_ready",
+    )
+    if plan.get("ok") is True:
+        plan.update(
+            plan_purpose="governed_internal_pdf_read_only_inspection",
+            artifact_archived=False,
+            artifact_removed=False,
+            artifact_overwritten=False,
+        )
+    return plan
