@@ -12,6 +12,9 @@ from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
 from operator_dashboard.app import app, _build_button3_preview_input_from_generated_report, _build_button3_verified_result_handoff
+from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader import (
+    build_button1_runtime_context_preview,
+)
 
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "closed_loop_governed_local_fixture_v1.json"
@@ -34,6 +37,20 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
             "AI_RISA_BUTTON2_QUEUE_PATH": str(FIXTURE_PATH),
         },
     ):
+        button1_context = build_button1_runtime_context_preview()
+        button1_payload = button1_context.input_ref["payload"]
+        assert button1_payload["live_source_status"]["fixture_id"] == fixture["fixture_id"]
+        assert button1_payload["live_source_status"]["internal_test_only"] is True
+        assert button1_payload["live_source_status"]["read_only"] is True
+        assert button1_payload["live_source_status"]["customer_release_authorized"] is False
+        assert button1_payload["live_source_status"]["save_allowed"] is False
+        assert button1_payload["live_source_status"]["would_write_count"] == 0
+        assert button1_payload["candidate_rows"][0]["candidate_id"] == button1_fixture["candidate_id"]
+        assert button1_payload["candidate_rows"][0]["fighter_a"] == button1_fixture["fighter_a"]
+        assert button1_payload["candidate_rows"][0]["fighter_b"] == button1_fixture["fighter_b"]
+        assert button1_payload["candidate_rows"][0]["button2_readiness_status"] == "ready_for_button2_preview"
+        assert button1_payload["candidate_rows"][0]["provenance_status"] != "provenance_missing"
+
         with app.test_client() as client:
             queue_result = client.get("/api/button2/queue-ready")
     assert queue_result.status_code == 200
@@ -58,6 +75,10 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     with patch.dict(os.environ, {}, clear=True):
         assert isinstance(load_button2_queue_readonly(), list)
         assert get_button2_queue_loader_metadata()["mode"] == "canonical_queue"
+        default_button1_context = build_button1_runtime_context_preview()
+        default_button1_status = default_button1_context.input_ref["payload"]["live_source_status"]
+        assert default_button1_status.get("fixture_id") is None
+        assert default_button1_status.get("feed_status") != "governed_local_fixture_loaded"
 
     with patch.dict(
         os.environ,
@@ -73,6 +94,12 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     with patch.dict(os.environ, {"AI_RISA_LOCAL_FIXTURE_MODE": "1"}, clear=True):
         assert load_button2_queue_readonly() == []
         assert get_button2_queue_loader_metadata()["blocked_reason"] == "local_fixture_path_required"
+
+        invalid_button1_context = build_button1_runtime_context_preview()
+        invalid_button1_payload = invalid_button1_context.input_ref["payload"]
+        assert invalid_button1_payload["candidate_rows"] == []
+        assert invalid_button1_payload["live_source_status"]["feed_status"] == "unavailable"
+        assert invalid_button1_payload["live_source_status"]["fallback_used"] is False
 
     output_root = tmp_path / "pdf_output"
     output_root.mkdir()

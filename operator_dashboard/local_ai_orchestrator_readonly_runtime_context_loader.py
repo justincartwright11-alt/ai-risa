@@ -36,6 +36,10 @@ from operator_dashboard.button1_config_registration_to_orchestrator_registry_ada
 from operator_dashboard.button1_provider_adapter_execution_gate_v1 import (
     evaluate_button1_provider_adapter_execution_gate,
 )
+from operator_dashboard.button2_queue_loader_readonly_v1 import (
+    get_button2_queue_loader_metadata,
+    load_button2_queue_readonly,
+)
 
 
 def _default_workspace_root() -> str:
@@ -909,6 +913,82 @@ def _normalize_runtime_state(runtime_state: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _load_governed_local_fixture_button1_preview() -> Dict[str, Any] | None:
+    if os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") != "1":
+        return None
+
+    queue_rows = load_button2_queue_readonly()
+    metadata = get_button2_queue_loader_metadata()
+    if metadata.get("mode") != "governed_local_fixture" or metadata.get("blocked_reason"):
+        return {
+            "discovered_candidate_rows": [],
+            "local_candidate_rows": [],
+            "live_source_status": {
+                "feed_status": "unavailable",
+                "diagnostics": ["governed_local_fixture_unavailable"],
+                "source_backed_event_cards": [],
+                "save_allowed": False,
+                "fallback_used": False,
+            },
+        }
+
+    candidate_rows = []
+    for row in queue_rows:
+        if not row.get("matchup_id") or not row.get("fighter_a") or not row.get("fighter_b"):
+            continue
+        candidate_rows.append(
+            {
+                **row,
+                "candidate_id": row["matchup_id"],
+                "source_backed": bool(row.get("source_url") and row.get("provenance_status")),
+                "provenance": {
+                    "source_url": row.get("source_url", ""),
+                    "source_type": row.get("source_type", ""),
+                    "provenance_status": row.get("provenance_status", ""),
+                },
+                "fixture_id": metadata.get("fixture_id"),
+                "fixture_only": True,
+                "internal_test_only": True,
+                "read_only": True,
+                "customer_release_authorized": False,
+                "would_write_count": 0,
+            }
+        )
+
+    if not candidate_rows:
+        return {
+            "discovered_candidate_rows": [],
+            "local_candidate_rows": [],
+            "live_source_status": {
+                "feed_status": "unavailable",
+                "diagnostics": ["governed_local_fixture_row_unavailable"],
+                "source_backed_event_cards": [],
+                "save_allowed": False,
+                "fallback_used": False,
+            },
+        }
+
+    return {
+        "discovered_candidate_rows": candidate_rows,
+        "live_source_status": {
+            "feed_status": "governed_local_fixture_loaded",
+            "diagnostics": ["governed_local_fixture_internal_read_only"],
+            "source_backed_event_cards": candidate_rows,
+            "current_week_ready": True,
+            "current_week_rows": len(candidate_rows),
+            "current_week_rows_count": len(candidate_rows),
+            "save_allowed": False,
+            "fallback_used": False,
+            "fixture_id": metadata.get("fixture_id"),
+            "fixture_only": True,
+            "internal_test_only": True,
+            "read_only": True,
+            "customer_release_authorized": False,
+            "would_write_count": 0,
+        },
+    }
+
+
 def load_readonly_runtime_state(
     runtime_state_override: Dict[str, Any] | None = None,
     workspace_root: str | None = None,
@@ -1032,6 +1112,9 @@ def load_button1_runtime_state_preview(
     preview_state["execution_gate_status"] = _load_button1_execution_gate_status_preview(preview_state)
     preview_state["approved_source_preview_rows"] = []
     preview_state["discovered_candidate_rows"] = _safe_list_of_dict(preview_state.get("local_candidate_rows", []))
+    fixture_preview = _load_governed_local_fixture_button1_preview()
+    if fixture_preview is not None:
+        preview_state.update(fixture_preview)
     return preview_state
 
 
