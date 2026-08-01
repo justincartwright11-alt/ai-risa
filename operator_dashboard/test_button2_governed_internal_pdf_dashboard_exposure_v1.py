@@ -55,6 +55,7 @@ def test_governed_internal_dashboard_exposure_contract(tmp_path, monkeypatch):
     assert queue_payload["internal_preview_count"] == 1
     governed_row = queue_payload["internal_preview_rows"][0]
     assert governed_row["fixture_id"] == fixture["fixture_id"]
+    assert governed_row["fixture_only"] is True
     assert governed_row["report_id"] == button2["report_id"]
     assert governed_row["report_version"] == button2["report_version"]
     for key in (

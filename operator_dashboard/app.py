@@ -2320,9 +2320,14 @@ def button2_queue_ready_v1():
         and not bool(r.get("customer_release_authorized"))
     ]
     validated_fixture_id = loader_metadata.get("fixture_id")
-    if loader_metadata.get("mode") == "governed_local_fixture" and isinstance(validated_fixture_id, str) and validated_fixture_id.strip():
+    if (
+        loader_metadata.get("mode") == "governed_local_fixture"
+        and loader_metadata.get("blocked_reason") is None
+        and isinstance(validated_fixture_id, str)
+        and validated_fixture_id.strip()
+    ):
         internal_preview_rows = [
-            dict(row, fixture_id=validated_fixture_id.strip())
+            dict(row, fixture_id=validated_fixture_id.strip(), fixture_only=True)
             for row in internal_preview_rows
         ]
     blocked_rows = [r for r in queue_rows if r not in ready_rows]
