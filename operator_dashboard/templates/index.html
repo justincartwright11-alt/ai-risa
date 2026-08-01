@@ -930,6 +930,11 @@
       Source of truth: canonical server queue (no browser localStorage seeding).
     </div>
 
+    <div id="b2-internal-preview-panel" class="b2-selected-matchup-preview" style="display:none;margin-top:10px;">
+      <h4>Governed Internal Report Preview</h4>
+      <div id="b2-internal-preview-details"></div>
+    </div>
+
     <div id="b2-selection-counts" class="b2-selected-matchup-preview" style="margin-top:10px;">
       total_rows_loaded=0 | selected_rows=0 | ready_selected=0 | blocked_selected=0 | event_selected=0 | pdfs_generated_last_run=0 | failed_or_skipped_last_run=0
     </div>
@@ -3940,6 +3945,7 @@ function handleButton1Click() {
 // ── Button 2: Generate Premium PDF ───────────────────────────────────────────
 
 window.button2CanonicalQueueRows = [];
+window.button2InternalPreviewRows = [];
 window.button2SelectedMatchupIds = {};
 window.button2GenerationByMatchupId = {};
 window.button3SelectedGeneratedReportPreview = null;
@@ -3976,6 +3982,69 @@ function button2FilteredRows() {
     const eventName = String(row.event_name || '').trim().toLowerCase();
     return filterValue === eventId || filterValue === eventName;
   });
+}
+
+function button2InternalPreviewIsValid(row) {
+  const prediction = row && row.structured_prediction;
+  return !!(
+    row && String(row.report_id || '').trim() && String(row.report_version || '').trim() &&
+    prediction && typeof prediction === 'object' && String(row.prediction_schema_version || '').trim() &&
+    String(row.prediction_provenance || '').trim() && String(row.source_provenance || '').trim() &&
+    row.internal_preview_selectable === true && row.internal_test_only === true &&
+    row.read_only === true && row.customer_release_authorized === false
+  );
+}
+
+function button2RenderInternalPreview() {
+  const panel = document.getElementById('b2-internal-preview-panel');
+  const details = document.getElementById('b2-internal-preview-details');
+  if (!panel || !details) return;
+  const rows = Array.isArray(window.button2InternalPreviewRows) ? window.button2InternalPreviewRows : [];
+  if (!rows.length) {
+    panel.style.display = 'none';
+    details.innerHTML = '';
+    return;
+  }
+  panel.style.display = 'block';
+  details.innerHTML = rows.map((row, index) => {
+    const valid = button2InternalPreviewIsValid(row);
+    const prediction = row && row.structured_prediction && typeof row.structured_prediction === 'object'
+      ? row.structured_prediction : {};
+    const identity = String(row && (row.fixture_id || row.source_provenance || row.provenance_status) || 'unidentified').trim();
+    const select = valid
+      ? '<button type="button" class="btn-secondary" onclick="button2SelectInternalPreview(' + String(index) + ')">Select Internal Preview for Button 3</button>'
+      : '<span style="color:#d97b7b;">Blocked: incomplete governed preview metadata</span>';
+    return '<div style="border:1px solid #2a2d3e;padding:8px;margin-top:6px;">' +
+      '<strong>' + escapeHtml(String(row.report_id || 'Unidentified internal preview')) + '</strong>' +
+      '<div>Status: Internal/Test-only; Read-only; Customer release unavailable</div>' +
+      '<div>Report version: ' + escapeHtml(String(row.report_version || '—')) + '</div>' +
+      '<div>Fixture identity: ' + escapeHtml(identity) + '</div>' +
+      '<div>Prediction schema: ' + escapeHtml(String(row.prediction_schema_version || '—')) + '</div>' +
+      '<div>Structured prediction: ' + escapeHtml(JSON.stringify(prediction)) + '</div>' +
+      '<div>Immutable provenance: ' + escapeHtml(String(row.prediction_provenance || row.source_provenance || '—')) + '</div>' +
+      '<div style="margin-top:6px;">' + select + '</div></div>';
+  }).join('');
+}
+
+function button2SelectInternalPreview(index) {
+  const row = (window.button2InternalPreviewRows || [])[Number(index)];
+  if (!button2InternalPreviewIsValid(row)) {
+    setStatus('b2-status', 'Internal preview selection blocked. Required governed metadata is missing.', 'error');
+    return;
+  }
+  window.button3SelectedGeneratedReportPreview = {
+    report_id: String(row.report_id), report_version: String(row.report_version),
+    fight_id: String(row.fight_id || row.candidate_id || row.matchup_id || ''), matchup_id: String(row.matchup_id || ''),
+    fighter_a: String(row.fighter_a || ''), fighter_b: String(row.fighter_b || ''), event_name: String(row.event_name || ''),
+    report_path: '', structured_prediction: row.structured_prediction,
+    prediction_schema_version: String(row.prediction_schema_version), prediction_provenance: String(row.prediction_provenance),
+    source_provenance: String(row.source_provenance), fixture_identity: String(row.fixture_id || row.source_provenance),
+    internal_test_only: true, read_only: true, preview_only: true, customer_release_authorized: false,
+    pdf_generation_performed: false, queue_write_performed: false, permanent_mutation_performed: false,
+    learning_applied: false, calibration_applied: false, accuracy_ledger_written: false, gcid_written: false
+  };
+  showPanel('b3-result-panel');
+  setStatus('b3-status', 'Internal Button 2 preview selected. Preview only; no PDF, release, learning, calibration, ledger, GCID, or mutation writes.', 'ok');
 }
 
 function button2RenderEventFilter() {
@@ -4192,11 +4261,13 @@ function button2RefreshQueue() {
       }
       const rows = Array.isArray(data.queue_rows) ? data.queue_rows : [];
       window.button2CanonicalQueueRows = rows;
+      window.button2InternalPreviewRows = Array.isArray(data.internal_preview_rows) ? data.internal_preview_rows : [];
       window.button2SelectedMatchupIds = {};
       window.button2GenerationByMatchupId = {};
       window.button2LastRunStats = { generated_count: 0, failed_count: 0, skipped_count: 0 };
       button2RenderEventFilter();
       button2RenderQueueTable();
+      button2RenderInternalPreview();
       button2RenderGenerationResultPanel({ generated_count: 0, failed_count: 0, skipped_count: 0, results: [] });
       setStatus('b2-status', 'Queue refreshed. Select fights to generate PDFs. total_rows=' + String(data.total_rows || rows.length) + ', ready_count=' + String(data.ready_count || 0), 'ok');
     })

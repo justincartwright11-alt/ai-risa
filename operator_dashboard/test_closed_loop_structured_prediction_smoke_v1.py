@@ -18,6 +18,7 @@ from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader im
 
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "closed_loop_governed_local_fixture_v1.json"
+TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "index.html"
 
 
 def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
@@ -81,6 +82,26 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert queue_data["queue_rows"][0]["provenance_status"] == "fixture_only_immutable"
     assert queue_data["queue_rows"][0]["customer_release_authorized"] is False
     assert queue_data["queue_rows"][0]["read_only"] is True
+
+    template = TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert "Governed Internal Report Preview" in template
+    assert "button2InternalPreviewRows" in template
+    assert "button2SelectInternalPreview" in template
+    assert "Select Internal Preview for Button 3" in template
+    assert "button3SelectedGeneratedReportPreview =" in template
+    assert "report_version" in template and "prediction_schema_version" in template
+    assert "prediction_provenance" in template and "source_provenance" in template
+    assert "internal_preview_selectable === true" in template
+    assert "internal_test_only === true" in template and "read_only === true" in template
+    assert "customer_release_authorized === false" in template
+    assert "pdf_generation_performed: false" in template
+    assert "queue_write_performed: false" in template
+    assert "permanent_mutation_performed: false" in template
+    assert "learning_applied: false" in template
+    assert "calibration_applied: false" in template
+    assert "accuracy_ledger_written: false" in template
+    assert "gcid_written: false" in template
+    assert "panel.style.display = 'none'" in template
 
     from operator_dashboard.button2_queue_loader_readonly_v1 import (
         get_button2_queue_loader_metadata,
