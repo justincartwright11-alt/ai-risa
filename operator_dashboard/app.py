@@ -1521,6 +1521,49 @@ def _load_governed_local_fixture_result_previews():
     return [{**result, "selected_key": result["result_preview_id"], "fight_name": f"{result['fighter_a']} vs {result['fighter_b']} -- Governed fictional internal preview"}]
 
 
+def _button2_governed_internal_pdf_blocked(reason, status_code=422):
+    return jsonify({
+        "ok": False,
+        "status": "blocked",
+        "blocked_reason": reason,
+        "pdf_generation_performed": False,
+        "pdf_generation_count": 0,
+        "customer_release_authorized": False,
+        "queue_write_performed": False,
+        "artifact_overwritten": False,
+        "permanent_mutation_performed": False,
+    }), status_code
+
+
+def _button2_governed_internal_pdf_fixture_path():
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "fixtures",
+        "closed_loop_governed_local_fixture_v1.json",
+    )
+
+
+def _button2_governed_internal_pdf_output_root():
+    raw_root = os.environ.get("AI_RISA_INTERNAL_PDF_OUTPUT_ROOT", "").strip()
+    if not raw_root or not os.path.isabs(raw_root):
+        return None, "approved_internal_output_root_invalid"
+    root = os.path.abspath(raw_root)
+    if not os.path.isdir(root) or not os.access(root, os.W_OK):
+        return None, "approved_internal_output_root_not_writable"
+
+    workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    forbidden_roots = (
+        os.path.join(workspace_root, "reports"),
+        os.path.join(workspace_root, "ops", "prf_queue"),
+    )
+    normalized_root = os.path.normcase(os.path.normpath(root))
+    for forbidden_root in forbidden_roots:
+        normalized_forbidden = os.path.normcase(os.path.normpath(os.path.abspath(forbidden_root)))
+        if normalized_root == normalized_forbidden or normalized_root.startswith(normalized_forbidden + os.sep):
+            return None, "approved_internal_output_root_forbidden"
+    return root, None
+
+
 # ─── Normal Dashboard ──────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -2159,6 +2202,87 @@ def button2_selected_matchup_generate_guarded_v1():
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+@app.route("/api/button2/governed-internal-pdf/generate-v1", methods=["POST"])
+def button2_governed_internal_pdf_generate_v1():
+    """Generate exactly one governed fictional local PDF after explicit acknowledgement."""
+    if os.environ.get("AI_RISA_LOCAL_FIXTURE_MODE") != "1":
+        return _button2_governed_internal_pdf_blocked("local_fixture_mode_required", 403)
+
+    output_root, output_root_error = _button2_governed_internal_pdf_output_root()
+    if output_root_error:
+        return _button2_governed_internal_pdf_blocked(output_root_error, 422)
+
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return _button2_governed_internal_pdf_blocked("internal_generation_request_required", 400)
+    if body.get("internal_test_artifact_acknowledged") is not True:
+        return _button2_governed_internal_pdf_blocked("internal_test_artifact_acknowledgement_required", 403)
+
+    requested_fixture_id = str(body.get("fixture_id", "")).strip()
+    requested_report_id = str(body.get("report_id", "")).strip()
+    requested_report_version = str(body.get("report_version", "")).strip()
+    if not requested_fixture_id or not requested_report_id or not requested_report_version:
+        return _button2_governed_internal_pdf_blocked("fixture_report_identity_required", 400)
+
+    from operator_dashboard.button2_governed_internal_pdf_preflight_adapter_v1 import (
+        build_button2_governed_internal_pdf_preflight_v1,
+    )
+    from operator_dashboard.button2_governed_internal_pdf_render_adapter_v1 import (
+        render_button2_governed_internal_pdf_v1,
+    )
+    from operator_dashboard.button2_queue_loader_readonly_v1 import (
+        get_button2_queue_loader_metadata,
+        load_button2_queue_readonly,
+    )
+
+    rows = load_button2_queue_readonly()
+    metadata = get_button2_queue_loader_metadata()
+    if metadata.get("mode") != "governed_local_fixture" or not metadata.get("fixture_id"):
+        return _button2_governed_internal_pdf_blocked("governed_fixture_not_loaded", 422)
+    fixture_path = metadata.get("source_path")
+    if os.path.abspath(str(fixture_path or "")) != os.path.abspath(_button2_governed_internal_pdf_fixture_path()):
+        return _button2_governed_internal_pdf_blocked("governed_fixture_path_invalid", 422)
+
+    try:
+        with open(fixture_path, "r", encoding="utf-8") as fixture_file:
+            fixture = json.load(fixture_file)
+    except (OSError, json.JSONDecodeError, TypeError):
+        return _button2_governed_internal_pdf_blocked("governed_fixture_unreadable", 422)
+    if fixture.get("fixture_id") != metadata.get("fixture_id") or fixture.get("fixture_only") is not True:
+        return _button2_governed_internal_pdf_blocked("governed_fixture_identity_invalid", 422)
+
+    fixture_row = fixture.get("button2")
+    if not isinstance(fixture_row, dict) or not rows:
+        return _button2_governed_internal_pdf_blocked("governed_fixture_row_missing", 422)
+    fixture_row = dict(fixture_row)
+    fixture_row.update(fixture_id=fixture.get("fixture_id"), fixture_only=fixture.get("fixture_only"))
+    for key, value in (("fixture_id", requested_fixture_id), ("report_id", requested_report_id), ("report_version", requested_report_version)):
+        if str(fixture_row.get(key, "")).strip() != value:
+            return _button2_governed_internal_pdf_blocked(f"{key}_mismatch", 422)
+
+    plan = build_button2_governed_internal_pdf_preflight_v1(
+        fixture_row, output_root, fixture_mode=True
+    )
+    if plan.get("ok") is not True:
+        return _button2_governed_internal_pdf_blocked(plan.get("blocked_reason", "preflight_blocked"), 422)
+    result = render_button2_governed_internal_pdf_v1(plan, fixture_row)
+    if result.get("ok") is not True:
+        return _button2_governed_internal_pdf_blocked(result.get("blocked_reason", "render_blocked"), 422)
+    result.update({
+        "status": "generated_governed_internal_test_pdf",
+        "operator_acknowledgement_recorded": True,
+        "preview_or_internal_test_limitation": "governed fictional local fixture only; not customer-ready or releasable",
+        "learning_applied": False,
+        "calibration_applied": False,
+        "accuracy_ledger_written": False,
+        "gcid_written": False,
+        "model_weights_changed": False,
+        "fighter_ratings_changed": False,
+        "prediction_logic_changed": False,
+    })
+    return jsonify(result), 200
 
 
 @app.route("/api/button2/queue-ready", methods=["GET"])
