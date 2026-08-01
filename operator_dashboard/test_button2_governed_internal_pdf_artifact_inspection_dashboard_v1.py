@@ -24,6 +24,10 @@ def test_governed_internal_pdf_inspection_dashboard_contract():
     inspect_start = html.index("function button2InspectGovernedInternalPdf")
     inspect_end = html.index("function button2RenderInternalPreview", inspect_start)
     inspection = html[inspect_start:inspect_end]
+    render_start = html.index("function button2RenderGovernedInternalPdfInspection")
+    present_start = html.index("payload.status === 'present_valid'", render_start)
+    present_end = html.index("} else {", present_start)
+    present = html[present_start:present_end]
 
     ids = {
         "b2-governed-internal-pdf-inspection",
@@ -88,6 +92,21 @@ def test_governed_internal_pdf_inspection_dashboard_contract():
     assert "Inspection completed: true" in html
     assert "PDF generated: false" in html
     assert "Internal test PDF present and valid" in html
+    assert "payload.expected_filename" in present
+    assert "payload.file_size_bytes" in present
+    assert "Number.isInteger(payload.file_size_bytes)" in present
+    assert "payload.file_size_bytes.toLocaleString('en-US') + ' bytes'" in present
+    assert "boundedFilename" in present
+    assert "boundedFileSize" in present
+    assert "payload.filename" not in present
+    assert "payload.output_filename" not in present
+    assert "payload.file_size || payload.size_bytes" not in present
+    assert "expected-file.pdf" not in present
+    assert "11094" not in present
+    assert "payload.sha256 || '—'" in present
+    assert "payload.page_count || '—'" in present
+    assert "boundedFilename" in present and "'—'" in present
+    assert "boundedFileSize" in present and "'—'" in present
     assert "SHA-256" in html
     assert "Page count" in html
     assert "PDF signature verified" in html

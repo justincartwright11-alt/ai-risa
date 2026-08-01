@@ -4070,9 +4070,11 @@ function button2RenderGovernedInternalPdfInspection(data, responseOk) {
   } else if (responseOk && payload.status === 'present_valid' && artifactState === 'ACTIVE_INTERNAL_TEST_ARTIFACT') {
     window.button2GovernedInternalPdfInspectionState = 'present_valid';
     window.button2GovernedInternalPdfGenerated = true;
+    const boundedFilename = typeof payload.expected_filename === 'string' && payload.expected_filename.trim() ? payload.expected_filename : '—';
+    const boundedFileSize = Number.isInteger(payload.file_size_bytes) && payload.file_size_bytes >= 0 ? payload.file_size_bytes.toLocaleString('en-US') + ' bytes' : '—';
     result.innerHTML = '<strong>Internal test PDF present and valid</strong>' +
-      button2InspectionField('Artifact state', 'ACTIVE_INTERNAL_TEST_ARTIFACT') + button2InspectionField('Filename', payload.filename || payload.output_filename || '—') +
-      button2InspectionField('File size', payload.file_size || payload.size_bytes || '—') + button2InspectionField('SHA-256', payload.sha256 || '—') +
+      button2InspectionField('Artifact state', 'ACTIVE_INTERNAL_TEST_ARTIFACT') + button2InspectionField('Filename', boundedFilename) +
+      button2InspectionField('File size', boundedFileSize) + button2InspectionField('SHA-256', payload.sha256 || '—') +
       button2InspectionField('Page count', payload.page_count || '—') + button2InspectionField('PDF signature verified', payload.pdf_signature_valid === true) +
       button2InspectionField('Fixture ID', row.fixture_id) + button2InspectionField('Report ID', row.report_id) + button2InspectionField('Report version', row.report_version) +
       button2InspectionField('Artifact classification', payload.artifact_classification || 'governed_internal_test_pdf') + '<div>Internal warnings verified: true</div><div>Customer ready: false</div><div>Customer release authorised: false</div><div>Queue write performed: false</div><div>PDF generation performed: false</div><div>Artifact archived: false</div><div>Artifact removed: false</div><div>Artifact overwritten: false</div><div>Permanent mutation performed: false</div>';
