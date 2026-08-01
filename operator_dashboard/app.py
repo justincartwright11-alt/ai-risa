@@ -3026,7 +3026,21 @@ def button3_result_comparison_preview_v1():
             "button3_mutation_performed": False,
         }), 400
 
-    response = build_button3_result_comparison_preview(body)
+    preview_body = dict(body)
+    official_field_aliases = {
+        "official_winner": "actual_winner",
+        "official_method": "actual_method",
+        "official_round": "actual_round",
+        "official_time": "actual_time",
+        "official_result_source": "result_source_url",
+        "result_verification_status": "result_verification_status",
+        "source_confidence": "source_confidence",
+    }
+    for official_key, preview_key in official_field_aliases.items():
+        if official_key in preview_body and not preview_body.get(preview_key):
+            preview_body[preview_key] = preview_body[official_key]
+
+    response = build_button3_result_comparison_preview(preview_body)
     return jsonify(response), 200
 
 

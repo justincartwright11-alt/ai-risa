@@ -9,7 +9,7 @@ from operator_dashboard.button2_report_generation_route_render_gate_integration_
 from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
-from operator_dashboard.app import _build_button3_preview_input_from_generated_report
+from operator_dashboard.app import app, _build_button3_preview_input_from_generated_report
 
 
 def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
@@ -138,3 +138,24 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_result["learning_apply_performed"] is False
     assert button3_result["button3_mutation_performed"] is False
     assert button3_result["controlled_learning_candidate_eligible"] is False
+
+    with app.test_client() as client:
+        route_result = client.post(
+            "/api/button3/result-comparison/preview-v1",
+            json={
+                **button3_payload,
+                "official_winner": "Fighter Beta",
+                "official_method": "Decision",
+                "official_round": "5",
+                "official_time": "25:00",
+                "official_result_source": "https://example.test/official-result",
+                "result_verification_status": "operator_entered",
+                "source_tier": "official",
+            },
+        )
+    assert route_result.status_code == 200
+    assert route_result.json["actual_winner"] == "Fighter Beta"
+    assert route_result.json["actual_method"] == "Decision"
+    assert route_result.json["actual_round"] == "5"
+    assert route_result.json["mutation_performed"] is False
+    assert route_result.json["learning_apply_performed"] is False

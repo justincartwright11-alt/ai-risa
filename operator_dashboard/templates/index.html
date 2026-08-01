@@ -1157,13 +1157,21 @@
       <select id="b3-generated-report-selector" onchange="button3SelectGeneratedReport()">
         <option value="">No generated report selected</option>
       </select>
-      <button type="button" class="btn-secondary" onclick="button3PreviewSelectedGeneratedReport()">Preview selected report</button>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;align-items:end;">
+      <label>Official winner<input id="b3-official-winner" type="text" autocomplete="off"></label>
+      <label>Official method<input id="b3-official-method" type="text" autocomplete="off"></label>
+      <label>Official round<input id="b3-official-round" type="text" autocomplete="off"></label>
+      <label>Official time<input id="b3-official-time" type="text" autocomplete="off"></label>
+      <label>Official result source<input id="b3-official-result-source" type="url" autocomplete="off"></label>
+      <label>Verification / confidence<input id="b3-result-verification-status" type="text" autocomplete="off"></label>
+      <button type="button" class="btn-secondary" onclick="button3PreviewSelectedGeneratedReport()">Preview comparison</button>
     </div>
 
     <div class="b3-comparison-preview-surface" id="b3-comparison-preview-surface" style="margin-top:12px;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:12px 14px;font-size:0.8rem;color:#d7dce8;line-height:1.6;">
       <strong>Controlled Result Comparison Preview Fields</strong><br>
       fight_id, event_name, fighter_a, fighter_b, predicted_winner, predicted_method, predicted_round,<br>
-      actual_winner, actual_method, actual_round, result_source_url, source_tier, comparison_status,
+      official_winner, official_method, official_round, official_time, official_result_source, result_verification_status, comparison_status,
       accuracy_preview, operator_review_required.
     </div>
 
@@ -4348,8 +4356,17 @@ function button3PreviewSelectedGeneratedReport() {
     setStatus('b3-status', 'Select a generated Button 2 report before starting comparison preview.', 'error');
     return;
   }
+  const officialResult = {
+    official_winner: String(document.getElementById('b3-official-winner')?.value || '').trim(),
+    official_method: String(document.getElementById('b3-official-method')?.value || '').trim(),
+    official_round: String(document.getElementById('b3-official-round')?.value || '').trim(),
+    official_time: String(document.getElementById('b3-official-time')?.value || '').trim(),
+    official_result_source: String(document.getElementById('b3-official-result-source')?.value || '').trim(),
+    result_verification_status: String(document.getElementById('b3-result-verification-status')?.value || '').trim()
+  };
+  const comparisonPayload = Object.assign({}, preview, officialResult);
   setStatus('b3-status', '<span class="spinner"></span>Running read-only comparison preview for selected generated report…');
-  postButton3ResultComparisonPreview(preview)
+  postButton3ResultComparisonPreview(comparisonPayload)
     .then(data => renderButton3ResultComparisonPreview(data))
     .catch(() => setStatus('b3-status', 'Could not run generated-report comparison preview. No changes were made.', 'error'));
 }
@@ -4373,6 +4390,9 @@ function renderButton3ResultComparisonPreview(data) {
 
   const sourceUrl = String(data.result_source_url || 'missing');
   const sourceTier = String(data.source_tier || 'unknown');
+  const sourceWarning = sourceUrl === 'missing' || sourceTier === 'unknown'
+    ? 'WARNING: result source is missing or weak; manual verification required.'
+    : 'Result source supplied; operator verification remains required.';
   const fighterA = String(data.fighter_a || '');
   const fighterB = String(data.fighter_b || '');
   const matchupLabel = fighterA || fighterB
@@ -4383,11 +4403,16 @@ function renderButton3ResultComparisonPreview(data) {
     '<strong>Controlled Result Comparison Preview (Read-Only)</strong><br>' +
     'comparison_status: ' + escapeHtml(comparisonStatus) + '<br>' +
     'matchup: ' + escapeHtml(matchupLabel) + '<br>' +
+    'predicted winner vs official winner: ' + escapeHtml(String(data.predicted_winner || 'missing')) + ' vs ' + escapeHtml(String(data.actual_winner || 'missing')) + '<br>' +
+    'predicted method vs official method: ' + escapeHtml(String(data.predicted_method || 'missing')) + ' vs ' + escapeHtml(String(data.actual_method || 'missing')) + '<br>' +
+    'predicted round vs official round: ' + escapeHtml(String(data.predicted_round || 'not provided')) + ' vs ' + escapeHtml(String(data.actual_round || 'not provided')) + '<br>' +
+    'official time: ' + escapeHtml(String(data.actual_time || 'not provided')) + '<br>' +
     'result_source_url: ' + escapeHtml(sourceUrl) + '<br>' +
     'source_tier: ' + escapeHtml(sourceTier) + '<br>' +
+    escapeHtml(sourceWarning) + '<br>' +
     'operator_review_required: ' + (data.operator_review_required === true ? 'true' : 'false') + '<br>' +
     'operator_approval_gate_required_for_apply: ' + (data.operator_approval_gate_required_for_apply === true ? 'true' : 'false') + '<br>' +
-    'write/apply paths remain blocked in preview mode.';
+    'write/apply paths remain blocked in preview mode; no accuracy ledger write or learning apply.';
 }
 
 function handleButton3Click() {
