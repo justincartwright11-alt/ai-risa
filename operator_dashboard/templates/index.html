@@ -932,6 +932,16 @@
 
     <div id="b2-internal-preview-panel" class="b2-selected-matchup-preview" style="display:none;margin-top:10px;">
       <h4>Governed Internal Report Preview</h4>
+      <div id="b2-governed-internal-pdf-control" data-internal-output-root-configured="{{ 'true' if runtime_preflight.button2_internal_pdf_output_root.ready else 'false' }}" style="margin:10px 0;padding:12px;border:2px solid #c9aa71;background:#211b12;display:none;">
+        <strong style="color:#f0c674;">INTERNAL TEST FIXTURE</strong><br>
+        <strong style="color:#e06c75;">NOT FOR CUSTOMER RELEASE</strong>
+        <p>This creates one fictional internal test PDF. It does not mark the report customer ready, release or deliver the report. An existing deterministic artifact blocks another generation request.</p>
+        <div id="b2-governed-internal-pdf-identity"></div>
+        <div id="b2-governed-internal-pdf-output-root-status" style="margin-top:6px;"></div>
+        <label style="display:block;margin-top:8px;"><input type="checkbox" id="b2-governed-internal-pdf-ack" onchange="button2UpdateGovernedInternalPdfControl()"> I acknowledge this will generate one fictional internal test PDF that is not approved for customer release.</label>
+        <button type="button" id="b2-governed-internal-pdf-generate" class="btn-secondary" onclick="button2GenerateGovernedInternalPdf()" disabled>Generate Internal Test PDF</button>
+        <div id="b2-governed-internal-pdf-result" style="margin-top:8px;"></div>
+      </div>
       <div id="b2-internal-preview-details"></div>
     </div>
 
@@ -3948,6 +3958,9 @@ window.button2CanonicalQueueRows = [];
 window.button2InternalPreviewRows = [];
 window.button2SelectedMatchupIds = {};
 window.button2GenerationByMatchupId = {};
+window.button2GovernedInternalPdfRow = null;
+window.button2GovernedInternalPdfInProgress = false;
+window.button2GovernedInternalPdfGenerated = false;
 window.button3SelectedGeneratedReportPreview = null;
 window.button3VerifiedResultPreviews = [];
 window.button3SelectedVerifiedResultPreview = null;
@@ -3995,6 +4008,97 @@ function button2InternalPreviewIsValid(row) {
   );
 }
 
+function button2GovernedInternalPdfRowIsValid(row) {
+  return !!(
+    button2InternalPreviewIsValid(row) && String(row.fixture_id || '').trim() &&
+    row.fixture_only === true && row.customer_ready_possible === false &&
+    row.customer_release_authorized === false && row.queue_write_performed === false &&
+    row.permanent_mutation_performed === false
+  );
+}
+
+function button2UpdateGovernedInternalPdfControl() {
+  const control = document.getElementById('b2-governed-internal-pdf-control');
+  const button = document.getElementById('b2-governed-internal-pdf-generate');
+  const ack = document.getElementById('b2-governed-internal-pdf-ack');
+  const status = document.getElementById('b2-governed-internal-pdf-output-root-status');
+  if (!control || !button || !ack || !status) return;
+  const configured = control.dataset.internalOutputRootConfigured === 'true';
+  status.textContent = configured ? 'Internal output location configured' : 'Internal output location unavailable';
+  button.disabled = !button2GovernedInternalPdfRowIsValid(window.button2GovernedInternalPdfRow) ||
+    !ack.checked || !configured || window.button2GovernedInternalPdfInProgress || window.button2GovernedInternalPdfGenerated;
+}
+
+function button2SelectGovernedInternalPdfPreview(index) {
+  const row = (window.button2InternalPreviewRows || [])[Number(index)];
+  if (!button2GovernedInternalPdfRowIsValid(row)) {
+    setStatus('b2-status', 'Internal PDF generation blocked. Required governed metadata is missing.', 'error');
+    return;
+  }
+  window.button2GovernedInternalPdfRow = row;
+  window.button2GovernedInternalPdfGenerated = false;
+  const ack = document.getElementById('b2-governed-internal-pdf-ack');
+  if (ack) ack.checked = false;
+  const identity = document.getElementById('b2-governed-internal-pdf-identity');
+  const control = document.getElementById('b2-governed-internal-pdf-control');
+  if (identity) identity.innerHTML =
+    '<div><strong>Fixture identity:</strong> ' + escapeHtml(String(row.fixture_id)) + '</div>' +
+    '<div><strong>Report ID:</strong> ' + escapeHtml(String(row.report_id)) + '</div>' +
+    '<div><strong>Report version:</strong> ' + escapeHtml(String(row.report_version)) + '</div>' +
+    '<div><strong>Fictional matchup:</strong> ' + escapeHtml(String(row.fighter_a || '')) + ' vs ' + escapeHtml(String(row.fighter_b || '')) + '</div>' +
+    '<div><strong>Classification:</strong> internal/test; fixture-only; read-only</div>' +
+    '<div><strong>Customer-ready status:</strong> false</div><div><strong>Customer-release status:</strong> false</div>';
+  if (control) control.style.display = 'block';
+  const result = document.getElementById('b2-governed-internal-pdf-result');
+  if (result) result.innerHTML = '';
+  button2UpdateGovernedInternalPdfControl();
+}
+
+function button2RenderGovernedInternalPdfResult(data, ok) {
+  const result = document.getElementById('b2-governed-internal-pdf-result');
+  if (!result) return;
+  const payload = data && typeof data === 'object' ? data : {};
+  if (ok && payload.ok === true) {
+    window.button2GovernedInternalPdfGenerated = true;
+    result.innerHTML = '<strong>Generated internal test PDF</strong><br>' +
+      'artifact classification: ' + escapeHtml(String(payload.artifact_classification || 'governed_internal_test_pdf')) + '<br>' +
+      'filename: ' + escapeHtml(String(payload.output_filename || payload.filename || '—')) + '<br>' +
+      'report ID: ' + escapeHtml(String(payload.report_id || '—')) + '<br>' +
+      'report version: ' + escapeHtml(String(payload.report_version || '—')) + '<br>' +
+      'file size: ' + escapeHtml(String(payload.file_size || payload.size_bytes || '—')) + '<br>' +
+      'SHA-256: ' + escapeHtml(String(payload.sha256 || '—')) + '<br>' +
+      'PDF signature verified: ' + String(payload.pdf_signature_valid === true) + '<br>' +
+      'generation count: ' + escapeHtml(String(payload.pdf_generation_count || 1)) + '<br>' +
+      'customer ready: false<br>customer release authorised: false<br>queue write performed: false<br>artifact overwritten: false';
+      result.innerHTML += '<br>learning_applied: false<br>calibration_applied: false<br>accuracy_ledger_written: false<br>gcid_written: false<br>model_weights_changed: false<br>fighter_ratings_changed: false<br>prediction_logic_changed: false<br>permanent_mutation_performed: false';
+  } else {
+    const collision = String(payload.blocked_reason || '') === 'proposed_output_target_exists';
+    result.innerHTML = '<strong>Internal PDF generation blocked</strong><br>' +
+      'blocked reason: ' + escapeHtml(String(payload.blocked_reason || 'request_blocked')) + '<br>' +
+      'PDF generated: false<br>artifact overwritten: false<br>customer release authorised: false<br>queue write performed: false<br>' +
+      'Operator next action: ' + escapeHtml(collision ? 'The internal test PDF already exists. It was not overwritten. Remove or archive it through an authorised maintenance process before generating again.' : 'Review the blocked reason and resolve the governed internal configuration.') ;
+  }
+  button2UpdateGovernedInternalPdfControl();
+}
+
+function button2GenerateGovernedInternalPdf() {
+  const row = window.button2GovernedInternalPdfRow;
+  const ack = document.getElementById('b2-governed-internal-pdf-ack');
+  const button = document.getElementById('b2-governed-internal-pdf-generate');
+  if (!button2GovernedInternalPdfRowIsValid(row) || !ack || !ack.checked || window.button2GovernedInternalPdfInProgress) return;
+  window.button2GovernedInternalPdfInProgress = true;
+  button.disabled = true;
+  const result = document.getElementById('b2-governed-internal-pdf-result');
+  if (result) result.textContent = 'Generating internal test PDF…';
+  fetch('/api/button2/governed-internal-pdf/generate-v1', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fixture_id: String(row.fixture_id), report_id: String(row.report_id), report_version: String(row.report_version), internal_test_artifact_acknowledged: true })
+  }).then(response => response.json().then(data => ({ ok: response.ok, data: data })))
+    .then(response => button2RenderGovernedInternalPdfResult(response.data, response.ok))
+    .catch(() => button2RenderGovernedInternalPdfResult({ blocked_reason: 'request_failed' }, false))
+    .finally(() => { window.button2GovernedInternalPdfInProgress = false; button2UpdateGovernedInternalPdfControl(); });
+}
+
 function button2RenderInternalPreview() {
   const panel = document.getElementById('b2-internal-preview-panel');
   const details = document.getElementById('b2-internal-preview-details');
@@ -4022,7 +4126,7 @@ function button2RenderInternalPreview() {
       '<div>Prediction schema: ' + escapeHtml(String(row.prediction_schema_version || '—')) + '</div>' +
       '<div>Structured prediction: ' + escapeHtml(JSON.stringify(prediction)) + '</div>' +
       '<div>Immutable provenance: ' + escapeHtml(String(row.prediction_provenance || row.source_provenance || '—')) + '</div>' +
-      '<div style="margin-top:6px;">' + select + '</div></div>';
+      '<div style="margin-top:6px;">' + select + (valid ? ' <button type="button" class="btn-secondary" onclick="button2SelectGovernedInternalPdfPreview(' + String(index) + ')">Select for Internal Test PDF</button>' : '') + '</div></div>';
   }).join('');
 }
 
@@ -4262,6 +4366,10 @@ function button2RefreshQueue() {
       const rows = Array.isArray(data.queue_rows) ? data.queue_rows : [];
       window.button2CanonicalQueueRows = rows;
       window.button2InternalPreviewRows = Array.isArray(data.internal_preview_rows) ? data.internal_preview_rows : [];
+      window.button2GovernedInternalPdfRow = null;
+      window.button2GovernedInternalPdfGenerated = false;
+      const governedControl = document.getElementById('b2-governed-internal-pdf-control');
+      if (governedControl) governedControl.style.display = 'none';
       window.button2SelectedMatchupIds = {};
       window.button2GenerationByMatchupId = {};
       window.button2LastRunStats = { generated_count: 0, failed_count: 0, skipped_count: 0 };

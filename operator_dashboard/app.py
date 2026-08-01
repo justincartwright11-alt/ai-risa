@@ -1415,6 +1415,10 @@ def _build_runtime_preflight_status(host_value):
             "ready": output_root_ready,
             "value": output_root_value or "unset",
         },
+        "button2_internal_pdf_output_root": {
+            "ready": bool(os.environ.get("AI_RISA_INTERNAL_PDF_OUTPUT_ROOT", "").strip())
+            and os.path.isdir(os.environ.get("AI_RISA_INTERNAL_PDF_OUTPUT_ROOT", "").strip()),
+        },
         "msys_gtk_dll_path": {
             "ready": gtk_exists and gtk_in_path,
             "value": gtk_path,
