@@ -109,6 +109,10 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert "b3-verified-result-selector" in template
     assert "button3LoadVerifiedResultPreviews" in template
     assert "button3VerifiedResultPreviews" in template
+    assert "button3ClearSelectedVerifiedResultState" in template
+    assert "window.button3SelectedVerifiedResultPreview = null" in template
+    assert "b3-preview-comparison-button" in template
+    assert "Select a verified result-search preview before comparison" in template
 
     from operator_dashboard.button2_queue_loader_readonly_v1 import (
         get_button2_queue_loader_metadata,
@@ -352,6 +356,18 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_result.get("fighter_ratings_changed", False) is False
     assert button3_result.get("prediction_logic_changed", False) is False
     assert button3_result.get("permanent_mutation_performed", False) is False
+
+    with app.test_client() as client:
+        empty_result_response = client.post(
+            "/api/button3/result-comparison/preview-v1",
+            json={"structured_prediction": structured_prediction},
+        )
+    assert empty_result_response.status_code == 200
+    empty_result = empty_result_response.json
+    assert empty_result.get("ready_to_compare") is not True
+    assert empty_result.get("actual_winner") in (None, "", "missing")
+    assert empty_result.get("operator_review_required") is True
+    assert "button3SelectedVerifiedResultPreview = selected" in template
 
     with app.test_client() as client:
         route_result = client.post(

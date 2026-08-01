@@ -1174,7 +1174,7 @@
       <label>Official time<input id="b3-official-time" type="text" autocomplete="off"></label>
       <label>Official result source<input id="b3-official-result-source" type="url" autocomplete="off"></label>
       <label>Verification / confidence<input id="b3-result-verification-status" type="text" autocomplete="off"></label>
-      <button type="button" class="btn-secondary" onclick="button3PreviewSelectedGeneratedReport()">Preview comparison</button>
+      <button type="button" class="btn-secondary" id="b3-preview-comparison-button" onclick="button3PreviewSelectedGeneratedReport()" disabled>Preview comparison</button>
     </div>
 
     <div class="b3-comparison-preview-surface" id="b3-comparison-preview-surface" style="margin-top:12px;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:12px 14px;font-size:0.8rem;color:#d7dce8;line-height:1.6;">
@@ -4463,10 +4463,34 @@ function button3LoadVerifiedResultPreviews() {
   }).catch(() => setStatus('b3-status', 'Could not load verified result previews. No changes were made.', 'error'));
 }
 
+function button3ClearSelectedVerifiedResultState() {
+  window.button3SelectedVerifiedResultPreview = null;
+  const fieldIds = [
+    'b3-official-winner', 'b3-official-method', 'b3-official-round',
+    'b3-official-time', 'b3-official-result-source', 'b3-result-verification-status'
+  ];
+  fieldIds.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) field.value = '';
+  });
+  const comparisonButton = document.getElementById('b3-preview-comparison-button');
+  if (comparisonButton) comparisonButton.disabled = true;
+  const surface = document.getElementById('b3-comparison-preview-surface');
+  if (surface) surface.innerHTML = '<strong>Controlled Result Comparison Preview Fields</strong><br>Select a verified result-search preview before comparison.';
+  setStatus('b3-status', 'Select a verified result-search preview before comparison. No changes were made.', 'error');
+}
+
 function button3SelectVerifiedResultPreview() {
   const selector = document.getElementById('b3-verified-result-selector');
   const index = selector ? Number(selector.value) : NaN;
-  window.button3SelectedVerifiedResultPreview = Number.isInteger(index) ? (window.button3VerifiedResultPreviews[index] || null) : null;
+  const selected = Number.isInteger(index) ? (window.button3VerifiedResultPreviews[index] || null) : null;
+  if (!selected) {
+    button3ClearSelectedVerifiedResultState();
+    return;
+  }
+  window.button3SelectedVerifiedResultPreview = selected;
+  const comparisonButton = document.getElementById('b3-preview-comparison-button');
+  if (comparisonButton) comparisonButton.disabled = false;
 }
 
 function renderButton3ResultComparisonPreview(data) {
