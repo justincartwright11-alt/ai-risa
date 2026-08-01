@@ -2294,6 +2294,9 @@ def button2_queue_ready_v1():
     """Load real approved fight queue from canonical source for Button 2."""
     load_button2_queue_readonly, _, _, _ = _lazy_button2_queue_loader_readonly()
     queue_rows = load_button2_queue_readonly()
+    from operator_dashboard.button2_queue_loader_readonly_v1 import get_button2_queue_loader_metadata
+
+    loader_metadata = get_button2_queue_loader_metadata()
 
     ready_statuses = {
         "ready",
@@ -2316,6 +2319,12 @@ def button2_queue_ready_v1():
         and bool(r.get("read_only"))
         and not bool(r.get("customer_release_authorized"))
     ]
+    validated_fixture_id = loader_metadata.get("fixture_id")
+    if loader_metadata.get("mode") == "governed_local_fixture" and isinstance(validated_fixture_id, str) and validated_fixture_id.strip():
+        internal_preview_rows = [
+            dict(row, fixture_id=validated_fixture_id.strip())
+            for row in internal_preview_rows
+        ]
     blocked_rows = [r for r in queue_rows if r not in ready_rows]
 
     response = {

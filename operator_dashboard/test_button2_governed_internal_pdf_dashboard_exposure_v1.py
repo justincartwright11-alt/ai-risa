@@ -49,6 +49,40 @@ def test_governed_internal_dashboard_exposure_contract(tmp_path, monkeypatch):
     monkeypatch.setenv("AI_RISA_BUTTON2_QUEUE_PATH", str(FIXTURE))
     monkeypatch.setenv("AI_RISA_INTERNAL_PDF_OUTPUT_ROOT", str(tmp_path))
     client = app.test_client()
+    queue_response = client.get("/api/button2/queue-ready")
+    assert queue_response.status_code == 200
+    queue_payload = queue_response.get_json()
+    assert queue_payload["internal_preview_count"] == 1
+    governed_row = queue_payload["internal_preview_rows"][0]
+    assert governed_row["fixture_id"] == fixture["fixture_id"]
+    assert governed_row["report_id"] == button2["report_id"]
+    assert governed_row["report_version"] == button2["report_version"]
+    for key in (
+        "fighter_a", "fighter_b", "internal_test_only", "read_only", "structured_prediction",
+        "prediction_schema_version", "prediction_provenance", "source_provenance",
+        "customer_ready_possible", "customer_release_authorized", "queue_write_performed",
+        "pdf_generation_performed", "permanent_mutation_performed",
+    ):
+        assert key in governed_row
+    assert governed_row["internal_test_only"] is True
+    assert governed_row["read_only"] is True
+    assert governed_row["customer_ready_possible"] is False
+    assert governed_row["customer_release_authorized"] is False
+    assert governed_row["queue_write_performed"] is False
+    assert governed_row["pdf_generation_performed"] is False
+    assert governed_row["permanent_mutation_performed"] is False
+    assert "window.button2GovernedInternalPdfRow = row" in html
+    assert "if (ack) ack.checked = false;" in html
+    assert "!ack.checked" in html
+    assert "String(row.fixture_id || '').trim()" in html
+    assert "row.fixture_only === true" in html
+    assert "row.customer_ready_possible === false" in html
+    assert "row.customer_release_authorized === false" in html
+    assert "row.queue_write_performed === false" in html
+    assert "row.permanent_mutation_performed === false" in html
+    assert "fixture_identity: String(row.fixture_id || row.source_provenance)" in html
+    assert "window.button2SelectedMatchupIds" in html
+    assert "button3SelectedGeneratedReportPreview" in html
     payload = {
         "fixture_id": fixture["fixture_id"],
         "report_id": button2["report_id"],
