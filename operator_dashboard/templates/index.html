@@ -1152,6 +1152,14 @@
     <div class="status-msg" id="b3-preview-language">Preview-only comparison path: no apply, no learning, no calibration, no queue mutation, no external delivery/API.</div>
     <div id="b3-status" class="status-msg"></div>
 
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <label for="b3-generated-report-selector">Generated Button 2 report</label>
+      <select id="b3-generated-report-selector" onchange="button3SelectGeneratedReport()">
+        <option value="">No generated report selected</option>
+      </select>
+      <button type="button" class="btn-secondary" onclick="button3PreviewSelectedGeneratedReport()">Preview selected report</button>
+    </div>
+
     <div class="b3-comparison-preview-surface" id="b3-comparison-preview-surface" style="margin-top:12px;background:#0f1117;border:1px solid #2a2d3e;border-radius:8px;padding:12px 14px;font-size:0.8rem;color:#d7dce8;line-height:1.6;">
       <strong>Controlled Result Comparison Preview Fields</strong><br>
       fight_id, event_name, fighter_a, fighter_b, predicted_winner, predicted_method, predicted_round,<br>
@@ -3922,6 +3930,7 @@ function handleButton1Click() {
 window.button2CanonicalQueueRows = [];
 window.button2SelectedMatchupIds = {};
 window.button2GenerationByMatchupId = {};
+window.button3SelectedGeneratedReportPreview = null;
 window.button2LastRunStats = {
   generated_count: 0,
   failed_count: 0,
@@ -4034,10 +4043,14 @@ function button2RenderGenerationResultPanel(data) {
     ? generatedRows.map(r => {
       const filename = String(r.output_filename || '').trim() || '(filename unavailable)';
       const link = String(r.open_url || '').trim();
+      const matchupId = String(r.matchup_id || '').trim();
       const linkHtml = link
         ? ' - <a href="' + escapeHtml(link) + '" target="_blank" rel="noopener noreferrer">Open PDF</a>'
         : '';
-      return '<div>PDF generated: ' + escapeHtml(filename) + linkHtml + '</div>';
+      const previewHtml = r.button3_preview_input && matchupId
+        ? ' - <button type="button" class="btn-secondary" onclick="button3SelectGeneratedReport(\'' + escapeHtml(matchupId) + '\')">Use in Button 3 preview</button>'
+        : '';
+      return '<div>PDF generated: ' + escapeHtml(filename) + linkHtml + previewHtml + '</div>';
     }).join('')
     : '<div>No PDFs generated in last run.</div>';
 
@@ -4296,6 +4309,51 @@ function postButton3ResultComparisonPreview(payload) {
     });
 }
 
+function button3RefreshGeneratedReportSelector() {
+  const selector = document.getElementById('b3-generated-report-selector');
+  if (!selector) return;
+  const generated = window.button2GenerationByMatchupId || {};
+  const selectedMatchupId = window.button3SelectedGeneratedReportPreview
+    ? String(window.button3SelectedGeneratedReportPreview.matchup_id || '')
+    : '';
+  const options = Object.keys(generated).map(matchupId => {
+    const row = generated[matchupId];
+    const preview = row && row.button3_preview_input;
+    if (!preview || typeof preview !== 'object') return '';
+    const label = String(preview.fighter_a || '') + ' vs ' + String(preview.fighter_b || '');
+    const selected = matchupId === selectedMatchupId ? ' selected' : '';
+    return '<option value="' + escapeHtml(matchupId) + '"' + selected + '>' + escapeHtml(label || matchupId) + '</option>';
+  }).join('');
+  selector.innerHTML = '<option value="">No generated report selected</option>' + options;
+}
+
+function button3SelectGeneratedReport(matchupId) {
+  const selector = document.getElementById('b3-generated-report-selector');
+  const selectedId = String(matchupId || (selector ? selector.value : '') || '').trim();
+  const row = (window.button2GenerationByMatchupId || {})[selectedId];
+  const preview = row && row.button3_preview_input;
+  if (!preview || typeof preview !== 'object') {
+    window.button3SelectedGeneratedReportPreview = null;
+    return;
+  }
+  window.button3SelectedGeneratedReportPreview = preview;
+  if (selector) selector.value = selectedId;
+  showPanel('b3-result-panel');
+  setStatus('b3-status', 'Generated Button 2 prediction selected. Preview only; no accuracy, learning, calibration, or GCID writes.', 'ok');
+}
+
+function button3PreviewSelectedGeneratedReport() {
+  const preview = window.button3SelectedGeneratedReportPreview;
+  if (!preview || typeof preview !== 'object') {
+    setStatus('b3-status', 'Select a generated Button 2 report before starting comparison preview.', 'error');
+    return;
+  }
+  setStatus('b3-status', '<span class="spinner"></span>Running read-only comparison preview for selected generated report…');
+  postButton3ResultComparisonPreview(preview)
+    .then(data => renderButton3ResultComparisonPreview(data))
+    .catch(() => setStatus('b3-status', 'Could not run generated-report comparison preview. No changes were made.', 'error'));
+}
+
 function renderButton3ResultComparisonPreview(data) {
   const comparisonStatus = String(data.comparison_status || 'needs_manual_review');
   const blockedStatuses = new Set(['needs_source', 'no_result_found', 'needs_manual_review', 'conflict']);
@@ -4334,6 +4392,7 @@ function renderButton3ResultComparisonPreview(data) {
 
 function handleButton3Click() {
   showPanel('b3-result-panel');
+  button3RefreshGeneratedReportSelector();
 
   // Hide legacy summary UI; normal mode now shows simple workflow status only.
   const grid = document.getElementById('b3-summary-grid');
@@ -4343,10 +4402,11 @@ function handleButton3Click() {
   if (total) total.style.display = 'none';
   if (gate)  gate.style.display = 'none';
 
-  setStatus('b3-status', '<span class="spinner"></span>Running read-only result comparison preview…');
-  postButton3ResultComparisonPreview({})
-    .then(data => renderButton3ResultComparisonPreview(data))
-    .catch(() => setStatus('b3-status', 'Could not run read-only result comparison preview. No changes were made.', 'error'));
+  if (window.button3SelectedGeneratedReportPreview) {
+    button3PreviewSelectedGeneratedReport();
+  } else {
+    setStatus('b3-status', 'Select a generated Button 2 report to start a read-only comparison preview.', 'ok');
+  }
 }
 
 // ── Phase 7: Controlled Delivery Preview ─────────────────────────────────────

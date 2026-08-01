@@ -9,6 +9,7 @@ from operator_dashboard.button2_report_generation_route_render_gate_integration_
 from operator_dashboard.button3_result_comparison_preview_v1 import (
     build_button3_result_comparison_preview,
 )
+from operator_dashboard.app import _build_button3_preview_input_from_generated_report
 
 
 def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
@@ -89,21 +90,25 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     structured_prediction = button2_result["structured_prediction"]
     assert structured_prediction["contract_version"] == "button2_structured_prediction_v1"
 
-    button3_payload = {
-        "fight_id": "closed_loop_contract_fight",
-        "event_name": "Closed Loop Smoke Event",
-        "fighter_a": "Fighter Alpha",
-        "fighter_b": "Fighter Beta",
-        "predicted_winner": "Top Level Winner Should Be Overridden",
-        "predicted_method": "Top Level Method Should Be Overridden",
-        "predicted_round": "Top Level Round Should Be Overridden",
+    button3_payload = _build_button3_preview_input_from_generated_report(
+        button2_result,
+        fight_id="closed_loop_contract_fight",
+        matchup_id="closed_loop_contract_matchup",
+        fighter_a="Fighter Alpha",
+        fighter_b="Fighter Beta",
+        event_name="Closed Loop Smoke Event",
+    )
+    assert button3_payload["report_id"]
+    assert button3_payload["report_path"] == button2_result["output_path"]
+    assert button3_payload["structured_prediction"] == structured_prediction
+
+    button3_payload.update({
         "actual_winner": "Fighter Beta",
         "actual_method": "Decision",
         "actual_round": "5",
         "result_source_url": "https://example.test/official-result",
         "source_tier": "official",
-        "structured_prediction": structured_prediction,
-    }
+    })
 
     button3_result = build_button3_result_comparison_preview(button3_payload)
 

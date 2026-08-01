@@ -38,61 +38,187 @@ from operator_dashboard.local_ai_orchestrator_readonly_runtime_context_loader im
     build_button1_runtime_context_preview,
 )
 from operator_dashboard.local_ai_orchestrator_job_schema import LocalAIJobInputRef
-from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
-    run_gate1_save_fights_dry_run_apply_preview,
-)
-from operator_dashboard.local_ai_orchestrator_gate1_approved_save_writer import (
-    run_gate1_approved_save_writer_scaffold,
-)
-from operator_dashboard.local_ai_orchestrator_workflow_plan import (
-    build_three_button_workflow_plan,
-    run_workflow_preview,
-)
-from operator_dashboard.global_fighter_identity_resolver_preview import (
-    resolve_fighter_identity_preview,
-    IncomingFighterCandidate,
-    KnownFighterRecord,
-    SourceRef,
-)
-from operator_dashboard.global_fighter_known_records_readonly_loader import (
-    load_known_records_readonly_preview,
-)
-from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview import (
-    build_button1_to_button2_readonly_dossier_handoff_preview,
-)
-from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
-    build_button2_readonly_dossier_handoff_ingest_preview,
-)
-from operator_dashboard.button2_dossier_handoff_report_context_preview import (
-    build_button2_dossier_handoff_report_context_preview,
-)
-from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
-    generate_button2_report_render_gate_integration,
-)
-from operator_dashboard.button2_customer_flow_dry_run_contract_preview_v1 import (
-    run_button2_customer_flow_dry_run_contract_preview,
-)
-from operator_dashboard.button2_pdf_output_root_config_v1 import (
-    get_pdf_output_root,
-    OutputRootNotConfiguredError,
-    OutputRootInvalidError,
-)
-from operator_dashboard.button2_controlled_delivery_scaffold import controlled_delivery
-from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
-    resolve_template_pack_assets,
-    TemplatePackResolverError,
-)
-from operator_dashboard.button3_result_comparison_preview_v1 import (
-    build_button3_result_comparison_preview,
-)
-from operator_dashboard.button2_queue_loader_readonly_v1 import (
-    load_button2_queue_readonly,
-    get_queue_ready_rows,
-    resolve_matchup_id_from_queue,
-    get_rows_for_event,
-)
 
 app = Flask(__name__, template_folder="templates")
+
+
+def _lazy_gate1_save_fights_preview():
+    from operator_dashboard.local_ai_orchestrator_gate1_save_fights_dry_run_apply_preview import (
+        run_gate1_save_fights_dry_run_apply_preview,
+    )
+
+    return run_gate1_save_fights_dry_run_apply_preview
+
+
+def _lazy_gate1_approved_save_writer():
+    from operator_dashboard.local_ai_orchestrator_gate1_approved_save_writer import (
+        run_gate1_approved_save_writer_scaffold,
+    )
+
+    return run_gate1_approved_save_writer_scaffold
+
+
+def _lazy_local_ai_workflow_plan():
+    from operator_dashboard.local_ai_orchestrator_workflow_plan import (
+        build_three_button_workflow_plan,
+        run_workflow_preview,
+    )
+
+    return build_three_button_workflow_plan, run_workflow_preview
+
+
+def _lazy_global_fighter_identity_resolver_preview():
+    from operator_dashboard.global_fighter_identity_resolver_preview import (
+        resolve_fighter_identity_preview,
+        IncomingFighterCandidate,
+        KnownFighterRecord,
+        SourceRef,
+    )
+
+    return (
+        resolve_fighter_identity_preview,
+        IncomingFighterCandidate,
+        KnownFighterRecord,
+        SourceRef,
+    )
+
+
+def _lazy_global_fighter_known_records_readonly_loader():
+    from operator_dashboard.global_fighter_known_records_readonly_loader import (
+        load_known_records_readonly_preview,
+    )
+
+    return load_known_records_readonly_preview
+
+
+def _lazy_button1_to_button2_readonly_dossier_handoff_preview():
+    from operator_dashboard.button1_to_button2_readonly_dossier_handoff_preview import (
+        build_button1_to_button2_readonly_dossier_handoff_preview,
+    )
+
+    return build_button1_to_button2_readonly_dossier_handoff_preview
+
+
+def _lazy_button2_dossier_handoff_ingest_preview():
+    from operator_dashboard.button2_readonly_dossier_handoff_ingest_preview import (
+        build_button2_readonly_dossier_handoff_ingest_preview,
+    )
+
+    return build_button2_readonly_dossier_handoff_ingest_preview
+
+
+def _lazy_button2_dossier_handoff_report_context_preview():
+    from operator_dashboard.button2_dossier_handoff_report_context_preview import (
+        build_button2_dossier_handoff_report_context_preview,
+    )
+
+    return build_button2_dossier_handoff_report_context_preview
+
+
+def _lazy_button2_report_generation_route_render_gate_integration():
+    from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
+        generate_button2_report_render_gate_integration,
+    )
+
+    return generate_button2_report_render_gate_integration
+
+
+def _lazy_button2_customer_flow_dry_run_contract_preview():
+    from operator_dashboard.button2_customer_flow_dry_run_contract_preview_v1 import (
+        run_button2_customer_flow_dry_run_contract_preview,
+    )
+
+    return run_button2_customer_flow_dry_run_contract_preview
+
+
+def _lazy_button2_pdf_output_root_config():
+    from operator_dashboard.button2_pdf_output_root_config_v1 import (
+        get_pdf_output_root,
+        OutputRootNotConfiguredError,
+        OutputRootInvalidError,
+    )
+
+    return get_pdf_output_root, OutputRootNotConfiguredError, OutputRootInvalidError
+
+
+def _lazy_button2_template_pack_asset_renderer():
+    from operator_dashboard.button2_template_pack_asset_renderer_v1 import (
+        resolve_template_pack_assets,
+        TemplatePackResolverError,
+    )
+
+    return resolve_template_pack_assets, TemplatePackResolverError
+
+
+def _lazy_button3_result_comparison_preview():
+    from operator_dashboard.button3_result_comparison_preview_v1 import (
+        build_button3_result_comparison_preview,
+    )
+
+    return build_button3_result_comparison_preview
+
+
+def _lazy_button2_queue_loader_readonly():
+    from operator_dashboard.button2_queue_loader_readonly_v1 import (
+        load_button2_queue_readonly,
+        get_queue_ready_rows,
+        resolve_matchup_id_from_queue,
+        get_rows_for_event,
+    )
+
+    return (
+        load_button2_queue_readonly,
+        get_queue_ready_rows,
+        resolve_matchup_id_from_queue,
+        get_rows_for_event,
+    )
+
+
+def _lazy_controlled_delivery_handlers():
+    from operator_dashboard.button2_controlled_delivery_scaffold import (
+        controlled_delivery_preview,
+        controlled_delivery_action,
+    )
+
+    return controlled_delivery_preview, controlled_delivery_action
+
+
+def _build_button3_preview_input_from_generated_report(
+    generation_result,
+    *,
+    fight_id="",
+    matchup_id="",
+    fighter_a="",
+    fighter_b="",
+    event_name="",
+):
+    """Preserve a generated Button 2 prediction for Button 3's read-only preview."""
+    result = generation_result if isinstance(generation_result, dict) else {}
+    structured_prediction = result.get("structured_prediction")
+    if not isinstance(structured_prediction, dict):
+        structured_prediction = {}
+
+    output_path = _safe_text(result.get("output_path"))
+    generation_request_id = _safe_text(result.get("generation_request_id"))
+    report_id = generation_request_id or os.path.basename(output_path) or _safe_text(fight_id)
+
+    return {
+        "report_id": report_id,
+        "fight_id": _safe_text(fight_id),
+        "matchup_id": _safe_text(matchup_id),
+        "fighter_a": _safe_text(fighter_a),
+        "fighter_b": _safe_text(fighter_b),
+        "event_name": _safe_text(event_name),
+        "report_path": output_path,
+        "structured_prediction": structured_prediction,
+        "prediction_provenance": "button2_generated_report",
+        "preview_only": True,
+        "mutation_performed": False,
+        "accuracy_ledger_write_performed": False,
+        "learning_apply_performed": False,
+        "calibration_write_performed": False,
+        "gcid_write_performed": False,
+    }
 
 _LOCAL_AI_SAFE_TELEMETRY = {
     "preview_only": True,
@@ -416,6 +542,7 @@ def _selected_matchup_matches_pdf_text(selected_preview, pdf_text):
 
 
 def _selected_matchup_passes_strict_pdf_quality_gate(selected_preview, result, pdf_text, page_count, renderer_metadata=None):
+    get_pdf_output_root, _, _ = _lazy_button2_pdf_output_root_config()
     violations = []
     text_lower = str(pdf_text or "").lower()
 
@@ -595,6 +722,7 @@ def _collect_file_metadata(output_path):
 
 def _generate_button2_fallback_pdf(selected_preview, fight_id, output_filename_override):
     """Create a minimal 24-page PDF fallback when renderer dependencies are unavailable."""
+    get_pdf_output_root, _, _ = _lazy_button2_pdf_output_root_config()
     try:
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas
@@ -656,6 +784,7 @@ def _generate_button2_fallback_pdf(selected_preview, fight_id, output_filename_o
 
 
 def _resolve_button2_template_pack_preview():
+    resolve_template_pack_assets, TemplatePackResolverError = _lazy_button2_template_pack_asset_renderer()
     try:
         assets = resolve_template_pack_assets()
         return {
@@ -1342,6 +1471,9 @@ def save_selected_fights():
 @app.route("/api/button1-to-button2/dossier-handoff-preview", methods=["POST"])
 def button1_to_button2_dossier_handoff_preview():
     """Return preview-only sanitized Button1->Button2 dossier handoff payload."""
+    build_button1_to_button2_readonly_dossier_handoff_preview = (
+        _lazy_button1_to_button2_readonly_dossier_handoff_preview()
+    )
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -1575,9 +1707,23 @@ def generate_report():
     
     Response: JSON with ok, error/message, output_path (if success), telemetry flags
     """
+    generate_button2_report_render_gate_integration = _lazy_button2_report_generation_route_render_gate_integration()
     data = request.get_json(silent=True) or {}
     result = generate_button2_report_render_gate_integration(data)
     result = _decorate_button2_generated_pdf_open_link(result)
+    if isinstance(result, dict) and result.get("ok") is True:
+        ingest_payload = data.get("ingest_payload") if isinstance(data, dict) else {}
+        selected_matchup = ingest_payload.get("selected_matchup_payload", {}) if isinstance(ingest_payload, dict) else {}
+        if not isinstance(selected_matchup, dict):
+            selected_matchup = {}
+        result["button3_preview_input"] = _build_button3_preview_input_from_generated_report(
+            result,
+            fight_id=data.get("fight_id", "") if isinstance(data, dict) else "",
+            matchup_id=selected_matchup.get("matchup_id", ""),
+            fighter_a=selected_matchup.get("fighter_a", ""),
+            fighter_b=selected_matchup.get("fighter_b", ""),
+            event_name=selected_matchup.get("event_name", ""),
+        )
     status_code = 200 if result.get("ok") else (403 if result.get("error") == "operator_approval_required" else 400)
     return jsonify(result), status_code
 
@@ -1585,6 +1731,7 @@ def generate_report():
 @app.route("/api/operator/button2/customer-flow/dry-run-contract-preview", methods=["POST"])
 def button2_customer_flow_dry_run_contract_preview():
     """Return a decision-only customer-flow dry-run contract preview."""
+    run_button2_customer_flow_dry_run_contract_preview = _lazy_button2_customer_flow_dry_run_contract_preview()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -1600,6 +1747,13 @@ def button2_customer_flow_dry_run_contract_preview():
 @app.route("/api/button2/selected-matchup/generate-guarded-v1", methods=["POST"])
 def button2_selected_matchup_generate_guarded_v1():
     """Gate2 guarded generation from an explicitly selected Button1->Button2 matchup preview."""
+    (
+        load_button2_queue_readonly,
+        _get_queue_ready_rows,
+        resolve_matchup_id_from_queue,
+        _get_rows_for_event,
+    ) = _lazy_button2_queue_loader_readonly()
+    generate_button2_report_render_gate_integration = _lazy_button2_report_generation_route_render_gate_integration()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -1908,6 +2062,7 @@ def button2_selected_matchup_generate_guarded_v1():
 @app.route("/api/button2/queue-ready", methods=["GET"])
 def button2_queue_ready_v1():
     """Load real approved fight queue from canonical source for Button 2."""
+    load_button2_queue_readonly, _, _, _ = _lazy_button2_queue_loader_readonly()
     queue_rows = load_button2_queue_readonly()
 
     ready_statuses = {
@@ -1944,6 +2099,7 @@ def button2_queue_ready_v1():
 
 @app.route("/api/button1/promote-ready-matchups-to-button2-queue", methods=["POST"])
 def button1_promote_ready_matchups_to_button2_queue_v1():
+    load_button2_queue_readonly, _, _, _ = _lazy_button2_queue_loader_readonly()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2227,6 +2383,13 @@ def button2_generate_selected_batch_v1():
       ...governance flags all false...
     }
     """
+    (
+        load_button2_queue_readonly,
+        _get_queue_ready_rows,
+        resolve_matchup_id_from_queue,
+        _get_rows_for_event,
+    ) = _lazy_button2_queue_loader_readonly()
+    generate_button2_report_render_gate_integration = _lazy_button2_report_generation_route_render_gate_integration()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2484,6 +2647,14 @@ def button2_generate_selected_batch_v1():
                     "content_gate_passed": True,
                     "customer_ready": True,
                     "visual_gate_status": "premium_template_confirmed",
+                    "button3_preview_input": _build_button3_preview_input_from_generated_report(
+                        result,
+                        fight_id=fight_id,
+                        matchup_id=matchup_id,
+                        fighter_a=fighter_a,
+                        fighter_b=fighter_b,
+                        event_name=event_name,
+                    ),
                 })
                 if output_path:
                     output_paths.append(output_path)
@@ -2553,6 +2724,7 @@ def button2_generate_selected_batch_v1():
 @app.route("/api/button2/generated-report/open", methods=["GET"])
 def button2_generated_report_open_v1():
     """Serve generated Button 2 PDFs from the configured output root only."""
+    get_pdf_output_root, OutputRootNotConfiguredError, OutputRootInvalidError = _lazy_button2_pdf_output_root_config()
     filename = request.args.get("filename", "")
     if not _is_safe_generated_pdf_filename(filename):
         return jsonify({
@@ -2596,6 +2768,7 @@ def button2_generated_report_open_v1():
 @app.route("/api/button2/generated-report/library", methods=["GET"])
 def button2_generated_report_library_v1():
     """Render a safe read-only library of generated PDFs from configured output root."""
+    get_pdf_output_root, OutputRootNotConfiguredError, OutputRootInvalidError = _lazy_button2_pdf_output_root_config()
     if request.args.get("path") or request.args.get("dir") or request.args.get("folder"):
         return jsonify({
             "ok": False,
@@ -2636,6 +2809,7 @@ def button2_generated_report_library_v1():
 @app.route("/api/button2/dossier-handoff/ingest-preview", methods=["POST"])
 def button2_dossier_handoff_ingest_preview():
     """Return preview-only Button 2 ingest context from Button 1 handoff payload."""
+    build_button2_readonly_dossier_handoff_ingest_preview = _lazy_button2_dossier_handoff_ingest_preview()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2670,6 +2844,9 @@ def button2_dossier_handoff_ingest_preview():
 @app.route("/api/button2/dossier-handoff/report-context-preview", methods=["POST"])
 def button2_dossier_handoff_report_context_preview():
     """Return preview-only Button 2 report-context preview from ingest preview context."""
+    build_button2_dossier_handoff_report_context_preview = (
+        _lazy_button2_dossier_handoff_report_context_preview()
+    )
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2832,6 +3009,7 @@ def button3_auto_result_source_yield_live_executor_preview():
 @app.route("/api/button3/result-comparison/preview-v1", methods=["POST"])
 def button3_result_comparison_preview_v1():
     """Preview-only Button 3 result comparison route (no apply/mutation path)."""
+    build_button3_result_comparison_preview = _lazy_button3_result_comparison_preview()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2888,6 +3066,7 @@ def button3_apply_result():
 @app.route("/api/local-ai/orchestrator/workflow-preview", methods=["POST"])
 def local_ai_orchestrator_workflow_preview():
     """Return preview-only workflow plan (or preview run) for one source button."""
+    build_three_button_workflow_plan, run_workflow_preview = _lazy_local_ai_workflow_plan()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -2983,6 +3162,7 @@ def local_ai_orchestrator_workflow_preview():
 @app.route("/api/local-ai/gate1/save-fights/dry-run-apply-preview", methods=["POST"])
 def local_ai_gate1_save_fights_dry_run_apply_preview():
     """Return preview-only Gate 1 save-fights dry-run apply projection."""
+    run_gate1_save_fights_dry_run_apply_preview = _lazy_gate1_save_fights_preview()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -3038,6 +3218,7 @@ def local_ai_gate1_save_fights_dry_run_apply_preview():
 @app.route("/api/local-ai/gate1/save-fights/approved-save-writer-preview", methods=["POST"])
 def local_ai_gate1_approved_save_writer_preview():
     """Return preview-only Gate 1 approved save writer scaffold projection."""
+    run_gate1_approved_save_writer_scaffold = _lazy_gate1_approved_save_writer()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -3130,6 +3311,12 @@ def global_fighters_identity_resolver_preview():
       No profile creates, updates, merges, or database writes.
       Fails closed when source_refs are missing.
     """
+    (
+        resolve_fighter_identity_preview,
+        IncomingFighterCandidate,
+        KnownFighterRecord,
+        SourceRef,
+    ) = _lazy_global_fighter_identity_resolver_preview()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -3310,6 +3497,7 @@ def global_fighters_known_records_loader_preview():
       No profile creates, updates, merges, or database writes.
       Fails closed on malformed records.
     """
+    load_known_records_readonly_preview = _lazy_global_fighter_known_records_readonly_loader()
     body = request.get_json(silent=True)
     if body is None:
         body = {}
@@ -3405,7 +3593,16 @@ def global_fighters_known_records_loader_preview():
 
 # ─── Phase 7 Controlled Delivery ──────────────────────────────────────────────
 
-app.register_blueprint(controlled_delivery)
+@app.route('/api/button2/controlled-delivery/preview', methods=['POST'])
+def button2_controlled_delivery_preview_proxy():
+    controlled_delivery_preview, _ = _lazy_controlled_delivery_handlers()
+    return controlled_delivery_preview()
+
+
+@app.route('/api/button2/controlled-delivery/action', methods=['POST'])
+def button2_controlled_delivery_action_proxy():
+    _, controlled_delivery_action = _lazy_controlled_delivery_handlers()
+    return controlled_delivery_action()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
