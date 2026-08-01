@@ -43,6 +43,7 @@ SOURCE_FIELDS = frozenset({
     "queue_write_performed", "pdf_generation_performed", "artifact_archived", "artifact_removed",
     "artifact_overwritten", "permanent_mutation_performed", "action_performed",
 })
+SOURCE_REQUIRED_FIELDS = SOURCE_FIELDS
 CAPABILITY_FIELDS = frozenset({
     "capability_contract_version", "capability_id", "archive_root_id", "archive_root_version",
     "archive_policy_id", "archive_boundary_id", "platform", "filesystem_policy_id",
@@ -51,6 +52,33 @@ CAPABILITY_FIELDS = frozenset({
     "capability_source_id", "capability_source_version", "expiry_or_validity_evidence",
     "root_configuration_fingerprint", "root_identity", "root_target", "root_observer",
     "filesystem_observer", "identity_observer", "parser_capability", "safety_flags",
+})
+CAPABILITY_REQUIRED_FIELDS = CAPABILITY_FIELDS
+PARSER_CAPABILITY_FIELDS = frozenset({
+    "capability_contract_version", "capability_source_id", "capability_source_version",
+    "enabled", "supported", "internal_test_only", "fixture_only", "production_capable",
+    "action_performed", "parser", "trusted_metadata", "resource_policy_id", "safety_flags",
+})
+PARSER_RESULT_FIELDS = frozenset({
+    "contract_version", "ok", "status", "inspection_completed", "parser_source_id",
+    "parser_source_version", "parser_policy_id", "resource_policy_id", "fixture_id",
+    "report_id", "report_version", "expected_filename", "destination_relative_id",
+    "destination_identity_version_token", "pdf_signature_valid", "pdf_parse_valid",
+    "observed_page_count", "encrypted_or_protected", "embedded_files_detected",
+    "javascript_detected", "external_resource_request_detected", "rendering_performed",
+    "network_access_performed", "filesystem_write_performed", "process_isolation_claimed",
+    "timeout_enforced", "memory_limit_enforced", "timeout_occurred", "memory_limit_exceeded",
+    "resource_limit_exceeded", "blocked_reason", "evidence_version_token", "evaluated_at",
+    "request_id", "idempotency_key", "action_performed", "safety_flags",
+})
+METADATA_FIELDS = frozenset({
+    "contract_version", "evidence_completed", "metadata_source_type", "metadata_source_id",
+    "metadata_source_version", "metadata_integrity_token", "fixture_id", "report_id",
+    "report_version", "filename", "sha256", "file_size_bytes", "page_count", "classification",
+    "internal_warning", "provenance_source_type", "provenance_source_id", "provenance_verified",
+    "provenance_fixture_bound", "archive_root_id", "archive_root_version", "archive_policy_id",
+    "archive_boundary_id", "destination_relative_id", "destination_evidence_version_token",
+    "evaluated_at", "request_id", "idempotency_key", "action_performed",
 })
 SAFETY_FLAGS = (
     "customer_ready_possible", "customer_release_authorized", "queue_write_performed",
@@ -104,6 +132,54 @@ def _flags() -> dict[str, bool]:
     return {name: False for name in SAFETY_FLAGS}
 
 
+def _strict_false_flags(value: Any) -> bool:
+    return isinstance(value, Mapping) and set(value) == set(SAFETY_FLAGS) and all(item is False for item in value.values())
+
+
+def _identity_valid(value: Any) -> bool:
+    return isinstance(value, Mapping) and value.get("identity_completed") is True and value.get("identity_supported") is True and isinstance(value.get("volume_identifier"), str) and isinstance(value.get("file_identifier"), str)
+
+
+def _source_valid(source: Any) -> bool:
+    if not isinstance(source, Mapping) or set(source) != SOURCE_REQUIRED_FIELDS:
+        return False
+    if source.get("inspection_contract_version") != "button2-governed-internal-pdf-artifact-inspection-v1":
+        return False
+    if source.get("inspection_completed") is not True or source.get("artifact_state") != "ACTIVE_INTERNAL_TEST_ARTIFACT":
+        return False
+    if not _HEX.fullmatch(source.get("sha256", "")) or type(source.get("file_size_bytes")) is not int or source["file_size_bytes"] < 0 or type(source.get("page_count")) is not int or not 1 <= source["page_count"] <= MAX_PAGES:
+        return False
+    if not all(source.get(key) is True for key in ("pdf_signature_valid", "pdf_parse_valid", "identity_valid", "classification_valid", "internal_warning_valid")):
+        return False
+    if not all(source.get(key) is False for key in ("customer_ready_possible", "customer_release_authorized", "queue_write_performed", "pdf_generation_performed", "artifact_archived", "artifact_removed", "artifact_overwritten", "permanent_mutation_performed", "action_performed")):
+        return False
+    return _identity_valid(source.get("source_identity"))
+
+
+def _capability_valid(capability: Any) -> bool:
+    if not isinstance(capability, Mapping) or set(capability) != CAPABILITY_REQUIRED_FIELDS:
+        return False
+    if capability.get("capability_contract_version") != COMPOSITE_VERSION:
+        return False
+    if not all(capability.get(key) is True for key in ("configured", "enabled", "server_controlled", "customer_isolated", "source_isolated", "internal_test_only", "fixture_only")):
+        return False
+    if capability.get("production_capable") is not False or capability.get("action_performed") is not False:
+        return False
+    if not _strict_false_flags(capability.get("safety_flags")) or not _identity_valid(capability.get("root_identity")):
+        return False
+    if not isinstance(capability.get("root_target"), (str, os.PathLike)):
+        return False
+    return all(callable(capability.get(key)) for key in ("root_observer", "filesystem_observer", "identity_observer"))
+
+
+def _parser_capability_valid(value: Any) -> bool:
+    return isinstance(value, Mapping) and set(value) == PARSER_CAPABILITY_FIELDS and value.get("capability_contract_version") == PARSER_CAPABILITY_VERSION and value.get("enabled") is True and value.get("supported") is True and value.get("internal_test_only") is True and value.get("fixture_only") is True and value.get("production_capable") is False and value.get("action_performed") is False and callable(value.get("parser")) and isinstance(value.get("trusted_metadata"), Mapping) and value.get("resource_policy_id") == RESOURCE_POLICY and _strict_false_flags(value.get("safety_flags"))
+
+
+def _metadata_schema_valid(value: Any) -> bool:
+    return isinstance(value, Mapping) and set(value) == METADATA_FIELDS and value.get("contract_version") == METADATA_VERSION and value.get("evidence_completed") is True and value.get("action_performed") is False and value.get("metadata_source_type") in {"governed_internal_fixture_metadata", "server_controlled_immutable_sidecar_metadata", "previously_verified_archive_metadata_record"} and isinstance(value.get("metadata_integrity_token"), str) and bool(value["metadata_integrity_token"]) and value.get("provenance_verified") is True and value.get("provenance_fixture_bound") is True
+
+
 def _response(request: Any, *, status: str = "DESTINATION_INSPECTION_BLOCKED", reason: str = "invalid_destination_inspection_contract", **values: Any) -> dict[str, Any]:
     req = request if isinstance(request, Mapping) else {}
     result = {
@@ -122,7 +198,7 @@ def _response(request: Any, *, status: str = "DESTINATION_INSPECTION_BLOCKED", r
         "file_size_match": False, "page_count_match": False, "classification_match": False,
         "warning_match": False, "pdf_signature_valid": False, "pdf_parse_valid": False,
         "evidence_version_token": "", "evaluated_at": "", "request_id": req.get("request_id", ""),
-        "idempotency_key": req.get("idempotency_key", ""), "blocked_reason": reason if reason in REASONS else "invalid_destination_inspection_contract",
+        "idempotency_key": req.get("idempotency_key", ""), "blocked_reason": reason if reason == "" or reason in REASONS else "invalid_destination_inspection_contract",
         "action_performed": False, "safety_flags": _flags(),
     }
     result.update(values)
@@ -177,7 +253,7 @@ def _reparse(observer: Any, path: Path) -> bool | None:
 def _metadata_valid(metadata: Any, req: Mapping[str, Any], source: Mapping[str, Any], digest: str, size: int, pages: int, root: Mapping[str, Any]) -> tuple[bool, str]:
     if not isinstance(metadata, Mapping):
         return False, "classification_evidence_missing"
-    if metadata.get("contract_version") != METADATA_VERSION:
+    if not _metadata_schema_valid(metadata):
         return False, "trusted_metadata_invalid"
     if metadata.get("action_performed") is not False:
         return False, "trusted_metadata_invalid"
@@ -200,18 +276,28 @@ def _metadata_valid(metadata: Any, req: Mapping[str, Any], source: Mapping[str, 
 def _result_valid(result: Any, request: Mapping[str, Any], target_token: str) -> tuple[bool, str]:
     if not isinstance(result, Mapping):
         return False, "parser_result_invalid"
+    if set(result) != PARSER_RESULT_FIELDS:
+        return False, "unexpected_parser_result_fields"
     if result.get("contract_version") != RESULT_VERSION:
         return False, "unsupported_parser_result_version"
+    if not all(isinstance(result.get(key), bool) for key in ("ok", "inspection_completed", "pdf_signature_valid", "pdf_parse_valid", "encrypted_or_protected", "embedded_files_detected", "javascript_detected", "external_resource_request_detected", "rendering_performed", "network_access_performed", "filesystem_write_performed", "process_isolation_claimed", "timeout_enforced", "memory_limit_enforced", "timeout_occurred", "memory_limit_exceeded", "resource_limit_exceeded", "action_performed")):
+        return False, "invalid_parser_result_contract"
+    if not all(isinstance(result.get(key), str) and result.get(key) for key in ("parser_source_id", "parser_source_version", "parser_policy_id", "resource_policy_id", "evidence_version_token", "evaluated_at")):
+        return False, "parser_result_missing"
+    if result.get("resource_policy_id") != RESOURCE_POLICY or result.get("status") not in {"PARSER_RESULT_COMPLETE", "PARSER_RESULT_BLOCKED", "PARSER_RESULT_UNAVAILABLE", "PARSER_RESULT_TIMED_OUT", "PARSER_RESULT_RESOURCE_LIMITED", "PARSER_RESULT_UNSUPPORTED"}:
+        return False, "invalid_parser_result_contract"
     if any(result.get(k) != request.get(k) for k in ("fixture_id", "report_id", "report_version", "expected_filename", "destination_relative_id", "request_id", "idempotency_key")):
         return False, "parser_result_request_mismatch"
     if result.get("destination_identity_version_token") != target_token:
         return False, "parser_result_identity_mismatch"
-    if result.get("action_performed") is not False:
+    if result.get("action_performed") is not False or not _strict_false_flags(result.get("safety_flags")):
         return False, "parser_result_invalid"
     if any(result.get(k) is not False for k in ("network_access_performed", "filesystem_write_performed", "rendering_performed")):
         return False, "parser_network_access_detected" if result.get("network_access_performed") else "parser_filesystem_write_detected" if result.get("filesystem_write_performed") else "parser_rendering_detected"
-    if result.get("status") not in {"PARSER_RESULT_COMPLETE", "PARSER_RESULT_BLOCKED", "PARSER_RESULT_UNAVAILABLE", "PARSER_RESULT_TIMED_OUT", "PARSER_RESULT_RESOURCE_LIMITED", "PARSER_RESULT_UNSUPPORTED"}:
-        return False, "invalid_parser_result_contract"
+    if result.get("timeout_occurred") and result.get("status") != "PARSER_RESULT_TIMED_OUT":
+        return False, "parser_timeout"
+    if result.get("memory_limit_exceeded") and result.get("status") != "PARSER_RESULT_RESOURCE_LIMITED":
+        return False, "parser_memory_limit_exceeded"
     return True, ""
 
 
@@ -224,7 +310,7 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
         return _response(request, reason="unexpected_destination_inspection_fields")
     if any(not _string(request.get(k), n) for k, n in (("fixture_id", 64), ("report_id", 96), ("report_version", 32), ("expected_filename", 160), ("source_boundary_id", 96), ("archive_root_id", 96), ("archive_root_version", 96), ("archive_policy_id", 96), ("archive_boundary_id", 96), ("destination_relative_id", 512), ("request_id", 128), ("idempotency_key", 128))) or not _HEX.fullmatch(request.get("expected_sha256", "")) or type(request.get("expected_file_size_bytes")) is not int or request["expected_file_size_bytes"] < 0 or type(request.get("expected_page_count")) is not int or not 1 <= request["expected_page_count"] <= MAX_PAGES:
         return _response(request, reason="invalid_destination_inspection_contract")
-    if not isinstance(source_artifact_evidence, Mapping) or set(source_artifact_evidence) - SOURCE_FIELDS:
+    if not _source_valid(source_artifact_evidence):
         return _response(request, reason="source_artifact_evidence_invalid")
     source = source_artifact_evidence
     if source.get("artifact_state") != "ACTIVE_INTERNAL_TEST_ARTIFACT" or source.get("inspection_completed") is not True:
@@ -240,7 +326,7 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
         return _response(request, reason="source_artifact_evidence_invalid")
     if source.get("source_boundary_id") != request.get("source_boundary_id"):
         return _response(request, reason="source_artifact_identity_mismatch")
-    if not isinstance(private_inspection_capability, Mapping) or set(private_inspection_capability) - CAPABILITY_FIELDS:
+    if not _capability_valid(private_inspection_capability):
         return _response(request, reason="invalid_destination_inspection_contract")
     capability = private_inspection_capability
     if capability.get("capability_contract_version") != COMPOSITE_VERSION:
@@ -296,7 +382,7 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
         try:
             info = os.stat(parent, follow_symlinks=False)
         except FileNotFoundError:
-            return _response(request, reason="parent_missing")
+            return _response(request, status="DESTINATION_INSPECTION_UNAVAILABLE", reason="parent_missing")
         except PermissionError:
             return _response(request, reason="parent_access_denied")
         except OSError:
@@ -309,7 +395,7 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
     try:
         target_info = os.lstat(target)
     except FileNotFoundError:
-        return _response(request, status="DESTINATION_INSPECTION_COMPLETE", reason="invalid_destination_inspection_contract", inspection_completed=True, destination_status="DESTINATION_ABSENT", collision_classification="NONE", destination_inside_approved_root=True, source_destination_distinct=True)
+        return _response(request, status="DESTINATION_INSPECTION_COMPLETE", reason="", ok=True, inspection_completed=True, destination_status="DESTINATION_ABSENT", collision_classification="NONE", destination_inside_approved_root=True, source_destination_distinct=True)
     except PermissionError:
         return _response(request, reason="destination_access_denied")
     except OSError:
@@ -342,10 +428,16 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
         return _response(request, reason="pdf_signature_validation_failed", destination_exists=True, destination_regular_file=True)
     target_token = str(capability.get("identity_observer")(target).get("identity_version_token", "")) if callable(capability.get("identity_observer")) else f"{destination_identity.get('volume_identifier')}:{destination_identity.get('file_identifier')}"
     parser_capability = capability.get("parser_capability")
-    if not isinstance(parser_capability, Mapping) or parser_capability.get("capability_contract_version") != PARSER_CAPABILITY_VERSION:
+    if not isinstance(parser_capability, Mapping):
         return _response(request, reason="parser_capability_missing", destination_exists=True, destination_regular_file=True)
-    if parser_capability.get("enabled") is not True or parser_capability.get("supported") is not True:
+    if parser_capability.get("capability_contract_version") != PARSER_CAPABILITY_VERSION:
+        return _response(request, reason="unsupported_contract_version", destination_exists=True, destination_regular_file=True)
+    if parser_capability.get("enabled") is not True:
         return _response(request, reason="parser_capability_disabled", destination_exists=True, destination_regular_file=True)
+    if parser_capability.get("supported") is not True:
+        return _response(request, reason="parser_capability_unsupported", destination_exists=True, destination_regular_file=True)
+    if not _parser_capability_valid(parser_capability):
+        return _response(request, reason="parser_capability_invalid", destination_exists=True, destination_regular_file=True)
     parser = parser_capability.get("parser")
     if not callable(parser) or parser_capability.get("internal_test_only") is not True or parser_capability.get("fixture_only") is not True or parser_capability.get("production_capable") is not False:
         return _response(request, reason="parser_capability_invalid", destination_exists=True, destination_regular_file=True)
@@ -387,4 +479,4 @@ def inspect_button2_governed_internal_pdf_archive_destination_v1(private_inspect
     identical = source.get("sha256") == digest and source.get("file_size_bytes") == size and source.get("page_count") == page_count
     status = "DESTINATION_INSPECTION_COMPLETE"
     classification = "IDENTICAL_ARCHIVE_PRESENT" if identical else "CONFLICTING_ARCHIVE_PRESENT"
-    return _response(request, status=status, reason="invalid_destination_inspection_contract", ok=True, inspection_completed=True, destination_status=classification, collision_classification=classification, destination_exists=True, destination_regular_file=True, destination_inside_approved_root=True, source_destination_distinct=True, identity_match=identical, sha256_match=identical, file_size_match=source.get("file_size_bytes") == size, page_count_match=source.get("page_count") == page_count, classification_match=True, warning_match=True, pdf_signature_valid=True, pdf_parse_valid=True, evidence_version_token=metadata.get("destination_evidence_version_token", ""), evaluated_at=metadata.get("evaluated_at", ""), blocked_reason="", action_performed=False)
+    return _response(request, status=status, reason="", ok=True, inspection_completed=True, destination_status=classification, collision_classification=classification, destination_exists=True, destination_regular_file=True, destination_inside_approved_root=True, source_destination_distinct=True, identity_match=identical, sha256_match=identical, file_size_match=source.get("file_size_bytes") == size, page_count_match=source.get("page_count") == page_count, classification_match=True, warning_match=True, pdf_signature_valid=True, pdf_parse_valid=True, evidence_version_token=metadata.get("destination_evidence_version_token", ""), evaluated_at=metadata.get("evaluated_at", ""), blocked_reason="", action_performed=False)
