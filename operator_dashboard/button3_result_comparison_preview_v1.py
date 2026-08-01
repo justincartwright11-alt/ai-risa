@@ -325,6 +325,92 @@ def _build_accuracy_preview(
     }
 
 
+def _build_learning_recommendation_preview(
+    *,
+    comparison_status: str,
+    predicted_winner: str,
+    predicted_method: str,
+    predicted_round: str,
+    actual_winner: str,
+    actual_method: str,
+    actual_round: str,
+    result_source_url: str,
+    source_tier: str,
+    accuracy_preview: Dict[str, Any],
+    structural_evidence_preview: Dict[str, Any],
+) -> Dict[str, Any]:
+    source_present = bool(result_source_url) and source_tier.lower() != "unknown"
+    required_prediction_complete = bool(predicted_winner and predicted_method)
+    required_result_complete = bool(actual_winner and actual_method)
+    uncertainty_flags = []
+    if comparison_status in {"conflict", "needs_manual_review"}:
+        uncertainty_flags.append(comparison_status)
+    if not required_prediction_complete:
+        uncertainty_flags.append("incomplete_prediction_fields")
+    if not required_result_complete:
+        uncertainty_flags.append("incomplete_official_result_fields")
+    if not source_present:
+        uncertainty_flags.append("missing_result_source")
+
+    right = {
+        "winner_correctness": accuracy_preview.get("winner") == "hit",
+        "method_correctness": accuracy_preview.get("method") == "hit",
+        "round_or_range_correctness": accuracy_preview.get("round") == "hit" if predicted_round and actual_round else "unavailable",
+        "source_provenance_quality": source_present,
+    }
+    missed = {
+        "wrong_winner": accuracy_preview.get("winner") == "miss",
+        "wrong_method": accuracy_preview.get("method") == "miss",
+        "wrong_round_or_range": accuracy_preview.get("round") == "miss" if predicted_round and actual_round else False,
+        "weak_or_missing_source_evidence": not source_present,
+        "incomplete_prediction_fields": not required_prediction_complete,
+        "uncertainty_or_conflict_flags": uncertainty_flags,
+    }
+
+    if not source_present:
+        diagnosis = "BAD_OR_MISSING_SOURCE_DATA"
+    elif not required_prediction_complete or not required_result_complete:
+        diagnosis = "LOW_CONFIDENCE_OR_INCOMPLETE_EVIDENCE"
+    elif comparison_status in {"conflict", "needs_manual_review"}:
+        diagnosis = "NEEDS_OPERATOR_REVIEW"
+    elif missed["wrong_winner"]:
+        diagnosis = "WINNER_MISMATCH"
+    elif missed["wrong_method"]:
+        diagnosis = "METHOD_MISMATCH"
+    elif missed["wrong_round_or_range"]:
+        diagnosis = "ROUND_OR_TIMING_MISMATCH"
+    else:
+        diagnosis = "NO_ERROR_DETECTED"
+
+    if uncertainty_flags or comparison_status != "ready_to_compare":
+        status = "OPERATOR_REVIEW_REQUIRED"
+        summary = "This comparison requires operator review before any learning decision."
+    elif diagnosis == "NO_ERROR_DETECTED":
+        status = "NO_LEARNING_NEEDED"
+        summary = "The official result reinforces AI-RISA's analysis; no learning is recommended."
+    else:
+        status = "LEARNING_RECOMMENDED"
+        summary = "The official result partially challenges AI-RISA's analysis; review the learning recommendation."
+
+    return {
+        "learning_preview_only": True,
+        "what_ai_risa_got_right": right,
+        "what_ai_risa_missed": missed,
+        "error_diagnosis_category": diagnosis,
+        "controlled_learning_status": status,
+        "operator_facing_summary": summary,
+        "safety_flags": {
+            "learning_preview_only": True,
+            "learning_applied": False,
+            "calibration_write_authorized": False,
+            "accuracy_ledger_write_authorized": False,
+            "gCID_write_authorized": False,
+            "operator_approval_required": True,
+        },
+        "structural_evidence_state": structural_evidence_preview.get("state", "unavailable"),
+    }
+
+
 def _authorization_deny_payload(
     *,
     reason_code: str,
@@ -1647,6 +1733,19 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         actual_method=actual_method_normalized,
         actual_round=actual_round_normalized,
     )
+    learning_recommendation_preview = _build_learning_recommendation_preview(
+        comparison_status=comparison_status,
+        predicted_winner=predicted_winner,
+        predicted_method=predicted_method_normalized,
+        predicted_round=predicted_round_normalized,
+        actual_winner=actual_winner,
+        actual_method=actual_method_normalized,
+        actual_round=actual_round_normalized,
+        result_source_url=result_source_url,
+        source_tier=source_tier,
+        accuracy_preview=accuracy_preview,
+        structural_evidence_preview=structural_evidence_preview,
+    )
 
     apply_authorization = _evaluate_apply_authorization(body, comparison_status)
     accuracy_ledger_evaluation = _evaluate_accuracy_ledger(
@@ -1713,6 +1812,7 @@ def build_button3_result_comparison_preview(payload: Dict[str, Any]) -> Dict[str
         "source_tier": source_tier,
         "comparison_status": comparison_status,
         "accuracy_preview": accuracy_preview,
+        "learning_recommendation_preview": learning_recommendation_preview,
         "apply_authorization": apply_authorization,
         "authorization_state": apply_authorization.get("authorization_state", "denied"),
         "authorized": bool(apply_authorization.get("authorized", False)),

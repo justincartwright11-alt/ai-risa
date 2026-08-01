@@ -138,6 +138,17 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
     assert button3_result["learning_apply_performed"] is False
     assert button3_result["button3_mutation_performed"] is False
     assert button3_result["controlled_learning_candidate_eligible"] is False
+    learning_preview = button3_result["learning_recommendation_preview"]
+    assert learning_preview["controlled_learning_status"] == "NO_LEARNING_NEEDED"
+    assert learning_preview["error_diagnosis_category"] == "NO_ERROR_DETECTED"
+    assert learning_preview["safety_flags"] == {
+        "learning_preview_only": True,
+        "learning_applied": False,
+        "calibration_write_authorized": False,
+        "accuracy_ledger_write_authorized": False,
+        "gCID_write_authorized": False,
+        "operator_approval_required": True,
+    }
 
     with app.test_client() as client:
         route_result = client.post(

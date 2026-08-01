@@ -4410,6 +4410,15 @@ function renderButton3ResultComparisonPreview(data) {
     'result_source_url: ' + escapeHtml(sourceUrl) + '<br>' +
     'source_tier: ' + escapeHtml(sourceTier) + '<br>' +
     escapeHtml(sourceWarning) + '<br>' +
+    (data.learning_recommendation_preview ?
+      '<hr><strong>Controlled Learning Recommendation (Preview Only)</strong><br>' +
+      'what was right: ' + escapeHtml(JSON.stringify(data.learning_recommendation_preview.what_ai_risa_got_right)) + '<br>' +
+      'what was wrong or missing: ' + escapeHtml(JSON.stringify(data.learning_recommendation_preview.what_ai_risa_missed)) + '<br>' +
+      'error diagnosis: ' + escapeHtml(String(data.learning_recommendation_preview.error_diagnosis_category || 'NEEDS_OPERATOR_REVIEW')) + '<br>' +
+      'learning recommendation status: ' + escapeHtml(String(data.learning_recommendation_preview.controlled_learning_status || 'OPERATOR_REVIEW_REQUIRED')) + '<br>' +
+      escapeHtml(String(data.learning_recommendation_preview.operator_facing_summary || 'Operator review required.')) + '<br>' +
+      'operator approval required: true<br>' +
+      'learning_applied: false | calibration_write_authorized: false | accuracy_ledger_write_authorized: false | gCID_write_authorized: false<br>' : '') +
     'operator_review_required: ' + (data.operator_review_required === true ? 'true' : 'false') + '<br>' +
     'operator_approval_gate_required_for_apply: ' + (data.operator_approval_gate_required_for_apply === true ? 'true' : 'false') + '<br>' +
     'write/apply paths remain blocked in preview mode; no accuracy ledger write or learning apply.';
