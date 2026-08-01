@@ -1,0 +1,48 @@
+{
+  "fixture_id": "closed_loop_governed_local_fixture_v1",
+  "fixture_only": true,
+  "button1": {
+    "candidate_id": "fixture_only_closed_loop_matchup_v1",
+    "event_name": "Fictional Internal Smoke Event",
+    "event_date": "2099-01-01",
+    "promotion": "AI-RISA Test Promotion",
+    "fighter_a": "Fictional Fighter Alpha",
+    "fighter_b": "Fictional Fighter Beta",
+    "source_url": "https://example.test/ai-risa/closed-loop-fixture",
+    "source_type": "test_fixture",
+    "provenance_status": "fixture_only",
+    "operator_approved": true,
+    "button2_readiness_status": "READY_FOR_BUTTON_2",
+    "customer_release_authorized": false
+  },
+  "button2": {
+    "matchup_id": "fixture_only_closed_loop_matchup_v1",
+    "event_name": "Fictional Internal Smoke Event",
+    "event_date": "2099-01-01",
+    "promotion": "AI-RISA Test Promotion",
+    "fighter_a": "Fictional Fighter Alpha",
+    "fighter_b": "Fictional Fighter Beta",
+    "source_url": "https://example.test/ai-risa/closed-loop-fixture",
+    "source_type": "test_fixture",
+    "provenance_status": "fixture_only_immutable",
+    "button2_readiness_status": "READY_FOR_BUTTON_2",
+    "customer_ready_possible": false,
+    "customer_release_authorized": false
+  },
+  "queue": [
+    {
+      "matchup_id": "fixture_only_closed_loop_matchup_v1",
+      "event_name": "Fictional Internal Smoke Event",
+      "event_date": "2099-01-01",
+      "promotion": "AI-RISA Test Promotion",
+      "fighter_a": "Fictional Fighter Alpha",
+      "fighter_b": "Fictional Fighter Beta",
+      "source_url": "https://example.test/ai-risa/closed-loop-fixture",
+      "source_type": "test_fixture",
+      "provenance_status": "fixture_only_immutable",
+      "button2_readiness_status": "READY_FOR_BUTTON_2",
+      "customer_ready_possible": false,
+      "customer_release_authorized": false
+    }
+  ]
+}

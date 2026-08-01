@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from operator_dashboard.button2_report_generation_route_render_gate_integration_v1 import (
@@ -12,15 +14,36 @@ from operator_dashboard.button3_result_comparison_preview_v1 import (
 from operator_dashboard.app import app, _build_button3_preview_input_from_generated_report, _build_button3_verified_result_handoff
 
 
+FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "closed_loop_governed_local_fixture_v1.json"
+
+
 def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp_path) -> None:
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    button1_fixture = fixture["button1"]
+    button2_fixture = fixture["button2"]
+    assert fixture["fixture_only"] is True
+    assert button1_fixture["operator_approved"] is True
+    assert button1_fixture["button2_readiness_status"] == "READY_FOR_BUTTON_2"
+    assert button2_fixture["provenance_status"] == "fixture_only_immutable"
+    assert button2_fixture["customer_release_authorized"] is False
+
+    with patch("operator_dashboard.button2_queue_loader_readonly_v1._CANONICAL_QUEUE_PATH", str(FIXTURE_PATH)):
+        with app.test_client() as client:
+            queue_result = client.get("/api/button2/queue-ready")
+    assert queue_result.status_code == 200
+    queue_data = queue_result.json
+    assert queue_data["ready_count"] == 0
+    assert queue_data["total_rows"] == 1
+    assert queue_data["queue_rows"][0]["provenance_status"] == "fixture_only_immutable"
+
     output_root = tmp_path / "pdf_output"
     output_root.mkdir()
 
     button2_request = {
         "operator_approved": True,
-        "fight_id": "closed_loop_contract_fight",
-        "matchup_id": "closed_loop_contract_matchup",
-        "event_name": "Closed Loop Smoke Event",
+        "fight_id": button1_fixture["candidate_id"],
+        "matchup_id": button2_fixture["matchup_id"],
+        "event_name": button2_fixture["event_name"],
         "ingest_payload": {"destination_marker": "button2_report_generation_preview"},
     }
 
@@ -89,8 +112,8 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
 
     assert button2_result["ok"] is True
     assert button2_request["operator_approved"] is True
-    assert button2_request["fight_id"] == "closed_loop_contract_fight"
-    assert button2_request["matchup_id"] == "closed_loop_contract_matchup"
+    assert button2_request["fight_id"] == button1_fixture["candidate_id"]
+    assert button2_request["matchup_id"] == button2_fixture["matchup_id"]
     assert "structured_prediction" in button2_result
     structured_prediction = button2_result["structured_prediction"]
     assert structured_prediction["contract_version"] == "button2_structured_prediction_v1"
@@ -99,25 +122,25 @@ def test_closed_loop_structured_prediction_contract_button2_to_button3_smoke(tmp
 
     button3_payload = _build_button3_preview_input_from_generated_report(
         button2_result,
-        fight_id="closed_loop_contract_fight",
-        matchup_id="closed_loop_contract_matchup",
-        fighter_a="Fighter Alpha",
-        fighter_b="Fighter Beta",
-        event_name="Closed Loop Smoke Event",
+        fight_id=button2_request["fight_id"],
+        matchup_id=button2_request["matchup_id"],
+        fighter_a=button2_fixture["fighter_a"],
+        fighter_b=button2_fixture["fighter_b"],
+        event_name=button2_request["event_name"],
     )
     assert button3_payload["report_id"]
     assert button3_payload["report_path"] == button2_result["output_path"]
     assert button3_payload["structured_prediction"] == structured_prediction
     assert button3_payload["prediction_provenance"] == "button2_generated_report"
     assert button3_payload["fight_id"] == button2_request["fight_id"]
-    assert button3_payload["fighter_a"] == "Fighter Alpha"
-    assert button3_payload["fighter_b"] == "Fighter Beta"
+    assert button3_payload["fighter_a"] == button2_fixture["fighter_a"]
+    assert button3_payload["fighter_b"] == button2_fixture["fighter_b"]
 
     verified_result_preview = {
-        "fight_id": "closed_loop_contract_fight",
-        "matchup_id": "closed_loop_contract_matchup",
-        "fighter_a": "Fighter Alpha",
-        "fighter_b": "Fighter Beta",
+        "fight_id": button2_request["fight_id"],
+        "matchup_id": button2_request["matchup_id"],
+        "fighter_a": button2_fixture["fighter_a"],
+        "fighter_b": button2_fixture["fighter_b"],
         "official_winner": "Fighter Beta",
         "official_method": "Decision",
         "official_round": "5",
