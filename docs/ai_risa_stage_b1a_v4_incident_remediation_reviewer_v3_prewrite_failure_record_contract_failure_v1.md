@@ -1,0 +1,170 @@
+# AI-RISA Stage B1A v4 Incident-Remediation Reviewer v3 Pre-Write Failure Record - Contract Failure v1
+
+## 1. Record Status
+
+CONTRACT_FAILURE_RECORD_VERSION=V1
+CONTRACT_FAILURE_RECORD_STATUS=FINAL
+FAILED_RECORD_TYPE=V3_PREWRITE_FAILURE_RECORD
+FAILED_RECORD_CLASSIFICATION=V3_PREWRITE_FAILURE_RECORD_CONTRACT_FAIL
+
+This permanent record classifies the existing v3 pre-write-failure record as nonconforming to its authorized exact document contract.
+
+## 2. Repository Checkpoint
+
+BRANCH=ai-risa-mainline
+CONTRACT_FAILURE_BASELINE_COMMIT=ec8dc6e38e16685642635111b3a94cc2e19014a9
+CONTRACT_FAILURE_BASELINE_TREE=40042453a130d2c15c08c3fa2d3d65adf9368130
+
+Unrelated pre-existing tracked and untracked worktree state was preserved.
+
+## 3. Failed Record Identity
+
+FAILED_RECORD_PATH=docs/ai_risa_stage_b1a_v4_incident_remediation_reviewer_v3_prewrite_failure_record.md
+FAILED_RECORD_SIZE=3963
+FAILED_RECORD_SHA256=2AC26D08631D92C9910FACDC15E6C887DAC19CDC5B6AD25931632D3A6224AE68
+FAILED_RECORD_COMMIT=ec8dc6e38e16685642635111b3a94cc2e19014a9
+FAILED_RECORD_TAG=ai-risa-stage-b1a-v4-incident-remediation-reviewer-v3-prewrite-failure-record
+FAILED_RECORD_TAG_TYPE=ANNOTATED
+FAILED_RECORD_TAG_TARGET=ec8dc6e38e16685642635111b3a94cc2e19014a9
+
+## 4. Commit-Message Nonconformance
+
+ACTUAL_COMMIT_MESSAGE=docs: record reviewer v3 pre-write failure
+REQUIRED_COMMIT_MESSAGE=docs: record B1A incident remediation reviewer v3 prewrite failure
+COMMIT_MESSAGE_EXACT_MATCH=False
+
+Semantic similarity does not satisfy the exact authorized commit-message contract.
+
+## 5. Structural Nonconformance
+
+REQUIRED_SECTION_COUNT=13
+OBSERVED_SECTION_COUNT=7
+SECTION_CONTRACT_RESULT=FAIL
+
+The document omitted or failed to separately implement required sections covering:
+
+- construction-authorization identity;
+- authority and collision gates;
+- pre-write failure point;
+- reuse boundary;
+- artifact absence;
+- validation boundaries;
+- runtime boundary;
+- failure effect;
+- future-lineage boundary;
+- B1A boundary.
+
+## 6. Literal Nonconformance
+
+REQUIRED_LITERAL_COUNT=58
+MISSING_LITERAL_COUNT=29
+LITERAL_CONTRACT_RESULT=FAIL
+
+The completed audit identified these missing literals:
+
+- PREWRITE_FAILURE_RECORD_VERSION=V1
+- V3_CONSTRUCTION_BASELINE_COMMIT=9ad09f1be9deb8a09553dccd7b64850cb337833e
+- V3_CONSTRUCTION_BASELINE_TREE=fa4f2f14edabde431264eb10cb696463d554b603
+- V3_CONSTRUCTION_AUTHORIZATION_VALIDATED=True
+- V3_AUTHORITY_GATES_RESULT=PASS
+- V3_COLLISION_GATES_RESULT=PASS
+- PREWRITE_FAILURE_REASON=NO_COMPLIANT_CANDIDATE_BYTES_PRODUCED_WITHIN_AUTHORIZED_EVIDENCE_AND_REUSE_BOUNDARIES
+- V3_CANDIDATE_BYTES_PRODUCED=False
+- V3_PREWRITE_VALIDATOR_STARTED=False
+- V3_PREWRITE_32_CONDITION_VALIDATION_PERFORMED=False
+- V3_PREWRITE_VALIDATION_RESULT=NOT_PERFORMED
+- V1_SOURCE_WHOLESALE_REUSE_PERFORMED=False
+- V2_SOURCE_WHOLESALE_REUSE_PERFORMED=False
+- V1_SOURCE_MODIFIED=False
+- V2_SOURCE_MODIFIED=False
+- V1_SOURCE_EXECUTED=False
+- V2_SOURCE_EXECUTED=False
+- V3_SOURCE_CREATION_COUNT=0
+- V3_SOURCE_EXISTS=False
+- V3_SOURCE_IDENTITY_AVAILABLE=False
+- V3_RECEIPT_EXISTS=False
+- V3_POSTWRITE_VALIDATION_APPLICABLE=False
+- V3_BYTE_EQUALITY_VALIDATION_APPLICABLE=False
+- V3_POSTWRITE_SHA256_VALIDATION_APPLICABLE=False
+- V3_POSTWRITE_32_CONDITION_VALIDATION_APPLICABLE=False
+- V3_IMPORTED=False
+- V3_EXECUTED=False
+- V3_RETRY_AUTHORIZED_BY_THIS_RECORD=False
+- V3_SOURCE_CREATION_AUTHORIZED_BY_THIS_RECORD=False
+- V3_PREWRITE_FAILURE_RECORD_COMPLETE=True
+- V3_SOURCE_CREATED_BY_THIS_ATTEMPT=False
+- V3_RECEIPT_CREATED_BY_THIS_ATTEMPT=False
+
+The exact audit total and supplied list are preserved without inventing additional findings.
+
+## 7. Substitution Nonconformance
+
+- PREWRITE_SOURCE_CANDIDATE_BYTES_CREATED=False did not replace the required V3_CANDIDATE_BYTES_PRODUCED=False.
+- Prose denying retry did not replace V3_RETRY_AUTHORIZED_BY_THIS_RECORD=False.
+
+EXACT_LITERAL_SUBSTITUTION_ACCEPTED=False
+
+## 8. Semantic Scope
+
+The malformed document nevertheless:
+
+- distinguished pre-write failure from post-write failure;
+- assigned no source size or SHA-256 to nonexistent v3;
+- did not freeze nonexistent v3;
+- did not claim construction was impossible in principle;
+- denied retry, v4, execution, receipt creation and B1A authority in prose.
+
+SEMANTIC_FAIL_CLOSED_BOUNDARIES_PRESENT=True
+EXACT_CONTRACT_SATISFIED=False
+
+## 9. Artifact State
+
+V1_SOURCE_IDENTITY_PRESERVED=True
+V2_SOURCE_IDENTITY_PRESERVED=True
+V3_SOURCE_EXISTS=False
+V3_RECEIPT_EXISTS=False
+V4_SOURCE_EXISTS=False
+V4_RECEIPT_EXISTS=False
+V2_RECEIPT_EXISTS=False
+
+## 10. Authority Effect
+
+MALFORMED_RECORD_ACCEPTED_AS_AUTHORITATIVE=False
+V3_PREWRITE_FAILURE_PERMANENTLY_RECORDED=False
+CORRECTED_V3_PREWRITE_FAILURE_RECORD_AUTHORIZED_BY_THIS_RECORD=False
+
+INCIDENT_REMEDIATION_REVIEWER_V3_EXECUTION_AUTHORIZED=False
+INCIDENT_REMEDIATION_REVIEWER_V3_RECEIPT_CREATION_AUTHORIZED=False
+INCIDENT_REMEDIATION_REVIEWER_V4_CONSTRUCTION_AUTHORIZED=False
+INCIDENT_REMEDIATION_REVIEWER_V4_STATIC_VALIDATION_AUTHORIZED=False
+INCIDENT_REMEDIATION_REVIEWER_V4_EXECUTION_AUTHORIZED=False
+INCIDENT_REMEDIATION_REVIEWER_V4_RECEIPT_CREATION_AUTHORIZED=False
+
+## 11. B1A Boundary
+
+B1A_V4_CREATION_AUTHORIZED=False
+B1A_V4_EXECUTION_AUTHORIZED=False
+READY_FOR_EXECUTION_AUTHORIZATION=False
+AUTHORIZED_NEXT_B1A_SLICE=None
+
+## 12. Future Correction Boundary
+
+- the malformed document, commit and tag remain immutable;
+- this contract-failure record does not repair or replace them;
+- a separate governance authorization is required before creating a corrected v3 pre-write-failure record;
+- the corrected record must use a new filename, commit and tag;
+- v4 remains unauthorized.
+
+FAILED_RECORD_MODIFICATION_AUTHORIZED=False
+FAILED_COMMIT_AMENDMENT_AUTHORIZED=False
+FAILED_TAG_MOVEMENT_AUTHORIZED=False
+CORRECTED_RECORD_CONSTRUCTION_AUTHORIZED=False
+
+## 13. Final Declaration
+
+CONTRACT_FAILURE_RECORD_COMPLETE=True
+V3_PREWRITE_FAILURE_RECORD_CONTRACT_FAILURE_PERMANENTLY_RECORDED=True
+FAILED_RECORD_REMAINS_IMMUTABLE=True
+CORRECTED_RECORD_CREATED_BY_THIS_SLICE=False
+V4_AUTHORIZED_BY_THIS_RECORD=False
+B1A_V4_AUTHORIZED_BY_THIS_RECORD=False
